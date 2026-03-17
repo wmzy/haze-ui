@@ -14,10 +14,10 @@ export function schemaFaker<T = unknown>(schema: unknown): Promise<T> {
 
 export function fakerWhenNothing<
   F extends (...args: unknown[]) => Promise<unknown>,
->(fn: F, schema: unknown): F {
+>(fn: F, schema: unknown) {
   return R.pipe(
     fn,
     R.andThen(R.when(R.isEmpty, () => schemaFaker(schema))),
     R.otherwise(() => schemaFaker(schema))
-  );
+  ) as F;
 }
