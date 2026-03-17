@@ -1,16 +1,15 @@
-import type { Schema } from 'json-schema-faker';
+import type { JsonSchema } from 'json-schema-faker';
 
 import * as R from 'ramda';
 import { format } from 'date-fns';
-import { JSONSchemaFaker as jsf } from 'json-schema-faker';
+import { generate, registerFormat } from 'json-schema-faker';
 import { faker } from '@faker-js/faker';
 
-jsf.extend('faker', () => faker);
-jsf.format('date-string', () => format(faker.date.recent(), 'yyyy-MM-dd'));
+registerFormat('date-string', () => format(faker.date.recent(), 'yyyy-MM-dd'));
 
 export function schemaFaker<T = unknown>(schema: unknown): Promise<T> {
   console.log('faker:', schema);
-  return jsf.resolve(schema as Schema) as Promise<T>;
+  return generate(schema as JsonSchema) as Promise<T>;
 }
 
 export function fakerWhenNothing<
