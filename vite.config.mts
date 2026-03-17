@@ -7,6 +7,7 @@ import wyw from '@wyw-in-js/vite';
 import rollupPluginTypeAsJsonSchema from 'rollup-plugin-type-as-json-schema';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isLibBuild = process.env.BUILD_LIB === 'true';
 
 export default defineConfig({
   resolve: {
@@ -39,6 +40,33 @@ export default defineConfig({
   optimizeDeps: {
     include: ['babel-runtime-jsx-plus'],
   },
+  build: isLibBuild
+    ? {
+        lib: {
+          entry: path.resolve(__dirname, 'src/lib/index.ts'),
+          formats: ['es'],
+        },
+        rollupOptions: {
+          external: [
+            'react',
+            'react-dom',
+            'react/jsx-runtime',
+            '@linaria/core',
+            'react-use-control',
+            'react-toolroom',
+            'react-toolroom/async',
+            '@native-router/react',
+            '@for-fun/event-emitter',
+          ],
+          output: {
+            preserveModules: true,
+            preserveModulesRoot: 'src/lib',
+            entryFileNames: '[name].js',
+          },
+        },
+        cssCodeSplit: false,
+      }
+    : undefined,
   test: {
     globals: true,
     environment: 'jsdom',

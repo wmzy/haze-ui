@@ -1,14 +1,32 @@
 {
   "name": "pebble-ui",
   "version": "0.0.0",
-  "description": "",
+  "type": "module",
+  "description": "A React UI component library powered by react-use-control and Linaria",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/pebble-ui.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "start": "vite",
-    "build": "vite build && tsc -p tsconfig.production.json && tsc-alias -p tsconfig.production.json",
+    "build": "BUILD_LIB=true vite build && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json",
+    "build:demo": "BABEL_ENV=development BUILD_DEMO=true vite build",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
     "lint": "eslint --fix src *.js",
-    "deploy": "BABEL_ENV=development BUILD_DEMO=true vite build && gh-pages -d dist",
+    "deploy": "npm run build:demo && gh-pages -d dist",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build",
@@ -19,12 +37,22 @@
   "author": "wmzy",
   "license": "ISC",
   "peerDependencies": {
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "@linaria/core": "^7.0.0"
+  },
+  "dependencies": {
+    "react-toolroom": "^0.4.0",
+    "react-use-control": "^1.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-typescript": "^7.28.5",
+    "@faker-js/faker": "^10.3.0",
+    "@for-fun/event-emitter": "^1.0.0",
+    "@linaria/core": "^7.0.0",
+    "@native-router/core": "^1.1.0",
+    "@native-router/react": "^1.1.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^25.5.0",
@@ -39,13 +67,19 @@
     "babel-runtime-jsx-plus": "^0.1.5",
     "commitizen": "^4.3.1",
     "core-js": "^3.49.0",
+    "date-fns": "^4.1.0",
     "eslint": "^10.0.3",
     "eslint-plugin-compat": "^7.0.1",
     "gh-pages": "^6.3.0",
     "husky": "^9.1.7",
+    "json-schema-faker": "^0.6.0",
     "jsdom": "^29.0.0",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
+    "qss": "^3.0.0",
+    "ramda": "^0.32.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-icons": "^5.5.0",
     "rollup-plugin-type-as-json-schema": "^0.2.6",
     "terser": "^5.46.1",
@@ -54,20 +88,5 @@
     "typescript": "^5.9.3",
     "vite": "^8.0.0",
     "vitest": "^4.1.0"
-  },
-  "dependencies": {
-    "@faker-js/faker": "^10.3.0",
-    "@for-fun/event-emitter": "^1.0.0",
-    "@linaria/core": "^7.0.0",
-    "@native-router/core": "^1.1.0",
-    "@native-router/react": "^1.1.2",
-    "date-fns": "^4.1.0",
-    "json-schema-faker": "^0.6.0",
-    "qss": "^3.0.0",
-    "ramda": "^0.32.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-toolroom": "^0.4.0",
-    "react-use-control": "^1.2.0"
   }
 }

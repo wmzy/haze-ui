@@ -1,0 +1,15 @@
+{
+  "extends": "tools-config/typescript",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist/types",
+    "rootDir": "src/lib"
+  },
+  "include": ["src/lib"],
+  "exclude": ["src/lib/**/*.test.*", "src/lib/**/*.spec.*"]
+}
