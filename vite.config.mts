@@ -1,13 +1,15 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wyw from '@wyw-in-js/vite';
 import rollupPluginTypeAsJsonSchema from 'rollup-plugin-type-as-json-schema';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
   resolve: {
-    // conditions: [ 'browser', 'import', 'module', 'default' ],
     alias: [
       {
         find: /^@\/(.*)/,
@@ -15,7 +17,7 @@ export default defineConfig({
       },
     ],
   },
-  esbuild: false,
+  oxc: false,
   server: {
     open: true,
   },
@@ -36,5 +38,15 @@ export default defineConfig({
   ],
   optimizeDeps: {
     include: ['babel-runtime-jsx-plus'],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/'],
+    },
   },
 });
