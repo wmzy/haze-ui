@@ -30,6 +30,33 @@ import {
   Accordion,
   AccordionItem,
   Alert,
+  Avatar,
+  Tag,
+  Skeleton,
+  Icon,
+  Image,
+  Flex,
+  Breadcrumb,
+  BreadcrumbItem,
+  Disclosure,
+  Menu,
+  MenuItem,
+  MenuDivider,
+  NumberInput,
+  FileInput,
+  ToastContainer,
+  useToast,
+  List,
+  ListItem,
+  Combobox,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Carousel,
+  CarouselSlide,
+  Datepicker,
 } from '@/lib';
 
 import PropsTable from './PropsTable';
@@ -908,6 +935,852 @@ function AlertDemo() {
   );
 }
 
+// ─── Avatar ────────────────────────────────────────────────────
+
+function AvatarDemo() {
+  return (
+    <>
+      <h1>Avatar</h1>
+      <p className={intro}>Circular image container with fallback support.</p>
+
+      <div className={section}>
+        <h2>Sizes</h2>
+        <div className={row}>
+          <Avatar size='sm' src='https://i.pravatar.cc/64?u=a' alt='Alice' />
+          <Avatar size='md' src='https://i.pravatar.cc/80?u=b' alt='Bob' />
+          <Avatar size='lg' src='https://i.pravatar.cc/112?u=c' alt='Carol' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Fallback</h2>
+        <div className={row}>
+          <Avatar size='md' alt='Dave' />
+          <Avatar size='md' fallback='🎨' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'src', type: 'string', description: 'Image URL'},
+          {name: 'alt', type: 'string', description: 'Alt text; first letter used as fallback'},
+          {name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Avatar size'},
+          {name: 'fallback', type: 'ReactNode', description: 'Custom fallback content'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>&lt;img&gt;</strong> with <strong>alt</strong> text when image is available</li>
+            <li>Fallback shows first letter of <strong>alt</strong> or custom content</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Tag ───────────────────────────────────────────────────────
+
+function TagDemo() {
+  const [tags, setTags] = useState(['React', 'TypeScript', 'Linaria']);
+
+  return (
+    <>
+      <h1>Tag</h1>
+      <p className={intro}>Interactive labels for categorization and filtering.</p>
+
+      <div className={section}>
+        <h2>Variants</h2>
+        <div className={row}>
+          <Tag variant='default'>Default</Tag>
+          <Tag variant='primary'>Primary</Tag>
+          <Tag variant='success'>Success</Tag>
+          <Tag variant='warning'>Warning</Tag>
+          <Tag variant='danger'>Danger</Tag>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Closable</h2>
+        <div className={row}>
+          {tags.map((t) => (
+            <Tag key={t} closable onClose={() => setTags((prev) => prev.filter((x) => x !== t))}>
+              {t}
+            </Tag>
+          ))}
+          {tags.length === 0 && <Button variant='ghost' size='sm' onClick={() => setTags(['React', 'TypeScript', 'Linaria'])}>Reset</Button>}
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'variant', type: "'default' | 'primary' | 'success' | 'warning' | 'danger'", default: "'default'", description: 'Color variant'},
+          {name: 'size', type: "'sm' | 'md'", default: "'md'", description: 'Tag size'},
+          {name: 'closable', type: 'boolean', default: 'false', description: 'Show close button'},
+          {name: 'onClose', type: '() => void', description: 'Called when close button is clicked'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'Tag content'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Close button has <strong>aria-label=&quot;Remove&quot;</strong></li>
+            <li>Close button is keyboard accessible via <strong>Tab</strong> + <strong>Enter</strong></li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Skeleton ──────────────────────────────────────────────────
+
+function SkeletonDemo() {
+  return (
+    <>
+      <h1>Skeleton</h1>
+      <p className={intro}>Animated placeholder for loading states.</p>
+
+      <div className={section}>
+        <h2>Variants</h2>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--pbl-space-3)', maxWidth: 320}}>
+          <Skeleton variant='text' width='80%' />
+          <Skeleton variant='text' width='60%' />
+          <Skeleton variant='rectangular' width={320} height={120} />
+          <div className={row}>
+            <Skeleton variant='circular' width={40} height={40} />
+            <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--pbl-space-1)'}}>
+              <Skeleton variant='text' width='50%' />
+              <Skeleton variant='text' width='80%' />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'variant', type: "'text' | 'circular' | 'rectangular'", default: "'text'", description: 'Shape of the skeleton'},
+          {name: 'width', type: 'string | number', description: 'Width (px if number)'},
+          {name: 'height', type: 'string | number', description: 'Height (px if number)'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Purely decorative — use <strong>aria-busy=&quot;true&quot;</strong> on the parent container during loading</li>
+            <li>Shimmer animation is CSS-only, respects <strong>prefers-reduced-motion</strong></li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Icon ──────────────────────────────────────────────────────
+
+function IconDemo() {
+  return (
+    <>
+      <h1>Icon</h1>
+      <p className={intro}>Wrapper for SVG icons with consistent sizing and color inheritance.</p>
+
+      <div className={section}>
+        <h2>Sizes</h2>
+        <div className={row}>
+          <Icon size='sm'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+          <Icon size='md'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+          <Icon size='lg'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Icon size'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'SVG element'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Has <strong>aria-hidden=&quot;true&quot;</strong> by default — decorative only</li>
+            <li>For meaningful icons, add <strong>aria-label</strong> to the parent element</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Image ─────────────────────────────────────────────────────
+
+function ImageDemo() {
+  return (
+    <>
+      <h1>Image</h1>
+      <p className={intro}>Enhanced image component with fallback and aspect ratio support.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div style={{maxWidth: 320}}>
+          <Image src='https://picsum.photos/640/360' alt='Sample landscape' aspectRatio='16/9' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Fallback</h2>
+        <div style={{maxWidth: 320}}>
+          <Image src='https://invalid-url.example' alt='Broken image' aspectRatio='16/9' fallback='Image failed to load' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'src', type: 'string', description: 'Image URL'},
+          {name: 'alt', type: 'string', description: 'Alt text'},
+          {name: 'fallback', type: 'ReactNode', description: 'Fallback content on error'},
+          {name: 'aspectRatio', type: 'string', description: 'CSS aspect-ratio value'},
+          {name: 'objectFit', type: 'CSSProperties["objectFit"]', default: "'cover'", description: 'Object-fit behavior'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses native <strong>&lt;img&gt;</strong> with required <strong>alt</strong> text</li>
+            <li>Fallback content is visible to screen readers</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Flex ──────────────────────────────────────────────────────
+
+function FlexDemo() {
+  return (
+    <>
+      <h1>Flex</h1>
+      <p className={intro}>Shorthand layout component for flexbox patterns.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <Flex gap='var(--pbl-space-3)' align='center'>
+          <Badge>Item 1</Badge>
+          <Badge variant='success'>Item 2</Badge>
+          <Badge variant='info'>Item 3</Badge>
+        </Flex>
+      </div>
+
+      <div className={section}>
+        <h2>Column</h2>
+        <Flex direction='column' gap='var(--pbl-space-2)'>
+          <Badge>Row A</Badge>
+          <Badge variant='warning'>Row B</Badge>
+        </Flex>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'direction', type: "'row' | 'column'", default: "'row'", description: 'Flex direction'},
+          {name: 'align', type: 'CSSProperties["alignItems"]', description: 'Align items'},
+          {name: 'justify', type: 'CSSProperties["justifyContent"]', description: 'Justify content'},
+          {name: 'gap', type: 'string | number', description: 'Gap between items'},
+          {name: 'wrap', type: 'boolean', default: 'false', description: 'Enable flex-wrap'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'Flex children'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Renders as a plain <strong>&lt;div&gt;</strong> — purely presentational</li>
+            <li>No semantic meaning; add <strong>role</strong> if needed</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Breadcrumb ────────────────────────────────────────────────
+
+function BreadcrumbDemo() {
+  return (
+    <>
+      <h1>Breadcrumb</h1>
+      <p className={intro}>Navigation trail showing the current page location.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <Breadcrumb>
+          <BreadcrumbItem href='#'>Home</BreadcrumbItem>
+          <BreadcrumbItem href='#'>Components</BreadcrumbItem>
+          <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
+        </Breadcrumb>
+      </div>
+
+      <div className={section}>
+        <h2>Custom Separator</h2>
+        <Breadcrumb separator='›'>
+          <BreadcrumbItem href='#'>Docs</BreadcrumbItem>
+          <BreadcrumbItem href='#'>UI</BreadcrumbItem>
+          <BreadcrumbItem>Current</BreadcrumbItem>
+        </Breadcrumb>
+      </div>
+
+      <div className={section}>
+        <h2>Breadcrumb Props</h2>
+        <PropsTable props={[
+          {name: 'separator', type: 'ReactNode', default: "'/'", description: 'Separator between items'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'BreadcrumbItem elements'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>BreadcrumbItem Props</h2>
+        <PropsTable props={[
+          {name: 'href', type: 'string', description: 'Link URL; omit for current page'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'Item label'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>&lt;nav aria-label=&quot;Breadcrumb&quot;&gt;</strong> with <strong>&lt;ol&gt;</strong></li>
+            <li>Last item has <strong>aria-current=&quot;page&quot;</strong></li>
+            <li>Separators have <strong>aria-hidden=&quot;true&quot;</strong></li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Disclosure ────────────────────────────────────────────────
+
+function DisclosureDemo() {
+  return (
+    <>
+      <h1>Disclosure</h1>
+      <p className={intro}>Single collapsible section using native details/summary.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div style={{maxWidth: 480}}>
+          <Disclosure summary='Click to expand'>
+            This is the hidden content that appears when the disclosure is opened.
+            It uses the native details/summary elements for built-in accessibility.
+          </Disclosure>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'open', type: 'Control<boolean> | boolean', default: 'false', description: 'Whether the disclosure is open'},
+          {name: 'summary', type: 'ReactNode', description: 'Header/trigger text'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'Collapsible content'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses native <strong>&lt;details&gt;</strong>/<strong>&lt;summary&gt;</strong></li>
+            <li><strong>Enter</strong>/<strong>Space</strong> toggles open/close</li>
+            <li>Screen readers announce expanded/collapsed state</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Menu ──────────────────────────────────────────────────────
+
+function MenuDemo() {
+  return (
+    <>
+      <h1>Menu</h1>
+      <p className={intro}>Dropdown menu with keyboard navigation.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={row}>
+          <Menu trigger={<Button variant='outline'>Open Menu</Button>}>
+            <MenuItem onSelect={() => {}}>Edit</MenuItem>
+            <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
+            <MenuDivider />
+            <MenuItem onSelect={() => {}}>Archive</MenuItem>
+            <MenuItem disabled>Delete</MenuItem>
+          </Menu>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Menu Props</h2>
+        <PropsTable props={[
+          {name: 'open', type: 'Control<boolean> | boolean', default: 'false', description: 'Whether the menu is open'},
+          {name: 'trigger', type: 'ReactNode', description: 'Trigger element'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'MenuItem and MenuDivider elements'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>MenuItem Props</h2>
+        <PropsTable props={[
+          {name: 'onSelect', type: '() => void', description: 'Called when item is selected'},
+          {name: 'disabled', type: 'boolean', default: 'false', description: 'Disable the item'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'Item content'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>role=&quot;menu&quot;</strong> and <strong>role=&quot;menuitem&quot;</strong></li>
+            <li>Click outside closes the menu</li>
+            <li>Disabled items have <strong>disabled</strong> attribute</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── NumberInput ───────────────────────────────────────────────
+
+function NumberInputDemo() {
+  const [, , valueCtrl] = useControl(undefined, 5);
+  const [value] = useControl(valueCtrl);
+
+  return (
+    <>
+      <h1>NumberInput</h1>
+      <p className={intro}>Numeric input with increment/decrement buttons.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={row}>
+          <NumberInput value={valueCtrl} min={0} max={100} step={1} />
+          <span style={{fontSize: 'var(--pbl-text-sm)', color: 'var(--pbl-color-text-secondary)'}}>Value: {value}</span>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Sizes</h2>
+        <div className={row}>
+          <NumberInput size='sm' min={0} max={10} />
+          <NumberInput size='md' min={0} max={10} />
+          <NumberInput size='lg' min={0} max={10} />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'value', type: 'Control<number> | number', description: 'Controlled value or control object'},
+          {name: 'min', type: 'number', description: 'Minimum value'},
+          {name: 'max', type: 'number', description: 'Maximum value'},
+          {name: 'step', type: 'number', default: '1', description: 'Step increment'},
+          {name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Input size'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>&lt;input type=&quot;number&quot;&gt;</strong></li>
+            <li>Stepper buttons have <strong>aria-label</strong> (&quot;Decrease&quot;/&quot;Increase&quot;)</li>
+            <li>Buttons are disabled at min/max boundaries</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── FileInput ─────────────────────────────────────────────────
+
+function FileInputDemo() {
+  return (
+    <>
+      <h1>FileInput</h1>
+      <p className={intro}>Styled file picker with hidden native input.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={row}>
+          <FileInput accept='image/*' />
+          <FileInput accept='.pdf,.doc'>Upload Document</FileInput>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'accept', type: 'string', description: 'Accepted file types'},
+          {name: 'multiple', type: 'boolean', default: 'false', description: 'Allow multiple files'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', default: "'Choose file'", description: 'Custom trigger text'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses a <strong>&lt;label&gt;</strong> wrapping a visually hidden <strong>&lt;input type=&quot;file&quot;&gt;</strong></li>
+            <li>Keyboard accessible — <strong>Tab</strong> focuses, <strong>Enter</strong>/<strong>Space</strong> opens file dialog</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Toast ─────────────────────────────────────────────────────
+
+function ToastDemoInner() {
+  const toast = useToast();
+
+  return (
+    <>
+      <h1>Toast</h1>
+      <p className={intro}>Temporary notification messages via useToast() hook.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={row}>
+          <Button variant='outline' onClick={() => toast('Info toast message')}>Info</Button>
+          <Button variant='outline' onClick={() => toast('Success!', {variant: 'success'})}>Success</Button>
+          <Button variant='outline' onClick={() => toast('Warning toast', {variant: 'warning'})}>Warning</Button>
+          <Button variant='outline' onClick={() => toast('Error occurred', {variant: 'danger'})}>Danger</Button>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>useToast API</h2>
+        <PropsTable props={[
+          {name: 'content', type: 'ReactNode', description: 'Toast message (first argument)'},
+          {name: 'options.variant', type: "'info' | 'success' | 'warning' | 'danger'", default: "'info'", description: 'Color variant'},
+          {name: 'options.duration', type: 'number', default: '3000', description: 'Auto-dismiss time in ms'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Each toast has <strong>role=&quot;alert&quot;</strong></li>
+            <li>Close button has <strong>aria-label=&quot;Close&quot;</strong></li>
+            <li>Toasts auto-dismiss after the configured duration</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+function ToastDemo() {
+  return (
+    <ToastContainer>
+      <ToastDemoInner />
+    </ToastContainer>
+  );
+}
+
+// ─── List ──────────────────────────────────────────────────────
+
+function ListDemo() {
+  return (
+    <>
+      <h1>List</h1>
+      <p className={intro}>Styled list component with ordered, unordered, and plain variants.</p>
+
+      <div className={section}>
+        <h2>Unordered</h2>
+        <List variant='unordered'>
+          <ListItem>First item</ListItem>
+          <ListItem>Second item</ListItem>
+          <ListItem>Third item</ListItem>
+        </List>
+      </div>
+
+      <div className={section}>
+        <h2>Ordered</h2>
+        <List variant='ordered'>
+          <ListItem>Step one</ListItem>
+          <ListItem>Step two</ListItem>
+          <ListItem>Step three</ListItem>
+        </List>
+      </div>
+
+      <div className={section}>
+        <h2>List Props</h2>
+        <PropsTable props={[
+          {name: 'variant', type: "'unordered' | 'ordered' | 'none'", default: "'unordered'", description: 'List style'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'ListItem elements'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses semantic <strong>&lt;ul&gt;</strong> or <strong>&lt;ol&gt;</strong> elements</li>
+            <li>Screen readers announce list item count</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Combobox ──────────────────────────────────────────────────
+
+function ComboboxDemo() {
+  const fruits = [
+    {value: 'apple', label: 'Apple'},
+    {value: 'banana', label: 'Banana'},
+    {value: 'cherry', label: 'Cherry'},
+    {value: 'grape', label: 'Grape'},
+    {value: 'mango', label: 'Mango'},
+    {value: 'orange', label: 'Orange'},
+  ];
+
+  return (
+    <>
+      <h1>Combobox</h1>
+      <p className={intro}>Searchable dropdown combining text input with a filterable list.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={fieldRow}>
+          <Combobox options={fruits} placeholder='Search fruits...' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'value', type: 'Control<string> | string', description: 'Controlled value or control object'},
+          {name: 'options', type: '{value: string; label: string}[]', description: 'List of options'},
+          {name: 'placeholder', type: 'string', description: 'Input placeholder text'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>role=&quot;combobox&quot;</strong> with <strong>aria-expanded</strong> and <strong>aria-autocomplete=&quot;list&quot;</strong></li>
+            <li>Options use <strong>role=&quot;listbox&quot;</strong> and <strong>role=&quot;option&quot;</strong></li>
+            <li><strong>Arrow keys</strong> navigate options, <strong>Enter</strong> selects, <strong>Escape</strong> closes</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Table ─────────────────────────────────────────────────────
+
+function TableDemo() {
+  return (
+    <>
+      <h1>Table</h1>
+      <p className={intro}>Semantic table components with striped and bordered variants.</p>
+
+      <div className={section}>
+        <h2>Default</h2>
+        <Table>
+          <TableHead>
+            <TableRow><TableCell as='th'>Name</TableCell><TableCell as='th'>Role</TableCell><TableCell as='th'>Status</TableCell></TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow><TableCell>Alice</TableCell><TableCell>Engineer</TableCell><TableCell>Active</TableCell></TableRow>
+            <TableRow><TableCell>Bob</TableCell><TableCell>Designer</TableCell><TableCell>Active</TableCell></TableRow>
+            <TableRow><TableCell>Carol</TableCell><TableCell>Manager</TableCell><TableCell>Away</TableCell></TableRow>
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className={section}>
+        <h2>Striped + Bordered</h2>
+        <Table striped bordered>
+          <TableHead>
+            <TableRow><TableCell as='th'>Product</TableCell><TableCell as='th'>Price</TableCell><TableCell as='th'>Stock</TableCell></TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow><TableCell>Widget A</TableCell><TableCell>$10</TableCell><TableCell>150</TableCell></TableRow>
+            <TableRow><TableCell>Widget B</TableCell><TableCell>$25</TableCell><TableCell>80</TableCell></TableRow>
+            <TableRow><TableCell>Widget C</TableCell><TableCell>$15</TableCell><TableCell>200</TableCell></TableRow>
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className={section}>
+        <h2>Table Props</h2>
+        <PropsTable props={[
+          {name: 'striped', type: 'boolean', default: 'false', description: 'Alternate row backgrounds'},
+          {name: 'bordered', type: 'boolean', default: 'false', description: 'Add cell borders'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'TableHead and TableBody elements'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses semantic <strong>&lt;table&gt;</strong>, <strong>&lt;thead&gt;</strong>, <strong>&lt;tbody&gt;</strong>, <strong>&lt;th&gt;</strong>, <strong>&lt;td&gt;</strong></li>
+            <li>Screen readers announce row/column context automatically</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Carousel ──────────────────────────────────────────────────
+
+function CarouselDemo() {
+  return (
+    <>
+      <h1>Carousel</h1>
+      <p className={intro}>Slide-based content viewer with navigation and indicators.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div style={{maxWidth: 480}}>
+          <Carousel>
+            <CarouselSlide>
+              <div style={{height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-subtle)', borderRadius: 'var(--pbl-radius-md)'}}>
+                Slide 1
+              </div>
+            </CarouselSlide>
+            <CarouselSlide>
+              <div style={{height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-muted)', borderRadius: 'var(--pbl-radius-md)'}}>
+                Slide 2
+              </div>
+            </CarouselSlide>
+            <CarouselSlide>
+              <div style={{height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-primary-subtle)', borderRadius: 'var(--pbl-radius-md)'}}>
+                Slide 3
+              </div>
+            </CarouselSlide>
+          </Carousel>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'value', type: 'Control<number> | number', description: 'Active slide index'},
+          {name: 'autoPlay', type: 'boolean', default: 'false', description: 'Auto-advance slides'},
+          {name: 'interval', type: 'number', default: '5000', description: 'Auto-play interval in ms'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+          {name: 'children', type: 'ReactNode', description: 'CarouselSlide elements'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Uses <strong>role=&quot;region&quot;</strong> with <strong>aria-roledescription=&quot;carousel&quot;</strong></li>
+            <li>Slides have <strong>role=&quot;group&quot;</strong> with <strong>aria-roledescription=&quot;slide&quot;</strong></li>
+            <li>Navigation buttons have <strong>aria-label</strong></li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
+// ─── Datepicker ────────────────────────────────────────────────
+
+function DatepickerDemo() {
+  const [, , valueCtrl] = useControl(undefined, '');
+  const [value] = useControl(valueCtrl);
+
+  return (
+    <>
+      <h1>Datepicker</h1>
+      <p className={intro}>Date selection with a calendar dropdown panel.</p>
+
+      <div className={section}>
+        <h2>Demo</h2>
+        <div className={fieldRow}>
+          <Datepicker value={valueCtrl} placeholder='Pick a date' />
+        </div>
+        {value && <p style={{fontSize: 'var(--pbl-text-sm)', color: 'var(--pbl-color-text-secondary)'}}>Selected: {value}</p>}
+      </div>
+
+      <div className={section}>
+        <h2>Props</h2>
+        <PropsTable props={[
+          {name: 'value', type: 'Control<string> | string', description: 'Selected date (ISO format YYYY-MM-DD)'},
+          {name: 'min', type: 'string', description: 'Minimum selectable date'},
+          {name: 'max', type: 'string', description: 'Maximum selectable date'},
+          {name: 'placeholder', type: 'string', default: "'Select date'", description: 'Input placeholder'},
+          {name: 'className', type: 'string', description: 'Additional CSS class'},
+        ]} />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>Input has <strong>aria-haspopup=&quot;dialog&quot;</strong> and <strong>aria-expanded</strong></li>
+            <li>Calendar grid uses <strong>role=&quot;grid&quot;</strong> with <strong>aria-label</strong></li>
+            <li>Navigation buttons have <strong>aria-label</strong></li>
+            <li>Click outside closes the calendar</li>
+          </ul>
+        </A11yNote>
+      </div>
+    </>
+  );
+}
+
 // ─── Demo registry ─────────────────────────────────────────────
 
 const demos: Record<string, () => ReactNode> = {
@@ -927,6 +1800,23 @@ const demos: Record<string, () => ReactNode> = {
   tabs: TabsDemo,
   accordion: AccordionDemo,
   alert: AlertDemo,
+  avatar: AvatarDemo,
+  tag: TagDemo,
+  skeleton: SkeletonDemo,
+  icon: IconDemo,
+  image: ImageDemo,
+  flex: FlexDemo,
+  breadcrumb: BreadcrumbDemo,
+  disclosure: DisclosureDemo,
+  menu: MenuDemo,
+  numberinput: NumberInputDemo,
+  fileinput: FileInputDemo,
+  toast: ToastDemo,
+  list: ListDemo,
+  combobox: ComboboxDemo,
+  table: TableDemo,
+  carousel: CarouselDemo,
+  datepicker: DatepickerDemo,
 };
 
 export default function ComponentDetail() {

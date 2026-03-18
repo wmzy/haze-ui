@@ -102,6 +102,57 @@ export default function Layout() {
               <NavigationMenu.Item>
                 <Link to='/components/alert'>Alert</Link>
               </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/avatar'>Avatar</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/tag'>Tag</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/skeleton'>Skeleton</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/icon'>Icon</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/image'>Image</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/flex'>Flex</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/breadcrumb'>Breadcrumb</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/disclosure'>Disclosure</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/menu'>Menu</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/numberinput'>NumberInput</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/fileinput'>FileInput</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/toast'>Toast</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/list'>List</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/combobox'>Combobox</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/table'>Table</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/carousel'>Carousel</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/datepicker'>Datepicker</Link>
+              </NavigationMenu.Item>
             </NavigationMenu.Group>
             <li>
               <Link to='/help'>Help</Link>

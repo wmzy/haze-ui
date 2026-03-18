@@ -27,6 +27,31 @@ import {
   Accordion,
   AccordionItem,
   Alert,
+  Avatar,
+  Tag,
+  Skeleton,
+  Icon,
+  Flex,
+  Breadcrumb,
+  BreadcrumbItem,
+  Disclosure,
+  Menu,
+  MenuItem,
+  NumberInput,
+  FileInput,
+  ToastContainer,
+  useToast,
+  List,
+  ListItem,
+  Combobox,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Carousel,
+  CarouselSlide,
+  Datepicker,
 } from '@/lib';
 
 const page = css`
@@ -323,6 +348,226 @@ function AlertSection() {
   );
 }
 
+function AvatarSection() {
+  return (
+    <div className={section} id='avatar'>
+      <h2>Avatar</h2>
+      <div className={row}>
+        <Avatar size='sm' src='https://i.pravatar.cc/64?u=a' alt='Alice' />
+        <Avatar size='md' src='https://i.pravatar.cc/80?u=b' alt='Bob' />
+        <Avatar size='lg' alt='Carol' />
+        <Avatar size='md' fallback='🎨' />
+      </div>
+    </div>
+  );
+}
+
+function TagSection() {
+  return (
+    <div className={section} id='tag'>
+      <h2>Tag</h2>
+      <div className={row}>
+        <Tag variant='default'>Default</Tag>
+        <Tag variant='primary'>Primary</Tag>
+        <Tag variant='success'>Success</Tag>
+        <Tag variant='warning'>Warning</Tag>
+        <Tag variant='danger' closable>Closable</Tag>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonSection() {
+  return (
+    <div className={section} id='skeleton'>
+      <h2>Skeleton</h2>
+      <div style={{display: 'flex', gap: 'var(--pbl-space-3)', alignItems: 'center', maxWidth: 320}}>
+        <Skeleton variant='circular' width={40} height={40} />
+        <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--pbl-space-1)'}}>
+          <Skeleton variant='text' width='60%' />
+          <Skeleton variant='text' width='80%' />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IconSection() {
+  return (
+    <div className={section} id='icon'>
+      <h2>Icon</h2>
+      <div className={row}>
+        <Icon size='sm'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+        <Icon size='md'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+        <Icon size='lg'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+      </div>
+    </div>
+  );
+}
+
+function FlexSection() {
+  return (
+    <div className={section} id='flex'>
+      <h2>Flex</h2>
+      <Flex gap='var(--pbl-space-3)' align='center'>
+        <Badge>Item 1</Badge>
+        <Badge variant='success'>Item 2</Badge>
+        <Badge variant='info'>Item 3</Badge>
+      </Flex>
+    </div>
+  );
+}
+
+function BreadcrumbSection() {
+  return (
+    <div className={section} id='breadcrumb'>
+      <h2>Breadcrumb</h2>
+      <Breadcrumb>
+        <BreadcrumbItem href='#'>Home</BreadcrumbItem>
+        <BreadcrumbItem href='#'>Components</BreadcrumbItem>
+        <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
+      </Breadcrumb>
+    </div>
+  );
+}
+
+function DisclosureSection() {
+  return (
+    <div className={section} id='disclosure'>
+      <h2>Disclosure</h2>
+      <div style={{maxWidth: 480}}>
+        <Disclosure summary='Click to expand'>
+          Hidden content revealed on toggle.
+        </Disclosure>
+      </div>
+    </div>
+  );
+}
+
+function MenuSection() {
+  return (
+    <div className={section} id='menu'>
+      <h2>Menu</h2>
+      <div className={row}>
+        <Menu trigger={<Button variant='outline'>Open Menu</Button>}>
+          <MenuItem>Edit</MenuItem>
+          <MenuItem>Duplicate</MenuItem>
+          <MenuItem disabled>Delete</MenuItem>
+        </Menu>
+      </div>
+    </div>
+  );
+}
+
+function NumberInputSection() {
+  return (
+    <div className={section} id='numberinput'>
+      <h2>NumberInput</h2>
+      <div className={row}>
+        <NumberInput min={0} max={10} />
+      </div>
+    </div>
+  );
+}
+
+function FileInputSection() {
+  return (
+    <div className={section} id='fileinput'>
+      <h2>FileInput</h2>
+      <div className={row}>
+        <FileInput accept='image/*' />
+      </div>
+    </div>
+  );
+}
+
+function ToastSectionInner() {
+  const toast = useToast();
+  return (
+    <div className={section} id='toast'>
+      <h2>Toast</h2>
+      <div className={row}>
+        <Button variant='outline' onClick={() => toast('Hello!')}>Show Toast</Button>
+        <Button variant='outline' onClick={() => toast('Done!', {variant: 'success'})}>Success</Button>
+      </div>
+    </div>
+  );
+}
+
+function ToastSection() {
+  return (
+    <ToastContainer>
+      <ToastSectionInner />
+    </ToastContainer>
+  );
+}
+
+function ListSection() {
+  return (
+    <div className={section} id='list'>
+      <h2>List</h2>
+      <List>
+        <ListItem>First item</ListItem>
+        <ListItem>Second item</ListItem>
+        <ListItem>Third item</ListItem>
+      </List>
+    </div>
+  );
+}
+
+function ComboboxSection() {
+  return (
+    <div className={section} id='combobox'>
+      <h2>Combobox</h2>
+      <div className={fieldRow}>
+        <Combobox options={[{value: 'apple', label: 'Apple'}, {value: 'banana', label: 'Banana'}, {value: 'cherry', label: 'Cherry'}]} placeholder='Search...' />
+      </div>
+    </div>
+  );
+}
+
+function TableSection() {
+  return (
+    <div className={section} id='table'>
+      <h2>Table</h2>
+      <Table striped>
+        <TableHead>
+          <TableRow><TableCell as='th'>Name</TableCell><TableCell as='th'>Role</TableCell></TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow><TableCell>Alice</TableCell><TableCell>Engineer</TableCell></TableRow>
+          <TableRow><TableCell>Bob</TableCell><TableCell>Designer</TableCell></TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function CarouselSection() {
+  return (
+    <div className={section} id='carousel'>
+      <h2>Carousel</h2>
+      <div style={{maxWidth: 400}}>
+        <Carousel>
+          <CarouselSlide><div style={{height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-subtle)', borderRadius: 'var(--pbl-radius-md)'}}>Slide 1</div></CarouselSlide>
+          <CarouselSlide><div style={{height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-muted)', borderRadius: 'var(--pbl-radius-md)'}}>Slide 2</div></CarouselSlide>
+        </Carousel>
+      </div>
+    </div>
+  );
+}
+
+function DatepickerSection() {
+  return (
+    <div className={section} id='datepicker'>
+      <h2>Datepicker</h2>
+      <div className={fieldRow}>
+        <Datepicker placeholder='Pick a date' />
+      </div>
+    </div>
+  );
+}
+
 export default function ComponentDoc() {
   return (
     <div x-class={[lightTheme, spacing, typography, page]}>
@@ -343,6 +588,22 @@ export default function ComponentDoc() {
       <TabsSection />
       <AccordionSection />
       <AlertSection />
+      <AvatarSection />
+      <TagSection />
+      <SkeletonSection />
+      <IconSection />
+      <FlexSection />
+      <BreadcrumbSection />
+      <DisclosureSection />
+      <MenuSection />
+      <NumberInputSection />
+      <FileInputSection />
+      <ToastSection />
+      <ListSection />
+      <ComboboxSection />
+      <TableSection />
+      <CarouselSection />
+      <DatepickerSection />
     </div>
   );
 }

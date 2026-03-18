@@ -1,0 +1,52 @@
+import type {ReactNode} from 'react';
+
+import {css} from '@linaria/core';
+import {Children} from 'react';
+
+type BreadcrumbProps = {
+  separator?: ReactNode;
+  className?: string;
+  children: ReactNode;
+};
+
+const nav = css`
+  font-family: var(--pbl-font-sans);
+  font-size: var(--pbl-text-sm);
+`;
+
+const list = css`
+  display: flex;
+  align-items: center;
+  gap: var(--pbl-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const sep = css`
+  color: var(--pbl-color-text-muted);
+  user-select: none;
+`;
+
+export default function Breadcrumb({
+  separator = '/',
+  className,
+  children,
+}: BreadcrumbProps) {
+  const items = Children.toArray(children);
+
+  return (
+    <nav aria-label='Breadcrumb' x-class={[nav, className]}>
+      <ol className={list}>
+        {items.map((child, i) => (
+          <li key={i} aria-current={i === items.length - 1 ? 'page' : undefined}>
+            {child}
+            {i < items.length - 1 && <span className={sep} aria-hidden='true'>{separator}</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+export type {BreadcrumbProps};
