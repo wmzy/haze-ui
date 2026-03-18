@@ -140,6 +140,11 @@ export default function Layout() {
               </Link>
             </ListItem>
             <ListItem>
+              <Link className={navLink} to='/getting-started'>
+                Getting Started
+              </Link>
+            </ListItem>
+            <ListItem>
               <Disclosure
                 open={true}
                 summary='Components'

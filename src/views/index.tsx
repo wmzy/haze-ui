@@ -18,7 +18,7 @@ export default function App() {
         children: [
           {
             path: '/getting-started',
-            component: () => import('./Article')
+            component: () => import('./GettingStarted')
           },
           {
             path: '/components',
