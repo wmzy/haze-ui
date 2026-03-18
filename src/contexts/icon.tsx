@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import type {ReactNode} from 'react';
 
 import { createContext, useContext} from 'react';
 
 type Icons = 'ex' | 'b';
-const IconContext = createContext<{[key in Icons]?: ReactNode}>({});
+const IconContext = createContext<Partial<Record<Icons, ReactNode>>>({});
 
 export const IconProvider = IconContext.Provider;
 

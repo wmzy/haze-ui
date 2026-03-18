@@ -31,10 +31,6 @@ const bubble = css`
   transition: opacity 0.15s;
 `;
 
-const visible = css`
-  opacity: 1;
-`;
-
 const positions = {
   top: css`
     bottom: 100%;

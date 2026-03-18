@@ -1,8 +1,6 @@
 {
   "extends": "tools-config/typescript",
   "compilerOptions": {
-    "composite": true,
-    /* Paths alias */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

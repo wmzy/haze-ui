@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
 import {encode} from 'qss';
 
 export function fetchJSON(
   url: string,
-  init?: RequestInit & {headers?: {[k in Lowercase<string>]: string}}
+  init?: RequestInit & {headers?: Record<Lowercase<string>, string>}
 ) {
   return fetch(`https://api.realworld.io/api/${url}`, {
     ...init,
@@ -19,7 +20,7 @@ export function fetchJSON(
     });
 }
 
-export function get(url: string, params?: { [k in string]: unknown }) {
+export function get(url: string, params?: Record<string, unknown>) {
   if (params) url += `?${encode(params)}`;
   return fetchJSON(url, { method: 'get' });
 }

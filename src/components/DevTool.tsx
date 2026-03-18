@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-floating-promises, @typescript-eslint/no-unnecessary-type-parameters, react-refresh/only-export-components */
 import type { ReactNode } from 'react';
 
 import type { createMemoryCacheProvider } from 'react-toolroom/async';

@@ -175,11 +175,3 @@ export default function Layout() {
     </Flex>
   );
 }
-
-export const globals = css`
-  :global() {
-    body {
-      margin: 0;
-    }
-  }
-`;

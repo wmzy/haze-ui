@@ -10,6 +10,7 @@ import rollupPluginTypeAsJsonSchema from 'rollup-plugin-type-as-json-schema';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isLibBuild = process.env.BUILD_LIB === 'true';
+const isDemoBuild = process.env.BUILD_DEMO === 'true';
 
 function jsxPlusPlugin(): Plugin {
   return {
@@ -31,7 +32,45 @@ function jsxPlusPlugin(): Plugin {
   };
 }
 
+const buildConfig = (() => {
+  if (isLibBuild) {
+    return {
+      lib: {
+        entry: path.resolve(__dirname, 'src/lib/index.ts'),
+        formats: ['es'] as const,
+      },
+      rollupOptions: {
+        external: [
+          'react',
+          'react-dom',
+          'react/jsx-runtime',
+          '@linaria/core',
+          'react-use-control',
+          'react-toolroom',
+          'react-toolroom/async',
+          '@native-router/react',
+          '@for-fun/event-emitter',
+          'babel-runtime-jsx-plus',
+        ],
+        output: {
+          preserveModules: true,
+          preserveModulesRoot: 'src/lib',
+          entryFileNames: '[name].js',
+        },
+      },
+      cssCodeSplit: false,
+    };
+  }
+  if (isDemoBuild) {
+    return {
+      outDir: 'dist',
+    };
+  }
+  return undefined;
+})();
+
 export default defineConfig({
+  base: isDemoBuild ? '/haze-ui/' : '/',
   resolve: {
     alias: [
       {
@@ -58,34 +97,7 @@ export default defineConfig({
   optimizeDeps: {
     include: ['babel-runtime-jsx-plus'],
   },
-  build: isLibBuild
-    ? {
-        lib: {
-          entry: path.resolve(__dirname, 'src/lib/index.ts'),
-          formats: ['es'],
-        },
-        rollupOptions: {
-          external: [
-            'react',
-            'react-dom',
-            'react/jsx-runtime',
-            '@linaria/core',
-            'react-use-control',
-            'react-toolroom',
-            'react-toolroom/async',
-            '@native-router/react',
-            '@for-fun/event-emitter',
-            'babel-runtime-jsx-plus',
-          ],
-          output: {
-            preserveModules: true,
-            preserveModulesRoot: 'src/lib',
-            entryFileNames: '[name].js',
-          },
-        },
-        cssCodeSplit: false,
-      }
-    : undefined,
+  build: buildConfig,
   test: {
     globals: true,
     environment: 'jsdom',

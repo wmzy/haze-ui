@@ -68,7 +68,7 @@ export default function Avatar({
           onError={() => setError(true)}
         />
       ) : (
-        (fallback ?? <span>{alt?.charAt(0)?.toUpperCase() ?? '?'}</span>)
+        (fallback ?? <span>{alt?.charAt(0).toUpperCase() ?? '?'}</span>)
       )}
     </span>
   );

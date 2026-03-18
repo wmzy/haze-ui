@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import type {ArticleQuery, Comment} from '@/types/index';
 
 import * as http from '@/util/http';

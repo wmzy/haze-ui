@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 
+import type { ToastItem } from './ToastContext';
+
 import { css } from '@linaria/core';
 import { useState, useCallback, useRef } from 'react';
 
 import Toast from './Toast';
 import { ToastProvider } from './ToastContext';
-import type { ToastItem } from './ToastContext';
 
 type ToastContainerProps = {
   children: ReactNode;

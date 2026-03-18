@@ -36,7 +36,7 @@ export default function RouterError({ error }: Props) {
       <Alert variant='danger'>Something went wrong</Alert>
       <pre className={pre}>{error.stack}</pre>
       <Flex gap='var(--haze-space-3)'>
-        <Button variant='outline' onClick={() => refresh(router)}>
+        <Button variant='outline' onClick={() => void refresh(router)}>
           Refresh
         </Button>
         <Link className={linkReset} to='/'>

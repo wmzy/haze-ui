@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useMatched } from '@native-router/react';
 import { useControl } from 'react-use-control';
 
+const noop = () => { /* demo placeholder */ };
+
 import {
   lightTheme,
   spacing,
@@ -594,7 +596,7 @@ function BadgeDemo() {
 
 function DialogDemo() {
   const [, , openCtrl] = useControl(undefined, false);
-  const [open, setOpen] = useControl(openCtrl);
+  const [, setOpen] = useControl(openCtrl);
 
   return (
     <>
@@ -2180,10 +2182,10 @@ function MenuDemo() {
         <h2>Demo</h2>
         <div className={row}>
           <Menu trigger={<Button variant='outline'>Open Menu</Button>}>
-            <MenuItem onSelect={() => {}}>Edit</MenuItem>
-            <MenuItem onSelect={() => {}}>Duplicate</MenuItem>
+            <MenuItem onSelect={noop}>Edit</MenuItem>
+            <MenuItem onSelect={noop}>Duplicate</MenuItem>
             <MenuDivider />
-            <MenuItem onSelect={() => {}}>Archive</MenuItem>
+            <MenuItem onSelect={noop}>Archive</MenuItem>
             <MenuItem disabled>Delete</MenuItem>
           </Menu>
         </div>
