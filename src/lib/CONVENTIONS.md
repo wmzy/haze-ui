@@ -1,4 +1,4 @@
-# Pebble UI Component Conventions
+# Ripple UI Component Conventions
 
 ## File Structure
 

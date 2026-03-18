@@ -43,7 +43,7 @@ export default function Layout() {
           `}
           to='/'
         >
-          Pebble UI
+          Ripple UI
         </PrefetchLink>
         <nav>
           <NavigationMenu.Main>

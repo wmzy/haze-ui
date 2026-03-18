@@ -1,4 +1,4 @@
-# Pebble UI
+# Ripple UI
 
 > 一个带有可控状态的 React 组件库。
 
@@ -16,15 +16,15 @@
 ### 安装
 
 ```sh
-npm i pebble-ui
+npm i ripple-ui
 // or
-pnpm add pebble-ui
+pnpm add ripple-ui
 ```
 
 ### 使用
 
 ```jsx
-import { Button } from 'pebble-ui';
+import { Button } from 'ripple-ui';
 
 export default function MyComponent() {
   return (

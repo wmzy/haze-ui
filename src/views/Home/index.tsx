@@ -14,7 +14,7 @@ export default function Home() {
           justify-content: space-between;
         `}
       >
-        <span>Pebble UI</span>
+        <span>Ripple UI</span>
         <nav>
           <ul>
             <li>
@@ -23,7 +23,7 @@ export default function Home() {
           </ul>
         </nav>
       </header>
-      <h1>Welcome to Pebble UI.</h1>
+      <h1>Welcome to Ripple UI.</h1>
       <div
         x-class={css`
           display: flex;
