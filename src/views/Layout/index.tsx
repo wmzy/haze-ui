@@ -1,6 +1,8 @@
 import {css} from '@linaria/core';
 import {Link, PrefetchLink, View} from '@native-router/react';
 
+import {Sun, Moon, Monitor, Palette} from 'lucide-react';
+
 import {
   lightTheme,
   darkTheme,
@@ -11,6 +13,8 @@ import {
   ListItem,
   Disclosure,
   Button,
+  Icon,
+  Tooltip,
   Select,
   Option,
 } from '@/lib';
@@ -34,11 +38,6 @@ const header = css`
   background: var(--haze-color-bg-subtle);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
-`;
-
-const themeLabel = css`
-  color: var(--haze-color-text-secondary);
-  font-size: var(--haze-text-xs);
 `;
 
 const body = css`
@@ -149,29 +148,37 @@ export default function Layout() {
       style={activeCustomThemeStyle}
     >
       <header className={header}>
-        <span className={themeLabel}>Theme</span>
         <Flex gap="var(--haze-space-1)">
-          <Button
-            size="sm"
-            variant={baseTheme === 'light' ? 'solid' : 'ghost'}
-            onClick={() => setBaseTheme('light')}
-          >
-            Light
-          </Button>
-          <Button
-            size="sm"
-            variant={baseTheme === 'dark' ? 'solid' : 'ghost'}
-            onClick={() => setBaseTheme('dark')}
-          >
-            Dark
-          </Button>
-          <Button
-            size="sm"
-            variant={baseTheme === 'auto' ? 'solid' : 'ghost'}
-            onClick={() => setBaseTheme('auto')}
-          >
-            Auto
-          </Button>
+          <Tooltip content="Light">
+            <Button
+              size="sm"
+              square
+              variant={baseTheme === 'light' ? 'solid' : 'ghost'}
+              onClick={() => setBaseTheme('light')}
+            >
+              <Icon icon={Sun} size="sm" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Dark">
+            <Button
+              size="sm"
+              square
+              variant={baseTheme === 'dark' ? 'solid' : 'ghost'}
+              onClick={() => setBaseTheme('dark')}
+            >
+              <Icon icon={Moon} size="sm" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Auto">
+            <Button
+              size="sm"
+              square
+              variant={baseTheme === 'auto' ? 'solid' : 'ghost'}
+              onClick={() => setBaseTheme('auto')}
+            >
+              <Icon icon={Monitor} size="sm" />
+            </Button>
+          </Tooltip>
         </Flex>
         {customThemes.length > 0 && (
           <Select
@@ -185,9 +192,11 @@ export default function Layout() {
             ))}
           </Select>
         )}
-        <Link className={navLink} to="/theme-editor">
-          Theme Editor
-        </Link>
+        <Tooltip content="Theme Editor">
+          <Link className={navLink} to="/theme-editor">
+            <Icon icon={Palette} size="sm" />
+          </Link>
+        </Tooltip>
       </header>
       <div className={body}>
         <aside className={sidebar}>

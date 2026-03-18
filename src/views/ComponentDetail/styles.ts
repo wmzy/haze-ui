@@ -58,3 +58,18 @@ export const labelStyle = css`
   color: var(--haze-color-text);
   cursor: pointer;
 `;
+
+export const codeBlock = css`
+  display: block;
+  background: var(--haze-color-bg-subtle);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  padding: var(--haze-space-3) var(--haze-space-4);
+  font-family: var(--haze-font-mono);
+  font-size: var(--haze-text-xs);
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--haze-color-text);
+  margin: var(--haze-space-2) 0;
+`;

@@ -1,11 +1,12 @@
-import type {ReactNode} from 'react';
+import type {ComponentType, ReactNode, SVGProps} from 'react';
 
 import {css} from '@linaria/core';
 
 type IconProps = {
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 const base = css`
@@ -19,6 +20,13 @@ const base = css`
     width: 100%;
     height: 100%;
     fill: currentColor;
+    stroke: currentColor;
+  }
+`;
+
+const strokeOnly = css`
+  & > svg {
+    fill: none;
   }
 `;
 
@@ -37,14 +45,27 @@ const sizes = {
   `,
 } as const;
 
+function hasStrokeStyle(node: ReactNode): boolean {
+  if (node == null || typeof node !== 'object') return false;
+  if (!('props' in node)) return false;
+  const props = node.props as Record<string, unknown>;
+  if (props.stroke || props.strokeWidth) return true;
+  if (props.fill === 'none') return true;
+  return false;
+}
+
 export default function Icon({
+  icon: IconComponent,
   size = 'md',
   className,
   children,
 }: IconProps) {
+  const content = IconComponent ? <IconComponent /> : children;
+  const isStroke = IconComponent ? true : hasStrokeStyle(content);
+
   return (
-    <span x-class={[base, sizes[size], className]} aria-hidden='true'>
-      {children}
+    <span x-class={[base, isStroke && strokeOnly, sizes[size], className]} aria-hidden='true'>
+      {content}
     </span>
   );
 }

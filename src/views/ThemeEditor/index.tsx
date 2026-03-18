@@ -5,6 +5,8 @@ import type {CustomTheme, ResolvedMode, ThemeTokens} from '@/contexts/theme';
 import {useCallback, useMemo, useRef, useState} from 'react';
 import {css} from '@linaria/core';
 
+import {Pencil, Copy, Download, Trash2, Save, RotateCcw, Upload, Sun, Moon} from 'lucide-react';
+
 import {
   TOKEN_REGISTRY,
   lightTheme,
@@ -15,6 +17,8 @@ import {
   Flex,
   Card,
   Badge,
+  Icon,
+  Tooltip,
   Select as HazeSelect,
   Option,
   Checkbox,
@@ -380,10 +384,26 @@ export default function ThemeEditor() {
                 <span className={themeItemCount}>
                   {countTokens(t.tokens)} overrides
                 </span>
-                <Button size="sm" variant="ghost" onClick={() => handleEdit(t)}>Edit</Button>
-                <Button size="sm" variant="ghost" onClick={() => handleDuplicate(t)}>Duplicate</Button>
-                <Button size="sm" variant="ghost" onClick={() => handleExport(t)}>Export</Button>
-                <Button size="sm" variant="ghost" onClick={() => handleDelete(t.id)}>Delete</Button>
+                <Tooltip content="Edit">
+                  <Button size="sm" square variant="ghost" onClick={() => handleEdit(t)}>
+                    <Icon icon={Pencil} size="sm" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Duplicate">
+                  <Button size="sm" square variant="ghost" onClick={() => handleDuplicate(t)}>
+                    <Icon icon={Copy} size="sm" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Export">
+                  <Button size="sm" square variant="ghost" onClick={() => handleExport(t)}>
+                    <Icon icon={Download} size="sm" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <Button size="sm" square variant="ghost" onClick={() => handleDelete(t.id)}>
+                    <Icon icon={Trash2} size="sm" />
+                  </Button>
+                </Tooltip>
               </div>
             ))}
           </div>
@@ -398,13 +418,21 @@ export default function ThemeEditor() {
           value={themeName}
           onChange={(e) => setThemeName(e.target.value)}
         />
-        <Button size="sm" onClick={handleSave}>
-          {editingId ? 'Update Theme' : 'Save Theme'}
-        </Button>
-        <Button size="sm" variant="outline" onClick={resetAll}>Reset All</Button>
-        <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-          Import
-        </Button>
+        <Tooltip content={editingId ? 'Update Theme' : 'Save Theme'}>
+          <Button size="sm" square onClick={handleSave}>
+            <Icon icon={Save} size="sm" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Reset All">
+          <Button size="sm" square variant="outline" onClick={resetAll}>
+            <Icon icon={RotateCcw} size="sm" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Import">
+          <Button size="sm" square variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Icon icon={Upload} size="sm" />
+          </Button>
+        </Tooltip>
         <input
           ref={fileInputRef}
           type="file"
@@ -415,15 +443,16 @@ export default function ThemeEditor() {
       </div>
 
       <div className={modeToggle}>
-        <span style={{fontSize: 'var(--haze-text-xs)', color: 'var(--haze-color-text-muted)', marginRight: 'var(--haze-space-2)', alignSelf: 'center'}}>
-          Mode:
-        </span>
-        <Button size="sm" variant={activeMode === 'light' ? 'solid' : 'ghost'} onClick={() => setActiveMode('light')}>
-          Light
-        </Button>
-        <Button size="sm" variant={activeMode === 'dark' ? 'solid' : 'ghost'} onClick={() => setActiveMode('dark')}>
-          Dark
-        </Button>
+        <Tooltip content="Light mode">
+          <Button size="sm" square variant={activeMode === 'light' ? 'solid' : 'ghost'} onClick={() => setActiveMode('light')}>
+            <Icon icon={Sun} size="sm" />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Dark mode">
+          <Button size="sm" square variant={activeMode === 'dark' ? 'solid' : 'ghost'} onClick={() => setActiveMode('dark')}>
+            <Icon icon={Moon} size="sm" />
+          </Button>
+        </Tooltip>
       </div>
 
       <div className={editorGrid}>

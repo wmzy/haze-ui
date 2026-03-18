@@ -85,6 +85,7 @@
     "jsdom": "^29.0.0",
     "json-schema-faker": "^0.6.0",
     "lint-staged": "^16.4.0",
+    "lucide-react": "^0.563.0",
     "prettier": "^3.8.1",
     "qss": "^3.0.0",
     "ramda": "^0.32.0",

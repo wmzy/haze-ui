@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 type ButtonProps = {
   variant?: 'solid' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
+  square?: boolean;
 } & Omit<ComponentPropsWithoutRef<'button'>, 'type'>;
 
 const base = css`
@@ -93,16 +94,33 @@ const sizes = {
   `,
 } as const;
 
+const squareSizes = {
+  sm: css`
+    padding: var(--haze-space-1);
+    font-size: var(--haze-text-sm);
+  `,
+  md: css`
+    padding: var(--haze-space-2);
+    font-size: var(--haze-text-sm);
+  `,
+  lg: css`
+    padding: var(--haze-space-3);
+    font-size: var(--haze-text-base);
+  `,
+} as const;
+
 export default function Button({
   variant = 'solid',
   size = 'md',
+  square = false,
   className,
   ...rest
 }: ButtonProps) {
+  const sizeClass = square ? squareSizes[size] : sizes[size];
   return (
     <button
       type='button'
-      x-class={[base, variants[variant], sizes[size], className]}
+      x-class={[base, variants[variant], sizeClass, className]}
       {...rest}
     />
   );

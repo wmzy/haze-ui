@@ -62,7 +62,7 @@ import {
 import PropsTable from './PropsTable';
 import A11yNote from './A11yNote';
 import TokensTable from './TokensTable';
-import { page, intro, section, row, fieldRow, labelStyle } from './styles';
+import { page, intro, section, row, fieldRow, labelStyle, codeBlock } from './styles';
 
 function CssVarsSection({component}: {component: string}) {
   const tokens = COMPONENT_TOKENS[component];
@@ -72,6 +72,29 @@ function CssVarsSection({component}: {component: string}) {
       <h2>CSS Variables</h2>
       <TokensTable tokens={tokens} />
     </div>
+  );
+}
+
+// ─── Shared SVG helpers ─────────────────────────────────────────
+
+function StrokeSvg() {
+  return (
+    <svg viewBox='0 0 24 24'>
+      <path
+        d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2'
+      />
+    </svg>
+  );
+}
+
+function FillSvg() {
+  return (
+    <svg viewBox='0 0 24 24'>
+      <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' />
+    </svg>
   );
 }
 
@@ -98,6 +121,30 @@ function ButtonDemo() {
           <Button size='sm'>Small</Button>
           <Button size='md'>Medium</Button>
           <Button size='lg'>Large</Button>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Square (Icon Button)</h2>
+        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
+          Use <code>square</code> for icon-only buttons with equal padding on all sides.
+        </p>
+        <div className={row}>
+          <Button size='sm' square variant='solid'>
+            <Icon size='sm'><StrokeSvg /></Icon>
+          </Button>
+          <Button size='md' square variant='solid'>
+            <Icon size='sm'><StrokeSvg /></Icon>
+          </Button>
+          <Button size='lg' square variant='solid'>
+            <Icon size='md'><StrokeSvg /></Icon>
+          </Button>
+          <Button size='sm' square variant='outline'>
+            <Icon size='sm'><StrokeSvg /></Icon>
+          </Button>
+          <Button size='sm' square variant='ghost'>
+            <Icon size='sm'><StrokeSvg /></Icon>
+          </Button>
         </div>
       </div>
 
@@ -129,6 +176,12 @@ function ButtonDemo() {
               type: "'sm' | 'md' | 'lg'",
               default: "'md'",
               description: 'Size of the button',
+            },
+            {
+              name: 'square',
+              type: 'boolean',
+              default: 'false',
+              description: 'Equal padding on all sides, ideal for icon-only buttons',
             },
             {
               name: 'disabled',
@@ -1811,42 +1864,104 @@ function IconDemo() {
       <h1>Icon</h1>
       <p className={intro}>
         Wrapper for SVG icons with consistent sizing and color inheritance.
+        Works with both fill-based and stroke-based SVGs, and integrates
+        seamlessly with community icon libraries like Lucide, React Icons,
+        and Phosphor.
       </p>
 
       <div className={section}>
         <h2>Sizes</h2>
         <div className={row}>
           <Icon size='sm'>
-            <svg viewBox='0 0 24 24'>
-              <path
-                d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-              />
-            </svg>
+            <StrokeSvg />
           </Icon>
           <Icon size='md'>
-            <svg viewBox='0 0 24 24'>
-              <path
-                d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-              />
-            </svg>
+            <StrokeSvg />
           </Icon>
           <Icon size='lg'>
-            <svg viewBox='0 0 24 24'>
-              <path
-                d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-              />
-            </svg>
+            <StrokeSvg />
           </Icon>
         </div>
+      </div>
+
+      <div className={section}>
+        <h2>Fill vs Stroke</h2>
+        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
+          Icon auto-detects stroke-based SVGs (those with <code>fill=&quot;none&quot;</code> or <code>stroke</code> attributes)
+          and adjusts rendering accordingly. Fill-based SVGs work out of the box.
+        </p>
+        <div className={row}>
+          <Flex gap='var(--haze-space-4)' style={{alignItems: 'center'}}>
+            <Flex gap='var(--haze-space-2)' style={{alignItems: 'center'}}>
+              <Icon size='lg'><StrokeSvg /></Icon>
+              <span style={{fontSize: 'var(--haze-text-xs)', color: 'var(--haze-color-text-muted)'}}>Stroke</span>
+            </Flex>
+            <Flex gap='var(--haze-space-2)' style={{alignItems: 'center'}}>
+              <Icon size='lg'><FillSvg /></Icon>
+              <span style={{fontSize: 'var(--haze-text-xs)', color: 'var(--haze-color-text-muted)'}}>Fill</span>
+            </Flex>
+          </Flex>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Using the <code>icon</code> Prop</h2>
+        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
+          Pass a component directly via the <code>icon</code> prop instead of wrapping it in children.
+          When using <code>icon</code>, stroke mode is enabled by default to work with most community icon libraries.
+        </p>
+        <div className={row}>
+          <Icon icon={StrokeSvg} size='sm' />
+          <Icon icon={StrokeSvg} size='md' />
+          <Icon icon={StrokeSvg} size='lg' />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Community Icon Libraries</h2>
+        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
+          Haze UI Icon is designed as a thin wrapper — it does not bundle any icons.
+          Instead, pair it with your preferred icon library:
+        </p>
+
+        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+          Lucide React
+        </h3>
+        <pre className={codeBlock}>{`import { Search, ChevronDown } from 'lucide-react';
+import { Icon } from 'haze-ui';
+
+// Using icon prop (recommended)
+<Icon icon={Search} size="md" />
+
+// Using children
+<Icon size="sm"><Search /></Icon>`}</pre>
+
+        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+          React Icons
+        </h3>
+        <pre className={codeBlock}>{`import { FiSearch, FiChevronDown } from 'react-icons/fi';
+import { Icon } from 'haze-ui';
+
+<Icon size="md"><FiSearch /></Icon>`}</pre>
+
+        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+          Phosphor Icons
+        </h3>
+        <pre className={codeBlock}>{`import { MagnifyingGlass } from '@phosphor-icons/react';
+import { Icon } from 'haze-ui';
+
+<Icon icon={MagnifyingGlass} size="md" />`}</pre>
+
+        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+          Inline SVG
+        </h3>
+        <pre className={codeBlock}>{`import { Icon } from 'haze-ui';
+
+<Icon size="lg">
+  <svg viewBox="0 0 24 24">
+    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+  </svg>
+</Icon>`}</pre>
       </div>
 
       <div className={section}>
@@ -1854,17 +1969,22 @@ function IconDemo() {
         <PropsTable
           props={[
             {
+              name: 'icon',
+              type: 'ComponentType<SVGProps<SVGSVGElement>>',
+              description: 'SVG component to render (alternative to children). Stroke mode is auto-enabled.',
+            },
+            {
               name: 'size',
               type: "'sm' | 'md' | 'lg'",
               default: "'md'",
-              description: 'Icon size',
+              description: 'Icon size (16px / 20px / 24px)',
             },
             {
               name: 'className',
               type: 'string',
               description: 'Additional CSS class',
             },
-            { name: 'children', type: 'ReactNode', description: 'SVG element' },
+            { name: 'children', type: 'ReactNode', description: 'SVG element (used when icon prop is not provided)' },
           ]}
         />
       </div>
