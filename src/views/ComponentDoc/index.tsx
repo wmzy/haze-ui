@@ -1,5 +1,5 @@
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
 import {
   lightTheme,
@@ -55,57 +55,57 @@ import {
 } from '@/lib';
 
 const page = css`
-  padding: var(--pbl-space-8);
+  padding: var(--haze-space-8);
   max-width: 960px;
 
   h1 {
-    font-size: var(--pbl-text-3xl);
-    font-weight: var(--pbl-weight-bold);
-    margin: 0 0 var(--pbl-space-8);
+    font-size: var(--haze-text-3xl);
+    font-weight: var(--haze-weight-bold);
+    margin: 0 0 var(--haze-space-8);
   }
 `;
 
 const section = css`
-  margin-bottom: var(--pbl-space-10);
+  margin-bottom: var(--haze-space-10);
 
   h2 {
-    font-size: var(--pbl-text-xl);
-    font-weight: var(--pbl-weight-semibold);
-    margin: 0 0 var(--pbl-space-4);
-    padding-bottom: var(--pbl-space-2);
-    border-bottom: 1px solid var(--pbl-color-border);
+    font-size: var(--haze-text-xl);
+    font-weight: var(--haze-weight-semibold);
+    margin: 0 0 var(--haze-space-4);
+    padding-bottom: var(--haze-space-2);
+    border-bottom: 1px solid var(--haze-color-border);
   }
 
   h3 {
-    font-size: var(--pbl-text-base);
-    font-weight: var(--pbl-weight-medium);
-    color: var(--pbl-color-text-secondary);
-    margin: var(--pbl-space-4) 0 var(--pbl-space-2);
+    font-size: var(--haze-text-base);
+    font-weight: var(--haze-weight-medium);
+    color: var(--haze-color-text-secondary);
+    margin: var(--haze-space-4) 0 var(--haze-space-2);
   }
 `;
 
 const row = css`
   display: flex;
   align-items: center;
-  gap: var(--pbl-space-3);
+  gap: var(--haze-space-3);
   flex-wrap: wrap;
-  margin-bottom: var(--pbl-space-4);
+  margin-bottom: var(--haze-space-4);
 `;
 
 const fieldRow = css`
   display: flex;
   align-items: center;
-  gap: var(--pbl-space-3);
-  margin-bottom: var(--pbl-space-4);
+  gap: var(--haze-space-3);
+  margin-bottom: var(--haze-space-4);
   max-width: 320px;
 `;
 
 const label = css`
   display: flex;
   align-items: center;
-  gap: var(--pbl-space-2);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text);
+  gap: var(--haze-space-2);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text);
   cursor: pointer;
 `;
 
@@ -136,11 +136,19 @@ function InputSection() {
     <div className={section} id='input'>
       <h2>Input</h2>
       <h3>Sizes</h3>
-      <div className={fieldRow}><Input size='sm' placeholder='Small' /></div>
-      <div className={fieldRow}><Input size='md' placeholder='Medium' /></div>
-      <div className={fieldRow}><Input size='lg' placeholder='Large' /></div>
+      <div className={fieldRow}>
+        <Input size='sm' placeholder='Small' />
+      </div>
+      <div className={fieldRow}>
+        <Input size='md' placeholder='Medium' />
+      </div>
+      <div className={fieldRow}>
+        <Input size='lg' placeholder='Large' />
+      </div>
       <h3>Controlled</h3>
-      <div className={fieldRow}><Input value={valueCtrl} placeholder='Type here...' /></div>
+      <div className={fieldRow}>
+        <Input value={valueCtrl} placeholder='Type here...' />
+      </div>
     </div>
   );
 }
@@ -165,8 +173,12 @@ function CheckboxSection() {
     <div className={section} id='checkbox'>
       <h2>Checkbox</h2>
       <div className={row}>
-        <label className={label}><Checkbox /> Unchecked</label>
-        <label className={label}><Checkbox checked /> Checked</label>
+        <label className={label}>
+          <Checkbox /> Unchecked
+        </label>
+        <label className={label}>
+          <Checkbox checked /> Checked
+        </label>
       </div>
     </div>
   );
@@ -211,8 +223,10 @@ function DialogSection() {
         <Button onClick={() => setOpen(true)}>Open Dialog</Button>
       </div>
       <Dialog open={openCtrl} onClose={() => setOpen(false)}>
-        <p style={{margin: 0}}>Modal dialog content. Press ESC to close.</p>
-        <Button onClick={() => setOpen(false)} size='sm' variant='outline'>Close</Button>
+        <p style={{ margin: 0 }}>Modal dialog content. Press ESC to close.</p>
+        <Button onClick={() => setOpen(false)} size='sm' variant='outline'>
+          Close
+        </Button>
       </Dialog>
     </div>
   );
@@ -251,18 +265,42 @@ function CardSection() {
   return (
     <div className={section} id='card'>
       <h2>Card</h2>
-      <div className={row} style={{alignItems: 'stretch'}}>
+      <div className={row} style={{ alignItems: 'stretch' }}>
         <Card variant='elevated'>
           <strong>Elevated</strong>
-          <p style={{margin: '4px 0 0', fontSize: 'var(--pbl-text-sm)', color: 'var(--pbl-color-text-secondary)'}}>Shadow card</p>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Shadow card
+          </p>
         </Card>
         <Card variant='outlined'>
           <strong>Outlined</strong>
-          <p style={{margin: '4px 0 0', fontSize: 'var(--pbl-text-sm)', color: 'var(--pbl-color-text-secondary)'}}>Border card</p>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Border card
+          </p>
         </Card>
         <Card variant='filled'>
           <strong>Filled</strong>
-          <p style={{margin: '4px 0 0', fontSize: 'var(--pbl-text-sm)', color: 'var(--pbl-color-text-secondary)'}}>Background card</p>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Background card
+          </p>
         </Card>
       </div>
     </div>
@@ -338,7 +376,14 @@ function AlertSection() {
   return (
     <div className={section} id='alert'>
       <h2>Alert</h2>
-      <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--pbl-space-2)', maxWidth: 480}}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--haze-space-2)',
+          maxWidth: 480,
+        }}
+      >
         <Alert variant='info'>Informational alert.</Alert>
         <Alert variant='success'>Success alert.</Alert>
         <Alert variant='warning'>Warning alert.</Alert>
@@ -371,7 +416,9 @@ function TagSection() {
         <Tag variant='primary'>Primary</Tag>
         <Tag variant='success'>Success</Tag>
         <Tag variant='warning'>Warning</Tag>
-        <Tag variant='danger' closable>Closable</Tag>
+        <Tag variant='danger' closable>
+          Closable
+        </Tag>
       </div>
     </div>
   );
@@ -381,9 +428,23 @@ function SkeletonSection() {
   return (
     <div className={section} id='skeleton'>
       <h2>Skeleton</h2>
-      <div style={{display: 'flex', gap: 'var(--pbl-space-3)', alignItems: 'center', maxWidth: 320}}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--haze-space-3)',
+          alignItems: 'center',
+          maxWidth: 320,
+        }}
+      >
         <Skeleton variant='circular' width={40} height={40} />
-        <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--pbl-space-1)'}}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--haze-space-1)',
+          }}
+        >
           <Skeleton variant='text' width='60%' />
           <Skeleton variant='text' width='80%' />
         </div>
@@ -397,9 +458,36 @@ function IconSection() {
     <div className={section} id='icon'>
       <h2>Icon</h2>
       <div className={row}>
-        <Icon size='sm'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
-        <Icon size='md'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
-        <Icon size='lg'><svg viewBox='0 0 24 24'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' fill='none' stroke='currentColor' strokeWidth='2'/></svg></Icon>
+        <Icon size='sm'>
+          <svg viewBox='0 0 24 24'>
+            <path
+              d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+            />
+          </svg>
+        </Icon>
+        <Icon size='md'>
+          <svg viewBox='0 0 24 24'>
+            <path
+              d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+            />
+          </svg>
+        </Icon>
+        <Icon size='lg'>
+          <svg viewBox='0 0 24 24'>
+            <path
+              d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+            />
+          </svg>
+        </Icon>
       </div>
     </div>
   );
@@ -409,7 +497,7 @@ function FlexSection() {
   return (
     <div className={section} id='flex'>
       <h2>Flex</h2>
-      <Flex gap='var(--pbl-space-3)' align='center'>
+      <Flex gap='var(--haze-space-3)' align='center'>
         <Badge>Item 1</Badge>
         <Badge variant='success'>Item 2</Badge>
         <Badge variant='info'>Item 3</Badge>
@@ -435,7 +523,7 @@ function DisclosureSection() {
   return (
     <div className={section} id='disclosure'>
       <h2>Disclosure</h2>
-      <div style={{maxWidth: 480}}>
+      <div style={{ maxWidth: 480 }}>
         <Disclosure summary='Click to expand'>
           Hidden content revealed on toggle.
         </Disclosure>
@@ -487,8 +575,15 @@ function ToastSectionInner() {
     <div className={section} id='toast'>
       <h2>Toast</h2>
       <div className={row}>
-        <Button variant='outline' onClick={() => toast('Hello!')}>Show Toast</Button>
-        <Button variant='outline' onClick={() => toast('Done!', {variant: 'success'})}>Success</Button>
+        <Button variant='outline' onClick={() => toast('Hello!')}>
+          Show Toast
+        </Button>
+        <Button
+          variant='outline'
+          onClick={() => toast('Done!', { variant: 'success' })}
+        >
+          Success
+        </Button>
       </div>
     </div>
   );
@@ -520,7 +615,14 @@ function ComboboxSection() {
     <div className={section} id='combobox'>
       <h2>Combobox</h2>
       <div className={fieldRow}>
-        <Combobox options={[{value: 'apple', label: 'Apple'}, {value: 'banana', label: 'Banana'}, {value: 'cherry', label: 'Cherry'}]} placeholder='Search...' />
+        <Combobox
+          options={[
+            { value: 'apple', label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' },
+          ]}
+          placeholder='Search...'
+        />
       </div>
     </div>
   );
@@ -532,11 +634,20 @@ function TableSection() {
       <h2>Table</h2>
       <Table striped>
         <TableHead>
-          <TableRow><TableCell as='th'>Name</TableCell><TableCell as='th'>Role</TableCell></TableRow>
+          <TableRow>
+            <TableCell as='th'>Name</TableCell>
+            <TableCell as='th'>Role</TableCell>
+          </TableRow>
         </TableHead>
         <TableBody>
-          <TableRow><TableCell>Alice</TableCell><TableCell>Engineer</TableCell></TableRow>
-          <TableRow><TableCell>Bob</TableCell><TableCell>Designer</TableCell></TableRow>
+          <TableRow>
+            <TableCell>Alice</TableCell>
+            <TableCell>Engineer</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Bob</TableCell>
+            <TableCell>Designer</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
     </div>
@@ -547,10 +658,36 @@ function CarouselSection() {
   return (
     <div className={section} id='carousel'>
       <h2>Carousel</h2>
-      <div style={{maxWidth: 400}}>
+      <div style={{ maxWidth: 400 }}>
         <Carousel>
-          <CarouselSlide><div style={{height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-subtle)', borderRadius: 'var(--pbl-radius-md)'}}>Slide 1</div></CarouselSlide>
-          <CarouselSlide><div style={{height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pbl-color-bg-muted)', borderRadius: 'var(--pbl-radius-md)'}}>Slide 2</div></CarouselSlide>
+          <CarouselSlide>
+            <div
+              style={{
+                height: 120,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--haze-color-bg-subtle)',
+                borderRadius: 'var(--haze-radius-md)',
+              }}
+            >
+              Slide 1
+            </div>
+          </CarouselSlide>
+          <CarouselSlide>
+            <div
+              style={{
+                height: 120,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--haze-color-bg-muted)',
+                borderRadius: 'var(--haze-radius-md)',
+              }}
+            >
+              Slide 2
+            </div>
+          </CarouselSlide>
         </Carousel>
       </div>
     </div>

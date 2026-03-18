@@ -1,7 +1,7 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {Children} from 'react';
+import { css } from '@linaria/core';
+import { Children } from 'react';
 
 type BreadcrumbProps = {
   separator?: ReactNode;
@@ -10,21 +10,21 @@ type BreadcrumbProps = {
 };
 
 const nav = css`
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
 `;
 
 const list = css`
   display: flex;
   align-items: center;
-  gap: var(--pbl-space-2);
+  gap: var(--haze-space-2);
   list-style: none;
   margin: 0;
   padding: 0;
 `;
 
 const sep = css`
-  color: var(--pbl-color-text-muted);
+  color: var(--haze-color-text-muted);
   user-select: none;
 `;
 
@@ -39,9 +39,16 @@ export default function Breadcrumb({
     <nav aria-label='Breadcrumb' x-class={[nav, className]}>
       <ol className={list}>
         {items.map((child, i) => (
-          <li key={i} aria-current={i === items.length - 1 ? 'page' : undefined}>
+          <li
+            key={i}
+            aria-current={i === items.length - 1 ? 'page' : undefined}
+          >
             {child}
-            {i < items.length - 1 && <span className={sep} aria-hidden='true'>{separator}</span>}
+            {i < items.length - 1 && (
+              <span className={sep} aria-hidden='true'>
+                {separator}
+              </span>
+            )}
           </li>
         ))}
       </ol>
@@ -49,4 +56,4 @@ export default function Breadcrumb({
   );
 }
 
-export type {BreadcrumbProps};
+export type { BreadcrumbProps };

@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type CardProps = {
   variant?: 'elevated' | 'outlined' | 'filled';
@@ -9,23 +9,23 @@ type CardProps = {
 };
 
 const base = css`
-  border-radius: var(--pbl-radius-lg);
-  padding: var(--pbl-space-5);
-  font-family: var(--pbl-font-sans);
-  color: var(--pbl-color-text);
+  border-radius: var(--haze-radius-lg);
+  padding: var(--haze-space-5);
+  font-family: var(--haze-font-sans);
+  color: var(--haze-color-text);
 `;
 
 const variants = {
   elevated: css`
-    background: var(--pbl-color-bg);
-    box-shadow: var(--pbl-shadow-md);
+    background: var(--haze-color-bg);
+    box-shadow: var(--haze-shadow-md);
   `,
   outlined: css`
-    background: var(--pbl-color-bg);
-    border: 1px solid var(--pbl-color-border);
+    background: var(--haze-color-bg);
+    border: 1px solid var(--haze-color-border);
   `,
   filled: css`
-    background: var(--pbl-color-bg-subtle);
+    background: var(--haze-color-bg-subtle);
   `,
 } as const;
 
@@ -34,11 +34,7 @@ export default function Card({
   className,
   children,
 }: CardProps) {
-  return (
-    <div x-class={[base, variants[variant], className]}>
-      {children}
-    </div>
-  );
+  return <div x-class={[base, variants[variant], className]}>{children}</div>;
 }
 
-export type {CardProps};
+export type { CardProps };

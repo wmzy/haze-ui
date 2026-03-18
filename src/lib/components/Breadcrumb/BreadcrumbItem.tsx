@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type BreadcrumbItemProps = {
   href?: string;
@@ -9,25 +9,25 @@ type BreadcrumbItemProps = {
 };
 
 const link = css`
-  color: var(--pbl-color-primary);
+  color: var(--haze-color-primary);
   text-decoration: none;
   transition: color 0.15s;
 
   &:hover {
-    color: var(--pbl-color-primary-hover);
+    color: var(--haze-color-primary-hover);
     text-decoration: underline;
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
-    border-radius: var(--pbl-radius-sm);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+    border-radius: var(--haze-radius-sm);
   }
 `;
 
 const current = css`
-  color: var(--pbl-color-text);
-  font-weight: var(--pbl-weight-medium);
+  color: var(--haze-color-text);
+  font-weight: var(--haze-weight-medium);
 `;
 
 export default function BreadcrumbItem({
@@ -36,10 +36,12 @@ export default function BreadcrumbItem({
   children,
 }: BreadcrumbItemProps) {
   return href ? (
-    <a href={href} x-class={[link, className]}>{children}</a>
+    <a href={href} x-class={[link, className]}>
+      {children}
+    </a>
   ) : (
     <span x-class={[current, className]}>{children}</span>
   );
 }
 
-export type {BreadcrumbItemProps};
+export type { BreadcrumbItemProps };

@@ -1,10 +1,10 @@
-import type {ReactNode} from 'react';
-import type {Control} from 'react-use-control';
+import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
-import {TabsProvider} from './TabsContext';
+import { TabsProvider } from './TabsContext';
 
 type TabsProps = {
   value?: Control<string> | string;
@@ -15,7 +15,7 @@ type TabsProps = {
 const base = css`
   display: flex;
   flex-direction: column;
-  font-family: var(--pbl-font-sans);
+  font-family: var(--haze-font-sans);
 `;
 
 export default function Tabs({
@@ -27,11 +27,9 @@ export default function Tabs({
 
   return (
     <div x-class={[base, className]}>
-      <TabsProvider value={{value, setValue}}>
-        {children}
-      </TabsProvider>
+      <TabsProvider value={{ value, setValue }}>{children}</TabsProvider>
     </div>
   );
 }
 
-export type {TabsProps};
+export type { TabsProps };

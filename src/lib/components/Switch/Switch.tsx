@@ -1,8 +1,8 @@
-import type {ComponentPropsWithoutRef} from 'react';
-import type {Control} from 'react-use-control';
+import type { ComponentPropsWithoutRef } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
 type SwitchProps = {
   checked?: Control<boolean> | boolean;
@@ -14,15 +14,15 @@ const track = css`
   display: inline-flex;
   align-items: center;
   border: none;
-  border-radius: var(--pbl-radius-full);
-  background: var(--pbl-color-bg-muted);
+  border-radius: var(--haze-radius-full);
+  background: var(--haze-color-bg-muted);
   cursor: pointer;
   padding: 2px;
   transition: background 0.2s;
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {
@@ -32,15 +32,15 @@ const track = css`
 `;
 
 const trackChecked = css`
-  background: var(--pbl-color-primary);
+  background: var(--haze-color-primary);
 `;
 
 const thumb = css`
   display: block;
-  border-radius: var(--pbl-radius-full);
+  border-radius: var(--haze-radius-full);
   background: white;
   transition: transform 0.2s;
-  box-shadow: var(--pbl-shadow-sm);
+  box-shadow: var(--haze-shadow-sm);
 `;
 
 const trackSizes = {
@@ -92,7 +92,10 @@ export default function Switch({
   onClick,
   ...rest
 }: SwitchProps) {
-  const [checked, setChecked] = useControl(checkedControl as Control<boolean>, false);
+  const [checked, setChecked] = useControl(
+    checkedControl as Control<boolean>,
+    false
+  );
 
   return (
     <button
@@ -107,14 +110,10 @@ export default function Switch({
       {...rest}
     >
       <span
-        x-class={[
-          thumb,
-          thumbSizes[size],
-          checked && thumbCheckedSizes[size],
-        ]}
+        x-class={[thumb, thumbSizes[size], checked && thumbCheckedSizes[size]]}
       />
     </button>
   );
 }
 
-export type {SwitchProps};
+export type { SwitchProps };

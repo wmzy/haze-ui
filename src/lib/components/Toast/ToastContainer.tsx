@@ -1,11 +1,11 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {useState, useCallback, useRef} from 'react';
+import { css } from '@linaria/core';
+import { useState, useCallback, useRef } from 'react';
 
 import Toast from './Toast';
-import {ToastProvider} from './ToastContext';
-import type {ToastItem} from './ToastContext';
+import { ToastProvider } from './ToastContext';
+import type { ToastItem } from './ToastContext';
 
 type ToastContainerProps = {
   children: ReactNode;
@@ -13,22 +13,22 @@ type ToastContainerProps = {
 
 const container = css`
   position: fixed;
-  bottom: var(--pbl-space-4);
-  right: var(--pbl-space-4);
+  bottom: var(--haze-space-4);
+  right: var(--haze-space-4);
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: var(--pbl-space-2);
+  gap: var(--haze-space-2);
   pointer-events: none;
 `;
 
-export default function ToastContainer({children}: ToastContainerProps) {
+export default function ToastContainer({ children }: ToastContainerProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const counterRef = useRef(0);
 
   const addToast = useCallback((toast: Omit<ToastItem, 'id'>) => {
     counterRef.current += 1;
-    setToasts((prev) => [...prev, {...toast, id: counterRef.current}]);
+    setToasts((prev) => [...prev, { ...toast, id: counterRef.current }]);
   }, []);
 
   const removeToast = useCallback((id: number) => {
@@ -36,7 +36,7 @@ export default function ToastContainer({children}: ToastContainerProps) {
   }, []);
 
   return (
-    <ToastProvider value={{toasts, addToast, removeToast}}>
+    <ToastProvider value={{ toasts, addToast, removeToast }}>
       {children}
       <div className={container}>
         {toasts.map((t) => (
@@ -54,4 +54,4 @@ export default function ToastContainer({children}: ToastContainerProps) {
   );
 }
 
-export type {ToastContainerProps};
+export type { ToastContainerProps };

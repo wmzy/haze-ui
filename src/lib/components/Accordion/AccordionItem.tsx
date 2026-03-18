@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type AccordionItemProps = {
   title: ReactNode;
@@ -9,10 +9,10 @@ type AccordionItemProps = {
 };
 
 const item = css`
-  border-bottom: 1px solid var(--pbl-color-border);
+  border-bottom: 1px solid var(--haze-color-border);
 
   &:first-of-type {
-    border-top: 1px solid var(--pbl-color-border);
+    border-top: 1px solid var(--haze-color-border);
   }
 `;
 
@@ -20,23 +20,23 @@ const summary = css`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--pbl-space-3) var(--pbl-space-4);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  font-weight: var(--pbl-weight-medium);
-  color: var(--pbl-color-text);
+  padding: var(--haze-space-3) var(--haze-space-4);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  font-weight: var(--haze-weight-medium);
+  color: var(--haze-color-text);
   cursor: pointer;
   list-style: none;
   user-select: none;
   transition: background 0.15s;
 
   &:hover {
-    background: var(--pbl-color-bg-subtle);
+    background: var(--haze-color-bg-subtle);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &::marker,
@@ -48,8 +48,8 @@ const summary = css`
     content: '';
     width: 8px;
     height: 8px;
-    border-right: 2px solid var(--pbl-color-text-muted);
-    border-bottom: 2px solid var(--pbl-color-text-muted);
+    border-right: 2px solid var(--haze-color-text-muted);
+    border-bottom: 2px solid var(--haze-color-text-muted);
     transform: rotate(-45deg);
     transition: transform 0.2s;
     flex-shrink: 0;
@@ -61,11 +61,11 @@ const summary = css`
 `;
 
 const content = css`
-  padding: 0 var(--pbl-space-4) var(--pbl-space-4);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text-secondary);
-  line-height: var(--pbl-leading-normal);
+  padding: 0 var(--haze-space-4) var(--haze-space-4);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text-secondary);
+  line-height: var(--haze-leading-normal);
 `;
 
 export default function AccordionItem({
@@ -81,4 +81,4 @@ export default function AccordionItem({
   );
 }
 
-export type {AccordionItemProps};
+export type { AccordionItemProps };

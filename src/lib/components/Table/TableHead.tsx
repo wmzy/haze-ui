@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type TableHeadProps = {
   className?: string;
@@ -8,18 +8,18 @@ type TableHeadProps = {
 };
 
 const head = css`
-  border-bottom: 2px solid var(--pbl-color-border);
+  border-bottom: 2px solid var(--haze-color-border);
 
   & th {
     text-align: left;
-    padding: var(--pbl-space-2) var(--pbl-space-3);
-    font-weight: var(--pbl-weight-semibold);
-    color: var(--pbl-color-text);
+    padding: var(--haze-space-2) var(--haze-space-3);
+    font-weight: var(--haze-weight-semibold);
+    color: var(--haze-color-text);
   }
 `;
 
-export default function TableHead({className, children}: TableHeadProps) {
+export default function TableHead({ className, children }: TableHeadProps) {
   return <thead x-class={[head, className]}>{children}</thead>;
 }
 
-export type {TableHeadProps};
+export type { TableHeadProps };

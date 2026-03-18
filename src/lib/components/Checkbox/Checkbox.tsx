@@ -1,8 +1,8 @@
-import type {ComponentPropsWithoutRef} from 'react';
-import type {Control} from 'react-use-control';
+import type { ComponentPropsWithoutRef } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
 type CheckboxProps = {
   checked?: Control<boolean> | boolean;
@@ -12,26 +12,29 @@ const base = css`
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-sm);
-  background: var(--pbl-color-bg);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-sm);
+  background: var(--haze-color-bg);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
   flex-shrink: 0;
   position: relative;
 
   &:hover {
-    border-color: var(--pbl-color-border-hover);
+    border-color: var(--haze-color-border-hover);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:checked {
-    background: var(--pbl-color-primary);
-    border-color: var(--pbl-color-primary);
+    background: var(--haze-color-primary);
+    border-color: var(--haze-color-primary);
   }
 
   &:checked::after {
@@ -41,7 +44,7 @@ const base = css`
     left: 5px;
     width: 5px;
     height: 9px;
-    border: solid var(--pbl-color-text-inverse);
+    border: solid var(--haze-color-text-inverse);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
@@ -58,7 +61,10 @@ export default function Checkbox({
   onChange,
   ...rest
 }: CheckboxProps) {
-  const [checked, setChecked] = useControl(checkedControl as Control<boolean>, false);
+  const [checked, setChecked] = useControl(
+    checkedControl as Control<boolean>,
+    false
+  );
 
   return (
     <input
@@ -74,4 +80,4 @@ export default function Checkbox({
   );
 }
 
-export type {CheckboxProps};
+export type { CheckboxProps };

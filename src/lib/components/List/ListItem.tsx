@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type ListItemProps = {
   className?: string;
@@ -8,11 +8,11 @@ type ListItemProps = {
 };
 
 const item = css`
-  padding: var(--pbl-space-1) 0;
+  padding: var(--haze-space-1) 0;
 `;
 
-export default function ListItem({className, children}: ListItemProps) {
+export default function ListItem({ className, children }: ListItemProps) {
   return <li x-class={[item, className]}>{children}</li>;
 }
 
-export type {ListItemProps};
+export type { ListItemProps };

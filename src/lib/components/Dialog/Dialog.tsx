@@ -1,9 +1,9 @@
-import type {ReactNode} from 'react';
-import type {Control} from 'react-use-control';
+import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useEffect, useRef} from 'react';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useEffect, useRef } from 'react';
+import { useControl } from 'react-use-control';
 
 type DialogProps = {
   open?: Control<boolean> | boolean;
@@ -14,12 +14,12 @@ type DialogProps = {
 
 const overlay = css`
   border: none;
-  border-radius: var(--pbl-radius-xl);
-  padding: var(--pbl-space-6);
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  box-shadow: var(--pbl-shadow-xl);
+  border-radius: var(--haze-radius-xl);
+  padding: var(--haze-space-6);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  box-shadow: var(--haze-shadow-xl);
   max-width: 480px;
   width: 100%;
 
@@ -29,7 +29,9 @@ const overlay = css`
 
   &:focus-visible {
     outline: none;
-    box-shadow: var(--pbl-shadow-xl), 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow:
+      var(--haze-shadow-xl),
+      0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -69,4 +71,4 @@ export default function Dialog({
   );
 }
 
-export type {DialogProps};
+export type { DialogProps };

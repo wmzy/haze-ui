@@ -1,7 +1,7 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {useState} from 'react';
+import { css } from '@linaria/core';
+import { useState } from 'react';
 
 type AvatarProps = {
   src?: string;
@@ -15,12 +15,12 @@ const base = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--pbl-radius-full);
+  border-radius: var(--haze-radius-full);
   overflow: hidden;
-  background: var(--pbl-color-bg-muted);
-  color: var(--pbl-color-text-secondary);
-  font-family: var(--pbl-font-sans);
-  font-weight: var(--pbl-weight-medium);
+  background: var(--haze-color-bg-muted);
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-weight: var(--haze-weight-medium);
   user-select: none;
   flex-shrink: 0;
 `;
@@ -29,17 +29,17 @@ const sizes = {
   sm: css`
     width: 32px;
     height: 32px;
-    font-size: var(--pbl-text-xs);
+    font-size: var(--haze-text-xs);
   `,
   md: css`
     width: 40px;
     height: 40px;
-    font-size: var(--pbl-text-sm);
+    font-size: var(--haze-text-sm);
   `,
   lg: css`
     width: 56px;
     height: 56px;
-    font-size: var(--pbl-text-lg);
+    font-size: var(--haze-text-lg);
   `,
 } as const;
 
@@ -61,12 +61,17 @@ export default function Avatar({
   return (
     <span x-class={[base, sizes[size], className]}>
       {src && !error ? (
-        <img className={imgStyle} src={src} alt={alt ?? ''} onError={() => setError(true)} />
+        <img
+          className={imgStyle}
+          src={src}
+          alt={alt ?? ''}
+          onError={() => setError(true)}
+        />
       ) : (
-        fallback ?? <span>{alt?.charAt(0)?.toUpperCase() ?? '?'}</span>
+        (fallback ?? <span>{alt?.charAt(0)?.toUpperCase() ?? '?'}</span>)
       )}
     </span>
   );
 }
 
-export type {AvatarProps};
+export type { AvatarProps };

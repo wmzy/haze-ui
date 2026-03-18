@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type MenuItemProps = {
   onSelect?: () => void;
@@ -13,24 +13,24 @@ const item = css`
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--pbl-space-2) var(--pbl-space-3);
+  padding: var(--haze-space-2) var(--haze-space-3);
   border: none;
   background: transparent;
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
   text-align: left;
   cursor: pointer;
   transition: background 0.1s;
 
   &:hover {
-    background: var(--pbl-color-bg-subtle);
+    background: var(--haze-color-bg-subtle);
   }
 
   &:focus-visible {
     outline: none;
-    background: var(--pbl-color-bg-subtle);
-    box-shadow: inset 0 0 0 2px var(--pbl-color-focus-ring);
+    background: var(--haze-color-bg-subtle);
+    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
   }
 
   &:disabled {
@@ -58,4 +58,4 @@ export default function MenuItem({
   );
 }
 
-export type {MenuItemProps};
+export type { MenuItemProps };

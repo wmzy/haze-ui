@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type TabListProps = {
   className?: string;
@@ -10,10 +10,10 @@ type TabListProps = {
 const base = css`
   display: flex;
   gap: 0;
-  border-bottom: 1px solid var(--pbl-color-border);
+  border-bottom: 1px solid var(--haze-color-border);
 `;
 
-export default function TabList({className, children}: TabListProps) {
+export default function TabList({ className, children }: TabListProps) {
   return (
     <div role='tablist' x-class={[base, className]}>
       {children}
@@ -21,4 +21,4 @@ export default function TabList({className, children}: TabListProps) {
   );
 }
 
-export type {TabListProps};
+export type { TabListProps };

@@ -1,9 +1,9 @@
-import type {ReactNode} from 'react';
-import type {Control} from 'react-use-control';
+import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useId} from 'react';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useId } from 'react';
+import { useControl } from 'react-use-control';
 
 type PopoverProps = {
   content: ReactNode;
@@ -22,15 +22,15 @@ const panel = css`
   top: 100%;
   left: 0;
   z-index: 1000;
-  margin-top: var(--pbl-space-1);
-  padding: var(--pbl-space-3);
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-lg);
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  box-shadow: var(--pbl-shadow-lg);
+  margin-top: var(--haze-space-1);
+  padding: var(--haze-space-3);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-lg);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  box-shadow: var(--haze-shadow-lg);
   min-width: 200px;
 `;
 
@@ -56,14 +56,11 @@ export default function Popover({
       >
         {children}
       </span>
-      <div
-        id={id}
-        x-class={[panel, !open && hidden, className]}
-      >
+      <div id={id} x-class={[panel, !open && hidden, className]}>
         {content}
       </div>
     </span>
   );
 }
 
-export type {PopoverProps};
+export type { PopoverProps };

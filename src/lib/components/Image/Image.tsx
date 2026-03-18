@@ -1,7 +1,7 @@
-import type {CSSProperties, ReactNode} from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {useState} from 'react';
+import { css } from '@linaria/core';
+import { useState } from 'react';
 
 type ImageProps = {
   src: string;
@@ -30,10 +30,10 @@ const fallbackStyle = css`
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--pbl-color-bg-muted);
-  color: var(--pbl-color-text-muted);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
+  background: var(--haze-color-bg-muted);
+  color: var(--haze-color-text-muted);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
 `;
 
 export default function Image({
@@ -47,10 +47,7 @@ export default function Image({
   const [error, setError] = useState(false);
 
   return (
-    <span
-      x-class={[wrapper, className]}
-      style={{aspectRatio}}
-    >
+    <span x-class={[wrapper, className]} style={{ aspectRatio }}>
       {error && fallback ? (
         <span className={fallbackStyle}>{fallback}</span>
       ) : (
@@ -58,7 +55,7 @@ export default function Image({
           className={imgStyle}
           src={src}
           alt={alt}
-          style={{objectFit}}
+          style={{ objectFit }}
           onError={() => setError(true)}
         />
       )}
@@ -66,4 +63,4 @@ export default function Image({
   );
 }
 
-export type {ImageProps};
+export type { ImageProps };

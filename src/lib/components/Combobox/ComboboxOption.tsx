@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type ComboboxOptionProps = {
   value: string;
@@ -14,25 +14,25 @@ type ComboboxOptionProps = {
 const option = css`
   display: flex;
   align-items: center;
-  padding: var(--pbl-space-2) var(--pbl-space-3);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text);
+  padding: var(--haze-space-2) var(--haze-space-3);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text);
   cursor: pointer;
   transition: background 0.1s;
 
   &:hover {
-    background: var(--pbl-color-bg-subtle);
+    background: var(--haze-color-bg-subtle);
   }
 `;
 
 const highlightedStyle = css`
-  background: var(--pbl-color-bg-subtle);
+  background: var(--haze-color-bg-subtle);
 `;
 
 const selectedStyle = css`
-  font-weight: var(--pbl-weight-medium);
-  color: var(--pbl-color-primary);
+  font-weight: var(--haze-weight-medium);
+  color: var(--haze-color-primary);
 `;
 
 export default function ComboboxOption({
@@ -47,7 +47,12 @@ export default function ComboboxOption({
     <div
       role='option'
       aria-selected={selected}
-      x-class={[option, highlighted && highlightedStyle, selected && selectedStyle, className]}
+      x-class={[
+        option,
+        highlighted && highlightedStyle,
+        selected && selectedStyle,
+        className,
+      ]}
       onClick={() => onSelect?.(value)}
     >
       {children}
@@ -55,4 +60,4 @@ export default function ComboboxOption({
   );
 }
 
-export type {ComboboxOptionProps};
+export type { ComboboxOptionProps };

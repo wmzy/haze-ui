@@ -1,4 +1,4 @@
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 import {
   createMemoryCacheProvider,
   useCache,
@@ -9,10 +9,10 @@ import {
   useRun,
 } from 'react-toolroom/async';
 
-import {useMock} from '@/components/DevTool';
-import {Flex, Tag, Skeleton} from '@/lib';
+import { useMock } from '@/components/DevTool';
+import { Flex, Tag, Skeleton } from '@/lib';
 import * as articleService from '@/services/article';
-import {tagListSchema} from '@/types/index.schema';
+import { tagListSchema } from '@/types/index.schema';
 
 const cache = createMemoryCacheProvider<string[], string[]>({
   cacheTime: 10000,
@@ -46,9 +46,11 @@ export default function Tags() {
   return (
     <aside x-class={isStale && stale}>
       <h1>Popular Tags</h1>
-      <Flex gap="var(--pbl-space-2)" wrap>
+      <Flex gap='var(--haze-space-2)' wrap>
         {tags.map((t) => (
-          <Tag key={t} size="sm">{t}</Tag>
+          <Tag key={t} size='sm'>
+            {t}
+          </Tag>
         ))}
       </Flex>
     </aside>

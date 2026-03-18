@@ -1,4 +1,4 @@
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 import {
   type CSSProperties,
   type ReactPortal,
@@ -6,9 +6,9 @@ import {
   useEffect,
   useState,
 } from 'react';
-import {createPortal} from 'react-dom';
-import {cancel} from '@native-router/core';
-import {useLoading, useRouter} from '@native-router/react';
+import { createPortal } from 'react-dom';
+import { cancel } from '@native-router/core';
+import { useLoading, useRouter } from '@native-router/react';
 
 const bar = css`
   position: fixed;
@@ -17,7 +17,7 @@ const bar = css`
   right: 0;
   height: 3px;
   z-index: 1000;
-  background: var(--pbl-color-bg-muted);
+  background: var(--haze-color-bg-muted);
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -33,9 +33,9 @@ const bar = css`
 
 const fill = css`
   transition: width 0.4s ease;
-  background: var(--pbl-color-primary);
+  background: var(--haze-color-primary);
   height: 100%;
-  border-radius: 0 var(--pbl-radius-sm) var(--pbl-radius-sm) 0;
+  border-radius: 0 var(--haze-radius-sm) var(--haze-radius-sm) 0;
 `;
 
 export default function Loading(): ReactPortal | null {
@@ -44,7 +44,7 @@ export default function Loading(): ReactPortal | null {
   const el = useMemo(() => document.createElement('div'), []);
 
   const loading = useLoading();
-  const {key, status} = loading || {};
+  const { key, status } = loading || {};
 
   useEffect(() => {
     setPercent(0);
@@ -88,9 +88,12 @@ export default function Loading(): ReactPortal | null {
       className={bar}
     >
       {percent ? (
-        <div style={{width: `${percent}%`} as CSSProperties} className={fill} />
+        <div
+          style={{ width: `${percent}%` } as CSSProperties}
+          className={fill}
+        />
       ) : null}
     </button>,
-    el,
+    el
   );
 }

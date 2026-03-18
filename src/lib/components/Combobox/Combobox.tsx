@@ -1,14 +1,14 @@
-import type {Control} from 'react-use-control';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useState, useId, useRef, useEffect} from 'react';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useState, useId, useRef, useEffect } from 'react';
+import { useControl } from 'react-use-control';
 
 import ComboboxOption from './ComboboxOption';
 
 type ComboboxProps = {
   value?: Control<string> | string;
-  options: {value: string; label: string}[];
+  options: { value: string; label: string }[];
   placeholder?: string;
   className?: string;
 };
@@ -22,21 +22,23 @@ const wrapper = css`
 const input = css`
   display: block;
   width: 100%;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  padding: var(--pbl-space-2) var(--pbl-space-3);
-  line-height: var(--pbl-leading-normal);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  padding: var(--haze-space-2) var(--haze-space-3);
+  line-height: var(--haze-leading-normal);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   box-sizing: border-box;
 
   &:focus {
     outline: none;
-    border-color: var(--pbl-color-primary);
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -46,13 +48,13 @@ const listbox = css`
   left: 0;
   right: 0;
   z-index: 1000;
-  margin-top: var(--pbl-space-1);
+  margin-top: var(--haze-space-1);
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-bg);
-  box-shadow: var(--pbl-shadow-lg);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  box-shadow: var(--haze-shadow-lg);
 `;
 
 const hidden = css`
@@ -73,7 +75,7 @@ export default function Combobox({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(query.toLowerCase()),
+    o.label.toLowerCase().includes(query.toLowerCase())
   );
 
   useEffect(() => {
@@ -95,7 +97,11 @@ export default function Combobox({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && highlightIndex >= 0 && filtered[highlightIndex]) {
+    } else if (
+      e.key === 'Enter' &&
+      highlightIndex >= 0 &&
+      filtered[highlightIndex]
+    ) {
       e.preventDefault();
       selectOption(filtered[highlightIndex].value);
     } else if (e.key === 'Escape') {
@@ -138,4 +144,4 @@ export default function Combobox({
   );
 }
 
-export type {ComboboxProps};
+export type { ComboboxProps };

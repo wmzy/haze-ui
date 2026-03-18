@@ -1,7 +1,7 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {useId} from 'react';
+import { css } from '@linaria/core';
+import { useId } from 'react';
 
 type TooltipProps = {
   content: ReactNode;
@@ -18,13 +18,13 @@ const wrapper = css`
 const bubble = css`
   position: absolute;
   z-index: 1000;
-  padding: var(--pbl-space-1) var(--pbl-space-2);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-text);
-  color: var(--pbl-color-text-inverse);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-xs);
-  line-height: var(--pbl-leading-normal);
+  padding: var(--haze-space-1) var(--haze-space-2);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-text);
+  color: var(--haze-color-text-inverse);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  line-height: var(--haze-leading-normal);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -40,25 +40,25 @@ const positions = {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    margin-bottom: var(--pbl-space-1);
+    margin-bottom: var(--haze-space-1);
   `,
   bottom: css`
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    margin-top: var(--pbl-space-1);
+    margin-top: var(--haze-space-1);
   `,
   left: css`
     right: 100%;
     top: 50%;
     transform: translateY(-50%);
-    margin-right: var(--pbl-space-1);
+    margin-right: var(--haze-space-1);
   `,
   right: css`
     left: 100%;
     top: 50%;
     transform: translateY(-50%);
-    margin-left: var(--pbl-space-1);
+    margin-left: var(--haze-space-1);
   `,
 } as const;
 
@@ -80,15 +80,11 @@ export default function Tooltip({
   return (
     <span x-class={[wrapper, showOnInteract, className]}>
       <span aria-describedby={id}>{children}</span>
-      <span
-        id={id}
-        role='tooltip'
-        x-class={[bubble, positions[position]]}
-      >
+      <span id={id} role='tooltip' x-class={[bubble, positions[position]]}>
         {content}
       </span>
     </span>
   );
 }
 
-export type {TooltipProps};
+export type { TooltipProps };

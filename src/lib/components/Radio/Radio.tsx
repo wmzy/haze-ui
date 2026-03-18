@@ -1,36 +1,42 @@
-import type {ComponentPropsWithoutRef} from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
-import {useRadioContext} from './RadioContext';
+import { useRadioContext } from './RadioContext';
 
 type RadioProps = {
   value: string;
-} & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value' | 'name' | 'checked' | 'onChange'>;
+} & Omit<
+  ComponentPropsWithoutRef<'input'>,
+  'type' | 'value' | 'name' | 'checked' | 'onChange'
+>;
 
 const radioInput = css`
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-full);
-  background: var(--pbl-color-bg);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-full);
+  background: var(--haze-color-bg);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
   flex-shrink: 0;
   position: relative;
 
   &:hover {
-    border-color: var(--pbl-color-border-hover);
+    border-color: var(--haze-color-border-hover);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:checked {
-    border-color: var(--pbl-color-primary);
+    border-color: var(--haze-color-primary);
   }
 
   &:checked::after {
@@ -40,8 +46,8 @@ const radioInput = css`
     left: 3px;
     width: 10px;
     height: 10px;
-    border-radius: var(--pbl-radius-full);
-    background: var(--pbl-color-primary);
+    border-radius: var(--haze-radius-full);
+    background: var(--haze-color-primary);
   }
 
   &:disabled {
@@ -53,10 +59,10 @@ const radioInput = css`
 const labelStyle = css`
   display: inline-flex;
   align-items: center;
-  gap: var(--pbl-space-2);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text);
+  gap: var(--haze-space-2);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text);
   cursor: pointer;
 `;
 
@@ -65,7 +71,7 @@ export default function Radio({
   className,
   children,
   ...rest
-}: RadioProps & {children?: React.ReactNode}) {
+}: RadioProps & { children?: React.ReactNode }) {
   const ctx = useRadioContext();
 
   return (
@@ -84,4 +90,4 @@ export default function Radio({
   );
 }
 
-export type {RadioProps};
+export type { RadioProps };

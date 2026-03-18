@@ -1,8 +1,8 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
-import {useTabsContext} from './TabsContext';
+import { useTabsContext } from './TabsContext';
 
 type TabProps = {
   value: string;
@@ -11,35 +11,37 @@ type TabProps = {
 };
 
 const base = css`
-  padding: var(--pbl-space-2) var(--pbl-space-4);
+  padding: var(--haze-space-2) var(--haze-space-4);
   border: none;
   background: transparent;
-  color: var(--pbl-color-text-muted);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  font-weight: var(--pbl-weight-medium);
+  color: var(--haze-color-text-muted);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  font-weight: var(--haze-weight-medium);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
   &:hover {
-    color: var(--pbl-color-text);
+    color: var(--haze-color-text);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
 const active = css`
-  color: var(--pbl-color-primary);
-  border-bottom-color: var(--pbl-color-primary);
+  color: var(--haze-color-primary);
+  border-bottom-color: var(--haze-color-primary);
 `;
 
-export default function Tab({value, className, children}: TabProps) {
-  const {value: current, setValue} = useTabsContext();
+export default function Tab({ value, className, children }: TabProps) {
+  const { value: current, setValue } = useTabsContext();
   const isActive = current === value;
 
   return (
@@ -56,4 +58,4 @@ export default function Tab({value, className, children}: TabProps) {
   );
 }
 
-export type {TabProps};
+export type { TabProps };

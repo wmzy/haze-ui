@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type TagProps = {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
@@ -14,45 +14,45 @@ type TagProps = {
 const base = css`
   display: inline-flex;
   align-items: center;
-  gap: var(--pbl-space-1);
-  border-radius: var(--pbl-radius-md);
-  font-family: var(--pbl-font-sans);
-  font-weight: var(--pbl-weight-medium);
-  line-height: var(--pbl-leading-tight);
+  gap: var(--haze-space-1);
+  border-radius: var(--haze-radius-md);
+  font-family: var(--haze-font-sans);
+  font-weight: var(--haze-weight-medium);
+  line-height: var(--haze-leading-tight);
   white-space: nowrap;
 `;
 
 const variants = {
   default: css`
-    background: var(--pbl-color-bg-muted);
-    color: var(--pbl-color-text-secondary);
+    background: var(--haze-color-bg-muted);
+    color: var(--haze-color-text-secondary);
   `,
   primary: css`
-    background: var(--pbl-color-primary-subtle);
-    color: var(--pbl-color-primary);
+    background: var(--haze-color-primary-subtle);
+    color: var(--haze-color-primary);
   `,
   success: css`
-    background: color-mix(in srgb, var(--pbl-color-success) 15%, transparent);
-    color: var(--pbl-color-success);
+    background: color-mix(in srgb, var(--haze-color-success) 15%, transparent);
+    color: var(--haze-color-success);
   `,
   warning: css`
-    background: color-mix(in srgb, var(--pbl-color-warning) 15%, transparent);
-    color: var(--pbl-color-warning);
+    background: color-mix(in srgb, var(--haze-color-warning) 15%, transparent);
+    color: var(--haze-color-warning);
   `,
   danger: css`
-    background: color-mix(in srgb, var(--pbl-color-danger) 15%, transparent);
-    color: var(--pbl-color-danger);
+    background: color-mix(in srgb, var(--haze-color-danger) 15%, transparent);
+    color: var(--haze-color-danger);
   `,
 } as const;
 
 const tagSizes = {
   sm: css`
-    padding: var(--pbl-space-0) var(--pbl-space-2);
-    font-size: var(--pbl-text-xs);
+    padding: var(--haze-space-0) var(--haze-space-2);
+    font-size: var(--haze-text-xs);
   `,
   md: css`
-    padding: var(--pbl-space-1) var(--pbl-space-3);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-1) var(--haze-space-3);
+    font-size: var(--haze-text-sm);
   `,
 } as const;
 
@@ -76,8 +76,8 @@ const closeBtn = css`
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
-    border-radius: var(--pbl-radius-sm);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+    border-radius: var(--haze-radius-sm);
   }
 `;
 
@@ -93,7 +93,12 @@ export default function Tag({
     <span x-class={[base, variants[variant], tagSizes[size], className]}>
       {children}
       {closable && (
-        <button type='button' className={closeBtn} aria-label='Remove' onClick={onClose}>
+        <button
+          type='button'
+          className={closeBtn}
+          aria-label='Remove'
+          onClick={onClose}
+        >
           ×
         </button>
       )}
@@ -101,4 +106,4 @@ export default function Tag({
   );
 }
 
-export type {TagProps};
+export type { TagProps };

@@ -1,7 +1,7 @@
-import type {ComponentPropsWithoutRef, ReactNode} from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
-import {css} from '@linaria/core';
-import {useRef} from 'react';
+import { css } from '@linaria/core';
+import { useRef } from 'react';
 
 type FileInputProps = {
   children?: ReactNode;
@@ -21,26 +21,28 @@ const trigger = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--pbl-space-2);
-  padding: var(--pbl-space-2) var(--pbl-space-4);
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  font-weight: var(--pbl-weight-medium);
+  gap: var(--haze-space-2);
+  padding: var(--haze-space-2) var(--haze-space-4);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  font-weight: var(--haze-weight-medium);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 
   &:hover {
-    border-color: var(--pbl-color-border-hover);
-    background: var(--pbl-color-bg-subtle);
+    border-color: var(--haze-color-border-hover);
+    background: var(--haze-color-bg-subtle);
   }
 
   &:focus-within {
-    border-color: var(--pbl-color-primary);
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -59,4 +61,4 @@ export default function FileInput({
   );
 }
 
-export type {FileInputProps};
+export type { FileInputProps };

@@ -1,8 +1,8 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
-import {useTabsContext} from './TabsContext';
+import { useTabsContext } from './TabsContext';
 
 type TabPanelProps = {
   value: string;
@@ -11,15 +11,19 @@ type TabPanelProps = {
 };
 
 const base = css`
-  padding: var(--pbl-space-4) 0;
+  padding: var(--haze-space-4) 0;
 `;
 
 const hidden = css`
   display: none;
 `;
 
-export default function TabPanel({value, className, children}: TabPanelProps) {
-  const {value: current} = useTabsContext();
+export default function TabPanel({
+  value,
+  className,
+  children,
+}: TabPanelProps) {
+  const { value: current } = useTabsContext();
   const isActive = current === value;
 
   return (
@@ -33,4 +37,4 @@ export default function TabPanel({value, className, children}: TabPanelProps) {
   );
 }
 
-export type {TabPanelProps};
+export type { TabPanelProps };

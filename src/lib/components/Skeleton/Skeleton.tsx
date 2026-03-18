@@ -1,4 +1,4 @@
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type SkeletonProps = {
   variant?: 'text' | 'circular' | 'rectangular';
@@ -9,26 +9,32 @@ type SkeletonProps = {
 
 const base = css`
   display: block;
-  background: var(--pbl-color-bg-muted);
+  background: var(--haze-color-bg-muted);
   animation: shimmer 1.5s ease-in-out infinite;
 
   @keyframes shimmer {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 `;
 
 const variantStyles = {
   text: css`
-    border-radius: var(--pbl-radius-sm);
+    border-radius: var(--haze-radius-sm);
     height: 1em;
   `,
   circular: css`
-    border-radius: var(--pbl-radius-full);
+    border-radius: var(--haze-radius-full);
   `,
   rectangular: css`
-    border-radius: var(--pbl-radius-md);
+    border-radius: var(--haze-radius-md);
   `,
 } as const;
 
@@ -43,7 +49,9 @@ export default function Skeleton({
     height: typeof height === 'number' ? `${height}px` : height,
   };
 
-  return <span x-class={[base, variantStyles[variant], className]} style={style} />;
+  return (
+    <span x-class={[base, variantStyles[variant], className]} style={style} />
+  );
 }
 
-export type {SkeletonProps};
+export type { SkeletonProps };

@@ -1,9 +1,9 @@
-import type {ReactNode} from 'react';
-import type {Control} from 'react-use-control';
+import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useEffect, useRef} from 'react';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useEffect, useRef } from 'react';
+import { useControl } from 'react-use-control';
 
 type MenuProps = {
   open?: Control<boolean> | boolean;
@@ -22,13 +22,13 @@ const panel = css`
   top: 100%;
   left: 0;
   z-index: 1000;
-  margin-top: var(--pbl-space-1);
+  margin-top: var(--haze-space-1);
   min-width: 160px;
-  padding: var(--pbl-space-1) 0;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-lg);
-  background: var(--pbl-color-bg);
-  box-shadow: var(--pbl-shadow-lg);
+  padding: var(--haze-space-1) 0;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-lg);
+  background: var(--haze-color-bg);
+  box-shadow: var(--haze-shadow-lg);
 `;
 
 const hidden = css`
@@ -47,7 +47,8 @@ export default function Menu({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -63,4 +64,4 @@ export default function Menu({
   );
 }
 
-export type {MenuProps};
+export type { MenuProps };

@@ -1,6 +1,6 @@
-import type {ComponentPropsWithoutRef} from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type ButtonProps = {
   variant?: 'solid' | 'outline' | 'ghost';
@@ -11,19 +11,23 @@ const base = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--pbl-space-2);
+  gap: var(--haze-space-2);
   border: 1px solid transparent;
-  border-radius: var(--pbl-radius-md);
-  font-family: var(--pbl-font-sans);
-  font-weight: var(--pbl-weight-medium);
-  line-height: var(--pbl-leading-tight);
+  border-radius: var(--haze-radius-md);
+  font-family: var(--haze-font-sans);
+  font-weight: var(--haze-weight-medium);
+  line-height: var(--haze-leading-tight);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
   user-select: none;
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {
@@ -35,57 +39,57 @@ const base = css`
 
 const variants = {
   solid: css`
-    background: var(--pbl-color-primary);
-    color: var(--pbl-color-text-inverse);
+    background: var(--haze-color-primary);
+    color: var(--haze-color-text-inverse);
 
     &:hover {
-      background: var(--pbl-color-primary-hover);
+      background: var(--haze-color-primary-hover);
     }
 
     &:active {
-      background: var(--pbl-color-primary-active);
+      background: var(--haze-color-primary-active);
     }
   `,
   outline: css`
     background: transparent;
-    border-color: var(--pbl-color-border);
-    color: var(--pbl-color-text);
+    border-color: var(--haze-color-border);
+    color: var(--haze-color-text);
 
     &:hover {
-      border-color: var(--pbl-color-border-hover);
-      background: var(--pbl-color-bg-subtle);
+      border-color: var(--haze-color-border-hover);
+      background: var(--haze-color-bg-subtle);
     }
 
     &:active {
-      background: var(--pbl-color-bg-muted);
+      background: var(--haze-color-bg-muted);
     }
   `,
   ghost: css`
     background: transparent;
-    color: var(--pbl-color-text);
+    color: var(--haze-color-text);
 
     &:hover {
-      background: var(--pbl-color-bg-subtle);
+      background: var(--haze-color-bg-subtle);
     }
 
     &:active {
-      background: var(--pbl-color-bg-muted);
+      background: var(--haze-color-bg-muted);
     }
   `,
 } as const;
 
 const sizes = {
   sm: css`
-    padding: var(--pbl-space-1) var(--pbl-space-3);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-1) var(--haze-space-3);
+    font-size: var(--haze-text-sm);
   `,
   md: css`
-    padding: var(--pbl-space-2) var(--pbl-space-4);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-2) var(--haze-space-4);
+    font-size: var(--haze-text-sm);
   `,
   lg: css`
-    padding: var(--pbl-space-3) var(--pbl-space-6);
-    font-size: var(--pbl-text-base);
+    padding: var(--haze-space-3) var(--haze-space-6);
+    font-size: var(--haze-text-base);
   `,
 } as const;
 
@@ -104,4 +108,4 @@ export default function Button({
   );
 }
 
-export type {ButtonProps};
+export type { ButtonProps };

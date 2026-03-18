@@ -1,8 +1,8 @@
-import type {ComponentPropsWithoutRef} from 'react';
-import type {Control} from 'react-use-control';
+import type { ComponentPropsWithoutRef } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
 type TextareaProps = {
   value?: Control<string> | string;
@@ -12,27 +12,29 @@ type TextareaProps = {
 const base = css`
   display: block;
   width: 100%;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
-  line-height: var(--pbl-leading-normal);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  line-height: var(--haze-leading-normal);
   resize: vertical;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &::placeholder {
-    color: var(--pbl-color-text-muted);
+    color: var(--haze-color-text-muted);
   }
 
   &:hover {
-    border-color: var(--pbl-color-border-hover);
+    border-color: var(--haze-color-border-hover);
   }
 
   &:focus {
     outline: none;
-    border-color: var(--pbl-color-primary);
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {
@@ -43,16 +45,16 @@ const base = css`
 
 const sizes = {
   sm: css`
-    padding: var(--pbl-space-1) var(--pbl-space-2);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-1) var(--haze-space-2);
+    font-size: var(--haze-text-sm);
   `,
   md: css`
-    padding: var(--pbl-space-2) var(--pbl-space-3);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-2) var(--haze-space-3);
+    font-size: var(--haze-text-sm);
   `,
   lg: css`
-    padding: var(--pbl-space-3) var(--pbl-space-4);
-    font-size: var(--pbl-text-base);
+    padding: var(--haze-space-3) var(--haze-space-4);
+    font-size: var(--haze-text-base);
   `,
 } as const;
 
@@ -78,4 +80,4 @@ export default function Textarea({
   );
 }
 
-export type {TextareaProps};
+export type { TextareaProps };

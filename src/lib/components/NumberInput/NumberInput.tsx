@@ -1,8 +1,8 @@
-import type {ComponentPropsWithoutRef} from 'react';
-import type {Control} from 'react-use-control';
+import type { ComponentPropsWithoutRef } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
 type NumberInputProps = {
   value?: Control<number> | number;
@@ -15,23 +15,25 @@ type NumberInputProps = {
 const wrapper = css`
   display: inline-flex;
   align-items: stretch;
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:focus-within {
-    border-color: var(--pbl-color-primary);
-    box-shadow: 0 0 0 3px var(--pbl-color-focus-ring);
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
 const input = css`
   border: none;
   outline: none;
-  background: var(--pbl-color-bg);
-  color: var(--pbl-color-text);
-  font-family: var(--pbl-font-sans);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
   text-align: center;
   width: 60px;
   -moz-appearance: textfield;
@@ -46,23 +48,23 @@ const input = css`
 const stepBtn = css`
   appearance: none;
   border: none;
-  background: var(--pbl-color-bg-subtle);
-  color: var(--pbl-color-text);
+  background: var(--haze-color-bg-subtle);
+  color: var(--haze-color-text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--pbl-font-sans);
-  font-weight: var(--pbl-weight-medium);
+  font-family: var(--haze-font-sans);
+  font-weight: var(--haze-weight-medium);
   transition: background 0.1s;
   user-select: none;
 
   &:hover {
-    background: var(--pbl-color-bg-muted);
+    background: var(--haze-color-bg-muted);
   }
 
   &:active {
-    background: var(--pbl-color-border);
+    background: var(--haze-color-border);
   }
 
   &:disabled {
@@ -73,31 +75,31 @@ const stepBtn = css`
 
 const inputSizes = {
   sm: css`
-    padding: var(--pbl-space-1);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-1);
+    font-size: var(--haze-text-sm);
   `,
   md: css`
-    padding: var(--pbl-space-2);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-2);
+    font-size: var(--haze-text-sm);
   `,
   lg: css`
-    padding: var(--pbl-space-3);
-    font-size: var(--pbl-text-base);
+    padding: var(--haze-space-3);
+    font-size: var(--haze-text-base);
   `,
 } as const;
 
 const btnSizes = {
   sm: css`
-    padding: 0 var(--pbl-space-2);
-    font-size: var(--pbl-text-sm);
+    padding: 0 var(--haze-space-2);
+    font-size: var(--haze-text-sm);
   `,
   md: css`
-    padding: 0 var(--pbl-space-3);
-    font-size: var(--pbl-text-sm);
+    padding: 0 var(--haze-space-3);
+    font-size: var(--haze-text-sm);
   `,
   lg: css`
-    padding: 0 var(--pbl-space-3);
-    font-size: var(--pbl-text-base);
+    padding: 0 var(--haze-space-3);
+    font-size: var(--haze-text-base);
   `,
 } as const;
 
@@ -158,4 +160,4 @@ export default function NumberInput({
   );
 }
 
-export type {NumberInputProps};
+export type { NumberInputProps };

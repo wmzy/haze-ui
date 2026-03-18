@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type ListProps = {
   variant?: 'unordered' | 'ordered' | 'none';
@@ -9,12 +9,12 @@ type ListProps = {
 };
 
 const base = css`
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text);
-  line-height: var(--pbl-leading-normal);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text);
+  line-height: var(--haze-leading-normal);
   margin: 0;
-  padding-left: var(--pbl-space-5);
+  padding-left: var(--haze-space-5);
 `;
 
 const variantStyles = {
@@ -38,10 +38,8 @@ export default function List({
   const Tag = variant === 'ordered' ? 'ol' : 'ul';
 
   return (
-    <Tag x-class={[base, variantStyles[variant], className]}>
-      {children}
-    </Tag>
+    <Tag x-class={[base, variantStyles[variant], className]}>{children}</Tag>
   );
 }
 
-export type {ListProps};
+export type { ListProps };

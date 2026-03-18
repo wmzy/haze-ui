@@ -1,31 +1,31 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 const wrapper = css`
-  padding: var(--pbl-space-3) var(--pbl-space-4);
-  border-radius: var(--pbl-radius-md);
-  background: var(--pbl-color-bg-subtle);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  line-height: var(--pbl-leading-relaxed);
-  color: var(--pbl-color-text-secondary);
-  margin-bottom: var(--pbl-space-6);
+  padding: var(--haze-space-3) var(--haze-space-4);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg-subtle);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  line-height: var(--haze-leading-relaxed);
+  color: var(--haze-color-text-secondary);
+  margin-bottom: var(--haze-space-6);
 
   ul {
-    margin: var(--pbl-space-2) 0 0;
-    padding-left: var(--pbl-space-5);
+    margin: var(--haze-space-2) 0 0;
+    padding-left: var(--haze-space-5);
   }
 
   li {
-    margin-bottom: var(--pbl-space-1);
+    margin-bottom: var(--haze-space-1);
   }
 
   strong {
-    color: var(--pbl-color-text);
+    color: var(--haze-color-text);
   }
 `;
 
-export default function A11yNote({children}: {children: ReactNode}) {
+export default function A11yNote({ children }: { children: ReactNode }) {
   return <div className={wrapper}>{children}</div>;
 }

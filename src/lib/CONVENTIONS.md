@@ -31,7 +31,7 @@ Rules:
 | Component file     | `PascalCase.tsx`                  | `Button.tsx`                   |
 | Type alias         | `PascalCase` + descriptive suffix | `ButtonProps`, `SelectControl` |
 | CSS class variable | `camelCase`                       | `const wrapper = css\`...\``   |
-| Token CSS variable | `--pbl-{category}-{name}`         | `--pbl-color-primary`          |
+| Token CSS variable | `--haze-{category}-{name}`        | `--haze-color-primary`         |
 | Exported constant  | `camelCase`                       | `export const buttonVariants`  |
 
 ## Props Design
@@ -132,10 +132,10 @@ Always reference CSS variables from the token system. Never hardcode colors, spa
 ```tsx
 // good
 const base = css`
-  color: var(--pbl-color-text);
-  padding: var(--pbl-space-2) var(--pbl-space-4);
-  border-radius: var(--pbl-radius-md);
-  font-size: var(--pbl-text-sm);
+  color: var(--haze-color-text);
+  padding: var(--haze-space-2) var(--haze-space-4);
+  border-radius: var(--haze-radius-md);
+  font-size: var(--haze-text-sm);
 `;
 
 // bad
@@ -186,17 +186,17 @@ Use a plain object to map variant names to Linaria classes. Avoid conditional br
 ```tsx
 const variants = {
   solid: css`
-    background: var(--pbl-color-primary);
-    color: var(--pbl-color-text-inverse);
+    background: var(--haze-color-primary);
+    color: var(--haze-color-text-inverse);
   `,
   outline: css`
     background: transparent;
-    border: 1px solid var(--pbl-color-border);
-    color: var(--pbl-color-text);
+    border: 1px solid var(--haze-color-border);
+    color: var(--haze-color-text);
   `,
   ghost: css`
     background: transparent;
-    color: var(--pbl-color-text);
+    color: var(--haze-color-text);
   `,
 } as const;
 ```

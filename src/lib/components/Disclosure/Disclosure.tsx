@@ -1,9 +1,9 @@
-import type {ReactNode} from 'react';
-import type {Control} from 'react-use-control';
+import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
-import {css} from '@linaria/core';
-import {useEffect, useRef} from 'react';
-import {useControl} from 'react-use-control';
+import { css } from '@linaria/core';
+import { useEffect, useRef } from 'react';
+import { useControl } from 'react-use-control';
 
 type DisclosureProps = {
   open?: Control<boolean> | boolean;
@@ -13,8 +13,8 @@ type DisclosureProps = {
 };
 
 const details = css`
-  border: 1px solid var(--pbl-color-border);
-  border-radius: var(--pbl-radius-md);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
   overflow: hidden;
 `;
 
@@ -22,23 +22,23 @@ const summaryStyle = css`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--pbl-space-3) var(--pbl-space-4);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  font-weight: var(--pbl-weight-medium);
-  color: var(--pbl-color-text);
+  padding: var(--haze-space-3) var(--haze-space-4);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  font-weight: var(--haze-weight-medium);
+  color: var(--haze-color-text);
   cursor: pointer;
   list-style: none;
   user-select: none;
   transition: background 0.15s;
 
   &:hover {
-    background: var(--pbl-color-bg-subtle);
+    background: var(--haze-color-bg-subtle);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 3px var(--pbl-color-focus-ring);
+    box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &::marker,
@@ -50,8 +50,8 @@ const summaryStyle = css`
     content: '';
     width: 8px;
     height: 8px;
-    border-right: 2px solid var(--pbl-color-text-muted);
-    border-bottom: 2px solid var(--pbl-color-text-muted);
+    border-right: 2px solid var(--haze-color-text-muted);
+    border-bottom: 2px solid var(--haze-color-text-muted);
     transform: rotate(-45deg);
     transition: transform 0.2s;
     flex-shrink: 0;
@@ -63,12 +63,12 @@ const summaryStyle = css`
 `;
 
 const content = css`
-  padding: var(--pbl-space-3) var(--pbl-space-4);
-  border-top: 1px solid var(--pbl-color-border);
-  font-family: var(--pbl-font-sans);
-  font-size: var(--pbl-text-sm);
-  color: var(--pbl-color-text-secondary);
-  line-height: var(--pbl-leading-normal);
+  padding: var(--haze-space-3) var(--haze-space-4);
+  border-top: 1px solid var(--haze-color-border);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text-secondary);
+  line-height: var(--haze-leading-normal);
 `;
 
 export default function Disclosure({
@@ -92,4 +92,4 @@ export default function Disclosure({
   );
 }
 
-export type {DisclosureProps};
+export type { DisclosureProps };

@@ -1,6 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
 type BadgeProps = {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
@@ -12,44 +12,44 @@ type BadgeProps = {
 const base = css`
   display: inline-flex;
   align-items: center;
-  border-radius: var(--pbl-radius-full);
-  font-family: var(--pbl-font-sans);
-  font-weight: var(--pbl-weight-medium);
-  line-height: var(--pbl-leading-tight);
+  border-radius: var(--haze-radius-full);
+  font-family: var(--haze-font-sans);
+  font-weight: var(--haze-weight-medium);
+  line-height: var(--haze-leading-tight);
   white-space: nowrap;
 `;
 
 const variants = {
   default: css`
-    background: var(--pbl-color-bg-muted);
-    color: var(--pbl-color-text-secondary);
+    background: var(--haze-color-bg-muted);
+    color: var(--haze-color-text-secondary);
   `,
   success: css`
-    background: color-mix(in srgb, var(--pbl-color-success) 15%, transparent);
-    color: var(--pbl-color-success);
+    background: color-mix(in srgb, var(--haze-color-success) 15%, transparent);
+    color: var(--haze-color-success);
   `,
   warning: css`
-    background: color-mix(in srgb, var(--pbl-color-warning) 15%, transparent);
-    color: var(--pbl-color-warning);
+    background: color-mix(in srgb, var(--haze-color-warning) 15%, transparent);
+    color: var(--haze-color-warning);
   `,
   danger: css`
-    background: color-mix(in srgb, var(--pbl-color-danger) 15%, transparent);
-    color: var(--pbl-color-danger);
+    background: color-mix(in srgb, var(--haze-color-danger) 15%, transparent);
+    color: var(--haze-color-danger);
   `,
   info: css`
-    background: color-mix(in srgb, var(--pbl-color-info) 15%, transparent);
-    color: var(--pbl-color-info);
+    background: color-mix(in srgb, var(--haze-color-info) 15%, transparent);
+    color: var(--haze-color-info);
   `,
 } as const;
 
 const sizes = {
   sm: css`
-    padding: var(--pbl-space-0) var(--pbl-space-2);
-    font-size: var(--pbl-text-xs);
+    padding: var(--haze-space-0) var(--haze-space-2);
+    font-size: var(--haze-text-xs);
   `,
   md: css`
-    padding: var(--pbl-space-1) var(--pbl-space-3);
-    font-size: var(--pbl-text-sm);
+    padding: var(--haze-space-1) var(--haze-space-3);
+    font-size: var(--haze-text-sm);
   `,
 } as const;
 
@@ -66,4 +66,4 @@ export default function Badge({
   );
 }
 
-export type {BadgeProps};
+export type { BadgeProps };
