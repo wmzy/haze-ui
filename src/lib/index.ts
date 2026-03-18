@@ -2,6 +2,8 @@
 export {lightTheme, darkTheme} from './tokens/colors';
 export {spacing} from './tokens/spacing';
 export {typography} from './tokens/typography';
+export {TOKEN_REGISTRY, COMPONENT_TOKENS} from './tokens/registry';
+export type {TokenDef} from './tokens/registry';
 
 // components
 export {Button} from './components/Button';

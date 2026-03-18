@@ -1,7 +1,7 @@
 import {css} from '@linaria/core';
 import {Link} from '@native-router/react';
 
-import {lightTheme, spacing, typography, Button, Flex, Badge, Card} from '@/lib';
+import {Button, Flex, Badge, Card} from '@/lib';
 
 const wrapper = css`
   min-height: 100vh;
@@ -248,7 +248,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div x-class={[lightTheme, spacing, typography, wrapper]}>
+    <div className={wrapper}>
       <section className={hero}>
         <Badge variant="info">v1.0</Badge>
         <h1 className={title}>Build faster with Haze UI</h1>

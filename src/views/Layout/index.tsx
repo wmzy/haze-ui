@@ -1,15 +1,51 @@
-import { css } from '@linaria/core';
-import { Link, PrefetchLink, View } from '@native-router/react';
+import {css} from '@linaria/core';
+import {Link, PrefetchLink, View} from '@native-router/react';
 
 import {
   lightTheme,
+  darkTheme,
   spacing,
   typography,
   Flex,
   List,
   ListItem,
   Disclosure,
+  Button,
+  Select,
+  Option,
 } from '@/lib';
+import {useTheme} from '@/contexts/theme';
+
+const rootLayout = css`
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const header = css`
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--haze-space-3);
+  padding: 0 var(--haze-space-4);
+  border-bottom: 1px solid var(--haze-color-border);
+  background: var(--haze-color-bg-subtle);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+`;
+
+const themeLabel = css`
+  color: var(--haze-color-text-secondary);
+  font-size: var(--haze-text-xs);
+`;
+
+const body = css`
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+`;
 
 const sidebar = css`
   width: 240px;
@@ -81,39 +117,12 @@ const mainContent = css`
 `;
 
 const COMPONENTS = [
-  'button',
-  'input',
-  'select',
-  'checkbox',
-  'switch',
-  'badge',
-  'dialog',
-  'tooltip',
-  'popover',
-  'card',
-  'radio',
-  'textarea',
-  'slider',
-  'tabs',
-  'accordion',
-  'alert',
-  'avatar',
-  'tag',
-  'skeleton',
-  'icon',
-  'image',
-  'flex',
-  'breadcrumb',
-  'disclosure',
-  'menu',
-  'numberinput',
-  'fileinput',
-  'toast',
-  'list',
-  'combobox',
-  'table',
-  'carousel',
-  'datepicker',
+  'button', 'input', 'select', 'checkbox', 'switch', 'badge',
+  'dialog', 'tooltip', 'popover', 'card', 'radio', 'textarea',
+  'slider', 'tabs', 'accordion', 'alert', 'avatar', 'tag',
+  'skeleton', 'icon', 'image', 'flex', 'breadcrumb', 'disclosure',
+  'menu', 'numberinput', 'fileinput', 'toast', 'list', 'combobox',
+  'table', 'carousel', 'datepicker',
 ] as const;
 
 function capitalize(s: string) {
@@ -121,62 +130,111 @@ function capitalize(s: string) {
 }
 
 export default function Layout() {
+  const {
+    baseTheme,
+    resolvedMode,
+    setBaseTheme,
+    customThemes,
+    activeCustomThemeId,
+    setActiveTheme,
+    activeCustomThemeStyle,
+  } = useTheme();
+
+  const themeClass = resolvedMode === 'dark' ? darkTheme : lightTheme;
+
   return (
-    <Flex
-      className={css`
-        height: 100vh;
-      `}
-      x-class={[lightTheme, spacing, typography]}
+    <div
+      className={rootLayout}
+      x-class={[themeClass, spacing, typography]}
+      style={activeCustomThemeStyle}
     >
-      <aside className={sidebar}>
-        <PrefetchLink className={brand} to='/'>
-          Haze UI
-        </PrefetchLink>
-        <nav className={navArea}>
-          <List variant='none'>
-            <ListItem>
-              <Link className={navLink} to='/'>
-                Home
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link className={navLink} to='/getting-started'>
-                Getting Started
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Disclosure
-                open={true}
-                summary='Components'
-                className={disclosureNav}
-              >
-                <List variant='none'>
-                  <ListItem>
-                    <Link className={navLink} to='/components'>
-                      Overview
-                    </Link>
-                  </ListItem>
-                  {COMPONENTS.map((name) => (
-                    <ListItem key={name}>
-                      <Link className={navLink} to={`/components/${name}`}>
-                        {capitalize(name)}
-                      </Link>
+      <header className={header}>
+        <span className={themeLabel}>Theme</span>
+        <Flex gap="var(--haze-space-1)">
+          <Button
+            size="sm"
+            variant={baseTheme === 'light' ? 'solid' : 'ghost'}
+            onClick={() => setBaseTheme('light')}
+          >
+            Light
+          </Button>
+          <Button
+            size="sm"
+            variant={baseTheme === 'dark' ? 'solid' : 'ghost'}
+            onClick={() => setBaseTheme('dark')}
+          >
+            Dark
+          </Button>
+          <Button
+            size="sm"
+            variant={baseTheme === 'auto' ? 'solid' : 'ghost'}
+            onClick={() => setBaseTheme('auto')}
+          >
+            Auto
+          </Button>
+        </Flex>
+        {customThemes.length > 0 && (
+          <Select
+            size="sm"
+            value={activeCustomThemeId ?? ''}
+            onChange={(e) => setActiveTheme(e.target.value || null)}
+          >
+            <Option value="">No custom theme</Option>
+            {customThemes.map((t) => (
+              <Option key={t.id} value={t.id}>{t.name}</Option>
+            ))}
+          </Select>
+        )}
+        <Link className={navLink} to="/theme-editor">
+          Theme Editor
+        </Link>
+      </header>
+      <div className={body}>
+        <aside className={sidebar}>
+          <PrefetchLink className={brand} to="/">
+            Haze UI
+          </PrefetchLink>
+          <nav className={navArea}>
+            <List variant="none">
+              <ListItem>
+                <Link className={navLink} to="/">Home</Link>
+              </ListItem>
+              <ListItem>
+                <Link className={navLink} to="/getting-started">
+                  Getting Started
+                </Link>
+              </ListItem>
+              <ListItem>
+                <Disclosure open={true} summary="Components" className={disclosureNav}>
+                  <List variant="none">
+                    <ListItem>
+                      <Link className={navLink} to="/components">Overview</Link>
                     </ListItem>
-                  ))}
-                </List>
-              </Disclosure>
-            </ListItem>
-            <ListItem>
-              <Link className={navLink} to='/about'>
-                About
-              </Link>
-            </ListItem>
-          </List>
-        </nav>
-      </aside>
-      <main className={mainContent}>
-        <View />
-      </main>
-    </Flex>
+                    {COMPONENTS.map((name) => (
+                      <ListItem key={name}>
+                        <Link className={navLink} to={`/components/${name}`}>
+                          {capitalize(name)}
+                        </Link>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Disclosure>
+              </ListItem>
+              <ListItem>
+                <Link className={navLink} to="/theme-editor">
+                  Theme Editor
+                </Link>
+              </ListItem>
+              <ListItem>
+                <Link className={navLink} to="/about">About</Link>
+              </ListItem>
+            </List>
+          </nav>
+        </aside>
+        <main className={mainContent}>
+          <View />
+        </main>
+      </div>
+    </div>
   );
 }

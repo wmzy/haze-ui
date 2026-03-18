@@ -2,9 +2,6 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import {
-  lightTheme,
-  spacing,
-  typography,
   Button,
   Input,
   Select,
@@ -707,7 +704,7 @@ function DatepickerSection() {
 
 export default function ComponentDoc() {
   return (
-    <div x-class={[lightTheme, spacing, typography, page]}>
+    <div className={page}>
       <h1>Components</h1>
       <ButtonSection />
       <InputSection />

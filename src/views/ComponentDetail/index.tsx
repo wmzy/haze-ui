@@ -7,9 +7,6 @@ import { useControl } from 'react-use-control';
 const noop = () => { /* demo placeholder */ };
 
 import {
-  lightTheme,
-  spacing,
-  typography,
   Button,
   Input,
   Select,
@@ -59,11 +56,24 @@ import {
   Carousel,
   CarouselSlide,
   Datepicker,
+  COMPONENT_TOKENS,
 } from '@/lib';
 
 import PropsTable from './PropsTable';
 import A11yNote from './A11yNote';
+import TokensTable from './TokensTable';
 import { page, intro, section, row, fieldRow, labelStyle } from './styles';
+
+function CssVarsSection({component}: {component: string}) {
+  const tokens = COMPONENT_TOKENS[component];
+  if (!tokens?.length) return null;
+  return (
+    <div className={section}>
+      <h2>CSS Variables</h2>
+      <TokensTable tokens={tokens} />
+    </div>
+  );
+}
 
 // ─── Button ────────────────────────────────────────────────────
 
@@ -162,6 +172,8 @@ function ButtonDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="button" />
     </>
   );
 }
@@ -248,6 +260,8 @@ function InputDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="input" />
     </>
   );
 }
@@ -350,6 +364,8 @@ function SelectDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="select" />
     </>
   );
 }
@@ -432,6 +448,8 @@ function CheckboxDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="checkbox" />
     </>
   );
 }
@@ -511,6 +529,8 @@ function SwitchDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="switch" />
     </>
   );
 }
@@ -588,6 +608,8 @@ function BadgeDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="badge" />
     </>
   );
 }
@@ -670,6 +692,8 @@ function DialogDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="dialog" />
     </>
   );
 }
@@ -747,6 +771,8 @@ function TooltipDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="tooltip" />
     </>
   );
 }
@@ -814,6 +840,8 @@ function PopoverDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="popover" />
     </>
   );
 }
@@ -907,6 +935,8 @@ function CardDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="card" />
     </>
   );
 }
@@ -998,6 +1028,8 @@ function RadioDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="radio" />
     </>
   );
 }
@@ -1084,6 +1116,8 @@ function TextareaDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="textarea" />
     </>
   );
 }
@@ -1183,6 +1217,8 @@ function SliderDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="slider" />
     </>
   );
 }
@@ -1299,6 +1335,8 @@ function TabsDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="tabs" />
     </>
   );
 }
@@ -1396,6 +1434,8 @@ function AccordionDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="accordion" />
     </>
   );
 }
@@ -1488,6 +1528,8 @@ function AlertDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="alert" />
     </>
   );
 }
@@ -1562,6 +1604,8 @@ function AvatarDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="avatar" />
     </>
   );
 }
@@ -1664,6 +1708,8 @@ function TagDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="tag" />
     </>
   );
 }
@@ -1751,6 +1797,8 @@ function SkeletonDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="skeleton" />
     </>
   );
 }
@@ -1836,6 +1884,8 @@ function IconDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="icon" />
     </>
   );
 }
@@ -1916,6 +1966,8 @@ function ImageDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="image" />
     </>
   );
 }
@@ -2004,6 +2056,8 @@ function FlexDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="flex" />
     </>
   );
 }
@@ -2097,6 +2151,8 @@ function BreadcrumbDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="breadcrumb" />
     </>
   );
 }
@@ -2166,6 +2222,8 @@ function DisclosureDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="disclosure" />
     </>
   );
 }
@@ -2264,6 +2322,8 @@ function MenuDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="menu" />
     </>
   );
 }
@@ -2350,6 +2410,8 @@ function NumberInputDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="numberinput" />
     </>
   );
 }
@@ -2415,6 +2477,8 @@ function FileInputDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="fileinput" />
     </>
   );
 }
@@ -2497,6 +2561,8 @@ function ToastDemoInner() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="toast" />
     </>
   );
 }
@@ -2573,6 +2639,8 @@ function ListDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="list" />
     </>
   );
 }
@@ -2651,6 +2719,8 @@ function ComboboxDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="combobox" />
     </>
   );
 }
@@ -2768,6 +2838,8 @@ function TableDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="table" />
     </>
   );
 }
@@ -2885,6 +2957,8 @@ function CarouselDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="carousel" />
     </>
   );
 }
@@ -2970,6 +3044,8 @@ function DatepickerDemo() {
           </ul>
         </A11yNote>
       </div>
+
+      <CssVarsSection component="datepicker" />
     </>
   );
 }
@@ -3018,7 +3094,7 @@ export default function ComponentDetail() {
   const Demo = demos[name];
 
   return (
-    <div x-class={[lightTheme, spacing, typography, page]}>
+    <div className={page}>
       {Demo ? <Demo /> : <h1>Component not found: {name}</h1>}
     </div>
   );

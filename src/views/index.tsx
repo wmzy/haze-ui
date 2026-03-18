@@ -5,6 +5,7 @@ import {useMemo} from 'react';
 
 import Loading from '@/components/Loading';
 import RouterError from '@/components/RouterError';
+import {ThemeProvider} from '@/contexts/theme';
 
 export default function App() {
   return useMemo(() => {
@@ -29,6 +30,10 @@ export default function App() {
             component: () => import('./ComponentDetail')
           },
           {
+            path: '/theme-editor',
+            component: () => import('./ThemeEditor')
+          },
+          {
             path: '/about',
             component: () => import('./About')
           }
@@ -37,14 +42,16 @@ export default function App() {
     ] as Route[];
 
     return (
-      <Router
-        routes={routes}
-        baseUrl={import.meta.env.BASE_URL.replace(/\/$/, '')}
-        errorHandler={(e) => <RouterError error={e} />}
-      >
-        <View />
-        <Loading />
-      </Router>
+      <ThemeProvider>
+        <Router
+          routes={routes}
+          baseUrl={import.meta.env.BASE_URL.replace(/\/$/, '')}
+          errorHandler={(e) => <RouterError error={e} />}
+        >
+          <View />
+          <Loading />
+        </Router>
+      </ThemeProvider>
     );
   }, []);
 }
