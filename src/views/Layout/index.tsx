@@ -43,7 +43,7 @@ export default function Layout() {
           `}
           to='/'
         >
-          Ripple UI
+          Haze UI
         </PrefetchLink>
         <nav>
           <NavigationMenu.Main>

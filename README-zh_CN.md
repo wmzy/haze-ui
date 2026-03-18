@@ -1,4 +1,4 @@
-# Ripple UI
+# Haze UI
 
 > 一个带有可控状态的 React 组件库。
 
@@ -16,15 +16,15 @@
 ### 安装
 
 ```sh
-npm i ripple-ui
+npm i haze-ui
 // or
-pnpm add ripple-ui
+pnpm add haze-ui
 ```
 
 ### 使用
 
 ```jsx
-import { Button } from 'ripple-ui';
+import { Button } from 'haze-ui';
 
 export default function MyComponent() {
   return (

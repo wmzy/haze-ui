@@ -1,4 +1,4 @@
-# Ripple UI
+# Haze UI
 
 > The React UI Component Library with controllable states.
 
@@ -16,15 +16,15 @@ English | [简体中文](./README-zh_CN.md)
 ### Installation
 
 ```sh
-npm i ripple-ui
+npm i haze-ui
 // or
-pnpm add ripple-ui
+pnpm add haze-ui
 ```
 
 ### Usage
 
 ```jsx
-import { Button } from 'ripple-ui';
+import { Button } from 'haze-ui';
 
 export default function MyComponent() {
   return <Button>Start</Button>;

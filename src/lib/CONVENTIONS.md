@@ -1,4 +1,4 @@
-# Ripple UI Component Conventions
+# Haze UI Component Conventions
 
 ## File Structure
 
