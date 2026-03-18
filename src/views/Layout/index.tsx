@@ -1,172 +1,134 @@
 import {css} from '@linaria/core';
 import {Link, PrefetchLink, View} from '@native-router/react';
 
-import * as NavigationMenu from '@/components/NavigationMenu';
+import {
+  lightTheme,
+  spacing,
+  typography,
+  Flex,
+  List,
+  ListItem,
+  Disclosure,
+} from '@/lib';
+
+const sidebar = css`
+  width: 240px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: 1px solid var(--pbl-color-border);
+  display: flex;
+  flex-direction: column;
+  background: var(--pbl-color-bg);
+`;
+
+const brand = css`
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 var(--pbl-space-4);
+  font-family: var(--pbl-font-sans);
+  font-size: var(--pbl-text-lg);
+  font-weight: var(--pbl-weight-bold);
+  color: var(--pbl-color-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--pbl-color-border);
+`;
+
+const navArea = css`
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--pbl-space-2) 0;
+`;
+
+const navLink = css`
+  display: block;
+  padding: var(--pbl-space-1) var(--pbl-space-4);
+  font-family: var(--pbl-font-sans);
+  font-size: var(--pbl-text-sm);
+  color: var(--pbl-color-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--pbl-color-text);
+    background: var(--pbl-color-bg-subtle);
+  }
+`;
+
+const disclosureNav = css`
+  border: none;
+  border-radius: 0;
+
+  & > summary {
+    padding: var(--pbl-space-1) var(--pbl-space-4);
+    font-size: var(--pbl-text-sm);
+    color: var(--pbl-color-text-secondary);
+  }
+
+  & > div {
+    padding: 0;
+    border-top: none;
+  }
+`;
+
+const mainContent = css`
+  flex: 1;
+  overflow-y: auto;
+  background: var(--pbl-color-bg);
+`;
+
+const COMPONENTS = [
+  'button', 'input', 'select', 'checkbox', 'switch', 'badge',
+  'dialog', 'tooltip', 'popover', 'card', 'radio', 'textarea',
+  'slider', 'tabs', 'accordion', 'alert', 'avatar', 'tag',
+  'skeleton', 'icon', 'image', 'flex', 'breadcrumb', 'disclosure',
+  'menu', 'numberinput', 'fileinput', 'toast', 'list', 'combobox',
+  'table', 'carousel', 'datepicker',
+] as const;
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export default function Layout() {
   return (
-    <section
-      className={css`
-        display: flex;
-        height: 100vh;
-      `}
-    >
-      <aside
-        x-class={css`
-          height: 100%;
-          border-right: 1px dashed;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 24px;
-
-          > :first-child {
-            flex: none;
-            height: 4rem;
-          }
-
-          > nav {
-            flex: 1;
-            overflow-y: auto;
-          }
-
-          > nav > ul {
-            list-style: none;
-            gap: 16px;
-          }
-        `}
-      >
-        <PrefetchLink
-          x-class={css`
-            color: #5cb85c;
-          `}
-          to='/'
-        >
+    <Flex className={css`height: 100vh;`} x-class={[lightTheme, spacing, typography]}>
+      <aside className={sidebar}>
+        <PrefetchLink className={brand} to='/'>
           Haze UI
         </PrefetchLink>
-        <nav>
-          <NavigationMenu.Main>
-            <NavigationMenu.Item>
-              <Link to='/'>Home</Link>
-            </NavigationMenu.Item>
-            <NavigationMenu.Group title='Components'>
-              <NavigationMenu.Item>
-                <Link to='/components'>Overview</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/button'>Button</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/input'>Input</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/select'>Select</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/checkbox'>Checkbox</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/switch'>Switch</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/badge'>Badge</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/dialog'>Dialog</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/tooltip'>Tooltip</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/popover'>Popover</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/card'>Card</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/radio'>Radio</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/textarea'>Textarea</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/slider'>Slider</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/tabs'>Tabs</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/accordion'>Accordion</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/alert'>Alert</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/avatar'>Avatar</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/tag'>Tag</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/skeleton'>Skeleton</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/icon'>Icon</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/image'>Image</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/flex'>Flex</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/breadcrumb'>Breadcrumb</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/disclosure'>Disclosure</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/menu'>Menu</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/numberinput'>NumberInput</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/fileinput'>FileInput</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/toast'>Toast</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/list'>List</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/combobox'>Combobox</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/table'>Table</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/carousel'>Carousel</Link>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item>
-                <Link to='/components/datepicker'>Datepicker</Link>
-              </NavigationMenu.Item>
-            </NavigationMenu.Group>
-            <li>
-              <Link to='/help'>Help</Link>
-            </li>
-            <li>
-              <Link to='/about'>About</Link>
-            </li>
-          </NavigationMenu.Main>
+        <nav className={navArea}>
+          <List variant="none">
+            <ListItem>
+              <Link className={navLink} to='/'>Home</Link>
+            </ListItem>
+            <ListItem>
+              <Disclosure open={true} summary="Components" className={disclosureNav}>
+                <List variant="none">
+                  <ListItem>
+                    <Link className={navLink} to='/components'>Overview</Link>
+                  </ListItem>
+                  {COMPONENTS.map((name) => (
+                    <ListItem key={name}>
+                      <Link className={navLink} to={`/components/${name}`}>
+                        {capitalize(name)}
+                      </Link>
+                    </ListItem>
+                  ))}
+                </List>
+              </Disclosure>
+            </ListItem>
+            <ListItem>
+              <Link className={navLink} to='/about'>About</Link>
+            </ListItem>
+          </List>
         </nav>
       </aside>
-      <main>
+      <main className={mainContent}>
         <View />
       </main>
-    </section>
+    </Flex>
   );
 }
 

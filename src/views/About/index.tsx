@@ -1,20 +1,12 @@
-import {css} from '@linaria/core';
+import {page, intro} from '@/views/ComponentDetail/styles';
 
-/**
- * About 页面
- */
 export default function About() {
   return (
-    <div
-      className={css`
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      `}
-    >
-      <h1>About Native Router</h1>
-      <p>
-        Native Router is another router lib which work like the native browser.
+    <div className={page}>
+      <h1>About</h1>
+      <p className={intro}>
+        Haze UI is a lightweight React component library built with Linaria and design tokens,
+        following Open UI standards for accessibility and consistency.
       </p>
     </div>
   );

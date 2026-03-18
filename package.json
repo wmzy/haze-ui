@@ -33,9 +33,19 @@
     "postpublish": "git push --follow-tags && npm run deploy",
     "serve": "vite preview"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wmzy/haze-ui.git"
+  },
+  "keywords": [
+    "react",
+    "ui",
+    "component",
+    "library",
+    "haze-ui"
+  ],
   "author": "wmzy",
-  "license": "ISC",
+  "license": "MIT",
   "peerDependencies": {
     "@linaria/core": "^7.0.0",
     "react": "^19.0.0"
