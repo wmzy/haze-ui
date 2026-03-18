@@ -1,7 +1,8 @@
+import {useEffect, useState} from 'react';
 import {css} from '@linaria/core';
 import {Link, PrefetchLink, View} from '@native-router/react';
 
-import {Sun, Moon, Monitor, Palette} from 'lucide-react';
+import {Sun, Moon, Monitor, Palette, Star} from 'lucide-react';
 
 import {
   lightTheme,
@@ -31,13 +32,54 @@ const header = css`
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: var(--haze-space-3);
   padding: 0 var(--haze-space-4);
   border-bottom: 1px solid var(--haze-color-border);
   background: var(--haze-color-bg-subtle);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
+`;
+
+const headerSpacer = css`
+  flex: 1;
+`;
+
+const headerLink = css`
+  display: inline-flex;
+  align-items: center;
+  color: var(--haze-color-text-secondary);
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--haze-color-text);
+  }
+`;
+
+const githubBtn = css`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--haze-space-2);
+  padding: var(--haze-space-1) var(--haze-space-3);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  font-weight: var(--haze-weight-medium);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--haze-color-bg-subtle);
+    border-color: var(--haze-color-border-hover);
+  }
+`;
+
+const starCount = css`
+  color: var(--haze-color-text-secondary);
+  font-weight: var(--haze-weight-normal);
 `;
 
 const body = css`
@@ -128,6 +170,34 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+const REPO = 'wmzy/haze-ui';
+const STAR_CACHE_KEY = 'haze-ui-stars';
+
+function useStarCount(): number | null {
+  const [count, setCount] = useState<number | null>(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem(STAR_CACHE_KEY) ?? '{}') as {v?: number; t?: number};
+      if (cached.v != null && cached.t && Date.now() - cached.t < 3600_000) return cached.v;
+    } catch { /* ignore */ }
+    return null;
+  });
+
+  useEffect(() => {
+    fetch(`https://api.github.com/repos/${REPO}`)
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        const stars = (data as Record<string, unknown>).stargazers_count;
+        if (typeof stars === 'number') {
+          setCount(stars);
+          localStorage.setItem(STAR_CACHE_KEY, JSON.stringify({v: stars, t: Date.now()}));
+        }
+      })
+      .catch(() => { /* offline */ });
+  }, []);
+
+  return count;
+}
+
 export default function Layout() {
   const {
     baseTheme,
@@ -138,6 +208,8 @@ export default function Layout() {
     setActiveTheme,
     activeCustomThemeStyle,
   } = useTheme();
+
+  const stars = useStarCount();
 
   const themeClass = resolvedMode === 'dark' ? darkTheme : lightTheme;
 
@@ -193,10 +265,21 @@ export default function Layout() {
           </Select>
         )}
         <Tooltip content="Theme Editor">
-          <Link className={navLink} to="/theme-editor">
+          <Link className={headerLink} to="/theme-editor">
             <Icon icon={Palette} size="sm" />
           </Link>
         </Tooltip>
+        <div className={headerSpacer} />
+        <a
+          className={githubBtn}
+          href={`https://github.com/${REPO}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <Icon icon={Star} size="sm" />
+          Star on GitHub
+          {stars != null && <span className={starCount}>{stars}</span>}
+        </a>
       </header>
       <div className={body}>
         <aside className={sidebar}>

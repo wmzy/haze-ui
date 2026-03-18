@@ -11,12 +11,12 @@ export default function App() {
   return useMemo(() => {
     const routes = [
       {
-        path: '/',
-        component: () => import('./Home')
-      },
-      {
         component: () => import('./Layout'),
         children: [
+          {
+            path: '/',
+            component: () => import('./Home')
+          },
           {
             path: '/getting-started',
             component: () => import('./GettingStarted')

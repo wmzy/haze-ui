@@ -4,7 +4,6 @@ import {Link} from '@native-router/react';
 import {Button, Flex, Badge, Card} from '@/lib';
 
 const wrapper = css`
-  min-height: 100vh;
   background: var(--haze-color-bg);
 `;
 
