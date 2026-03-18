@@ -72,6 +72,36 @@ export default function Layout() {
               <NavigationMenu.Item>
                 <Link to='/components/badge'>Badge</Link>
               </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/dialog'>Dialog</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/tooltip'>Tooltip</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/popover'>Popover</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/card'>Card</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/radio'>Radio</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/textarea'>Textarea</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/slider'>Slider</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/tabs'>Tabs</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/accordion'>Accordion</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/alert'>Alert</Link>
+              </NavigationMenu.Item>
             </NavigationMenu.Group>
             <li>
               <Link to='/help'>Help</Link>
