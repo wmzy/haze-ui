@@ -1,13 +1,35 @@
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
+import { transformAsync } from '@babel/core';
 import { defineConfig } from 'vite';
+import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import wyw from '@wyw-in-js/vite';
 import rollupPluginTypeAsJsonSchema from 'rollup-plugin-type-as-json-schema';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isLibBuild = process.env.BUILD_LIB === 'true';
+
+function jsxPlusPlugin(): Plugin {
+  return {
+    name: 'jsx-plus',
+    enforce: 'pre',
+    async transform(code, id) {
+      if (!/\.[jt]sx$/.test(id) || id.includes('node_modules')) return;
+      if (!code.includes('x-class') && !code.includes('x-if')) return;
+      const result = await transformAsync(code, {
+        filename: id,
+        babelrc: false,
+        configFile: false,
+        parserOpts: { plugins: ['jsx', 'typescript'] },
+        plugins: ['transform-jsx-condition', 'transform-jsx-class'],
+      });
+      if (!result?.code) return;
+      return { code: result.code, map: result.map };
+    },
+  };
+}
 
 export default defineConfig({
   resolve: {
@@ -18,17 +40,13 @@ export default defineConfig({
       },
     ],
   },
-  oxc: false,
   server: {
     open: true,
   },
   plugins: [
+    jsxPlusPlugin(),
     react({
       exclude: ['node_modules/**'],
-      babel: {
-        configFile: true,
-        babelrc: true,
-      },
     }),
     rollupPluginTypeAsJsonSchema(),
     wyw({
@@ -57,6 +75,7 @@ export default defineConfig({
             'react-toolroom/async',
             '@native-router/react',
             '@for-fun/event-emitter',
+            'babel-runtime-jsx-plus',
           ],
           output: {
             preserveModules: true,

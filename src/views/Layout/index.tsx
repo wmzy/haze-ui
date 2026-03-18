@@ -52,7 +52,25 @@ export default function Layout() {
             </NavigationMenu.Item>
             <NavigationMenu.Group title='Components'>
               <NavigationMenu.Item>
-                <Link to='/help'>Help</Link>
+                <Link to='/components'>Overview</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/button'>Button</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/input'>Input</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/select'>Select</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/checkbox'>Checkbox</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/switch'>Switch</Link>
+              </NavigationMenu.Item>
+              <NavigationMenu.Item>
+                <Link to='/components/badge'>Badge</Link>
               </NavigationMenu.Item>
             </NavigationMenu.Group>
             <li>

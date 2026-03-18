@@ -26,7 +26,7 @@ export default function App() {
           },
           {
             path: '/components/:name',
-            component: () => import('./Help')
+            component: () => import('./ComponentDetail')
           },
           {
             path: '/about',

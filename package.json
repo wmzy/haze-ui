@@ -41,6 +41,7 @@
     "react": "^19.0.0"
   },
   "dependencies": {
+    "babel-runtime-jsx-plus": "^0.1.5",
     "react-toolroom": "^0.4.0",
     "react-use-control": "^1.3.0"
   },
