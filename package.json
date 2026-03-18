@@ -30,7 +30,6 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build",
-    "postpublish": "git push --follow-tags && npm run deploy",
     "serve": "vite preview"
   },
   "repository": {
