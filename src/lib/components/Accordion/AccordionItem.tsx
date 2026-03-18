@@ -1,0 +1,84 @@
+import type {ReactNode} from 'react';
+
+import {css} from '@linaria/core';
+
+type AccordionItemProps = {
+  title: ReactNode;
+  className?: string;
+  children: ReactNode;
+};
+
+const item = css`
+  border-bottom: 1px solid var(--pbl-color-border);
+
+  &:first-of-type {
+    border-top: 1px solid var(--pbl-color-border);
+  }
+`;
+
+const summary = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--pbl-space-3) var(--pbl-space-4);
+  font-family: var(--pbl-font-sans);
+  font-size: var(--pbl-text-sm);
+  font-weight: var(--pbl-weight-medium);
+  color: var(--pbl-color-text);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--pbl-color-bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px var(--pbl-color-focus-ring);
+  }
+
+  &::marker,
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--pbl-color-text-muted);
+    border-bottom: 2px solid var(--pbl-color-text-muted);
+    transform: rotate(-45deg);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  details[open] > &::after {
+    transform: rotate(45deg);
+  }
+`;
+
+const content = css`
+  padding: 0 var(--pbl-space-4) var(--pbl-space-4);
+  font-family: var(--pbl-font-sans);
+  font-size: var(--pbl-text-sm);
+  color: var(--pbl-color-text-secondary);
+  line-height: var(--pbl-leading-normal);
+`;
+
+export default function AccordionItem({
+  title,
+  className,
+  children,
+}: AccordionItemProps) {
+  return (
+    <details x-class={[item, className]} name='accordion'>
+      <summary className={summary}>{title}</summary>
+      <div className={content}>{children}</div>
+    </details>
+  );
+}
+
+export type {AccordionItemProps};

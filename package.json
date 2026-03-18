@@ -1,5 +1,5 @@
 {
-  "name": "ripple-ui",
+  "name": "haze-ui",
   "version": "0.0.0",
   "type": "module",
   "description": "A React UI component library powered by react-use-control and Linaria",
