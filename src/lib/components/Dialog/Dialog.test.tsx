@@ -3,17 +3,18 @@ import { render, screen, act } from '@testing-library/react';
 import Dialog from './Dialog';
 
 beforeEach(() => {
-  HTMLDialogElement.prototype.showModal =
-    HTMLDialogElement.prototype.showModal ||
-    vi.fn(function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    });
-  HTMLDialogElement.prototype.close =
-    HTMLDialogElement.prototype.close ||
-    vi.fn(function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-      this.dispatchEvent(new Event('close'));
-    });
+  // jsdom does not implement showModal/close for HTMLDialogElement
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement
+  ) {
+    this.setAttribute('open', '');
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (
+    this: HTMLDialogElement
+  ) {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  });
 });
 
 describe('Dialog', () => {

@@ -5,7 +5,8 @@ import Carousel from './Carousel';
 import CarouselSlide from './CarouselSlide';
 
 beforeEach(() => {
-  Element.prototype.scrollIntoView = Element.prototype.scrollIntoView || vi.fn();
+  // jsdom does not implement scrollIntoView
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 describe('Carousel', () => {

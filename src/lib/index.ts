@@ -74,4 +74,4 @@ export {Datepicker} from './components/Datepicker';
 export type {DatepickerProps} from './components/Datepicker';
 
 // re-export ecosystem utilities
-export {useControl, controlEqual} from 'react-use-control';
+export {useControl} from 'react-use-control';
