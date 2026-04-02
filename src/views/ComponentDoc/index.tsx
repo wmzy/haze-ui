@@ -49,6 +49,7 @@ import {
   Carousel,
   CarouselSlide,
   Datepicker,
+  Tree,
 } from '@/lib';
 
 const page = css`
@@ -702,6 +703,77 @@ function DatepickerSection() {
   );
 }
 
+function TreeSection() {
+  return (
+    <div className={section} id='tree'>
+      <h2>Tree</h2>
+      <h3>Basic</h3>
+      <div style={{ maxWidth: 400 }}>
+        <Tree
+          treeData={[
+            {
+              key: '0-0',
+              title: 'parent 0',
+              children: [
+                { key: '0-0-0', title: 'leaf 0-0-0' },
+                { key: '0-0-1', title: 'leaf 0-0-1' },
+              ],
+            },
+            {
+              key: '0-1',
+              title: 'parent 1',
+              children: [{ key: '0-1-0', title: 'leaf 0-1-0' }],
+            },
+          ]}
+        />
+      </div>
+      <h3>With Checkboxes</h3>
+      <div style={{ maxWidth: 400 }}>
+        <Tree
+          treeData={[
+            {
+              key: '0-0',
+              title: 'parent 0',
+              children: [
+                { key: '0-0-0', title: 'leaf 0-0-0' },
+                { key: '0-0-1', title: 'leaf 0-0-1' },
+              ],
+            },
+            {
+              key: '0-1',
+              title: 'parent 1',
+              children: [{ key: '0-1-0', title: 'leaf 0-1-0' }],
+            },
+          ]}
+          checkable
+        />
+      </div>
+      <h3>With Icons and Lines</h3>
+      <div style={{ maxWidth: 400 }}>
+        <Tree
+          treeData={[
+            {
+              key: '0-0',
+              title: 'Documents',
+              children: [
+                { key: '0-0-0', title: 'Report.pdf' },
+                { key: '0-0-1', title: 'Notes.txt' },
+              ],
+            },
+            {
+              key: '0-1',
+              title: 'Images',
+              children: [{ key: '0-1-0', title: 'Photo.png' }],
+            },
+          ]}
+          showIcon
+          showLine
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function ComponentDoc() {
   return (
     <div className={page}>
@@ -738,6 +810,7 @@ export default function ComponentDoc() {
       <TableSection />
       <CarouselSection />
       <DatepickerSection />
+      <TreeSection />
     </div>
   );
 }
