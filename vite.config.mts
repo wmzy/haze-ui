@@ -92,6 +92,7 @@ export default defineConfig({
       evaluate: false,
       sourceMap: true,
       exclude: ['node_modules/**'],
+      classNameSlug: 'haze-[name]__[local]',
     }),
   ],
   optimizeDeps: {
@@ -108,7 +109,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/lib/**/*.{ts,tsx}'],
-      exclude: ['src/lib/**/*.test.{ts,tsx}', 'src/lib/**/index.ts', 'src/lib/tokens/**', '**/*.d.ts'],
+      exclude: [
+        'src/lib/**/*.test.{ts,tsx}',
+        'src/lib/**/index.ts',
+        'src/lib/tokens/**',
+        '**/*.d.ts',
+      ],
     },
   },
 });
