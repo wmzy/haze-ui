@@ -770,6 +770,70 @@ function TreeSection() {
           showLine
         />
       </div>
+      <h3>Left-Right Layout</h3>
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--haze-space-4)',
+          maxWidth: 600,
+          height: 240,
+          border: '1px solid var(--haze-color-border)',
+          borderRadius: 'var(--haze-radius-md)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: 200,
+            flexShrink: 0,
+            borderRight: '1px solid var(--haze-color-border)',
+            overflow: 'auto',
+            padding: 'var(--haze-space-3)',
+          }}
+        >
+          <Tree
+            treeData={[
+              {
+                key: '0-0',
+                title: 'src',
+                children: [
+                  {
+                    key: '0-0-0',
+                    title: 'components',
+                    children: [
+                      { key: '0-0-0-0', title: 'Button.tsx' },
+                      { key: '0-0-0-1', title: 'Dialog.tsx' },
+                    ],
+                  },
+                  {
+                    key: '0-0-1',
+                    title: 'hooks',
+                    children: [{ key: '0-0-1-0', title: 'useAuth.ts' }],
+                  },
+                ],
+              },
+              {
+                key: '0-1',
+                title: 'public',
+                children: [{ key: '0-1-0', title: 'index.html' }],
+              },
+            ]}
+            showLine
+          />
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--haze-color-text-secondary)',
+            fontSize: 'var(--haze-text-sm)',
+          }}
+        >
+          Select a file to preview
+        </div>
+      </div>
     </div>
   );
 }
