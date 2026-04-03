@@ -51,7 +51,6 @@ const item = css`
 
 const blockItem = css`
   padding: var(--haze-space-1) var(--haze-space-2);
-  margin: 0 calc(-1 * var(--haze-space-1));
   border-radius: var(--haze-radius-sm);
 
   &:hover {

@@ -818,6 +818,7 @@ function TreeSection() {
                 children: [{ key: '0-1-0', title: 'index.html' }],
               },
             ]}
+            blockNode
             showLine
           />
         </div>
