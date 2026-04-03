@@ -17,6 +17,10 @@ const base = css`
   overflow: auto;
 `;
 
+const group = css`
+  min-width: 0;
+`;
+
 function computeCheckedKeys(
   keys: string[],
   data: TreeNodeData[],
@@ -212,7 +216,7 @@ export default function Tree({
       const currentIsLast = [...parentIsLast, isLastAtThisLevel];
 
       return (
-        <div key={node.key} role='group'>
+        <div key={node.key} role='group' x-class={group}>
           <TreeItem
             node={node}
             level={level}
