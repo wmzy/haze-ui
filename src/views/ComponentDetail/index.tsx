@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useMatched } from '@native-router/react';
 import { useControl } from 'react-use-control';
 
-const noop = () => { /* demo placeholder */ };
+const noop = () => {
+  /* demo placeholder */
+};
 
 import {
   Button,
@@ -57,14 +59,24 @@ import {
   CarouselSlide,
   Datepicker,
   COMPONENT_TOKENS,
+  Tree,
+  type TreeNodeData,
 } from '@/lib';
 
 import PropsTable from './PropsTable';
 import A11yNote from './A11yNote';
 import TokensTable from './TokensTable';
-import { page, intro, section, row, fieldRow, labelStyle, codeBlock } from './styles';
+import {
+  page,
+  intro,
+  section,
+  row,
+  fieldRow,
+  labelStyle,
+  codeBlock,
+} from './styles';
 
-function CssVarsSection({component}: {component: string}) {
+function CssVarsSection({ component }: { component: string }) {
   const tokens = COMPONENT_TOKENS[component];
   if (!tokens?.length) return null;
   return (
@@ -126,24 +138,41 @@ function ButtonDemo() {
 
       <div className={section}>
         <h2>Square (Icon Button)</h2>
-        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
-          Use <code>square</code> for icon-only buttons with equal padding on all sides.
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Use <code>square</code> for icon-only buttons with equal padding on
+          all sides.
         </p>
         <div className={row}>
           <Button size='sm' square variant='solid'>
-            <Icon size='sm'><StrokeSvg /></Icon>
+            <Icon size='sm'>
+              <StrokeSvg />
+            </Icon>
           </Button>
           <Button size='md' square variant='solid'>
-            <Icon size='sm'><StrokeSvg /></Icon>
+            <Icon size='sm'>
+              <StrokeSvg />
+            </Icon>
           </Button>
           <Button size='lg' square variant='solid'>
-            <Icon size='md'><StrokeSvg /></Icon>
+            <Icon size='md'>
+              <StrokeSvg />
+            </Icon>
           </Button>
           <Button size='sm' square variant='outline'>
-            <Icon size='sm'><StrokeSvg /></Icon>
+            <Icon size='sm'>
+              <StrokeSvg />
+            </Icon>
           </Button>
           <Button size='sm' square variant='ghost'>
-            <Icon size='sm'><StrokeSvg /></Icon>
+            <Icon size='sm'>
+              <StrokeSvg />
+            </Icon>
           </Button>
         </div>
       </div>
@@ -181,7 +210,8 @@ function ButtonDemo() {
               name: 'square',
               type: 'boolean',
               default: 'false',
-              description: 'Equal padding on all sides, ideal for icon-only buttons',
+              description:
+                'Equal padding on all sides, ideal for icon-only buttons',
             },
             {
               name: 'disabled',
@@ -226,7 +256,7 @@ function ButtonDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="button" />
+      <CssVarsSection component='button' />
     </>
   );
 }
@@ -314,7 +344,7 @@ function InputDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="input" />
+      <CssVarsSection component='input' />
     </>
   );
 }
@@ -418,7 +448,7 @@ function SelectDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="select" />
+      <CssVarsSection component='select' />
     </>
   );
 }
@@ -502,7 +532,7 @@ function CheckboxDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="checkbox" />
+      <CssVarsSection component='checkbox' />
     </>
   );
 }
@@ -583,7 +613,7 @@ function SwitchDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="switch" />
+      <CssVarsSection component='switch' />
     </>
   );
 }
@@ -662,7 +692,7 @@ function BadgeDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="badge" />
+      <CssVarsSection component='badge' />
     </>
   );
 }
@@ -746,7 +776,7 @@ function DialogDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="dialog" />
+      <CssVarsSection component='dialog' />
     </>
   );
 }
@@ -825,7 +855,7 @@ function TooltipDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="tooltip" />
+      <CssVarsSection component='tooltip' />
     </>
   );
 }
@@ -894,7 +924,7 @@ function PopoverDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="popover" />
+      <CssVarsSection component='popover' />
     </>
   );
 }
@@ -989,7 +1019,7 @@ function CardDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="card" />
+      <CssVarsSection component='card' />
     </>
   );
 }
@@ -1082,7 +1112,7 @@ function RadioDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="radio" />
+      <CssVarsSection component='radio' />
     </>
   );
 }
@@ -1170,7 +1200,7 @@ function TextareaDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="textarea" />
+      <CssVarsSection component='textarea' />
     </>
   );
 }
@@ -1271,7 +1301,7 @@ function SliderDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="slider" />
+      <CssVarsSection component='slider' />
     </>
   );
 }
@@ -1389,7 +1419,7 @@ function TabsDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="tabs" />
+      <CssVarsSection component='tabs' />
     </>
   );
 }
@@ -1488,7 +1518,7 @@ function AccordionDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="accordion" />
+      <CssVarsSection component='accordion' />
     </>
   );
 }
@@ -1582,7 +1612,7 @@ function AlertDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="alert" />
+      <CssVarsSection component='alert' />
     </>
   );
 }
@@ -1658,7 +1688,7 @@ function AvatarDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="avatar" />
+      <CssVarsSection component='avatar' />
     </>
   );
 }
@@ -1762,7 +1792,7 @@ function TagDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="tag" />
+      <CssVarsSection component='tag' />
     </>
   );
 }
@@ -1851,7 +1881,7 @@ function SkeletonDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="skeleton" />
+      <CssVarsSection component='skeleton' />
     </>
   );
 }
@@ -1865,8 +1895,8 @@ function IconDemo() {
       <p className={intro}>
         Wrapper for SVG icons with consistent sizing and color inheritance.
         Works with both fill-based and stroke-based SVGs, and integrates
-        seamlessly with community icon libraries like Lucide, React Icons,
-        and Phosphor.
+        seamlessly with community icon libraries like Lucide, React Icons, and
+        Phosphor.
       </p>
 
       <div className={section}>
@@ -1886,29 +1916,64 @@ function IconDemo() {
 
       <div className={section}>
         <h2>Fill vs Stroke</h2>
-        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
-          Icon auto-detects stroke-based SVGs (those with <code>fill=&quot;none&quot;</code> or <code>stroke</code> attributes)
-          and adjusts rendering accordingly. Fill-based SVGs work out of the box.
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Icon auto-detects stroke-based SVGs (those with{' '}
+          <code>fill=&quot;none&quot;</code> or <code>stroke</code> attributes)
+          and adjusts rendering accordingly. Fill-based SVGs work out of the
+          box.
         </p>
         <div className={row}>
-          <Flex gap='var(--haze-space-4)' style={{alignItems: 'center'}}>
-            <Flex gap='var(--haze-space-2)' style={{alignItems: 'center'}}>
-              <Icon size='lg'><StrokeSvg /></Icon>
-              <span style={{fontSize: 'var(--haze-text-xs)', color: 'var(--haze-color-text-muted)'}}>Stroke</span>
+          <Flex gap='var(--haze-space-4)' style={{ alignItems: 'center' }}>
+            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+              <Icon size='lg'>
+                <StrokeSvg />
+              </Icon>
+              <span
+                style={{
+                  fontSize: 'var(--haze-text-xs)',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                Stroke
+              </span>
             </Flex>
-            <Flex gap='var(--haze-space-2)' style={{alignItems: 'center'}}>
-              <Icon size='lg'><FillSvg /></Icon>
-              <span style={{fontSize: 'var(--haze-text-xs)', color: 'var(--haze-color-text-muted)'}}>Fill</span>
+            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+              <Icon size='lg'>
+                <FillSvg />
+              </Icon>
+              <span
+                style={{
+                  fontSize: 'var(--haze-text-xs)',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                Fill
+              </span>
             </Flex>
           </Flex>
         </div>
       </div>
 
       <div className={section}>
-        <h2>Using the <code>icon</code> Prop</h2>
-        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
-          Pass a component directly via the <code>icon</code> prop instead of wrapping it in children.
-          When using <code>icon</code>, stroke mode is enabled by default to work with most community icon libraries.
+        <h2>
+          Using the <code>icon</code> Prop
+        </h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Pass a component directly via the <code>icon</code> prop instead of
+          wrapping it in children. When using <code>icon</code>, stroke mode is
+          enabled by default to work with most community icon libraries.
         </p>
         <div className={row}>
           <Icon icon={StrokeSvg} size='sm' />
@@ -1919,15 +1984,29 @@ function IconDemo() {
 
       <div className={section}>
         <h2>Community Icon Libraries</h2>
-        <p style={{fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', margin: '0 0 var(--haze-space-3)'}}>
-          Haze UI Icon is designed as a thin wrapper — it does not bundle any icons.
-          Instead, pair it with your preferred icon library:
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Haze UI Icon is designed as a thin wrapper — it does not bundle any
+          icons. Instead, pair it with your preferred icon library:
         </p>
 
-        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+        <h3
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            fontWeight: 600,
+            margin: 'var(--haze-space-4) 0 var(--haze-space-2)',
+          }}
+        >
           Lucide React
         </h3>
-        <pre className={codeBlock}>{`import { Search, ChevronDown } from 'lucide-react';
+        <pre
+          className={codeBlock}
+        >{`import { Search, ChevronDown } from 'lucide-react';
 import { Icon } from 'haze-ui';
 
 // Using icon prop (recommended)
@@ -1936,23 +2015,45 @@ import { Icon } from 'haze-ui';
 // Using children
 <Icon size="sm"><Search /></Icon>`}</pre>
 
-        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+        <h3
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            fontWeight: 600,
+            margin: 'var(--haze-space-4) 0 var(--haze-space-2)',
+          }}
+        >
           React Icons
         </h3>
-        <pre className={codeBlock}>{`import { FiSearch, FiChevronDown } from 'react-icons/fi';
+        <pre
+          className={codeBlock}
+        >{`import { FiSearch, FiChevronDown } from 'react-icons/fi';
 import { Icon } from 'haze-ui';
 
 <Icon size="md"><FiSearch /></Icon>`}</pre>
 
-        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+        <h3
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            fontWeight: 600,
+            margin: 'var(--haze-space-4) 0 var(--haze-space-2)',
+          }}
+        >
           Phosphor Icons
         </h3>
-        <pre className={codeBlock}>{`import { MagnifyingGlass } from '@phosphor-icons/react';
+        <pre
+          className={codeBlock}
+        >{`import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Icon } from 'haze-ui';
 
 <Icon icon={MagnifyingGlass} size="md" />`}</pre>
 
-        <h3 style={{fontSize: 'var(--haze-text-sm)', fontWeight: 600, margin: 'var(--haze-space-4) 0 var(--haze-space-2)'}}>
+        <h3
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            fontWeight: 600,
+            margin: 'var(--haze-space-4) 0 var(--haze-space-2)',
+          }}
+        >
           Inline SVG
         </h3>
         <pre className={codeBlock}>{`import { Icon } from 'haze-ui';
@@ -1971,7 +2072,8 @@ import { Icon } from 'haze-ui';
             {
               name: 'icon',
               type: 'ComponentType<SVGProps<SVGSVGElement>>',
-              description: 'SVG component to render (alternative to children). Stroke mode is auto-enabled.',
+              description:
+                'SVG component to render (alternative to children). Stroke mode is auto-enabled.',
             },
             {
               name: 'size',
@@ -1984,7 +2086,11 @@ import { Icon } from 'haze-ui';
               type: 'string',
               description: 'Additional CSS class',
             },
-            { name: 'children', type: 'ReactNode', description: 'SVG element (used when icon prop is not provided)' },
+            {
+              name: 'children',
+              type: 'ReactNode',
+              description: 'SVG element (used when icon prop is not provided)',
+            },
           ]}
         />
       </div>
@@ -2005,7 +2111,7 @@ import { Icon } from 'haze-ui';
         </A11yNote>
       </div>
 
-      <CssVarsSection component="icon" />
+      <CssVarsSection component='icon' />
     </>
   );
 }
@@ -2087,7 +2193,7 @@ function ImageDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="image" />
+      <CssVarsSection component='image' />
     </>
   );
 }
@@ -2177,7 +2283,7 @@ function FlexDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="flex" />
+      <CssVarsSection component='flex' />
     </>
   );
 }
@@ -2272,7 +2378,7 @@ function BreadcrumbDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="breadcrumb" />
+      <CssVarsSection component='breadcrumb' />
     </>
   );
 }
@@ -2343,7 +2449,7 @@ function DisclosureDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="disclosure" />
+      <CssVarsSection component='disclosure' />
     </>
   );
 }
@@ -2443,7 +2549,7 @@ function MenuDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="menu" />
+      <CssVarsSection component='menu' />
     </>
   );
 }
@@ -2531,7 +2637,7 @@ function NumberInputDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="numberinput" />
+      <CssVarsSection component='numberinput' />
     </>
   );
 }
@@ -2598,7 +2704,7 @@ function FileInputDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="fileinput" />
+      <CssVarsSection component='fileinput' />
     </>
   );
 }
@@ -2682,7 +2788,7 @@ function ToastDemoInner() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="toast" />
+      <CssVarsSection component='toast' />
     </>
   );
 }
@@ -2760,7 +2866,7 @@ function ListDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="list" />
+      <CssVarsSection component='list' />
     </>
   );
 }
@@ -2840,7 +2946,7 @@ function ComboboxDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="combobox" />
+      <CssVarsSection component='combobox' />
     </>
   );
 }
@@ -2959,7 +3065,7 @@ function TableDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="table" />
+      <CssVarsSection component='table' />
     </>
   );
 }
@@ -3078,7 +3184,7 @@ function CarouselDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="carousel" />
+      <CssVarsSection component='carousel' />
     </>
   );
 }
@@ -3165,7 +3271,258 @@ function DatepickerDemo() {
         </A11yNote>
       </div>
 
-      <CssVarsSection component="datepicker" />
+      <CssVarsSection component='datepicker' />
+    </>
+  );
+}
+
+// ─── Tree ───────────────────────────────────────────────────────
+
+function TreeDemo() {
+  const treeData: TreeNodeData[] = [
+    {
+      key: 'root',
+      title: 'Root',
+      children: [
+        {
+          key: 'parent-1',
+          title: 'Parent 1',
+          children: [
+            { key: 'child-1-1', title: 'Child 1-1' },
+            { key: 'child-1-2', title: 'Child 1-2' },
+          ],
+        },
+        {
+          key: 'parent-2',
+          title: 'Parent 2',
+          children: [
+            { key: 'child-2-1', title: 'Child 2-1' },
+            { key: 'child-2-2', title: 'Child 2-2' },
+          ],
+        },
+      ],
+    },
+  ];
+
+  return (
+    <>
+      <h1>Tree</h1>
+      <p className={intro}>
+        Hierarchical data display with expandable nodes, selection, and checkbox
+        support.
+      </p>
+
+      <div className={section}>
+        <h2>Basic</h2>
+        <div style={{ maxWidth: 320 }}>
+          <Tree treeData={treeData} />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Checkable</h2>
+        <div style={{ maxWidth: 320 }}>
+          <Tree treeData={treeData} checkable />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>With Icons and Lines</h2>
+        <div style={{ maxWidth: 320 }}>
+          <Tree treeData={treeData} showIcon showLine />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Tree Props</h2>
+        <PropsTable
+          props={[
+            {
+              name: 'treeData',
+              type: 'TreeNodeData[]',
+              description: 'Array of tree node data',
+            },
+            {
+              name: 'checkable',
+              type: 'boolean',
+              default: 'false',
+              description: 'Show checkbox before each node',
+            },
+            {
+              name: 'checkStrictly',
+              type: 'boolean',
+              default: 'false',
+              description: 'Disable parent-child cascade selection',
+            },
+            {
+              name: 'selectable',
+              type: 'boolean',
+              default: 'true',
+              description: 'Allow node selection',
+            },
+            {
+              name: 'multiple',
+              type: 'boolean',
+              default: 'false',
+              description: 'Allow multiple selection',
+            },
+            {
+              name: 'disabled',
+              type: 'boolean',
+              default: 'false',
+              description: 'Disable the entire tree',
+            },
+            {
+              name: 'blockNode',
+              type: 'boolean',
+              default: 'false',
+              description: 'Node content takes full width',
+            },
+            {
+              name: 'showLine',
+              type: 'boolean',
+              default: 'false',
+              description: 'Show connecting lines between nodes',
+            },
+            {
+              name: 'showIcon',
+              type: 'boolean',
+              default: 'false',
+              description: 'Show icon for each node',
+            },
+            {
+              name: 'expandedKeys',
+              type: 'Control<string[]> | string[]',
+              description: 'Controlled expanded node keys',
+            },
+            {
+              name: 'selectedKeys',
+              type: 'Control<string[]> | string[]',
+              description: 'Controlled selected node keys',
+            },
+            {
+              name: 'checkedKeys',
+              type: 'Control<string[]> | string[]',
+              description: 'Controlled checked node keys',
+            },
+            {
+              name: 'titleRender',
+              type: '(node: TreeNodeData) => ReactNode',
+              description: 'Custom title renderer',
+            },
+            {
+              name: 'iconRender',
+              type: '(node: TreeNodeData) => ReactNode',
+              description: 'Custom icon renderer',
+            },
+            {
+              name: 'switcherIcon',
+              type: 'ReactNode',
+              description: 'Custom expand/collapse icon',
+            },
+            {
+              name: 'onExpand',
+              type: '(expandedKeys: string[], info: {...}) => void',
+              description: 'Callback when node is expanded/collapsed',
+            },
+            {
+              name: 'onSelect',
+              type: '(selectedKeys: string[], info: {...}) => void',
+              description: 'Callback when node is selected',
+            },
+            {
+              name: 'onCheck',
+              type: '(checkedKeys: string[] | {...}, info: {...}) => void',
+              description: 'Callback when node is checked',
+            },
+            {
+              name: 'className',
+              type: 'string',
+              description: 'Additional CSS class',
+            },
+          ]}
+        />
+      </div>
+
+      <div className={section}>
+        <h2>TreeNodeData</h2>
+        <PropsTable
+          props={[
+            {
+              name: 'key',
+              type: 'string',
+              description: 'Unique identifier for the node',
+            },
+            {
+              name: 'title',
+              type: 'ReactNode',
+              description: 'Display title of the node',
+            },
+            {
+              name: 'children',
+              type: 'TreeNodeData[]',
+              description: 'Child nodes',
+            },
+            {
+              name: 'disabled',
+              type: 'boolean',
+              default: 'false',
+              description: 'Disable the node',
+            },
+            {
+              name: 'selectable',
+              type: 'boolean',
+              default: 'true',
+              description: 'Allow node selection',
+            },
+            {
+              name: 'disableCheckbox',
+              type: 'boolean',
+              default: 'false',
+              description: 'Disable the checkbox for this node',
+            },
+            {
+              name: 'icon',
+              type: 'ReactNode',
+              description: 'Custom icon for this node',
+            },
+            {
+              name: 'isLeaf',
+              type: 'boolean',
+              description: 'Mark as leaf node (for lazy loading)',
+            },
+          ]}
+        />
+      </div>
+
+      <div className={section}>
+        <h2>Accessibility</h2>
+        <A11yNote>
+          <ul>
+            <li>
+              Uses nested <strong>&lt;ul&gt;</strong>/
+              <strong>&lt;li&gt;</strong> with{' '}
+              <strong>role=&quot;tree&quot;</strong>/
+              <strong>role=&quot;treeitem&quot;</strong>
+            </li>
+            <li>
+              Expanded/collapsed state via <strong>aria-expanded</strong>
+            </li>
+            <li>
+              Selected state via <strong>aria-selected</strong>
+            </li>
+            <li>
+              Checked state via <strong>aria-checked</strong>
+            </li>
+            <li>
+              <strong>Arrow keys</strong> navigate between nodes,{' '}
+              <strong>Enter</strong>/<strong>Space</strong> activates
+            </li>
+          </ul>
+        </A11yNote>
+      </div>
+
+      <CssVarsSection component='tree' />
     </>
   );
 }
@@ -3206,6 +3563,7 @@ const demos: Record<string, () => ReactNode> = {
   table: TableDemo,
   carousel: CarouselDemo,
   datepicker: DatepickerDemo,
+  tree: TreeDemo,
 };
 
 export default function ComponentDetail() {
