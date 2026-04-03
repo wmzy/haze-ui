@@ -92,7 +92,7 @@ export default defineConfig({
       evaluate: false,
       sourceMap: true,
       exclude: ['node_modules/**'],
-      classNameSlug: 'haze-[name]__[local]',
+      classNameSlug: (hash, title, args) => `haze-${args.name}__${title}`,
     }),
   ],
   optimizeDeps: {
