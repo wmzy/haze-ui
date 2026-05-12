@@ -79,34 +79,46 @@ const variants = {
   `,
 } as const;
 
+const sizeSm = css`
+  padding: var(--haze-space-1) var(--haze-space-3);
+  font-size: var(--haze-text-sm);
+`;
+
+const sizeMd = css`
+  padding: var(--haze-space-2) var(--haze-space-4);
+  font-size: var(--haze-text-sm);
+`;
+
+const sizeLg = css`
+  padding: var(--haze-space-3) var(--haze-space-6);
+  font-size: var(--haze-text-base);
+`;
+
+const squareSm = css`
+  padding: var(--haze-space-1);
+  font-size: var(--haze-text-sm);
+`;
+
+const squareMd = css`
+  padding: var(--haze-space-2);
+  font-size: var(--haze-text-sm);
+`;
+
+const squareLg = css`
+  padding: var(--haze-space-3);
+  font-size: var(--haze-text-base);
+`;
+
 const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-4);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-6);
-    font-size: var(--haze-text-base);
-  `,
+  sm: sizeSm,
+  md: sizeMd,
+  lg: sizeLg,
 } as const;
 
 const squareSizes = {
-  sm: css`
-    padding: var(--haze-space-1);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3);
-    font-size: var(--haze-text-base);
-  `,
+  sm: squareSm,
+  md: squareMd,
+  lg: squareLg,
 } as const;
 
 export default function Button({

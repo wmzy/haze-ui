@@ -43,46 +43,64 @@ const thumb = css`
   box-shadow: var(--haze-shadow-sm);
 `;
 
+const trackSm = css`
+  width: 32px;
+  height: 18px;
+`;
+
+const trackMd = css`
+  width: 40px;
+  height: 22px;
+`;
+
+const trackLg = css`
+  width: 48px;
+  height: 26px;
+`;
+
+const thumbSm = css`
+  width: 14px;
+  height: 14px;
+`;
+
+const thumbMd = css`
+  width: 18px;
+  height: 18px;
+`;
+
+const thumbLg = css`
+  width: 22px;
+  height: 22px;
+`;
+
+const thumbCheckedSm = css`
+  transform: translateX(14px);
+`;
+
+const thumbCheckedMd = css`
+  transform: translateX(18px);
+`;
+
+const thumbCheckedLg = css`
+  transform: translateX(22px);
+`;
+
 const trackSizes = {
-  sm: css`
-    width: 32px;
-    height: 18px;
-  `,
-  md: css`
-    width: 40px;
-    height: 22px;
-  `,
-  lg: css`
-    width: 48px;
-    height: 26px;
-  `,
+  sm: trackSm,
+  md: trackMd,
+  lg: trackLg,
 } as const;
 
 const thumbSizes = {
-  sm: css`
-    width: 14px;
-    height: 14px;
-  `,
-  md: css`
-    width: 18px;
-    height: 18px;
-  `,
-  lg: css`
-    width: 22px;
-    height: 22px;
-  `,
+  sm: thumbSm,
+  md: thumbMd,
+  lg: thumbLg,
 } as const;
 
 const thumbCheckedSizes = {
-  sm: css`
-    transform: translateX(14px);
-  `,
-  md: css`
-    transform: translateX(18px);
-  `,
-  lg: css`
-    transform: translateX(22px);
-  `,
+  sm: thumbCheckedSm,
+  md: thumbCheckedMd,
+  lg: thumbCheckedLg,
 } as const;
 
 export default function Switch({

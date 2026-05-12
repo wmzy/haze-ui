@@ -73,34 +73,46 @@ const stepBtn = css`
   }
 `;
 
+const inputSm = css`
+  padding: var(--haze-space-1);
+  font-size: var(--haze-text-sm);
+`;
+
+const inputMd = css`
+  padding: var(--haze-space-2);
+  font-size: var(--haze-text-sm);
+`;
+
+const inputLg = css`
+  padding: var(--haze-space-3);
+  font-size: var(--haze-text-base);
+`;
+
+const btnSm = css`
+  padding: 0 var(--haze-space-2);
+  font-size: var(--haze-text-sm);
+`;
+
+const btnMd = css`
+  padding: 0 var(--haze-space-3);
+  font-size: var(--haze-text-sm);
+`;
+
+const btnLg = css`
+  padding: 0 var(--haze-space-3);
+  font-size: var(--haze-text-base);
+`;
+
 const inputSizes = {
-  sm: css`
-    padding: var(--haze-space-1);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3);
-    font-size: var(--haze-text-base);
-  `,
+  sm: inputSm,
+  md: inputMd,
+  lg: inputLg,
 } as const;
 
 const btnSizes = {
-  sm: css`
-    padding: 0 var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: 0 var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: 0 var(--haze-space-3);
-    font-size: var(--haze-text-base);
-  `,
+  sm: btnSm,
+  md: btnMd,
+  lg: btnLg,
 } as const;
 
 export default function NumberInput({
