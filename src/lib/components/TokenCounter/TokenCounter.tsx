@@ -1,0 +1,61 @@
+import { css } from '@linaria/core';
+
+type TokenCounterProps = {
+  used: number;
+  max: number;
+  label?: string;
+  className?: string;
+};
+
+const wrapper = css`
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  color: var(--haze-color-text-muted);
+`;
+
+const bar = css`
+  height: 0.25rem;
+  background: var(--haze-color-muted);
+  border-radius: var(--haze-radius-full);
+  overflow: hidden;
+  margin-top: var(--haze-space-1);
+`;
+
+const fill = css`
+  height: 100%;
+  border-radius: var(--haze-radius-full);
+  transition: width 0.3s ease;
+`;
+
+const fillNormal = css`background: var(--haze-color-primary);`;
+const fillWarning = css`background: var(--haze-color-warning, #eab308);`;
+const fillDanger = css`background: var(--haze-color-danger, #dc2626);`;
+
+const info = css`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+`;
+
+const count = css`
+  font-variant-numeric: tabular-nums;
+`;
+
+export default function TokenCounter({ used, max, label, className }: TokenCounterProps) {
+  const pct = max > 0 ? Math.min(100, (used / max) * 100) : 0;
+  const fillClass = pct > 90 ? fillDanger : pct > 70 ? fillWarning : fillNormal;
+
+  return (
+    <div x-class={[wrapper, className]}>
+      <div x-class={[info]}>
+        <span>{label || 'Tokens'}</span>
+        <span x-class={[count]}>{used.toLocaleString()} / {max.toLocaleString()}</span>
+      </div>
+      <div x-class={[bar]}>
+        <div x-class={[fill, fillClass]} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+export type { TokenCounterProps };
