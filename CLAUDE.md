@@ -68,7 +68,7 @@ Controlled by environment variables in `vite.config.mts`:
 
 ## Testing
 
-- Vitest with jsdom environment, globals enabled (no need to import `describe`/`it`/`expect`)
+- Vitest with jsdom environment, globals enabled (no need to import `describe`/`it`/expect`)
 - @testing-library/react + @testing-library/user-event for rendering and interaction
 - @testing-library/jest-dom/vitest for DOM assertions
 - CSS processing disabled in tests (`css: false`)
@@ -77,3 +77,235 @@ Controlled by environment variables in `vite.config.mts`:
 ## Path Alias
 
 `@/` maps to `src/` (configured in tsconfig and vite).
+
+---
+
+## Component Authoring Template
+
+New components must follow this exact structure. Use Button or Switch as reference.
+
+### Stateless component (no internal state)
+
+```tsx
+import type { ComponentPropsWithoutRef } from 'react';
+import { css } from '@linaria/core';
+
+type BadgeProps = {
+  variant?: 'solid' | 'outline';
+} & Omit<ComponentPropsWithoutRef<'span'>, 'color'>;
+
+const base = css`
+  display: inline-flex;
+  /* ... use tokens only: var(--haze-*) */
+`;
+
+const variants = {
+  solid: css`background: var(--haze-color-primary);`,
+  outline: css`border: 1px solid var(--haze-color-border);`,
+} as const;
+
+export default function Badge({
+  variant = 'solid',
+  className,
+  ...rest
+}: BadgeProps) {
+  return (
+    <span x-class={[base, variants[variant], className]} {...rest} />
+  );
+}
+
+export type { BadgeProps };
+```
+
+### Stateful component (controllable state)
+
+```tsx
+import type { ComponentPropsWithoutRef } from 'react';
+import type { Control } from 'react-use-control';
+
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
+
+type SwitchProps = {
+  checked?: Control<boolean> | boolean;
+} & Omit<ComponentPropsWithoutRef<'button'>, 'type' | 'checked'>;
+
+// ... css definitions ...
+
+export default function Switch({
+  checked: checkedControl,  // rename to avoid collision
+  className,
+  ...rest
+}: SwitchProps) {
+  const [checked, setChecked] = useControl(
+    checkedControl as Control<boolean>,
+    false  // default value for uncontrolled mode
+  );
+
+  return (
+    <button
+      type='button'
+      role='switch'
+      aria-checked={checked}
+      x-class={[base, checked && checkedClass, className]}
+      onClick={() => setChecked((prev) => !prev)}
+      {...rest}
+    />
+  );
+}
+
+export type { SwitchProps };
+```
+
+### Test template
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+import Component from './Component';
+
+describe('Component', () => {
+  it('renders with correct role', () => {
+    render(<Component aria-label="test" />);
+    expect(screen.getByRole('button', { name: 'test' })).toBeInTheDocument();
+  });
+
+  it('applies className', () => {
+    render(<Component className="custom" aria-label="test" />);
+    expect(screen.getByRole('button')).toHaveClass('custom');
+  });
+
+  it('handles user interaction', async () => {
+    const user = userEvent.setup();
+    render(<Component aria-label="test" />);
+    await user.click(screen.getByRole('button'));
+    // assert state change
+  });
+
+  it('forwards native props', () => {
+    render(<Component disabled aria-label="test" />);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+});
+```
+
+---
+
+## Anti-Patterns
+
+Things that will break the build, break theming, or violate the library's conventions.
+
+### 1. Using useState for controllable state
+
+All user-facing state must go through `useControl`. This is the library's core contract.
+
+```tsx
+// WRONG — bypasses controllable pattern
+const [open, setOpen] = useState(false);
+
+// CORRECT — accepts external control
+type Props = { open?: Control<boolean> | boolean };
+
+function Modal({ open: openControl }: Props) {
+  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+}
+```
+
+### 2. Hardcoding visual values
+
+Components must use `--haze-*` tokens. No exceptions for "quick" values.
+
+```tsx
+// WRONG — breaks theming
+css`color: #0066ff;`
+css`padding: 8px;`
+css`font-size: 14px;`
+css`border-radius: 4px;`
+
+// CORRECT
+css`color: var(--haze-color-primary);`
+css`padding: var(--haze-space-2);`
+css`font-size: var(--haze-text-sm);`
+css`border-radius: var(--haze-radius-md);`
+```
+
+### 3. Using interface or enum
+
+```tsx
+// WRONG
+interface ButtonProps { variant: string; }
+enum Status { Active,Inactive }
+
+// CORRECT
+type ButtonProps = { variant: string; }
+type Status = 'active' | 'inactive';
+```
+
+### 4. Using className directly instead of x-class
+
+```tsx
+// WRONG — won't merge Linaria classes correctly
+<div className={`${base} ${className}`}>
+
+// CORRECT
+<div x-class={[base, className]}>
+```
+
+### 5. Omitting ...rest spread on native elements
+
+Components must forward native HTML attributes for accessibility and composability.
+
+```tsx
+// WRONG — blocks native props like aria-label, data-*, onClick
+export default function Badge({ variant, className }: BadgeProps) {
+  return <span x-class={[base, className]} />;
+}
+
+// CORRECT — spread remaining props
+export default function Badge({ variant, className, ...rest }: BadgeProps) {
+  return <span x-class={[base, className]} {...rest} />;
+}
+```
+
+### 6. Using let or mutable variables
+
+```tsx
+// WRONG
+let count = 0;
+count += 1;
+
+// CORRECT
+const count = 0;
+const next = count + 1;
+```
+
+### 7. Importing useState when you mean useControl
+
+If a component manages state that a parent might want to control, it must use `useControl`. Only use `useState` for purely internal UI state (like hover tracking) that is never exposed as a prop.
+
+---
+
+## Design Decisions
+
+Why certain choices were made. Read before proposing alternatives.
+
+### Why Linaria instead of Tailwind/CSS Modules/styled-components?
+
+**Zero runtime.** Linaria extracts CSS at build time — no JS ships for styling. This keeps the library small and avoids style recalculation overhead. Tailwind would impose its utility class system on consumers. CSS Modules don't integrate well with design token theming. styled-components has runtime cost.
+
+### Why x-class instead of className?
+
+`x-class` (from babel-plugin-transform-jsx-class) handles array merging and conditional classes correctly with Linaria's extracted class names. Direct `className` string concatenation doesn't work reliably with Linaria's hashed class names.
+
+### Why Control<T> | T instead of separate controlled/uncontrolled APIs?
+
+Single prop, two modes. No `defaultXxx` vs `xxx` duplication. `react-use-control` handles the wiring internally — the component just calls `useControl(prop, default)` and gets `[value, setter]`. This is the library's primary differentiator.
+
+### Why co-locate tests with components?
+
+Keeps tests discoverable and close to the code they test. Moving tests to a separate `__tests__/` tree makes it easy to forget them and harder to navigate in editors.
+
+### Why barrel exports (index.ts)?
+
+Single import path for consumers: `import { Button, Switch } from 'haze-ui'`. The barrel re-exports from each component's file. This is a public API contract — don't add internal utilities to barrels.
