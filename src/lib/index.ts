@@ -98,5 +98,20 @@ export type { DatepickerProps } from './components/Datepicker';
 export { Tree } from './components/Tree';
 export type { TreeProps, TreeNodeData } from './components/Tree';
 
+export { Divider } from './components/Divider';
+export type { DividerProps } from './components/Divider';
+export { Spinner } from './components/Spinner';
+export type { SpinnerProps } from './components/Spinner';
+export { Empty } from './components/Empty';
+export type { EmptyProps } from './components/Empty';
+export { Progress } from './components/Progress';
+export type { ProgressProps } from './components/Progress';
+export { Pagination } from './components/Pagination';
+export type { PaginationProps } from './components/Pagination';
+export { Grid, GridItem } from './components/Grid';
+export type { GridProps, GridItemProps } from './components/Grid';
+export { Drawer } from './components/Drawer';
+export type { DrawerProps } from './components/Drawer';
+
 // re-export ecosystem utilities
 export { useControl } from 'react-use-control';
