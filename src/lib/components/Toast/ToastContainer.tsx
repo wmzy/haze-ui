@@ -14,8 +14,8 @@ type ToastContainerProps = {
 
 const container = css`
   position: fixed;
-  bottom: var(--haze-space-4);
-  right: var(--haze-space-4);
+  bottom: calc(var(--haze-space-4) + env(safe-area-inset-bottom));
+  right: calc(var(--haze-space-4) + env(safe-area-inset-right));
   z-index: 9999;
   display: flex;
   flex-direction: column;

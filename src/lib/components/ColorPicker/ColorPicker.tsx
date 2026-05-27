@@ -67,8 +67,8 @@ const presetsRow = css`
 `;
 
 const presetBtn = css`
-  width: 24px;
-  height: 24px;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: var(--haze-radius-full);
   border: 2px solid transparent;
   cursor: pointer;

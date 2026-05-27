@@ -1,5 +1,8 @@
+import type { Control } from 'react-use-control';
+
 import { css } from '@linaria/core';
 import { useState } from 'react';
+import { useControl } from 'react-use-control';
 
 type TransferItem = {
   key: string;
@@ -9,19 +12,21 @@ type TransferItem = {
 
 type TransferProps = {
   dataSource: TransferItem[];
-  targetKeys: string[];
+  targetKeys?: Control<string[]> | string[];
   onChange?: (targetKeys: string[], direction: 'left' | 'right', moveKeys: string[]) => void;
   className?: string;
 };
 
 const container = css`
   display: flex;
+  flex-wrap: wrap;
   gap: var(--haze-space-4);
   font-family: var(--haze-font-sans);
 `;
 
 const panel = css`
   flex: 1;
+  min-width: 200px;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   overflow: hidden;
@@ -68,8 +73,8 @@ const actionBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 2.25rem;
+  height: 2.25rem;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
@@ -90,10 +95,11 @@ const actionBtn = css`
 
 export default function Transfer({
   dataSource,
-  targetKeys,
+  targetKeys: targetKeysControl,
   onChange,
   className,
 }: TransferProps) {
+  const [targetKeys, setTargetKeys] = useControl(targetKeysControl as Control<string[]>, []);
   const [selectedSource, setSelectedSource] = useState<string[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<string[]>([]);
 
@@ -114,17 +120,17 @@ export default function Transfer({
 
   const moveToTarget = () => {
     if (selectedSource.length === 0) return;
-    onChange?.([...targetKeys, ...selectedSource], 'right', selectedSource);
+    const next = [...targetKeys, ...selectedSource];
+    setTargetKeys(next);
+    onChange?.(next, 'right', selectedSource);
     setSelectedSource([]);
   };
 
   const moveToSource = () => {
     if (selectedTarget.length === 0) return;
-    onChange?.(
-      targetKeys.filter((k) => !selectedTarget.includes(k)),
-      'left',
-      selectedTarget
-    );
+    const next = targetKeys.filter((k) => !selectedTarget.includes(k));
+    setTargetKeys(next);
+    onChange?.(next, 'left', selectedTarget);
     setSelectedTarget([]);
   };
 

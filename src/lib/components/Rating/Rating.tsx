@@ -22,8 +22,8 @@ const star = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 1.75rem;
+  height: 1.75rem;
   cursor: pointer;
   color: var(--haze-color-border);
   transition: color 0.15s, transform 0.15s;

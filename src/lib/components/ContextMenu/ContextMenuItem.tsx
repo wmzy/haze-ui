@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { useContextMenuContext } from './ContextMenuContext';
+
 import { css } from '@linaria/core';
+
+import { useContextMenuContext } from './ContextMenuContext';
 
 type ContextMenuItemProps = {
   children: ReactNode;
@@ -26,6 +28,10 @@ const item = css`
 
   &:hover {
     background: var(--haze-color-muted);
+  }
+
+  &:active {
+    background: var(--haze-color-bg-subtle);
   }
 
   &:disabled {

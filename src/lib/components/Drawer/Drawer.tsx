@@ -37,11 +37,15 @@ const placements = {
   left: css`
     height: 100vh;
     width: 320px;
+    min-width: 280px;
+    max-width: 85vw;
     margin-left: 0;
   `,
   right: css`
     height: 100vh;
     width: 320px;
+    min-width: 280px;
+    max-width: 85vw;
     margin-left: auto;
   `,
   top: css`

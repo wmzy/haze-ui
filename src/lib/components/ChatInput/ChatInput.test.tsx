@@ -40,7 +40,7 @@ describe('ChatInput', () => {
   it('clears input after send', async () => {
     const user = userEvent.setup();
     render(<ChatInput onSend={() => {}} />);
-    const textarea = screen.getByPlaceholderText('Type a message...') as HTMLTextAreaElement;
+    const textarea = screen.getByPlaceholderText('Type a message...');
     await user.type(textarea, 'Hello{Enter}');
     expect(textarea.value).toBe('');
   });

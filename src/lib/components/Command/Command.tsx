@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useControl } from 'react-use-control';
 
 type CommandContextValue = {
   query: string;
@@ -17,6 +19,7 @@ function useCommandContext() {
 }
 
 type CommandProps = {
+  query?: Control<string> | string;
   children: ReactNode;
   className?: string;
 };
@@ -33,8 +36,8 @@ const base = css`
   max-width: 400px;
 `;
 
-export default function Command({ children, className }: CommandProps) {
-  const [query, setQuery] = useState('');
+export default function Command({ query: queryControl, children, className }: CommandProps) {
+  const [query, setQuery] = useControl(queryControl as Control<string>, '');
   const value = useMemo(() => ({ query, setQuery }), [query]);
 
   return (
@@ -118,6 +121,10 @@ const itemStyle = css`
 
   &:hover {
     background: var(--haze-color-bg-subtle);
+  }
+
+  &:active {
+    background: var(--haze-color-bg-muted);
   }
 `;
 

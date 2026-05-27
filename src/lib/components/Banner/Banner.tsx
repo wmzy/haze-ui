@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
+
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -47,7 +48,9 @@ const closeBtn = css`
   color: inherit;
   opacity: 0.7;
   font-size: var(--haze-text-lg);
-  padding: 0 var(--haze-space-1);
+  padding: var(--haze-space-2);
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   line-height: 1;
 
   &:hover {

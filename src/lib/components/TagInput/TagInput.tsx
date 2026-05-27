@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
 import type { Control } from 'react-use-control';
+
+import { useState, useCallback } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -51,7 +52,9 @@ const removeBtn = css`
   cursor: pointer;
   color: var(--haze-color-text-muted);
   font-size: var(--haze-text-xs);
-  padding: 0;
+  padding: var(--haze-space-1);
+  min-width: 1.5rem;
+  min-height: 1.5rem;
 
   &:hover {
     color: var(--haze-color-text);

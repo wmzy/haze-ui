@@ -1,7 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
+import type { Control } from 'react-use-control';
+import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type ChatInputProps = {
+  value?: Control<string> | string;
   onSend?: (message: string) => void;
   placeholder?: string;
   disabled?: boolean;
@@ -67,13 +70,14 @@ const sendBtn = css`
 `;
 
 export default function ChatInput({
+  value: valueControl,
   onSend,
   placeholder = 'Type a message...',
   disabled,
   maxLength,
   className,
 }: ChatInputProps) {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useControl(valueControl as Control<string>, '');
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = useCallback(() => {

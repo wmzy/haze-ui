@@ -8,6 +8,7 @@ import Calendar from './Calendar';
 
 type DatepickerProps = {
   value?: Control<string> | string;
+  open?: Control<boolean> | boolean;
   min?: string;
   max?: string;
   placeholder?: string;
@@ -61,13 +62,14 @@ const hiddenStyle = css`
 
 export default function Datepicker({
   value: valueControl,
+  open: openControl,
   min,
   max,
   placeholder = 'Select date',
   className,
 }: DatepickerProps) {
   const [value, setValue] = useControl(valueControl as Control<string>, '');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

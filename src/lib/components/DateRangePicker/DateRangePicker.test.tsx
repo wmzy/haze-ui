@@ -25,7 +25,7 @@ describe('DateRangePicker', () => {
     const user = userEvent.setup();
     const onStartChange = vi.fn();
     render(<DateRangePicker onStartChange={onStartChange} />);
-    const input = document.querySelector('input[type="date"]') as HTMLInputElement;
+    const input = document.querySelector('input[type="date"]')!;
     await user.type(input, '2024-01-01');
     expect(onStartChange).toHaveBeenCalled();
   });

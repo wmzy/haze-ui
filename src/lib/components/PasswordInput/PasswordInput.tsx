@@ -1,5 +1,6 @@
-import { useState } from 'react';
 import type { Control } from 'react-use-control';
+
+import { useState } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -50,7 +51,9 @@ const toggle = css`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--haze-space-1);
+  padding: var(--haze-space-2);
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   background: none;
   border: none;
   cursor: pointer;

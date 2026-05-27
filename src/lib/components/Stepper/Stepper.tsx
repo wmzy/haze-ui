@@ -4,6 +4,7 @@ import type { Control } from 'react-use-control';
 import { css } from '@linaria/core';
 import { Children, cloneElement, isValidElement } from 'react';
 import { useControl } from 'react-use-control';
+
 import { StepperProvider } from './StepperContext';
 
 type StepperProps = {
@@ -14,6 +15,8 @@ type StepperProps = {
 
 const stepper = css`
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--haze-space-2);
   align-items: flex-start;
   font-family: var(--haze-font-sans);
 `;

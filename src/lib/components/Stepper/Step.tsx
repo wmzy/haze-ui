@@ -1,4 +1,5 @@
 import { css } from '@linaria/core';
+
 import { useStepperContext } from './StepperContext';
 
 type StepProps = {
@@ -30,8 +31,8 @@ const stepActiveConnector = css`
 `;
 
 const circle = css`
-  width: 32px;
-  height: 32px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--haze-radius-full);
   display: flex;
   align-items: center;

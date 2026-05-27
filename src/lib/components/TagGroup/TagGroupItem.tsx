@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+
 import { css } from '@linaria/core';
 
 type TagGroupItemProps = {
@@ -28,7 +29,9 @@ const closeBtn = css`
   cursor: pointer;
   color: var(--haze-color-text-muted);
   font-size: var(--haze-text-xs);
-  padding: 0;
+  padding: var(--haze-space-1);
+  min-width: 1.5rem;
+  min-height: 1.5rem;
 
   &:hover {
     color: var(--haze-color-text);

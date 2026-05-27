@@ -23,8 +23,8 @@ const btn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 32px;
+  min-width: 2.25rem;
+  height: 2.25rem;
   padding: 0 var(--haze-space-2);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
@@ -65,15 +65,15 @@ const ellipsis = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 32px;
+  min-width: 2.25rem;
+  height: 2.25rem;
   color: var(--haze-color-text-muted);
   font-size: var(--haze-text-sm);
 `;
 
 const sizes = {
   sm: css`
-    & button { min-width: 28px; height: 28px; font-size: var(--haze-text-xs); }
+    & button { min-width: 2rem; height: 2rem; font-size: var(--haze-text-xs); }
   `,
   md: css``,
   lg: css`
@@ -127,7 +127,7 @@ export default function Pagination({
             type="button"
             x-class={[btn, p === page && activeBtn]}
             aria-current={p === page ? 'page' : undefined}
-            onClick={() => setPage(p as number)}
+            onClick={() => setPage(p)}
           >
             {p}
           </button>

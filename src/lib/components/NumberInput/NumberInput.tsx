@@ -35,7 +35,8 @@ const input = css`
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
   text-align: center;
-  width: 60px;
+  width: 100%;
+  min-width: 0;
   -moz-appearance: textfield;
 
   &::-webkit-inner-spin-button,

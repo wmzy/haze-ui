@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+
 import { css } from '@linaria/core';
 
 type NavigationBarProps = {
@@ -11,6 +12,7 @@ type NavigationBarProps = {
 const nav = css`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--haze-space-4);
   padding: var(--haze-space-3) var(--haze-space-4);
   background: var(--haze-color-bg);

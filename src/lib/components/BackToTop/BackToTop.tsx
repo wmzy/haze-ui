@@ -9,8 +9,8 @@ type BackToTopProps = {
 
 const button = css`
   position: fixed;
-  bottom: var(--haze-space-6);
-  right: var(--haze-space-6);
+  bottom: calc(var(--haze-space-6) + env(safe-area-inset-bottom));
+  right: calc(var(--haze-space-6) + env(safe-area-inset-right));
   display: flex;
   align-items: center;
   justify-content: center;

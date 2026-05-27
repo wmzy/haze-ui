@@ -16,6 +16,7 @@ type DateRangePickerProps = {
 const container = css`
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--haze-space-2);
   font-family: var(--haze-font-sans);
 `;

@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useState } from 'react';
+import { useControl } from 'react-use-control';
 
 type AlertProps = {
+  visible?: Control<boolean> | boolean;
+  onClose?: () => void;
   variant?: 'info' | 'success' | 'warning' | 'danger';
   closable?: boolean;
   className?: string;
@@ -76,14 +79,21 @@ const closeBtn = css`
 `;
 
 export default function Alert({
+  visible: visibleControl,
+  onClose,
   variant = 'info',
   closable = false,
   className,
   children,
 }: AlertProps) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useControl(visibleControl as Control<boolean>, true);
 
   if (!visible) return null;
+
+  const handleClose = () => {
+    setVisible(false);
+    onClose?.();
+  };
 
   return (
     <div role='alert' x-class={[base, variants[variant], className]}>
@@ -93,7 +103,7 @@ export default function Alert({
           type='button'
           className={closeBtn}
           aria-label='Close'
-          onClick={() => setVisible(false)}
+          onClick={handleClose}
         >
           ×
         </button>

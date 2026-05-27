@@ -49,8 +49,8 @@ const closeBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 1.25rem;
+  height: 1.25rem;
   border: none;
   border-radius: var(--haze-radius-full);
   background: transparent;

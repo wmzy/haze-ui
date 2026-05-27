@@ -21,6 +21,8 @@ const list = css`
   list-style: none;
   margin: 0;
   padding: 0;
+  overflow-x: auto;
+  white-space: nowrap;
 `;
 
 const sep = css`

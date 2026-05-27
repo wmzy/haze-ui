@@ -92,6 +92,7 @@ type StatGroupProps = {
 
 const groupStyle = css`
   display: flex;
+  flex-wrap: wrap;
   gap: var(--haze-space-6);
 `;
 

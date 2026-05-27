@@ -23,7 +23,7 @@ describe('TimePicker', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<TimePicker onChange={onChange} />);
-    const input = document.querySelector('input[type="time"]') as HTMLInputElement;
+    const input = document.querySelector('input[type="time"]')!;
     await user.type(input, '10:00');
     expect(onChange).toHaveBeenCalled();
   });

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
+
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -23,7 +24,7 @@ const overlay = css`
 const sheet = css`
   background: var(--haze-color-bg);
   border-radius: var(--haze-radius-xl) var(--haze-radius-xl) 0 0;
-  padding: var(--haze-space-4) var(--haze-space-6);
+  padding: var(--haze-space-4) var(--haze-space-6) calc(var(--haze-space-4) + env(safe-area-inset-bottom));
   max-width: 640px;
   width: 100%;
   max-height: 80vh;

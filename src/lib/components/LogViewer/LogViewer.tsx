@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
+import type { Control } from 'react-use-control';
+import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -11,6 +13,7 @@ type LogEntry = {
 
 type LogViewerProps = {
   logs: LogEntry[];
+  filter?: Control<LogLevel | null> | LogLevel | null;
   className?: string;
 };
 
@@ -32,7 +35,7 @@ const toolbar = css`
 `;
 
 const filterBtn = css`
-  padding: var(--haze-space-0) var(--haze-space-2);
+  padding: var(--haze-space-1) var(--haze-space-2);
   border: 1px solid transparent;
   border-radius: var(--haze-radius-sm);
   background: none;
@@ -98,8 +101,8 @@ const levelClassMap: Record<LogLevel, string> = {
 
 const ALL_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
-export default function LogViewer({ logs, className }: LogViewerProps) {
-  const [filter, setFilter] = useState<LogLevel | null>(null);
+export default function LogViewer({ logs, filter: filterControl, className }: LogViewerProps) {
+  const [filter, setFilter] = useControl(filterControl as Control<LogLevel | null>, null);
 
   const filtered = useMemo(
     () => (filter ? logs.filter((l) => l.level === filter) : logs),

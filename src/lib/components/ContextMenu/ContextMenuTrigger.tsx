@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { useContextMenuContext } from './ContextMenuContext';
+
 import { css } from '@linaria/core';
+
+import { useContextMenuContext } from './ContextMenuContext';
 
 type ContextMenuTriggerProps = {
   children: ReactNode;

@@ -24,6 +24,10 @@ const option = css`
   &:hover {
     background: var(--haze-color-bg-subtle);
   }
+
+  &:active {
+    background: var(--haze-color-bg-muted);
+  }
 `;
 
 const highlightedStyle = css`

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { useDropdownMenuContext } from './DropdownMenuContext';
+
 import { css } from '@linaria/core';
+
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuTriggerProps = {
   children: ReactNode;

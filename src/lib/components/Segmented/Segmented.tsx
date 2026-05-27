@@ -21,6 +21,7 @@ const container = css`
   padding: 2px;
   gap: 2px;
   font-family: var(--haze-font-sans);
+  overflow-x: auto;
 `;
 
 const sizes = {

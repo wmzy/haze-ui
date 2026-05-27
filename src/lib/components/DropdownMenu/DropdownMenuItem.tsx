@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { useDropdownMenuContext } from './DropdownMenuContext';
+
 import { css } from '@linaria/core';
+
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuItemProps = {
   children: ReactNode;
@@ -26,6 +28,10 @@ const item = css`
 
   &:hover {
     background: var(--haze-color-muted);
+  }
+
+  &:active {
+    background: var(--haze-color-bg-subtle);
   }
 
   &:disabled {

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+
 import { css } from '@linaria/core';
 
 type StepStatus = 'pending' | 'active' | 'done' | 'error';
@@ -44,8 +45,8 @@ const item = css`
 
 const marker = css`
   flex-shrink: 0;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: var(--haze-radius-full);
   border: 2px solid var(--haze-color-border);
   display: flex;

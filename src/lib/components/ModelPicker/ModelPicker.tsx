@@ -1,4 +1,5 @@
 import type { Control } from 'react-use-control';
+
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
