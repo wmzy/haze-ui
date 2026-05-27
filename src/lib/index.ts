@@ -183,5 +183,35 @@ export type { BottomSheetProps } from './components/BottomSheet';
 export { SwipeAction } from './components/SwipeAction';
 export type { SwipeActionProps } from './components/SwipeAction';
 
+// agent components
+export { ChatMessage } from './components/ChatMessage';
+export type { ChatMessageProps, ChatMessageRole } from './components/ChatMessage';
+export { ChatContainer } from './components/ChatContainer';
+export type { ChatContainerProps } from './components/ChatContainer';
+export { ChatInput } from './components/ChatInput';
+export type { ChatInputProps } from './components/ChatInput';
+export { StreamingText } from './components/StreamingText';
+export type { StreamingTextProps } from './components/StreamingText';
+export { MarkdownRenderer } from './components/MarkdownRenderer';
+export type { MarkdownRendererProps } from './components/MarkdownRenderer';
+export { ToolCallCard } from './components/ToolCallCard';
+export type { ToolCallCardProps, ToolCallStatus } from './components/ToolCallCard';
+export { ThinkingIndicator } from './components/ThinkingIndicator';
+export type { ThinkingIndicatorProps } from './components/ThinkingIndicator';
+export { StepTimeline, StepTimelineItem } from './components/StepTimeline';
+export type { StepTimelineProps, StepTimelineItemProps, StepStatus } from './components/StepTimeline';
+export { ApprovalCard } from './components/ApprovalCard';
+export type { ApprovalCardProps } from './components/ApprovalCard';
+export { TokenCounter } from './components/TokenCounter';
+export type { TokenCounterProps } from './components/TokenCounter';
+export { ModelPicker } from './components/ModelPicker';
+export type { ModelPickerProps, ModelOption } from './components/ModelPicker';
+export { ConversationList, ConversationItem } from './components/ConversationList';
+export type { ConversationListProps, ConversationItemProps } from './components/ConversationList';
+export { DiffViewer } from './components/DiffViewer';
+export type { DiffViewerProps, DiffLine } from './components/DiffViewer';
+export { LogViewer } from './components/LogViewer';
+export type { LogViewerProps, LogEntry, LogLevel } from './components/LogViewer';
+
 // re-export ecosystem utilities
 export { useControl } from 'react-use-control';
