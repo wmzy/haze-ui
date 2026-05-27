@@ -113,5 +113,24 @@ export type { GridProps, GridItemProps } from './components/Grid';
 export { Drawer } from './components/Drawer';
 export type { DrawerProps } from './components/Drawer';
 
+export { Stepper, Step } from './components/Stepper';
+export type { StepperProps, StepProps } from './components/Stepper';
+export { Command, CommandInput, CommandList, CommandItem } from './components/Command';
+export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps } from './components/Command';
+export { ResizableGroup, ResizablePanel, ResizableHandle } from './components/Resizable';
+export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps } from './components/Resizable';
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/Collapsible';
+export type { CollapsibleProps, CollapsibleTriggerProps, CollapsibleContentProps } from './components/Collapsible';
+export { Transfer } from './components/Transfer';
+export type { TransferProps, TransferItem } from './components/Transfer';
+export { Upload } from './components/Upload';
+export type { UploadProps } from './components/Upload';
+export { ColorPicker } from './components/ColorPicker';
+export type { ColorPickerProps } from './components/ColorPicker';
+export { Rating } from './components/Rating';
+export type { RatingProps } from './components/Rating';
+export { Timeline, TimelineItem } from './components/Timeline';
+export type { TimelineProps, TimelineItemProps } from './components/Timeline';
+
 // re-export ecosystem utilities
 export { useControl } from 'react-use-control';
