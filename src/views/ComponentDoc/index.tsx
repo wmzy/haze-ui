@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
@@ -120,7 +119,6 @@ import {
   NavigationBar,
   NavLink,
   BackToTop,
-  Affix,
   Container,
   Banner,
   ConfirmDialog,
@@ -1594,7 +1592,7 @@ function BannerSection() {
         <Banner variant='info'>This is an informational banner.</Banner>
         <Banner variant='success'>Operation completed successfully.</Banner>
         <Banner variant='warning'>Please review your settings.</Banner>
-        <Banner variant='danger' onClose={() => {}}>Something went wrong.</Banner>
+        <Banner variant='danger' onClose={() => { /* dismiss */ }}>Something went wrong.</Banner>
       </div>
     </div>
   );
@@ -1672,7 +1670,7 @@ function TagGroupSection() {
       <TagGroup>
         <TagGroupItem>React</TagGroupItem>
         <TagGroupItem>TypeScript</TagGroupItem>
-        <TagGroupItem onClose={() => {}}>Closable</TagGroupItem>
+        <TagGroupItem onClose={() => { /* remove */ }}>Closable</TagGroupItem>
       </TagGroup>
     </div>
   );

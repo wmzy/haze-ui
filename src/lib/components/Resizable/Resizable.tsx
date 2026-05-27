@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
-import { createContext, useContext, useCallback, useRef, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 type ResizableContextValue = {
   direction: 'horizontal' | 'vertical';

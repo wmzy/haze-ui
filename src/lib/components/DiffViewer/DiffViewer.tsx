@@ -78,14 +78,13 @@ function computeDiff(oldText: string, newText: string): DiffLine[] {
   const newLines = newText.split('\n');
   const result: DiffLine[] = [];
 
-  const maxLen = Math.max(oldLines.length, newLines.length);
   let oldIdx = 0;
   let newIdx = 0;
 
   // Simple line-by-line diff
   while (oldIdx < oldLines.length || newIdx < newLines.length) {
-    const oldLine = oldLines[oldIdx];
-    const newLine = newLines[newIdx];
+    const oldLine = oldLines[oldIdx]!;
+    const newLine = newLines[newIdx]!;
 
     if (oldIdx >= oldLines.length) {
       result.push({ type: 'added', content: newLine, newLine: newIdx + 1 });

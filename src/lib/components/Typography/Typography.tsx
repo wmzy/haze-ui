@@ -1,4 +1,4 @@
-import type { ReactNode, ComponentPropsWithoutRef } from 'react';
+import type { ReactNode, JSX } from 'react';
 
 import { css } from '@linaria/core';
 

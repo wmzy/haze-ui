@@ -105,7 +105,7 @@ function parseMarkdown(src: string): string {
 
   // code blocks
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
-    return `<pre><code class="lang-${lang}">${escapeHtml(code.trim())}</code></pre>`;
+    return `<pre><code class="lang-${lang}">${escapeHtml((code as string).trim())}</code></pre>`;
   });
 
   // inline code
@@ -128,7 +128,7 @@ function parseMarkdown(src: string): string {
   html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
 
   // unordered list
-  html = html.replace(/^[\-\*]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
 
   // ordered list

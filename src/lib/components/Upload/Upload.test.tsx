@@ -21,7 +21,7 @@ describe('Upload', () => {
 
   it('opens file dialog on click', async () => {
     const user = userEvent.setup();
-    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(vi.fn());
     render(<Upload />);
     await user.click(screen.getByText(/drag.*drop|click.*upload/i));
     expect(clickSpy).toHaveBeenCalled();

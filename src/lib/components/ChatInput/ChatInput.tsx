@@ -1,5 +1,6 @@
-import { useRef, useCallback } from 'react';
 import type { Control } from 'react-use-control';
+
+import { useRef, useCallback } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -88,7 +89,7 @@ export default function ChatInput({
     if (ref.current) {
       ref.current.style.height = 'auto';
     }
-  }, [value, disabled, onSend]);
+  }, [value, disabled, onSend, setValue]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {

@@ -1,7 +1,7 @@
 import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useControl } from 'react-use-control';
 
 import Calendar from './Calendar';
@@ -80,7 +80,7 @@ export default function Datepicker({
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, [open, setOpen]);
 
   return (
     <div ref={ref} x-class={[wrapper, className]}>

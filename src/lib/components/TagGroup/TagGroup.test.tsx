@@ -27,7 +27,7 @@ describe('TagGroup', () => {
   });
 
   it('renders TagGroupItem with close button', () => {
-    render(<TagGroupItem onClose={() => {}}>Tag</TagGroupItem>);
+    render(<TagGroupItem onClose={vi.fn()}>Tag</TagGroupItem>);
     expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
   });
 

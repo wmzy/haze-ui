@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 

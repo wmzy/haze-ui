@@ -62,8 +62,7 @@ describe('DropdownMenu', () => {
     expect(onClick).toHaveBeenCalled();
   });
 
-  it('renders separator', async () => {
-    const user = userEvent.setup();
+  it('renders separator', () => {
     const { container } = render(
       <DropdownMenu open>
         <DropdownMenuContent>
@@ -76,7 +75,7 @@ describe('DropdownMenu', () => {
     expect(container.querySelector('[role="separator"]')).toBeInTheDocument();
   });
 
-  it('applies className to content', async () => {
+  it('applies className to content', () => {
     render(
       <DropdownMenu open>
         <DropdownMenuContent className="custom">

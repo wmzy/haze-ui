@@ -38,7 +38,7 @@ const base = css`
 
 export default function Command({ query: queryControl, children, className }: CommandProps) {
   const [query, setQuery] = useControl(queryControl as Control<string>, '');
-  const value = useMemo(() => ({ query, setQuery }), [query]);
+  const value = useMemo(() => ({ query, setQuery }), [query, setQuery]);
 
   return (
     <CommandContext.Provider value={value}>

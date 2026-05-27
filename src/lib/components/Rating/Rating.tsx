@@ -38,10 +38,6 @@ const starActive = css`
   color: var(--haze-color-warning);
 `;
 
-const starHalf = css`
-  color: var(--haze-color-warning);
-`;
-
 export default function Rating({
   value: valueControl,
   count = 5,

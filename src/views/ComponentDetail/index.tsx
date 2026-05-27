@@ -130,7 +130,6 @@ import {
   NavigationBar,
   NavLink,
   BackToTop,
-  Affix,
   Container,
   Banner,
   ConfirmDialog,
@@ -4224,8 +4223,7 @@ function DrawerDemo() {
 // ─── Stepper ───────────────────────────────────────────────────
 
 function StepperDemo() {
-  const [, , activeCtrl] = useControl(undefined, 1);
-  const [active] = useControl(activeCtrl);
+  const [active, setActive, activeCtrl] = useControl(undefined, 1);
 
   return (
     <>
@@ -4240,10 +4238,10 @@ function StepperDemo() {
           <Step title='Confirm' description='Review & submit' />
         </Stepper>
         <div className={row} style={{ marginTop: 'var(--haze-space-4)' }}>
-          <Button size='sm' variant='outline' onClick={() => activeCtrl.set(Math.max(0, active - 1))} disabled={active <= 0}>
+          <Button size='sm' variant='outline' onClick={() => { setActive(Math.max(0, active - 1)); }} disabled={active <= 0}>
             Back
           </Button>
-          <Button size='sm' onClick={() => activeCtrl.set(Math.min(2, active + 1))} disabled={active >= 2}>
+          <Button size='sm' onClick={() => { setActive(Math.min(2, active + 1)); }} disabled={active >= 2}>
             Next
           </Button>
         </div>

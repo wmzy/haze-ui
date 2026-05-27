@@ -20,7 +20,7 @@ describe('Banner', () => {
   });
 
   it('renders close button when onClose provided', () => {
-    render(<Banner onClose={() => {}}>Message</Banner>);
+    render(<Banner onClose={vi.fn()}>Message</Banner>);
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });
 
@@ -34,7 +34,7 @@ describe('Banner', () => {
 
   it('hides after close', async () => {
     const user = userEvent.setup();
-    render(<Banner onClose={() => {}}>Message</Banner>);
+    render(<Banner onClose={vi.fn()}>Message</Banner>);
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByText('Message')).not.toBeInTheDocument();
   });
