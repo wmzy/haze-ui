@@ -44,8 +44,8 @@ const thumb = css`
 `;
 
 const trackSm = css`
-  width: 32px;
-  height: 18px;
+  width: 2.25rem;
+  height: 1.25rem;
 `;
 
 const trackMd = css`
@@ -59,8 +59,8 @@ const trackLg = css`
 `;
 
 const thumbSm = css`
-  width: 14px;
-  height: 14px;
+  width: 1rem;
+  height: 1rem;
 `;
 
 const thumbMd = css`
@@ -74,7 +74,7 @@ const thumbLg = css`
 `;
 
 const thumbCheckedSm = css`
-  transform: translateX(14px);
+  transform: translateX(1rem);
 `;
 
 const thumbCheckedMd = css`

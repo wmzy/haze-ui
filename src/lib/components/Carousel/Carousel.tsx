@@ -38,8 +38,8 @@ const navBtn = css`
   z-index: 1;
   appearance: none;
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-bg);
   color: var(--haze-color-text);
@@ -79,13 +79,13 @@ const indicators = css`
 `;
 
 const dot = css`
-  width: 8px;
-  height: 8px;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: var(--haze-radius-full);
   border: none;
   background: var(--haze-color-bg-muted);
   cursor: pointer;
-  padding: 0;
+  padding: 0.375rem;
   transition: background 0.15s;
 `;
 

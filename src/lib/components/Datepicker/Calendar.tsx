@@ -67,7 +67,7 @@ const dayBtn = css`
   background: transparent;
   color: var(--haze-color-text);
   cursor: pointer;
-  padding: var(--haze-space-1);
+  padding: var(--haze-space-2);
   border-radius: var(--haze-radius-sm);
   font-size: var(--haze-text-sm);
   line-height: 1.5;

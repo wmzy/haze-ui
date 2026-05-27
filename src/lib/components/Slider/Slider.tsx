@@ -20,8 +20,8 @@ const base = css`
 
   &::-webkit-slider-thumb {
     appearance: none;
-    width: 18px;
-    height: 18px;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: var(--haze-radius-full);
     background: var(--haze-color-primary);
     border: 2px solid var(--haze-color-bg);
@@ -33,8 +33,8 @@ const base = css`
   }
 
   &::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: var(--haze-radius-full);
     background: var(--haze-color-primary);
     border: 2px solid var(--haze-color-bg);

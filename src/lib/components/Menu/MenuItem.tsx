@@ -27,6 +27,10 @@ const item = css`
     background: var(--haze-color-bg-subtle);
   }
 
+  &:active {
+    background: var(--haze-color-bg-muted);
+  }
+
   &:focus-visible {
     outline: none;
     background: var(--haze-color-bg-subtle);

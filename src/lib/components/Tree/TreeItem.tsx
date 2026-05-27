@@ -32,7 +32,7 @@ const indentSize = 24;
 const item = css`
   display: flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 2rem;
   padding: 2px 0;
   cursor: pointer;
   user-select: none;
@@ -74,8 +74,8 @@ const switcher = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 1.5rem;
+  height: 1.5rem;
   flex-shrink: 0;
   cursor: pointer;
   color: var(--haze-color-text-muted);
@@ -99,8 +99,8 @@ const checkbox = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 1.25rem;
+  height: 1.25rem;
   flex-shrink: 0;
   margin-right: var(--haze-space-2);
   border: 1px solid var(--haze-color-border);

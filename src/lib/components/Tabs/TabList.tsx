@@ -11,6 +11,7 @@ const base = css`
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--haze-color-border);
+  overflow-x: auto;
 `;
 
 export default function TabList({ className, children }: TabListProps) {

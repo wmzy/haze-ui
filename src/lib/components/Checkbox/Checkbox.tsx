@@ -10,12 +10,13 @@ type CheckboxProps = {
 
 const base = css`
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-sm);
   background: var(--haze-color-bg);
   cursor: pointer;
+  margin: 0.4375rem;
   transition:
     background 0.15s,
     border-color 0.15s,

@@ -8,6 +8,7 @@ import ComboboxOption from './ComboboxOption';
 
 type ComboboxProps = {
   value?: Control<string> | string;
+  open?: Control<boolean> | boolean;
   options: { value: string; label: string }[];
   placeholder?: string;
   className?: string;
@@ -63,13 +64,14 @@ const hidden = css`
 
 export default function Combobox({
   value: valueControl,
+  open: openControl,
   options,
   placeholder,
   className,
 }: ComboboxProps) {
   const [value, setValue] = useControl(valueControl as Control<string>, '');
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);

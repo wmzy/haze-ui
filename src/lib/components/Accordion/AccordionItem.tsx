@@ -34,6 +34,10 @@ const summary = css`
     background: var(--haze-color-bg-subtle);
   }
 
+  &:active {
+    background: var(--haze-color-bg-muted);
+  }
+
   &:focus-visible {
     outline: none;
     box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);

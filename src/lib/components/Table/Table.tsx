@@ -9,6 +9,10 @@ type TableProps = {
   children: ReactNode;
 };
 
+const wrapper = css`
+  overflow-x: auto;
+`;
+
 const base = css`
   width: 100%;
   border-collapse: collapse;
@@ -37,16 +41,18 @@ export default function Table({
   children,
 }: TableProps) {
   return (
-    <table
-      x-class={[
-        base,
-        striped && stripedStyle,
-        bordered && borderedStyle,
-        className,
-      ]}
-    >
-      {children}
-    </table>
+    <div x-class={[wrapper]}>
+      <table
+        x-class={[
+          base,
+          striped && stripedStyle,
+          bordered && borderedStyle,
+          className,
+        ]}
+      >
+        {children}
+      </table>
+    </div>
   );
 }
 
