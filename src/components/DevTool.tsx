@@ -185,6 +185,7 @@ export function useMock<F extends (...params: any[]) => Promise<any>>(
   key: string,
   cache?: Pick<CacheProvider, 'clear'>
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- cast required by tsc (TS2345), rule misreports on this generic wrapper
   useInject(fn, ((f: F) => {
     const config = getMockConfig(key);
     return (...args: Parameters<F>) => {

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
@@ -6,6 +6,7 @@ type BadgeProps = {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md';
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 };
 
@@ -57,10 +58,11 @@ export default function Badge({
   variant = 'default',
   size = 'md',
   className,
+  style,
   children,
 }: BadgeProps) {
   return (
-    <span x-class={[base, variants[variant], sizes[size], className]}>
+    <span x-class={[base, variants[variant], sizes[size], className]} style={style}>
       {children}
     </span>
   );

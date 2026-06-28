@@ -34,7 +34,7 @@ describe('TagInput', () => {
     const onChange = vi.fn();
     render(<TagInput value={['react', 'vue']} onChange={onChange} />);
     const buttons = screen.getAllByRole('button');
-    await user.click(buttons[0]);
+    await user.click(buttons[0]!);
     expect(onChange).toHaveBeenCalledWith(['vue']);
   });
 

@@ -31,7 +31,7 @@ describe('Upload', () => {
   it('calls onChange when files selected', async () => {
     const onChange = vi.fn();
     render(<Upload onChange={onChange} />);
-    const input = document.querySelector('input[type="file"]')!;
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
     const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
     await userEvent.upload(input, file);
     expect(onChange).toHaveBeenCalled();

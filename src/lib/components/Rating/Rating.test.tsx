@@ -26,7 +26,7 @@ describe('Rating', () => {
     const onChange = vi.fn();
     render(<Rating onChange={onChange} />);
     const stars = screen.getAllByRole('radio');
-    await user.click(stars[2]);
+    await user.click(stars[2]!);
     expect(onChange).toHaveBeenCalledWith(3);
   });
 

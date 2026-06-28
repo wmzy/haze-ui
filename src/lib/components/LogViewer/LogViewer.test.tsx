@@ -36,7 +36,7 @@ describe('LogViewer', () => {
     const user = userEvent.setup();
     render(<LogViewer logs={logs} />);
     const filterBtns = screen.getAllByText('error');
-    await user.click(filterBtns[0]); // click the filter button, not the badge
+    await user.click(filterBtns[0]!); // click the filter button, not the badge
     expect(screen.getByText('Failed')).toBeInTheDocument();
     expect(screen.queryByText('Started')).not.toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('LogViewer', () => {
     const user = userEvent.setup();
     render(<LogViewer logs={logs} />);
     const filterBtns = screen.getAllByText('error');
-    await user.click(filterBtns[0]);
+    await user.click(filterBtns[0]!);
     await user.click(screen.getByText('All'));
     expect(screen.getByText('Started')).toBeInTheDocument();
     expect(screen.getByText('Failed')).toBeInTheDocument();

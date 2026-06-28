@@ -1,6 +1,5 @@
 import { css } from '@linaria/core';
 import {
-  type CSSProperties,
   type ReactPortal,
   useMemo,
   useEffect,
@@ -89,7 +88,7 @@ export default function Loading(): ReactPortal | null {
     >
       {percent ? (
         <div
-          style={{ width: `${percent}%` } as CSSProperties}
+          style={{ width: `${percent}%` }}
           className={fill}
         />
       ) : null}

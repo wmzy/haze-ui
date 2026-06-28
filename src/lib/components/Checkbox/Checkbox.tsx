@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
@@ -6,6 +6,7 @@ import { useControl } from 'react-use-control';
 
 type CheckboxProps = {
   checked?: Control<boolean> | boolean;
+  label?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'checked' | 'type'>;
 
 const base = css`
@@ -56,9 +57,18 @@ const base = css`
   }
 `;
 
+const labelText = css`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--haze-space-2);
+  cursor: pointer;
+  user-select: none;
+`;
+
 export default function Checkbox({
   checked: checkedControl,
   className,
+  label,
   onChange,
   ...rest
 }: CheckboxProps) {
@@ -67,7 +77,7 @@ export default function Checkbox({
     false
   );
 
-  return (
+  const input = (
     <input
       type='checkbox'
       x-class={[base, className]}
@@ -79,6 +89,12 @@ export default function Checkbox({
       {...rest}
     />
   );
+
+  if (label === undefined) {
+    return input;
+  }
+
+  return <label x-class={labelText}>{input}{label}</label>;
 }
 
 export type { CheckboxProps };

@@ -42,7 +42,7 @@ describe('ChatInput', () => {
     render(<ChatInput onSend={vi.fn()} />);
     const textarea = screen.getByPlaceholderText('Type a message...');
     await user.type(textarea, 'Hello{Enter}');
-    expect(textarea.value).toBe('');
+    expect((textarea as HTMLTextAreaElement).value).toBe('');
   });
 
   it('does not send empty message', async () => {

@@ -23,7 +23,7 @@ describe('RadioGroup + Radio', () => {
   it('all radios share the same name', () => {
     render(<RadioFixture />);
     const radios = screen.getAllByRole('radio');
-    const name = radios[0].getAttribute('name');
+    const name = radios[0]!.getAttribute('name');
     expect(name).toBe('color');
     radios.forEach((r) => expect(r).toHaveAttribute('name', name));
   });

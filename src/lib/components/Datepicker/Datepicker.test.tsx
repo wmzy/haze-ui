@@ -33,7 +33,7 @@ describe('Datepicker', () => {
     render(<Datepicker value="2025-01-15" />);
     await user.click(screen.getByPlaceholderText('Select date'));
     const day20Buttons = screen.getAllByText('20');
-    await user.click(day20Buttons[0]);
+    await user.click(day20Buttons[0]!);
     expect(screen.getByPlaceholderText('Select date')).toHaveValue('2025-01-20');
   });
 

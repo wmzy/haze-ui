@@ -9,6 +9,7 @@ type FlexProps = {
   gap?: string | number;
   wrap?: boolean;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 };
 
@@ -23,6 +24,7 @@ export default function Flex({
   gap,
   wrap = false,
   className,
+  style: styleProp,
   children,
 }: FlexProps) {
   const style: CSSProperties = {
@@ -31,6 +33,7 @@ export default function Flex({
     justifyContent: justify,
     gap: typeof gap === 'number' ? `${gap}px` : gap,
     flexWrap: wrap ? 'wrap' : undefined,
+    ...styleProp,
   };
 
   return (
