@@ -46,7 +46,7 @@
   "author": "wmzy",
   "license": "MIT",
   "peerDependencies": {
-    "@linaria/core": "^8.0.0",
+    "@linaria/core": "^7.0.0 || ^8.0.0",
     "react": "^19.0.0"
   },
   "dependencies": {
