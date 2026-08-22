@@ -249,6 +249,7 @@ const COMPONENTS = [
   'conversationlist',
   'diffviewer',
   'logviewer',
+  'form',
 ] as const;
 
 function capitalize(s: string) {

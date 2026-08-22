@@ -129,7 +129,10 @@ function MockView({
       <button type='button' onClick={() => setShow(!show)}>
         {show ? 'Hide' : 'Show'} Schema
       </button>
-      <pre x-if={show}>{JSON.stringify(value, null, 2)}</pre>
+      {/* x-if is avoided here: its babel transform imports `createCondition`
+          from babel-runtime-jsx-plus, which the vite alias shim (a plain
+          classnames replacement) does not provide — breaking dev boot. */}
+      {show && <pre>{JSON.stringify(value, null, 2)}</pre>}
     </div>
   );
 }

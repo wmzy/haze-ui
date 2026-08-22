@@ -36,7 +36,13 @@ const buildConfig = (() => {
   if (isLibBuild) {
     return {
       lib: {
-        entry: path.resolve(__dirname, 'src/lib/index.ts'),
+        // Two entries: the main component barrel and the react-f0rm
+        // integration layer (form/), which consumers import as
+        // 'haze-ui/form'.
+        entry: {
+          index: path.resolve(__dirname, 'src/lib/index.ts'),
+          form: path.resolve(__dirname, 'src/lib/form/index.ts'),
+        },
         formats: ['es'] as const,
       },
       rollupOptions: {
@@ -50,7 +56,8 @@ const buildConfig = (() => {
           'react-toolroom/async',
           '@native-router/react',
           '@for-fun/event-emitter',
-          'babel-runtime-jsx-plus',
+          // peer of the form/ entry — consumers bring their own copy
+          'react-f0rm',
         ],
         output: {
           preserveModules: true,
@@ -74,6 +81,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: /^babel-runtime-jsx-plus$/,
+        replacement: path.resolve(__dirname, 'src/lib/utils/classnames.ts'),
+      },
+      {
         find: /^@\/(.*)/,
         replacement: `${path.join(__dirname, 'src/$1')}`,
       },
@@ -95,9 +106,6 @@ export default defineConfig({
       classNameSlug: (hash, title, args) => `haze-${args.name}__${title}`,
     }),
   ],
-  optimizeDeps: {
-    include: ['babel-runtime-jsx-plus'],
-  },
   build: buildConfig,
   test: {
     globals: true,

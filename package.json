@@ -11,6 +11,10 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./form": {
+      "types": "./dist/types/form/index.d.ts",
+      "import": "./dist/form.js"
+    },
     "./styles.css": "./dist/haze-ui.css"
   },
   "files": [
@@ -47,10 +51,10 @@
   "license": "MIT",
   "peerDependencies": {
     "@linaria/core": "^7.0.0 || ^8.0.0",
-    "react": "^19.0.0"
+    "react": "^19.0.0",
+    "react-f0rm": "^0.3.0"
   },
   "dependencies": {
-    "babel-runtime-jsx-plus": "^0.1.5",
     "react-toolroom": "^0.5.2",
     "react-use-control": "^1.3.2"
   },
@@ -76,7 +80,6 @@
     "@wyw-in-js/vite": "^2.1.0",
     "babel-plugin-transform-jsx-class": "^0.1.3",
     "babel-plugin-transform-jsx-condition": "^0.1.3",
-    "babel-runtime-jsx-plus": "^0.1.5",
     "commitizen": "^4.3.2",
     "core-js": "^3.49.0",
     "date-fns": "^4.4.0",
@@ -101,6 +104,7 @@
     "tsc-alias": "^1.8.17",
     "typescript": "^6.0.3",
     "vite": "^8.1.0",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "react-f0rm": "^0.3.0"
   }
 }

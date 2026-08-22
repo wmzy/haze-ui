@@ -1,6 +1,8 @@
 allowBuilds:
   core-js: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - react-f0rm@0.3.0
 onlyBuiltDependencies:
   - core-js
   - unrs-resolver

@@ -142,6 +142,8 @@ import {
   SwipeAction,
 } from '@/lib';
 
+import FormDemo from '@/components/FormDemo';
+
 import PropsTable from './PropsTable';
 import A11yNote from './A11yNote';
 import TokensTable from './TokensTable';
@@ -7291,6 +7293,7 @@ const demos: Record<string, () => ReactNode> = {
   taggroup: TagGroupDemo,
   bottomsheet: BottomSheetDemo,
   swipeaction: SwipeActionDemo,
+  form: FormDemo,
 };
 
 export default function ComponentDetail() {
