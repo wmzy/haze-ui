@@ -20,6 +20,7 @@ describe('ScrollArea', () => {
 
   it('sets max-height as string', () => {
     const { container } = render(<ScrollArea maxHeight="50vh">X</ScrollArea>);
-    expect(container.firstChild).toHaveStyle({ maxHeight: '50vh' });
+    // jsdom 30+ 的 getComputedStyle 会把 vh 解析为像素，故直接断言 inline style
+    expect((container.firstChild as HTMLElement).style.maxHeight).toBe('50vh');
   });
 });

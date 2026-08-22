@@ -1,7 +1,6 @@
 {
   "extends": "tools-config/typescript",
   "compilerOptions": {
-    "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
