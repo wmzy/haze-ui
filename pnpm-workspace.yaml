@@ -2,7 +2,10 @@ allowBuilds:
   core-js: true
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - react-f0rm@0.3.0
+  - react-f0rm
+  - react-toolroom
+  - '@native-router/*'
+  - '@for-fun/event-emitter'
 onlyBuiltDependencies:
   - core-js
   - unrs-resolver
