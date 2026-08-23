@@ -5,7 +5,7 @@ import {useData} from '@native-router/react';
 import CommentList from './CommentList';
 
 export default function ArticleView() {
-  const article = useData() as Article;
+  const article = useData<Article>()!;
 
   return (
     <div>
