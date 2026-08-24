@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { getEnabledMenuItems } from './useMenuKeyboard';
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuTriggerProps = {
@@ -19,13 +20,40 @@ const trigger = css`
 `;
 
 export default function DropdownMenuTrigger({ children, className }: DropdownMenuTriggerProps) {
-  const { setOpen } = useDropdownMenuContext();
+  const { open, setOpen, triggerRef, contentRef, contentId, focusRequestRef } =
+    useDropdownMenuContext();
+
+  // Open the menu and land focus on its first/last item. When the menu is
+  // already open (focus stayed on the clicked trigger), focus it directly.
+  const focusEdgeItem = (edge: 'first' | 'last') => {
+    if (open) {
+      const items = getEnabledMenuItems(contentRef.current);
+      const target = edge === 'first' ? items[0] : items[items.length - 1];
+      target?.focus();
+    } else {
+      focusRequestRef.current = edge;
+      setOpen(true);
+    }
+  };
 
   return (
     <button
+      ref={triggerRef}
       x-class={[trigger, className]}
       type="button"
+      aria-haspopup="menu"
+      aria-expanded={open}
+      aria-controls={open ? contentId : undefined}
       onClick={() => setOpen((prev) => !prev)}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          focusEdgeItem('first');
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          focusEdgeItem('last');
+        }
+      }}
     >
       {children}
     </button>

@@ -6,7 +6,7 @@ import {useState} from 'react';
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import {Form, createForm, getValue, setValue} from 'react-f0rm';
+import {Form, createForm, getValue, reset, setValue} from 'react-f0rm';
 import {useControl} from 'react-use-control';
 
 import {Input} from '../components/Input';
@@ -348,8 +348,8 @@ describe('FormItem', () => {
               id={id}
               data-testid='email-input'
               value={control}
-              aria-describedby={errorId}
               aria-invalid={invalid}
+              aria-describedby={errorId}
             />
           )}
         </FormItem>
@@ -376,5 +376,51 @@ describe('FormItem', () => {
       'aria-invalid',
       'false'
     );
+  });
+
+  it('re-seeds controls through the bridge on reset(form, newValues)', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    function ControlProbe({control}: {control: Control<string>}) {
+      const [value] = useControl(control);
+      // render the value through a DOM-safe channel: <input
+      // value={undefined}> falls back to uncontrolled and keeps its old
+      // DOM text, which would mask what the bridge actually forwards.
+      // typeof prefix keeps the undefined case representable in text.
+      return (
+        <output data-testid='probe'>{`${typeof value}:${value}`}</output>
+      );
+    }
+
+    render(
+      <FormItem form={form} name='name' label='Name'>
+        {({id, control}) => (
+          <>
+            <Input id={id} data-testid='name' value={control} />
+            <ControlProbe control={control} />
+          </>
+        )}
+      </FormItem>
+    );
+    const input = screen.getByTestId('name');
+    const probe = screen.getByTestId('probe');
+
+    await user.type(input, 'typed');
+    expect(input).toHaveValue('typed');
+
+    // reset() with new values clears the store and re-emits a global
+    // change: the bridged Control picks up the fresh seed without any
+    // remounting.
+    act(() => reset(form, {name: 'seeded', email: ''}));
+    expect(input).toHaveValue('seeded');
+    expect(getValue(form, 'name')).toBe('seeded');
+
+    // reset() without values is react-f0rm's "clear to nothing"
+    // (form.initialValues becomes undefined → field value undefined);
+    // the bridge forwards that as-is.
+    act(() => reset(form));
+    expect(probe).toHaveTextContent('undefined:undefined');
+    expect(getValue(form, 'name')).toBeUndefined();
   });
 });

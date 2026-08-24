@@ -41,16 +41,26 @@ const item = css`
 `;
 
 export default function DropdownMenuItem({ children, onClick, disabled, className }: DropdownMenuItemProps) {
-  const { setOpen } = useDropdownMenuContext();
+  const { setOpen, triggerRef } = useDropdownMenuContext();
 
   const handleClick = () => {
     if (disabled) return;
     onClick?.();
     setOpen(false);
+    // The menu unmounts on close; without this, keyboard focus (which is
+    // on this item) would drop to <body>.
+    triggerRef.current?.focus();
   };
 
   return (
-    <button x-class={[item, className]} type="button" onClick={handleClick} disabled={disabled}>
+    <button
+      x-class={[item, className]}
+      type="button"
+      role="menuitem"
+      tabIndex={-1}
+      onClick={handleClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

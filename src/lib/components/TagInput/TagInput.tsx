@@ -1,6 +1,6 @@
 import type { Control } from 'react-use-control';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -30,6 +30,17 @@ const container = css`
     border-color: var(--haze-color-primary);
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
+`;
+
+/* Tags flow inline with the input: the list itself wraps while staying a
+   flex participant of the container. */
+const listWrap = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--haze-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `;
 
 const tag = css`
@@ -83,6 +94,26 @@ export default function TagInput({
 }: TagInputProps) {
   const [tags, setTags] = useControl(valueControl as Control<string[]>, []);
   const [inputValue, setInputValue] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // After a removal re-render, focus the remove button at this index (or
+  // the input when no tags remain) so keyboard focus never drops.
+  const pendingFocusRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const pending = pendingFocusRef.current;
+    if (pending === null) return;
+    pendingFocusRef.current = null;
+    if (tags.length === 0) {
+      inputRef.current?.focus();
+      return;
+    }
+    const index = Math.min(pending, tags.length - 1);
+    const buttons = containerRef.current?.querySelectorAll<HTMLButtonElement>(
+      '[aria-label^="Remove "]'
+    );
+    buttons?.[index]?.focus();
+  }, [tags]);
 
   const addTag = useCallback(
     (tag: string) => {
@@ -94,7 +125,7 @@ export default function TagInput({
       onChange?.(next);
       setInputValue('');
     },
-    [tags, maxTags, setTags, onChange],
+    [tags, maxTags, setTags, onChange]
   );
 
   const removeTag = useCallback(
@@ -102,8 +133,12 @@ export default function TagInput({
       const next = tags.filter((_, i) => i !== index);
       setTags(next);
       onChange?.(next);
+      // Focus the neighbor that takes the removed tag's place (the one
+      // before it at the tail); the effect above resolves it after
+      // re-render.
+      pendingFocusRef.current = next.length === 0 ? 0 : Math.min(index, next.length - 1);
     },
-    [tags, setTags, onChange],
+    [tags, setTags, onChange]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -115,22 +150,47 @@ export default function TagInput({
     }
   };
 
+  const baseLabel = placeholder || 'Add tag';
+  const tagCount = `${tags.length} tag${tags.length === 1 ? '' : 's'}`;
+
   return (
-    <div x-class={[container, className]}>
-      {tags.map((t, i) => (
-        <span key={i} x-class={[tag]}>
-          {t}
-          <button x-class={[removeBtn]} type="button" onClick={() => removeTag(i)} disabled={disabled}>
-            x
-          </button>
-        </span>
-      ))}
+    <div ref={containerRef} x-class={[container, className]}>
+      {/* Tags form the list; the input is a sibling so the list's
+          children are only listitems (axe aria-required-children) and
+          screen readers hear one listitem per tag. */}
+      <ul x-class={[listWrap]}>
+        {tags.map((t, i) => (
+          <li key={i} x-class={[tag]}>
+            {t}
+            <button
+              x-class={[removeBtn]}
+              type="button"
+              onClick={() => removeTag(i)}
+              onKeyDown={(e) => {
+                // Backspace on a tag's remove button removes that tag too,
+                // so consecutive Backspace presses walk through the tags
+                // with focus following.
+                if (e.key === 'Backspace') {
+                  e.preventDefault();
+                  removeTag(i);
+                }
+              }}
+              aria-label={`Remove ${t}`}
+              disabled={disabled}
+            >
+              x
+            </button>
+          </li>
+        ))}
+      </ul>
       <input
+        ref={inputRef}
         x-class={[inputEl]}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? placeholder : undefined}
+        aria-label={tags.length > 0 ? `${baseLabel}, ${tagCount}` : baseLabel}
         disabled={disabled}
       />
     </div>

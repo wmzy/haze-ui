@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useId } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
@@ -27,6 +27,10 @@ export default function DropdownMenu({
 }: DropdownMenuProps) {
   const [open, setOpen] = useControl(openControl as Control<boolean>, false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const contentId = useId();
+  const focusRequestRef = useRef<'first' | 'last' | null>(null);
 
   const handleSetOpen = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
@@ -34,7 +38,7 @@ export default function DropdownMenu({
       setOpen(next);
       onOpenChange?.(next);
     },
-    [open, setOpen, onOpenChange],
+    [open, setOpen, onOpenChange]
   );
 
   useEffect(() => {
@@ -49,7 +53,16 @@ export default function DropdownMenu({
   }, [open, handleSetOpen]);
 
   return (
-    <DropdownMenuProvider value={{ open, setOpen: handleSetOpen }}>
+    <DropdownMenuProvider
+      value={{
+        open,
+        setOpen: handleSetOpen,
+        triggerRef,
+        contentRef,
+        contentId,
+        focusRequestRef,
+      }}
+    >
       <div ref={ref} x-class={[wrapper, className]}>
         {children}
       </div>
