@@ -14,6 +14,22 @@ describe('TagInput', () => {
     expect(container.firstChild).toHaveClass('custom');
   });
 
+  it('forwards id and aria attrs to the inner input, not the root div', () => {
+    const { container } = render(
+      <TagInput
+        id="haze-field-1"
+        aria-invalid
+        aria-describedby="haze-field-1-error"
+      />
+    );
+    // FormItem 桥依赖 id 落在可聚焦元素上（<label htmlFor> 才能接通）
+    const input = document.getElementById('haze-field-1');
+    expect(input).toBe(screen.getByRole('textbox'));
+    expect(container.firstChild).not.toHaveAttribute('id');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'haze-field-1-error');
+  });
+
   it('adds tag on Enter', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

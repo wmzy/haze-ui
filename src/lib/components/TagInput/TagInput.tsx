@@ -11,6 +11,16 @@ type TagInputProps = {
   maxTags?: number;
   disabled?: boolean;
   className?: string;
+  /**
+   * 字段 id（FormItem 桥生成）：必须挂到内部可聚焦的 input 上而非根
+   * div，<label htmlFor> 与错误 span 的 aria 链路才能接到焦点元素——
+   * 根 div 不聚焦，挂那里等于断链。
+   */
+  id?: string;
+  /** 由 FormItem 桥传入，随字段错误态变化，透传给内部 input。 */
+  'aria-invalid'?: boolean;
+  /** 指向 FormItem 渲染的错误 span（id={errorId}），透传给内部 input。 */
+  'aria-describedby'?: string;
 };
 
 const container = css`
@@ -91,6 +101,9 @@ export default function TagInput({
   maxTags,
   disabled,
   className,
+  id,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedby,
 }: TagInputProps) {
   const [tags, setTags] = useControl(valueControl as Control<string[]>, []);
   const [inputValue, setInputValue] = useState('');
@@ -186,6 +199,9 @@ export default function TagInput({
       <input
         ref={inputRef}
         x-class={[inputEl]}
+        id={id}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedby}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
