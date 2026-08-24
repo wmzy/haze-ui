@@ -1,4 +1,5 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
+import { useControl } from 'react-use-control';
 
 import Dialog from './Dialog';
 
@@ -53,5 +54,58 @@ describe('Dialog', () => {
       );
     });
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('labels the dialog via aria-labelledby when title is set', () => {
+    render(
+      <Dialog open title="Confirm action">
+        Content
+      </Dialog>
+    );
+    const heading = screen.getByRole('heading', { name: 'Confirm action' });
+    expect(heading.tagName).toBe('H2');
+    expect(screen.getByRole('dialog')).toHaveAttribute(
+      'aria-labelledby',
+      heading.id
+    );
+  });
+
+  it('does not set aria-labelledby without a title', () => {
+    render(<Dialog open>Content</Dialog>);
+    expect(screen.getByRole('dialog')).not.toHaveAttribute('aria-labelledby');
+  });
+
+  it('restores focus to the opener when the dialog closes', () => {
+    function Harness() {
+      // Dialog 的 open 传 Control 才是受控语义（普通 boolean 只是初值）
+      const [, setOpen, openCtrl] = useControl(undefined, false);
+      return (
+        <>
+          <button onClick={() => setOpen(true)}>Open dialog</button>
+          <Dialog open={openCtrl} onClose={() => setOpen(false)}>
+            <button type="button">Inner</button>
+          </Dialog>
+        </>
+      );
+    }
+    render(<Harness />);
+    const opener = screen.getByText('Open dialog');
+    opener.focus();
+    act(() => {
+      fireEvent.click(opener);
+    });
+    // showModal 在真实浏览器会把焦点移进 dialog；jsdom 不会，手动模拟，
+    // 这样下面的断言才真正验证“归还”而不是焦点从未离开。
+    act(() => {
+      screen.getByText('Inner').focus();
+    });
+    expect(screen.getByText('Inner')).toHaveFocus();
+    // Esc/cancel、backdrop 点击、close() 都以原生 close 事件收口
+    // （先取引用：关闭后 dialog 隐藏，getByRole 查不到了）
+    const dialog = screen.getByRole('dialog');
+    act(() => {
+      dialog.dispatchEvent(new Event('close'));
+    });
+    expect(opener).toHaveFocus();
   });
 });
