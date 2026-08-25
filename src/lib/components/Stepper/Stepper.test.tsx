@@ -3,6 +3,14 @@ import { render, screen } from '@testing-library/react';
 import { Stepper, Step } from './index';
 
 describe('Stepper', () => {
+  it('throws when Step is used outside Stepper', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() => render(<Step title="Orphan" />)).toThrow(
+      'Step must be used within <Stepper>'
+    );
+    spy.mockRestore();
+  });
+
   it('renders steps', () => {
     render(
       <Stepper activeStep={0}>

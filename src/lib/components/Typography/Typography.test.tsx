@@ -44,6 +44,17 @@ describe('Text', () => {
     render(<Text code>npm</Text>);
     expect(screen.getByText('npm').tagName).toBe('CODE');
   });
+
+  it('renders strong tag when both strong and code are set', () => {
+    render(<Text strong code>strict</Text>);
+    expect(screen.getByText('strict').tagName).toBe('STRONG');
+  });
+
+  it('renders marked text', () => {
+    render(<Text mark>highlight</Text>);
+    expect(screen.getByText('highlight').tagName).toBe('SPAN');
+    expect(screen.getByText('highlight')).toBeInTheDocument();
+  });
 });
 
 describe('Paragraph', () => {

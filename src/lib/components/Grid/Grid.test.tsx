@@ -29,4 +29,14 @@ describe('GridItem', () => {
     const { container } = render(<GridItem className="custom">x</GridItem>);
     expect(container.firstChild).toHaveClass('custom');
   });
+
+  it('sets gridColumn from start and span', () => {
+    const { container } = render(<GridItem start={2} span={3}>placed</GridItem>);
+    expect(container.firstChild).toHaveStyle({ gridColumn: '2 / span 3' });
+  });
+
+  it('omits start line when start is not given', () => {
+    const { container } = render(<GridItem span={2}>flow</GridItem>);
+    expect(container.firstChild).toHaveStyle({ gridColumn: 'span 2' });
+  });
 });

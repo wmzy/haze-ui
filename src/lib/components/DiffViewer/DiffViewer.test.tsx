@@ -32,4 +32,18 @@ describe('DiffViewer', () => {
     render(<DiffViewer oldValue={'line1\nline2'} newValue={'line1\nline3'} />);
     expect(screen.getByText('line1')).toBeInTheDocument();
   });
+
+  it('marks appended tail line as added', () => {
+    render(<DiffViewer oldValue={'a\nb'} newValue={'a\nb\nc'} />);
+    const addedLine = screen.getByText('c').closest('div');
+    expect(addedLine?.className).toContain('added');
+    expect(screen.getByText('+')).toBeInTheDocument();
+  });
+
+  it('marks removed tail line as removed', () => {
+    render(<DiffViewer oldValue={'a\nb\nc'} newValue={'a\nb'} />);
+    const removedLine = screen.getByText('c').closest('div');
+    expect(removedLine?.className).toContain('removed');
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
 });

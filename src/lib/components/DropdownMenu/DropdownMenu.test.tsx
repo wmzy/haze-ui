@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import DropdownMenu from './DropdownMenu';
@@ -242,5 +242,90 @@ describe('DropdownMenu', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+
+  it('throws when trigger is used outside DropdownMenu', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() =>
+      render(<DropdownMenuTrigger>Open</DropdownMenuTrigger>)
+    ).toThrow('DropdownMenu components must be used within <DropdownMenu>');
+    spy.mockRestore();
+  });
+
+  it('keeps focus when typeahead matches nothing', async () => {
+    const user = userEvent.setup();
+    const trigger = renderMenu();
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(menuItems()[0]).toHaveFocus();
+    await user.keyboard('z');
+    expect(menuItems()[0]).toHaveFocus();
+  });
+
+  it('ignores typeahead when modifier keys are held', async () => {
+    const user = userEvent.setup();
+    const trigger = renderMenu();
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(menuItems()[0]).toHaveFocus();
+    await user.keyboard('{Control>}a{/Control}');
+    expect(menuItems()[0]).toHaveFocus();
+  });
+
+  it('moves focus to the first item when ArrowDown pressed while menu is open', async () => {
+    const user = userEvent.setup();
+    const trigger = renderMenu();
+    await user.click(trigger); // menu already open, focus stays on trigger
+    await user.keyboard('{ArrowDown}');
+    expect(menuItems()[0]).toHaveFocus();
+  });
+
+  it('moves focus to the last item when ArrowUp pressed while menu is open', async () => {
+    const user = userEvent.setup();
+    const trigger = renderMenu();
+    await user.click(trigger);
+    await user.keyboard('{ArrowUp}');
+    expect(menuItems()[2]).toHaveFocus();
+  });
+
+  it('resets the typeahead buffer after the timeout window', () => {
+    vi.useFakeTimers();
+    try {
+      const trigger = renderMenu();
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+      const items = menuItems();
+      expect(items[0]).toHaveFocus();
+      fireEvent.keyDown(items[0]!, { key: 'g' });
+      expect(items[2]).toHaveFocus(); // Gamma
+      vi.advanceTimersByTime(600); // buffer resets
+      fireEvent.keyDown(items[2]!, { key: 'a' });
+      expect(items[0]).toHaveFocus(); // Alpha, not a wrap-continue of "ga"
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('clears the typeahead timer on unmount without error', async () => {
+    const user = userEvent.setup();
+    const view = render(
+      <DropdownMenu>
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>Alpha</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Open' });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('a');
+    // unmount while the reset timer is pending: the cleanup must not throw
+    expect(() => view.unmount()).not.toThrow();
+  });
+
+  it('getEnabledMenuItems returns empty list for a null container', async () => {
+    const { getEnabledMenuItems } = await import('./useMenuKeyboard');
+    expect(getEnabledMenuItems(null)).toEqual([]);
   });
 });

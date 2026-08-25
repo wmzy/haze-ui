@@ -8,6 +8,15 @@ import ContextMenuItem from './ContextMenuItem';
 import ContextMenuSeparator from './ContextMenuSeparator';
 
 describe('ContextMenu', () => {
+  it('throws when trigger is used outside ContextMenu', () => {
+    // silence React's error-boundary noise about the render throw
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() =>
+      render(<ContextMenuTrigger>host</ContextMenuTrigger>)
+    ).toThrow('ContextMenu components must be used within <ContextMenu>');
+    spy.mockRestore();
+  });
+
   it('renders children', () => {
     render(
       <ContextMenu>

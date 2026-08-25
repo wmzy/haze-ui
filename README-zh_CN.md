@@ -4,6 +4,9 @@
 
 [English](./README.md) | 简体中文
 
+[![npm](https://img.shields.io/npm/v/haze-ui)](https://www.npmjs.com/package/haze-ui)
+[![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
+
 ## 特性
 
 - 集成 [react use control](https://github.com/wmzy/react-use-control) ，提供组件内部状态的控制

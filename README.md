@@ -4,6 +4,9 @@
 
 English | [简体中文](./README-zh_CN.md)
 
+[![npm](https://img.shields.io/npm/v/haze-ui)](https://www.npmjs.com/package/haze-ui)
+[![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
+
 ## Features
 
 - Integrated [react use control](https://github.com/wmzy/react-use-control) provides component internal states

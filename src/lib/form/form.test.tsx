@@ -246,6 +246,77 @@ describe('useFormControl', () => {
     expect(getValue(form, 'name')).toBe('ada');
     expect(handles[handles.length - 1]).toBe(first);
   });
+
+  it('binds quoted-bracket and numeric-bracket path names', () => {
+    const form = createForm({
+      initialValues: {tags: ['x'], meta: {'b.c': 'dotted'}}
+    });
+
+    function TagField({form}: {form: FormInstance<{tags: string[]}>}) {
+      const tag = useFormControl(form, 'tags[0]');
+      return <Input data-testid='tag' value={tag} />;
+    }
+
+    function QuotedField({
+      form
+    }: {
+      form: FormInstance<{meta: Record<string, string>}>;
+    }) {
+      const dotted = useFormControl(form, 'meta["b.c"]');
+      return <Input data-testid='dotted' value={dotted} />;
+    }
+
+    render(
+      <>
+        <TagField form={form} />
+        <QuotedField form={form} />
+      </>
+    );
+    expect(screen.getByTestId('tag')).toHaveValue('x');
+    expect(screen.getByTestId('dotted')).toHaveValue('dotted');
+
+    act(() => setValue(form, 'tags[1]', 'y'));
+    expect(getValue(form, ['tags', 1])).toBe('y');
+    act(() => setValue(form, 'meta["b.c"]', 'quoted'));
+    expect(screen.getByTestId('dotted')).toHaveValue('quoted');
+  });
+
+  it('rejects malformed paths with a helpful TypeError', () => {
+    const form = createForm({initialValues: {a: 1}});
+
+    function BadQuote({form}: {form: FormInstance<Record<string, unknown>>}) {
+      useFormControl(form, 'a["unterminated');
+      return null;
+    }
+
+    function BadBracket({form}: {form: FormInstance<Record<string, unknown>>}) {
+      useFormControl(form, 'a[0');
+      return null;
+    }
+
+    function BadClose({form}: {form: FormInstance<Record<string, unknown>>}) {
+      useFormControl(form, 'a["x"y]');
+      return null;
+    }
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() => render(<BadQuote form={form} />)).toThrow(TypeError);
+    expect(() => render(<BadBracket form={form} />)).toThrow(TypeError);
+    expect(() => render(<BadClose form={form} />)).toThrow(TypeError);
+    spy.mockRestore();
+  });
+
+  it('parses empty-string name as a single empty segment', () => {
+    const form = createForm({initialValues: {'': 'root'}});
+
+    function EmptyField({form}: {form: FormInstance<Record<string, string>>}) {
+      const value = useFormControl(form, '');
+      return <Input data-testid='empty' value={value} />;
+    }
+
+    render(<EmptyField form={form} />);
+    expect(screen.getByTestId('empty')).toHaveValue('root');
+  });
 });
 
 describe('FormItem', () => {

@@ -6,6 +6,14 @@ import ToastContainer from './ToastContainer';
 import useToast from './useToast';
 
 describe('Toast', () => {
+  it('throws when useToast is used outside ToastContainer', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() => renderHook(() => useToast())).toThrow(
+      'useToast must be used within <ToastContainer>'
+    );
+    spy.mockRestore();
+  });
+
   it('renders children with alert role', () => {
     render(<Toast onClose={vi.fn()} duration={0}>Message</Toast>);
     expect(screen.getByRole('alert')).toHaveTextContent('Message');

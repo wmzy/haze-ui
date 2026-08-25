@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Rating from './Rating';
@@ -43,5 +43,26 @@ describe('Rating', () => {
     const { container } = render(<Rating value={3.5} allowHalf />);
     const stars = container.querySelectorAll('[role="radio"]');
     expect(stars.length).toBe(5);
+  });
+
+  it('renders half-filled star with gradient when allowHalf', () => {
+    const { container } = render(<Rating value={3.5} allowHalf />);
+    const stars = container.querySelectorAll('[role="radio"]');
+    const fillOf = (i: number) =>
+      stars[i]?.querySelector('svg')?.getAttribute('fill');
+    expect(fillOf(2)).toBe('currentColor');
+    expect(fillOf(3)).toBe('url(#half)');
+    expect(fillOf(4)).toBe('none');
+    expect(container.querySelector('linearGradient')).toBeInTheDocument();
+  });
+
+  it('previews stars on hover and restores on leave', () => {
+    const { container } = render(<Rating value={1} />);
+    const stars = container.querySelectorAll('[role="radio"]');
+    const third = stars[2]!;
+    fireEvent.mouseEnter(third);
+    expect(third.querySelector('svg')).toHaveAttribute('fill', 'currentColor');
+    fireEvent.mouseLeave(third);
+    expect(third.querySelector('svg')).toHaveAttribute('fill', 'none');
   });
 });

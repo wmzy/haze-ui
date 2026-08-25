@@ -123,6 +123,12 @@ export default defineConfig({
         'src/lib/tokens/**',
         '**/*.d.ts',
       ],
+      thresholds: {
+        statements: 70,
+        branches: 70,
+        functions: 70,
+        lines: 70,
+      },
     },
   },
 });

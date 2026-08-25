@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Transfer from './Transfer';
@@ -42,5 +42,54 @@ describe('Transfer', () => {
     const leftBtn = screen.getByRole('button', { name: '<' });
     await user.click(leftBtn);
     expect(onChange).toHaveBeenCalledWith([], 'left', ['a']);
+  });
+
+  it('no-ops when move buttons are clicked with nothing selected', () => {
+    const onChange = vi.fn();
+    render(<Transfer dataSource={items} targetKeys={['a']} onChange={onChange} />);
+    // buttons render disabled for empty selection; a programmatic click
+    // still reaches the handlers, exercising the empty-selection guards
+    const right = screen.getByRole('button', { name: '>' });
+    const left = screen.getByRole('button', { name: '<' });
+    (right as HTMLButtonElement).disabled = false;
+    (left as HTMLButtonElement).disabled = false;
+    fireEvent.click(right);
+    fireEvent.click(left);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByText('Source (2)')).toBeInTheDocument();
+    expect(screen.getByText('Target (1)')).toBeInTheDocument();
+  });
+
+  it('disables checkbox for disabled items', () => {
+    render(
+      <Transfer
+        dataSource={[{ key: 'x', title: 'Item X', disabled: true }]}
+        targetKeys={[]}
+      />
+    );
+    expect(screen.getByRole('checkbox', { name: 'Item X' })).toBeDisabled();
+  });
+
+  it('updates both panels after moving (uncontrolled)', async () => {
+    const user = userEvent.setup();
+    render(<Transfer dataSource={items} targetKeys={[]} />);
+    await user.click(screen.getByRole('checkbox', { name: 'Item B' }));
+    await user.click(screen.getByRole('button', { name: '>' }));
+    expect(screen.getByText('Source (2)')).toBeInTheDocument();
+    expect(screen.getByText('Target (1)')).toBeInTheDocument();
+    // Item B moved into the target panel
+    expect(screen.getByRole('checkbox', { name: 'Item B' })).toBeInTheDocument();
+  });
+
+  it('deselects source items after moving', async () => {
+    const user = userEvent.setup();
+    render(<Transfer dataSource={items} targetKeys={[]} />);
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(screen.getByRole('button', { name: '>' }));
+    // move it back: selection must have been cleared, then reselect
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(screen.getByRole('button', { name: '<' }));
+    expect(screen.getByText('Source (3)')).toBeInTheDocument();
+    expect(screen.getByText('Target (0)')).toBeInTheDocument();
   });
 });
