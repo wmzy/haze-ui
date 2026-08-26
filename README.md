@@ -89,6 +89,40 @@ function ProfileForm() {
 surfaces the first error in a `role="alert"` element — no manual
 `FieldError` wiring.
 
+#### `mode`: per-field validation timing (react-f0rm ≥ 0.6)
+
+Pass `mode` to validate one field on its own schedule instead of the
+form-wide validation mode — other fields are unaffected. It accepts
+react-f0rm's `ValidationMode` values: `'onSubmit'` (default form
+behavior), `'onBlur'`, `'onChange'`, `'onTouched'` or `'all'`. Omit it to
+keep the form's mode.
+
+```jsx
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  mode="onBlur"
+  validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+>
+  {({ id, errorId, invalid, onBlur, control }) => (
+    <Input
+      id={id}
+      value={control}
+      aria-invalid={invalid}
+      aria-describedby={errorId}
+      onBlur={onBlur}
+    />
+  )}
+</FormItem>
+```
+
+With `mode="onBlur"` (and the binding's `onBlur` passed to the control,
+as above) the email field is validated the moment it loses focus — no
+submit needed. `mode` accepts `'onSubmit'`, `'onBlur'`, `'onChange'`,
+`'onTouched'` or `'all'`; only this field's schedule changes, the rest
+of the form keeps its own `mode`.
+
 ## Related Projects
 
 - [react-use-control](https://github.com/wmzy/react-use-control)

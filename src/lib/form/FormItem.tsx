@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 
-import type {FieldError, FieldPath, Name} from 'react-f0rm';
+import type {FieldError, FieldPath, Name, ValidationMode} from 'react-f0rm';
 
 import type {Control} from 'react-use-control';
 
@@ -40,6 +40,10 @@ export type FormItemBinding<TValues, P extends FieldPath<TValues> | Name> = {
   invalid: boolean;
   /** every error registered for the field, in insertion order */
   errors: FieldError[];
+  /** react-f0rm blur hook for this field — pass to the control's `onBlur`
+   * (`<Input onBlur={onBlur}/>`) so blur-scheduled validation modes
+   * (`mode='onBlur' | 'onTouched' | 'all'`) fire when the field loses focus. */
+  onBlur: () => void;
   /** Control bound to the field value — pass to a control prop */
   control: Control<PathValueOf<TValues, P>>;
 };
@@ -54,6 +58,11 @@ export type FormItemProps<
   /** Field-level validator, registered through react-f0rm's own
    * `useField` channel — validated per the form's `mode` and on submit. */
   validate?: FieldValidator;
+  /** Per-field validation mode override (react-f0rm ≥0.6): when given,
+   * this field validates on its own schedule — e.g. `'onBlur'` — instead
+   * of the form's `mode`; other fields are unaffected. Omit to keep the
+   * form-wide behavior. */
+  mode?: ValidationMode;
   className?: string;
   children: (binding: FormItemBinding<TValues, P>) => ReactNode;
 };
@@ -100,6 +109,7 @@ export default function FormItem<
   name,
   label,
   validate,
+  mode,
   className,
   children
 }: FormItemProps<TValues, P>) {
@@ -108,8 +118,11 @@ export default function FormItem<
   const errorId = `${id}-error`;
 
   // Registers `validate` on the form (same channel as react-f0rm's <Field>)
-  // and keeps this component subscribed to the field's state.
-  useField({form, name, validate});
+  // and keeps this component subscribed to the field's state. `mode`
+  // overrides the field's validation schedule (react-f0rm ≥0.6); the
+  // returned `onBlur` is handed to children so blur-scheduled modes can
+  // observe DOM blur events.
+  const {onBlur} = useField({form, name, validate, mode});
   const errors = useFieldErrors(form, name);
   const control = useFormControl(form, name);
   const invalid = errors.length > 0;
@@ -121,7 +134,7 @@ export default function FormItem<
           {label}
         </label>
       )}
-      {children({id, errorId, invalid, errors, control})}
+      {children({id, errorId, invalid, errors, onBlur, control})}
       {invalid && (
         <span id={errorId} role='alert' x-class={errorText}>
           {errors[0]!.message}

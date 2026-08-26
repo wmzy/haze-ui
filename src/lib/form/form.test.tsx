@@ -494,4 +494,77 @@ describe('FormItem', () => {
     expect(probe).toHaveTextContent('undefined:undefined');
     expect(getValue(form, 'name')).toBeUndefined();
   });
+
+  it('mode="onBlur" validates on blur; without mode validation waits for submit', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='name'
+          label='Name'
+          validate={(v: string) => (v ? undefined : 'name required')}
+        >
+          {({id, invalid, control}) => (
+            <Input
+              id={id}
+              data-testid='name-input'
+              value={control}
+              aria-invalid={invalid}
+            />
+          )}
+        </FormItem>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          mode='onBlur'
+          validate={(v: string) => (v ? undefined : 'email required')}
+        >
+          {({id, invalid, onBlur, control}) => (
+            <Input
+              id={id}
+              data-testid='email-input'
+              value={control}
+              aria-invalid={invalid}
+              onBlur={onBlur}
+            />
+          )}
+        </FormItem>
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    // mode='onBlur': focus and leave the field empty → blur alone errors it
+    await user.click(screen.getByTestId('email-input'));
+    await user.tab();
+    expect(await screen.findByText('email required')).toBeInTheDocument();
+    expect(screen.queryByText('name required')).not.toBeInTheDocument();
+
+    // no mode: blurring the field does NOT validate it…
+    await user.click(screen.getByTestId('name-input'));
+    await user.tab();
+    expect(screen.queryByText('name required')).not.toBeInTheDocument();
+
+    // …only submitting does
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(screen.getByText('name required')).toBeInTheDocument();
+  });
+
+  it('rejects a misspelled mode at compile time', () => {
+    const form = createForm({initialValues: {email: ''}});
+    const element = (
+      <FormItem
+        form={form}
+        name='email'
+        // @ts-expect-error 'onFocuse' is not a ValidationMode literal
+        mode='onFocuse'
+      >
+        {() => null}
+      </FormItem>
+    );
+    expect(element).toBeTruthy();
+  });
 });
