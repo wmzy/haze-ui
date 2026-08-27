@@ -1,14 +1,31 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, MouseEvent, ReactNode } from 'react';
+
+import { forwardRef } from 'react';
 
 import { css } from '@linaria/core';
 
+/**
+ * Extends the native `<a>` attributes. Everything not listed below is spread
+ * onto the rendered anchor, so callers (and routers composing NavLink via
+ * their `as` prop) can inject `target`, `rel`, `aria-*`, and friends.
+ */
 type NavLinkProps = {
   href?: string;
+  /**
+   * Explicit active state. Falls back to `aria-current="page"` when omitted,
+   * letting routers drive highlighting through the standard aria attribute.
+   */
   active?: boolean;
   children: ReactNode;
-  onClick?: () => void;
+  /**
+   * Native click handler: receives the underlying mouse event. Whether to
+   * call `event.preventDefault()` is up to the caller (an SPA router Link
+   * does so itself), except for placeholder hrefs where NavLink keeps
+   * button semantics (see the onClick handler below).
+   */
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
   className?: string;
-};
+} & Omit<ComponentPropsWithoutRef<'a'>, 'href' | 'children' | 'onClick' | 'className'>;
 
 const link = css`
   font-size: var(--haze-text-sm);
@@ -31,22 +48,33 @@ const activeLink = css`
   font-weight: var(--haze-weight-medium);
 `;
 
-export default function NavLink({ href = '#', active, children, onClick, className }: NavLinkProps) {
+export default forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
+  { href = '#', active, children, onClick, className, 'aria-current': ariaCurrent, ...rest },
+  ref,
+) {
+  const isActive = active ?? ariaCurrent === 'page';
+
   return (
     <a
-      x-class={[link, active && activeLink, className]}
+      ref={ref}
+      x-class={[link, isActive && activeLink, className]}
       href={href}
-      onClick={(e) => {
-        if (onClick) {
-          e.preventDefault();
-          onClick();
+      aria-current={isActive ? 'page' : ariaCurrent}
+      onClick={(event) => {
+        // A missing or '#' href means button semantics (e.g. a Logout
+        // action): keep suppressing the default so the page does not jump
+        // to '#'. Real hrefs pass through untouched and the caller decides
+        // whether to prevent navigation (SPA router Links do).
+        if (href === '#') {
+          event.preventDefault();
         }
+        onClick?.(event);
       }}
-      aria-current={active ? 'page' : undefined}
+      {...rest}
     >
       {children}
     </a>
   );
-}
+});
 
 export type { NavLinkProps };
