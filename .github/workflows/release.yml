@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "scripts/**"
       - "package.json"
       - ".github/workflows/release.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
