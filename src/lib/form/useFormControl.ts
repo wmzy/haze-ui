@@ -16,7 +16,7 @@ import {useControl, useThru} from 'react-use-control';
 import {getValueByPath, setValueByPath, useValueByPath} from 'react-f0rm';
 
 
-// Re-exported for the barrel: consumers of 'haze-ui/form' get the form
+// Re-exported for the barrel: consumers of 'haze-ui' get the form
 // instance and value-at-path types alongside the bridge API.
 export type {FormInstance, PathValueOf};
 

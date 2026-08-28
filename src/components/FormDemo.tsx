@@ -1,4 +1,4 @@
-import type {FormInstance} from '@/lib/form';
+import type {FormInstance} from '@/lib';
 
 import {useState} from 'react';
 import {css} from '@linaria/core';
@@ -9,13 +9,14 @@ import {
   Alert,
   Button,
   CodeBlock,
+  FormItem,
   Input,
   NumberInput,
   Option,
   Select,
   Switch,
+  useFormControl,
 } from '@/lib';
-import {FormItem, useFormControl} from '@/lib/form';
 import A11yNote from '@/views/ComponentDetail/A11yNote';
 import PropsTable from '@/views/ComponentDetail/PropsTable';
 import {
@@ -125,7 +126,8 @@ export default function FormDemo() {
       <h1>Form</h1>
       <p className={intro}>
         Bind react-f0rm form state to haze-ui controls through the form
-        integration layer (<code>@/lib/form</code>):{' '}
+        integration layer (<code>FormItem</code> /{' '}
+        <code>useFormControl</code> from <code>@/lib</code>):{' '}
         <code>useFormControl</code> turns a form field into a{' '}
         <code>Control</code> handle, <code>FormItem</code> wires label, error
         and aria attributes around any haze-ui control.

@@ -105,9 +105,14 @@ yarn add haze-ui @linaria/core`}</pre>
         <h2>Setup</h2>
         <ol className={stepList}>
           <li>
-            <strong>Import the stylesheet</strong> — Haze UI ships a single CSS file containing
-            all component styles and design tokens.
-            <pre className={codeBlock}>{`import 'haze-ui/styles.css';`}</pre>
+            <strong>Import the stylesheet</strong> — load the full bundle, or
+            load tokens plus only the components you use.
+            <pre className={codeBlock}>{`// full bundle (~12kB gzipped)
+import 'haze-ui/styles.css';
+
+// or per-component: tokens once + each component's css
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css'; // OTPInput -> 'haze-ui/css/otp-input.css'`}</pre>
           </li>
           <li>
             <strong>Apply the theme</strong> — Wrap your app (or any subtree) with the theme

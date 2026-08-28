@@ -26,7 +26,17 @@ pnpm add haze-ui
 
 ### Usage
 
+Import the component and its CSS. Two CSS loading modes:
+
 ```jsx
+// Full stylesheet (simplest, ~12kB gzipped)
+import 'haze-ui/styles.css';
+import { lightTheme, spacing, typography, Button } from 'haze-ui';
+
+// …or per-component CSS (pay only for what you render).
+// Always load tokens.css once, then each component you use:
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css';
 import { Button } from 'haze-ui';
 
 export default function MyComponent() {
@@ -34,9 +44,15 @@ export default function MyComponent() {
 }
 ```
 
+Component CSS files are kebab-case versions of the component name
+(`OTPInput` → `haze-ui/css/otp-input.css`). Per-component files only
+cover that component's rules — tokens (themes, spacing, typography)
+always come from `haze-ui/css/tokens.css`.
+
 ## react-f0rm Integration
 
-The `haze-ui/form` entry (peer dependency: `react-f0rm`) glues react-f0rm
+The form layer (`FormItem`, `useFormControl`; peer dependency
+`react-f0rm`) is exported from the main barrel and glues react-f0rm
 form state to haze-ui's control-prop system, so any control-prop
 component (`Input`, `Select`, `Switch`, `Textarea`, `TagInput`, ...)
 binds to a form field with zero adapters.
@@ -45,8 +61,7 @@ binds to a form field with zero adapters.
 
 ```jsx
 import { useForm, setValue } from 'react-f0rm';
-import { Input } from 'haze-ui';
-import { useFormControl } from 'haze-ui/form';
+import { Input, useFormControl } from 'haze-ui';
 
 function NameField({ form }) {
   const name = useFormControl(form, 'name');
@@ -63,8 +78,7 @@ re-seeds every bridged control with no remounting.
 
 ```jsx
 import { Form, useForm } from 'react-f0rm';
-import { Input } from 'haze-ui';
-import { FormItem } from 'haze-ui/form';
+import { FormItem, Input } from 'haze-ui';
 
 function ProfileForm() {
   const form = useForm({ initialValues: { email: '' } });

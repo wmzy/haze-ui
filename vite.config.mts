@@ -36,13 +36,7 @@ const buildConfig = (() => {
   if (isLibBuild) {
     return {
       lib: {
-        // Two entries: the main component barrel and the react-f0rm
-        // integration layer (form/), which consumers import as
-        // 'haze-ui/form'.
-        entry: {
-          index: path.resolve(__dirname, 'src/lib/index.ts'),
-          form: path.resolve(__dirname, 'src/lib/form/index.ts'),
-        },
+        entry: path.resolve(__dirname, 'src/lib/index.ts'),
         formats: ['es'] as const,
       },
       rollupOptions: {
@@ -56,7 +50,7 @@ const buildConfig = (() => {
           'react-toolroom/async',
           '@native-router/react',
           '@for-fun/event-emitter',
-          // peer of the form/ entry — consumers bring their own copy
+          // peer dependency — consumers bring their own copy
           'react-f0rm',
         ],
         output: {
@@ -65,7 +59,13 @@ const buildConfig = (() => {
           entryFileNames: '[name].js',
         },
       },
-      cssCodeSplit: false,
+      // Vite's lib mode defaults cssCodeSplit to false (one merged CSS
+      // file). Force it on: with preserveModules every lib module emits its
+      // own `*.wyw-in-js.css`, which scripts/split-css.mjs then groups into
+      // dist/css/<component>.css subpaths and the dist/haze-ui.css
+      // aggregate, so consumers can load per-component CSS instead of the
+      // full 90kB stylesheet.
+      cssCodeSplit: true,
     };
   }
   if (isDemoBuild) {

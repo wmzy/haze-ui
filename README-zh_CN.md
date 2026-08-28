@@ -26,7 +26,17 @@ pnpm add haze-ui
 
 ### 使用
 
+导入组件及其 CSS，两种加载方式：
+
 ```jsx
+// 全量样式（最简单，gzip 后约 12kB）
+import 'haze-ui/styles.css';
+import { lightTheme, spacing, typography, Button } from 'haze-ui';
+
+// ……或按组件加载（只为用到的组件付费）。
+// tokens.css 只需导入一次，再导入用到的组件 CSS：
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css';
 import { Button } from 'haze-ui';
 
 export default function MyComponent() {
@@ -36,18 +46,22 @@ export default function MyComponent() {
 }
 ```
 
+组件 CSS 文件名为组件名的 kebab-case（`OTPInput` →
+`haze-ui/css/otp-input.css`）。按组件的文件只包含该组件自己的规则，
+主题/间距/排印等令牌始终来自 `haze-ui/css/tokens.css`。
+
 ## react-f0rm 集成
 
-`haze-ui/form` 入口（peer 依赖 `react-f0rm`）把 react-f0rm 的表单状态桥接到
-haze-ui 的 control 属性体系：任何支持 control 属性的组件（`Input`、`Select`、
-`Switch`、`Textarea`、`TagInput`……）都能直连表单字段，无需适配器。
+表单层（`FormItem`、`useFormControl`；peer 依赖 `react-f0rm`）从主 barrel
+导出，把 react-f0rm 的表单状态桥接到 haze-ui 的 control 属性体系：任何支持
+control 属性的组件（`Input`、`Select`、`Switch`、`Textarea`、`TagInput`……）
+都能直连表单字段，无需适配器。
 
 ### useFormControl(form, name)：字段 → Control
 
 ```jsx
 import { useForm, setValue } from 'react-f0rm';
-import { Input } from 'haze-ui';
-import { useFormControl } from 'haze-ui/form';
+import { Input, useFormControl } from 'haze-ui';
 
 function NameField({ form }) {
   const name = useFormControl(form, 'name');
@@ -63,8 +77,7 @@ function NameField({ form }) {
 
 ```jsx
 import { Form, useForm } from 'react-f0rm';
-import { Input } from 'haze-ui';
-import { FormItem } from 'haze-ui/form';
+import { FormItem, Input } from 'haze-ui';
 
 function ProfileForm() {
   const form = useForm({ initialValues: { email: '' } });

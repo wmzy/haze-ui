@@ -52,7 +52,7 @@ The library's differentiator. Stateful components accept `Control<T> | T` props 
 ### Vite Build Modes
 
 Controlled by environment variables in `vite.config.mts`:
-- `BUILD_LIB=true` — Library build (entry: `src/lib/index.ts`, preserveModules, externalizes peers)
+- `BUILD_LIB=true` — Library build (entry: `src/lib/index.ts`, preserveModules, externalizes peers). CSS is emitted per module (`*.wyw-in-js.css`); `scripts/split-css.mjs` then groups it into `dist/css/<component>.css` subpaths (plus `dist/css/tokens.css` and the `dist/haze-ui.css` aggregate served as `haze-ui/styles.css`).
 - `BUILD_DEMO=true` — Demo site build
 - Neither — Dev server
 

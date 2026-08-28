@@ -213,5 +213,15 @@ export type { DiffViewerProps, DiffLine } from './components/DiffViewer';
 export { LogViewer } from './components/LogViewer';
 export type { LogViewerProps, LogEntry, LogLevel } from './components/LogViewer';
 
+// form integration (react-f0rm peer)
+export { FormItem, useFormControl } from './form';
+export type {
+  FieldValidator,
+  FormItemBinding,
+  FormItemProps,
+  FormInstance,
+  PathValueOf,
+} from './form';
+
 // re-export ecosystem utilities
 export { useControl } from 'react-use-control';

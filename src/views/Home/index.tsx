@@ -314,8 +314,9 @@ export default function Home() {
           <div>
             <h3 className={codeDescTitle}>Quick setup</h3>
             <p className={codeDescription}>
-              Import the stylesheet, apply a theme class, and start using components.
-              No providers, no context wrappers, no configuration files.
+              Import the stylesheet (full bundle or per-component CSS), apply a
+              theme class, and start using components. No providers, no context
+              wrappers, no configuration files.
             </p>
           </div>
           <pre className={codeBlock}>{`import 'haze-ui/styles.css';

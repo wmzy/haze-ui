@@ -11,11 +11,8 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./form": {
-      "types": "./dist/types/form/index.d.ts",
-      "import": "./dist/form.js"
-    },
-    "./styles.css": "./dist/haze-ui.css"
+    "./styles.css": "./dist/haze-ui.css",
+    "./css/*": "./dist/css/*"
   },
   "files": [
     "dist"
@@ -25,7 +22,7 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "BUILD_LIB=true vite build && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json",
+    "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json",
     "build:demo": "BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
