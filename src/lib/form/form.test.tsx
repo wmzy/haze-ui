@@ -6,7 +6,7 @@ import {useState} from 'react';
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import {Form, createForm, getValue, reset, setValue} from 'react-f0rm';
+import {Form, createForm, getError, getValue, reset, setValue} from 'react-f0rm';
 import {useControl} from 'react-use-control';
 
 import {Input} from '../components/Input';
@@ -566,5 +566,87 @@ describe('FormItem', () => {
       </FormItem>
     );
     expect(element).toBeTruthy();
+  });
+
+  it('validateDebounce: kicks inside the window collapse into one validator run', async () => {
+    vi.useFakeTimers();
+    try {
+      const form = createForm({initialValues: {name: '', email: ''}});
+      const validate = vi.fn((v: string) =>
+        v.includes('@') ? undefined : 'must be an email'
+      );
+
+      renderEmailItem(form, {validate, validateDebounce: 300});
+
+      // three kicks inside the window — none may run the validator yet
+      act(() => setValue(form, 'email', 'a', {shouldValidate: true}));
+      act(() => setValue(form, 'email', 'ab', {shouldValidate: true}));
+      act(() => setValue(form, 'email', 'abc@x.dev', {shouldValidate: true}));
+      expect(validate).not.toHaveBeenCalled();
+
+      act(() => vi.advanceTimersByTime(300));
+      expect(validate).toHaveBeenCalledTimes(1);
+      // the surviving run sees the last value and gets react-f0rm's meta
+      expect(validate).toHaveBeenLastCalledWith(
+        'abc@x.dev',
+        expect.objectContaining({form, signal: expect.any(AbortSignal)})
+      );
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('delayError: a newly appearing error waits out the window before rendering', async () => {
+    vi.useFakeTimers();
+    try {
+      const form = createForm({initialValues: {name: '', email: ''}});
+
+      renderEmailItem(form, {
+        validate: (v: string) =>
+          v.includes('@') ? undefined : 'must be an email',
+        delayError: 500
+      });
+
+      // invalid value: the form's error store is immediate…
+      act(() => setValue(form, 'email', 'nope', {shouldValidate: true}));
+      expect(getError(form, 'email')!.message).toBe('must be an email');
+      // …but the rendered error span waits out the delay window
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+      // once the window passes, the error span shows up
+      act(() => vi.advanceTimersByTime(500));
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'must be an email'
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('rules: declarative constraints validate and merge ahead of validate', async () => {
+    const form = createForm({initialValues: {name: '', email: ''}});
+    const validate = vi.fn(() => 'also invalid');
+
+    renderEmailItem(form, {
+      validate,
+      rules: {required: 'email is required', minLength: 4}
+    });
+
+    // empty value: required fails and lands first in the merged errors —
+    // rules errors precede the field validator's own error
+    act(() => setValue(form, 'email', '', {shouldValidate: true}));
+    const first = getError(form, 'email')!;
+    expect(first.type).toBe('required');
+    expect(first.message).toBe('email is required');
+    expect(screen.getByRole('alert')).toHaveTextContent('email is required');
+    // the field validator still ran — react-f0rm merges both sources
+    expect(validate).toHaveBeenCalledTimes(1);
+
+    // at 4 chars the rules pass; only the validator's error remains
+    act(() => setValue(form, 'email', 'abcd', {shouldValidate: true}));
+    expect(getError(form, 'email')!.message).toBe('also invalid');
+    expect(screen.getByRole('alert')).toHaveTextContent('also invalid');
+    expect(validate).toHaveBeenCalledTimes(2);
   });
 });

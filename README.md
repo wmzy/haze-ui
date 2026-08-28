@@ -137,6 +137,45 @@ submit needed. `mode` accepts `'onSubmit'`, `'onBlur'`, `'onChange'`,
 `'onTouched'` or `'all'`; only this field's schedule changes, the rest
 of the form keeps its own `mode`.
 
+#### `validateDebounce` / `delayError` / `rules` (react-f0rm ≥ 0.6)
+
+`FormItem` passes these field-level options straight through to
+react-f0rm's `useField`:
+
+- `validateDebounce={300}` — debounce this field's validation kicks:
+  only the last kick inside the window runs the validator (e.g. keeps a
+  per-keystroke async validator from firing while the user types fast).
+  While the timer is pending the field counts as validating, so
+  `trigger`/submit wait it out.
+- `delayError={500}` — delay *showing* a newly appearing error in the
+  rendered error span (and the binding's `invalid`/`errors`). The form's
+  error state stays immediate — submit and `getError` still gate on it.
+  An error that clears inside the window never shows.
+- `rules={{ required: 'Email is required', minLength: 4, pattern: { value: /@/, message: 'Must be an email' } }}`
+  — declarative constraints (a subset of react-hook-form's `register`
+  rules) compiled into a validator that runs *before* `validate`; both
+  sources' errors merge into the field's error list, rules errors ahead.
+
+```jsx
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  validateDebounce={300}
+  delayError={500}
+  rules={{ required: 'Email is required' }}
+  validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+>
+  {({ id, errorId, invalid, control }) => (
+    <Input id={id} value={control} aria-invalid={invalid} aria-describedby={errorId} />
+  )}
+</FormItem>
+```
+
+All three are optional; omit them and the field behaves exactly as
+before (immediate validation per the form's `mode`, immediate error
+display, `validate`-only).
+
 ## Related Projects
 
 - [react-use-control](https://github.com/wmzy/react-use-control)

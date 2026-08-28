@@ -1,6 +1,12 @@
 import type {ReactNode} from 'react';
 
-import type {FieldError, FieldPath, Name, ValidationMode} from 'react-f0rm';
+import type {
+  FieldError,
+  FieldPath,
+  FieldRules,
+  Name,
+  ValidationMode
+} from 'react-f0rm';
 
 import type {Control} from 'react-use-control';
 
@@ -8,7 +14,7 @@ import type {FormInstance, PathValueOf} from './useFormControl';
 
 import {useId} from 'react';
 import {css} from '@linaria/core';
-import {useField, useFieldErrors} from 'react-f0rm';
+import {useField} from 'react-f0rm';
 
 
 import {useFormControl} from './useFormControl';
@@ -63,6 +69,23 @@ export type FormItemProps<
    * of the form's `mode`; other fields are unaffected. Omit to keep the
    * form-wide behavior. */
   mode?: ValidationMode;
+  /** Milliseconds to debounce this field's validation kicks (react-f0rm
+   * ≥0.6): only the last kick inside the window runs the validator — e.g.
+   * `300` keeps a fast typist from firing a per-keystroke async validator.
+   * While the timer is pending the field counts as validating. Omit for
+   * immediate validation (react-f0rm's default). */
+  validateDebounce?: number;
+  /** Milliseconds to delay *showing* a newly appearing error in the render
+   * layer (react-f0rm ≥0.6): the form's error state stays immediate —
+   * submit/trigger still gate on it — only the rendered error span and
+   * `invalid` wait out the window. An error that clears inside the window
+   * never shows. Omit for immediate display. */
+  delayError?: number;
+  /** Declarative rules (required/min/max/minLength/maxLength/pattern;
+   * react-f0rm ≥0.6), compiled into a validator that runs *before*
+   * `validate` — both sources' errors merge, rules errors ahead. Omit for
+   * `validate`-only validation. */
+  rules?: FieldRules;
   className?: string;
   children: (binding: FormItemBinding<TValues, P>) => ReactNode;
 };
@@ -110,6 +133,9 @@ export default function FormItem<
   label,
   validate,
   mode,
+  validateDebounce,
+  delayError,
+  rules,
   className,
   children
 }: FormItemProps<TValues, P>) {
@@ -117,13 +143,23 @@ export default function FormItem<
   const id = `haze-field-${generatedId}`;
   const errorId = `${id}-error`;
 
-  // Registers `validate` on the form (same channel as react-f0rm's <Field>)
-  // and keeps this component subscribed to the field's state. `mode`
-  // overrides the field's validation schedule (react-f0rm ≥0.6); the
-  // returned `onBlur` is handed to children so blur-scheduled modes can
-  // observe DOM blur events.
-  const {onBlur} = useField({form, name, validate, mode});
-  const errors = useFieldErrors(form, name);
+  // Registers `validate`/`rules` on the form (same channel as react-f0rm's
+  // <Field>) and keeps this component subscribed to the field's state.
+  // `mode` overrides the field's validation schedule, `validateDebounce`
+  // debounces its kicks and `delayError` defers error display (all
+  // react-f0rm ≥0.6); the returned `onBlur` is handed to children so
+  // blur-scheduled modes can observe DOM blur events. The returned
+  // `errors` are the display-layer errors: already `delayError`-aware
+  // (identical to the immediate store when `delayError` is omitted).
+  const {onBlur, errors} = useField({
+    form,
+    name,
+    validate,
+    mode,
+    validateDebounce,
+    delayError,
+    rules
+  });
   const control = useFormControl(form, name);
   const invalid = errors.length > 0;
 
