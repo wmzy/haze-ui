@@ -16,6 +16,11 @@
  * Invariants enforced at the end (non-zero exit on failure):
  *   - every `.wyw-in-js.css` file is covered by exactly one group
  *   - the aggregate's class-name set equals the union of module CSS
+ *   - no dangling `.wyw-in-js.css` import/require survives in dist JS —
+ *     the styles are carried by `haze-ui/styles.css` / `haze-ui/css/*`,
+ *     so the per-module side-effect imports are stripped together with
+ *     the files (1.11.0 shipped them dangling: Node ESM, vitest inline
+ *     and vite build all fail to resolve the removed files)
  */
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -101,9 +106,42 @@ if (missing.length > 0 || extra.length > 0) {
 }
 
 // The per-module files are superseded by dist/css/* and dist/haze-ui.css;
-// drop them so the published package ships each rule exactly once.
+// drop them so the published package ships each rule exactly once — and
+// strip their side-effect imports from the JS outputs, otherwise the
+// published package references files that no longer exist.
 for (const rel of moduleCssFiles) {
   rmSync(path.join(distDir, rel));
+}
+stripDanglingCssImports();
+
+/** Remove `import "./x.wyw-in-js.css"` / `require("./x.wyw-in-js.css")` from dist JS. */
+function stripDanglingCssImports() {
+  const jsExtensions = new Set(['.js', '.cjs', '.mjs']);
+  const esmImport = /import\s*["'][^"']*\.wyw-in-js\.css["'];?/g;
+  const cjsRequire = /require\(\s*["'][^"']*\.wyw-in-js\.css["']\s*\);?/g;
+  const strip = (dir = distDir) => {
+    let stripped = 0;
+    for (const entry of readdirSync(dir, {withFileTypes: true})) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        stripped += strip(full);
+      } else if (jsExtensions.has(path.extname(entry.name))) {
+        const code = readFileSync(full, 'utf8');
+        const next = code.replace(esmImport, '').replace(cjsRequire, '');
+        if (next !== code) {
+          writeFileSync(full, next);
+          stripped += 1;
+        }
+      }
+    }
+    return stripped;
+  };
+  const strippedFiles = strip();
+  if (strippedFiles === 0) {
+    console.error('split-css: no .wyw-in-js.css imports found in dist JS — build output shape changed?');
+    process.exit(1);
+  }
+  console.log(`split-css: stripped dangling css imports from ${strippedFiles} JS files`);
 }
 
 const perComponent = orderedNames.filter((n) => n !== 'tokens').length;
