@@ -13,7 +13,7 @@ import {useMemo} from 'react';
 import {useControl, useThru} from 'react-use-control';
 
 
-import {getValueByPath, setValueByPath, useValueByPath} from 'react-f0rm';
+import {getValueByPath, changeValueByPath, useValueByPath} from 'react-f0rm';
 
 
 // Re-exported for the barrel: consumers of 'haze-ui' get the form
@@ -125,8 +125,11 @@ function useCachedPath(name: Name): ParsedPath {
  * `getValueByPath` at render time (kept fresh by a `useValueByPath`
  * subscription that re-renders this component on own-field changes — and
  * only those, so sibling fields stay isolated); writes go through
- * `setValueByPath`, accepting either a plain value or a functional updater
- * that is evaluated against the live form value.
+ * `changeValueByPath` — react-f0rm's user-change channel — so a control
+ * write fires exactly the validation a user typing into the field would
+ * fire (the field's effective `mode`, per-field override included, and the
+ * form's `reValidateMode`). The setter accepts either a plain value or a
+ * functional updater that is evaluated against the live form value.
  *
  * The handle's identity is stable across re-renders, including own-field
  * value changes.
@@ -169,7 +172,7 @@ export function useFormControl<
         typeof action === 'function'
           ? (action as (prevState: FieldValue) => FieldValue)(current)
           : (action as FieldValue);
-      setValueByPath(form, path, next);
+      changeValueByPath(form, path, next);
     }
   ]);
 }

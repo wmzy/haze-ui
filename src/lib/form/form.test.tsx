@@ -362,6 +362,82 @@ describe('FormItem', () => {
     expect(input).toHaveValue('back@flow.dev');
   });
 
+  it('re-validates on typing through the control bridge after a failed submit (default reValidateMode)', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          validate={(v: string) =>
+            v.includes('@') ? undefined : 'must be an email'
+          }
+        >
+          {({id, errorId, invalid, control}) => (
+            <Input
+              id={id}
+              data-testid='email-input'
+              value={control}
+              aria-describedby={errorId}
+              aria-invalid={invalid}
+            />
+          )}
+        </FormItem>
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    // Failed submit surfaces the error (mode onSubmit).
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(screen.getByRole('alert')).toHaveTextContent('must be an email');
+
+    // Typing a valid value through the bridge must re-validate
+    // immediately — reValidateMode 'onChange' (the default) is reachable
+    // from control writes, exactly as it is from useField.onChange. No
+    // second submit, no blur needed.
+    await user.type(screen.getByTestId('email-input'), 'a@b.c');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(getError(form, 'email')).toBeUndefined();
+    expect(getValue(form, 'email')).toBe('a@b.c');
+  });
+
+  it('fires mode-gated validation on typing through the control bridge', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <FormItem
+        form={form}
+        name='email'
+        label='Email'
+        mode='onChange'
+        validate={(v: string) => (v.includes('@') ? undefined : 'must be an email')}
+      >
+        {({id, errorId, invalid, control}) => (
+          <Input
+            id={id}
+            data-testid='email-input'
+            value={control}
+            aria-describedby={errorId}
+            aria-invalid={invalid}
+          />
+        )}
+      </FormItem>
+    );
+
+    // Per-field mode 'onChange': the very first invalid keystroke through
+    // the bridge validates — no submit, no blur.
+    await user.type(screen.getByTestId('email-input'), 'nope');
+    expect(screen.getByRole('alert')).toHaveTextContent('must be an email');
+
+    // …and typing the rest of a valid value clears it, same channel.
+    await user.type(screen.getByTestId('email-input'), '@x.y');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('renders role=alert, aria-invalid and aria-describedby once the field errors', async () => {
     const user = userEvent.setup();
     const form = createForm({initialValues: {name: '', email: ''}});

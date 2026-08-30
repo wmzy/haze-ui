@@ -49,7 +49,7 @@
   "peerDependencies": {
     "@linaria/core": "^7.0.0 || ^8.0.0",
     "react": "^19.0.0",
-    "react-f0rm": ">=0.3.0"
+    "react-f0rm": ">=0.7.0"
   },
   "dependencies": {
     "react-toolroom": "^0.11.0",
@@ -95,7 +95,7 @@
     "ramda": "^0.32.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-f0rm": "^0.6.0",
+    "react-f0rm": "^0.7.0",
     "react-icons": "^5.7.0",
     "rollup-plugin-type-as-json-schema": "^0.2.6",
     "semantic-release": "^25.0.9",

@@ -70,9 +70,16 @@ function NameField({ form }) {
 ```
 
 The handle is a real `Control`: reads subscribe to the field (sibling
-fields stay isolated), writes go through `setValueByPath`, and functional
-updates evaluate against the live form value. `reset(form, newValues)`
-re-seeds every bridged control with no remounting.
+fields stay isolated), and writes go through react-f0rm's user-change
+channel (`changeValueByPath`, ≥ 0.7) — a control write fires exactly the
+validation a user typing into the field would fire: the field's effective
+`mode` (a `FormItem`/`useField` per-field override included) and the
+form's `reValidateMode`. With the default `mode: 'onSubmit'` +
+`reValidateMode: 'onChange'`, typing through a bridged control after a
+failed submit re-validates per keystroke and clears the error as soon as
+the value is valid — no blur, no resubmit. Functional updates evaluate
+against the live form value. `reset(form, newValues)` re-seeds every
+bridged control with no remounting.
 
 ### FormItem: label, errors and aria wiring
 

@@ -133,8 +133,8 @@ importers:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
       react-f0rm:
-        specifier: ^0.6.0
-        version: 0.6.0(react@19.2.8)(zod@4.4.3)
+        specifier: ^0.7.0
+        version: 0.7.0(react@19.2.8)(zod@4.4.3)
       react-icons:
         specifier: ^5.7.0
         version: 5.7.0(react@19.2.8)
@@ -4282,8 +4282,8 @@ packages:
     peerDependencies:
       react: ^19.2.8
 
-  react-f0rm@0.6.0:
-    resolution: {integrity: sha512-M8lnyBaBbzNpf2wqB4+nQbcctIq2hFPrWGuHKAr0a53LZJI9oSpuWcNSj8m1orQhwQl6eObn9PKh6mFPqcbL2Q==}
+  react-f0rm@0.7.0:
+    resolution: {integrity: sha512-phAceUc+cZI0YUhOl3d6xCBSJVxX+xbeZpcqShE9ODKnxp8gLV5DYbAOKrsECNGUCPBLhra10lIuENP2aQ5IZQ==}
     peerDependencies:
       react: '>=16.8.0'
       valibot: '>=1.0.0'
@@ -9517,7 +9517,7 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-f0rm@0.6.0(react@19.2.8)(zod@4.4.3):
+  react-f0rm@0.7.0(react@19.2.8)(zod@4.4.3):
     dependencies:
       '@for-fun/event-emitter': 1.0.1
       react: 19.2.8
