@@ -100,7 +100,7 @@
     "rollup-plugin-type-as-json-schema": "^0.2.6",
     "semantic-release": "^25.0.9",
     "terser": "^5.51.2",
-    "tools-config": "^0.3.0",
+    "tools-config": "^0.3.1",
     "tsc-alias": "^1.9.2",
     "typescript": "^6.0.3",
     "vite": "^8.2.2",
