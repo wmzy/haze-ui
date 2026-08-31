@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Textarea from './Textarea';
+import TextareaCore from './TextareaCore';
 
 describe('Textarea', () => {
   it('renders a textarea element', () => {
@@ -41,5 +42,20 @@ describe('Textarea', () => {
     const textarea = screen.getByPlaceholderText('test');
     expect(textarea).toBeDisabled();
     expect(textarea).toHaveAttribute('rows', '5');
+  });
+});
+
+describe('TextareaCore', () => {
+  it('renders the given value as a controlled textarea', () => {
+    render(<TextareaCore value="hello" onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('textbox')).toHaveValue('hello');
+  });
+
+  it('calls onChange with the new value on input', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TextareaCore value="" onChange={onChange} aria-label="core" />);
+    await user.type(screen.getByRole('textbox'), 'a');
+    expect(onChange).toHaveBeenCalledWith('a');
   });
 });

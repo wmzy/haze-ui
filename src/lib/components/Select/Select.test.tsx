@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Select from './Select';
+import SelectCore from './SelectCore';
 import Option from './Option';
 
 describe('Option', () => {
@@ -78,5 +79,30 @@ describe('Select', () => {
       </Select>
     );
     expect(screen.getByRole('combobox')).toBeDisabled();
+  });
+});
+
+describe('SelectCore', () => {
+  it('renders the given value as the selected option', () => {
+    render(
+      <SelectCore value="banana" onChange={() => undefined} aria-label="core">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+      </SelectCore>
+    );
+    expect(screen.getByRole('combobox')).toHaveValue('banana');
+  });
+
+  it('calls onChange with the new value on selection', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <SelectCore value="" onChange={onChange} aria-label="core">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+      </SelectCore>
+    );
+    await user.selectOptions(screen.getByRole('combobox'), 'banana');
+    expect(onChange).toHaveBeenCalledWith('banana');
   });
 });

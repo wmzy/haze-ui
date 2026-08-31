@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import Slider from './Slider';
+import SliderCore from './SliderCore';
 
 describe('Slider', () => {
   it('renders a range input', () => {
@@ -42,5 +43,19 @@ describe('Slider', () => {
   it('forwards disabled prop', () => {
     render(<Slider disabled aria-label="volume" />);
     expect(screen.getByRole('slider')).toBeDisabled();
+  });
+});
+
+describe('SliderCore', () => {
+  it('renders the given value', () => {
+    render(<SliderCore value={75} onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('slider')).toHaveValue('75');
+  });
+
+  it('calls onChange with the numeric value on change', () => {
+    const onChange = vi.fn();
+    render(<SliderCore value={50} onChange={onChange} aria-label="core" />);
+    fireEvent.change(screen.getByRole('slider'), {target: {value: '30'}});
+    expect(onChange).toHaveBeenCalledWith(30);
   });
 });

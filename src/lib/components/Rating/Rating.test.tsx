@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Rating from './Rating';
+import RatingCore from './RatingCore';
 
 describe('Rating', () => {
   it('renders 5 stars by default', () => {
@@ -64,5 +65,24 @@ describe('Rating', () => {
     expect(third.querySelector('svg')).toHaveAttribute('fill', 'currentColor');
     fireEvent.mouseLeave(third);
     expect(third.querySelector('svg')).toHaveAttribute('fill', 'none');
+  });
+});
+
+describe('RatingCore', () => {
+  it('renders the given value with stars highlighted', () => {
+    const { container } = render(<RatingCore value={3} onChange={() => undefined} />);
+    const stars = container.querySelectorAll('[role="radio"]');
+    expect(stars[0]).toHaveAttribute('aria-checked', 'true');
+    expect(stars[2]).toHaveAttribute('aria-checked', 'true');
+    expect(stars[3]).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('calls onChange with the clicked star value', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<RatingCore value={0} onChange={onChange} />);
+    const stars = screen.getAllByRole('radio');
+    await user.click(stars[2]!);
+    expect(onChange).toHaveBeenCalledWith(3);
   });
 });

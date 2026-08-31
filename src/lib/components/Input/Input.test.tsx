@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Input from './Input';
+import InputCore from './InputCore';
 
 describe('Input', () => {
   it('renders an input element', () => {
@@ -38,5 +39,32 @@ describe('Input', () => {
   it('forwards native props like disabled', () => {
     render(<Input disabled placeholder="test" />);
     expect(screen.getByPlaceholderText('test')).toBeDisabled();
+  });
+});
+
+describe('InputCore', () => {
+  it('renders the given value as a controlled input', () => {
+    render(<InputCore value="hello" onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('textbox')).toHaveValue('hello');
+  });
+
+  it('calls onChange with the new value on input', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<InputCore value="" onChange={onChange} aria-label="core" />);
+    await user.type(screen.getByRole('textbox'), 'a');
+    expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('does not mutate the value on its own: rerender drives the DOM', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const {rerender} = render(
+      <InputCore value="" onChange={onChange} aria-label="core" />
+    );
+    await user.type(screen.getByRole('textbox'), 'a');
+    expect(screen.getByRole('textbox')).toHaveValue('');
+    rerender(<InputCore value="a" onChange={onChange} aria-label="core" />);
+    expect(screen.getByRole('textbox')).toHaveValue('a');
   });
 });

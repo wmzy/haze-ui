@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TimePicker from './TimePicker';
+import TimePickerCore from './TimePickerCore';
 
 describe('TimePicker', () => {
   it('renders a time input', () => {
@@ -31,5 +32,20 @@ describe('TimePicker', () => {
   it('renders with placeholder', () => {
     const { container } = render(<TimePicker placeholder="Select time" />);
     expect(container.querySelector('input[placeholder="Select time"]')).toBeInTheDocument();
+  });
+});
+
+describe('TimePickerCore', () => {
+  it('renders the given value', () => {
+    render(<TimePickerCore value="14:30" onChange={() => undefined} />);
+    expect(screen.getByDisplayValue('14:30')).toBeInTheDocument();
+  });
+
+  it('calls onChange with the new value on input', () => {
+    const onChange = vi.fn();
+    render(<TimePickerCore value="" onChange={onChange} />);
+    const input = document.querySelector('input[type="time"]')!;
+    fireEvent.change(input, {target: {value: '10:00'}});
+    expect(onChange).toHaveBeenCalledWith('10:00');
   });
 });

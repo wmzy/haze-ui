@@ -51,41 +51,45 @@ always come from `haze-ui/css/tokens.css`.
 
 ## react-f0rm Integration
 
-The form layer (`FormItem`, `useFormControl`; peer dependency
-`react-f0rm`) is exported from the main barrel and glues react-f0rm
-form state to haze-ui's control-prop system, so any control-prop
-component (`Input`, `Select`, `Switch`, `Textarea`, `TagInput`, ...)
-binds to a form field with zero adapters.
+react-f0rm owns form field state, and its headless `useField` hook is
+the single binding layer — the same channel its built-in
+`Field`/`Checkbox`/`Select` components use. haze-ui contributes the
+views: controlled cores (`InputCore`, `SelectCore`, `SwitchCore`,
+`TextareaCore`, `TagInputCore`, ...) take the plain `{value, onChange}`
+pair with zero adapters, and `FormItem` wraps the hook's state in label,
+error and aria wiring. The sugar components (`Input`, `Select`, ...)
+keep their `Control<T> | T` API for standalone use outside forms.
 
-### useFormControl(form, name): field → Control
+### useField: field → {value, onChange}
 
 ```jsx
-import { useForm, setValue } from 'react-f0rm';
-import { Input, useFormControl } from 'haze-ui';
+import { useForm, useField } from 'react-f0rm';
+import { InputCore } from 'haze-ui';
 
 function NameField({ form }) {
-  const name = useFormControl(form, 'name');
-  return <Input value={name} />; // two-way bound, no onChange wiring
+  const { value, onChange } = useField({ form, name: 'name' });
+  return <InputCore value={value} onChange={onChange} />; // two-way bound
 }
 ```
 
-The handle is a real `Control`: reads subscribe to the field (sibling
-fields stay isolated), and writes go through react-f0rm's user-change
-channel (`changeValueByPath`, ≥ 0.7) — a control write fires exactly the
-validation a user typing into the field would fire: the field's effective
-`mode` (a `FormItem`/`useField` per-field override included) and the
-form's `reValidateMode`. With the default `mode: 'onSubmit'` +
-`reValidateMode: 'onChange'`, typing through a bridged control after a
-failed submit re-validates per keystroke and clears the error as soon as
-the value is valid — no blur, no resubmit. Functional updates evaluate
-against the live form value. `reset(form, newValues)` re-seeds every
-bridged control with no remounting.
+The hook subscribes to the field (sibling fields stay isolated), and
+`onChange` writes through react-f0rm's user-change channel — a write
+fires exactly the validation a user typing into the field would fire:
+the field's effective `mode` (a `FormItem`/`useField` per-field override
+included) and the form's `reValidateMode`. With the default
+`mode: 'onSubmit'` + `reValidateMode: 'onChange'`, typing through a bound
+core after a failed submit re-validates per keystroke and clears the
+error as soon as the value is valid — no blur, no resubmit. `onChange`
+accepts plain values only (controlled cores emit the next value, never
+functional updaters; read the previous value from `value` on the next
+render). `reset(form, newValues)` re-seeds every binding with no
+remounting.
 
 ### FormItem: label, errors and aria wiring
 
 ```jsx
 import { Form, useForm } from 'react-f0rm';
-import { FormItem, Input } from 'haze-ui';
+import { FormItem, InputCore } from 'haze-ui';
 
 function ProfileForm() {
   const form = useForm({ initialValues: { email: '' } });
@@ -97,8 +101,8 @@ function ProfileForm() {
         label="Email"
         validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
       >
-        {({ id, errorId, invalid, control }) => (
-          <Input id={id} value={control} aria-invalid={invalid} aria-describedby={errorId} />
+        {({ id, errorId, invalid, value, onChange }) => (
+          <InputCore id={id} value={value} onChange={onChange} aria-invalid={invalid} aria-describedby={errorId} />
         )}
       </FormItem>
     </Form>
@@ -126,10 +130,11 @@ keep the form's mode.
   mode="onBlur"
   validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
 >
-  {({ id, errorId, invalid, onBlur, control }) => (
-    <Input
+  {({ id, errorId, invalid, onBlur, value, onChange }) => (
+    <InputCore
       id={id}
-      value={control}
+      value={value}
+      onChange={onChange}
       aria-invalid={invalid}
       aria-describedby={errorId}
       onBlur={onBlur}
@@ -138,8 +143,8 @@ keep the form's mode.
 </FormItem>
 ```
 
-With `mode="onBlur"` (and the binding's `onBlur` passed to the control,
-as above) the email field is validated the moment it loses focus — no
+With `mode="onBlur"` (and the binding's `onBlur` passed to the core, as
+above) the email field is validated the moment it loses focus — no
 submit needed. `mode` accepts `'onSubmit'`, `'onBlur'`, `'onChange'`,
 `'onTouched'` or `'all'`; only this field's schedule changes, the rest
 of the form keeps its own `mode`.
@@ -173,8 +178,8 @@ react-f0rm's `useField`:
   rules={{ required: 'Email is required' }}
   validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
 >
-  {({ id, errorId, invalid, control }) => (
-    <Input id={id} value={control} aria-invalid={invalid} aria-describedby={errorId} />
+  {({ id, errorId, invalid, value, onChange }) => (
+    <InputCore id={id} value={value} onChange={onChange} aria-invalid={invalid} aria-describedby={errorId} />
   )}
 </FormItem>
 ```

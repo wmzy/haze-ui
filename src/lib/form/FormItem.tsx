@@ -5,19 +5,13 @@ import type {
   FieldPath,
   FieldRules,
   Name,
-  ValidationMode
+  ValidationMode,FormInstance, PathValueOf
 } from 'react-f0rm';
 
-import type {Control} from 'react-use-control';
-
-import type {FormInstance, PathValueOf} from './useFormControl';
 
 import {useId} from 'react';
 import {css} from '@linaria/core';
 import {useField} from 'react-f0rm';
-
-
-import {useFormControl} from './useFormControl';
 
 
 /**
@@ -38,7 +32,7 @@ export type FieldValidator = (
 
 /** Render binding handed to `FormItem`'s render-prop children. */
 export type FormItemBinding<TValues, P extends FieldPath<TValues> | Name> = {
-  /** id for the field control element (`<Input id={id}>`) */
+  /** id for the field control element (`<InputCore id={id}>`) */
   id: string;
   /** id of the error message element; pass as `aria-describedby` */
   errorId: string;
@@ -47,11 +41,16 @@ export type FormItemBinding<TValues, P extends FieldPath<TValues> | Name> = {
   /** every error registered for the field, in insertion order */
   errors: FieldError[];
   /** react-f0rm blur hook for this field — pass to the control's `onBlur`
-   * (`<Input onBlur={onBlur}/>`) so blur-scheduled validation modes
+   * (`<InputCore onBlur={onBlur}/>`) so blur-scheduled validation modes
    * (`mode='onBlur' | 'onTouched' | 'all'`) fire when the field loses focus. */
   onBlur: () => void;
-  /** Control bound to the field value — pass to a control prop */
-  control: Control<PathValueOf<TValues, P>>;
+  /** Field value subscribed per-field — pass to a controlled core
+   * (`<InputCore value={value} onChange={onChange} />`). */
+  value: PathValueOf<TValues, P>;
+  /** react-f0rm's own field-change writer — pass to the core's `onChange`.
+   * It routes through the same mode-gated, re-validating pipeline as
+   * react-f0rm's built-in Field/Checkbox/Select. */
+  onChange: (next: PathValueOf<TValues, P>) => void;
 };
 
 export type FormItemProps<
@@ -108,14 +107,22 @@ const errorText = css`
 `;
 
 /**
- * Glue a single field of a react-f0rm form to a haze-ui control:
- * generates accessible ids, subscribes to the field's errors, and hands
- * both plus a `useFormControl` handle to the render-prop children.
+ * Glue a single field of a react-f0rm form to a haze-ui controlled core.
+ * The binding layer is react-f0rm's own headless `useField` hook — the
+ * same channel its built-in Field/Checkbox/Select use — so no adapter or
+ * state-bridge lives here. FormItem contributes only the view: label,
+ * error span and the id/aria convention.
  *
  * ```tsx
  * <FormItem form={form} name='email' label='Email'>
- *   {({id, errorId, invalid, control}) => (
- *     <Input id={id} value={control} aria-describedby={errorId} aria-invalid={invalid} />
+ *   {({id, errorId, invalid, value, onChange}) => (
+ *     <InputCore
+ *       id={id}
+ *       value={value}
+ *       onChange={onChange}
+ *       aria-describedby={errorId}
+ *       aria-invalid={invalid}
+ *     />
  *   )}
  * </FormItem>
  * ```
@@ -143,15 +150,10 @@ export default function FormItem<
   const id = `haze-field-${generatedId}`;
   const errorId = `${id}-error`;
 
-  // Registers `validate`/`rules` on the form (same channel as react-f0rm's
-  // <Field>) and keeps this component subscribed to the field's state.
-  // `mode` overrides the field's validation schedule, `validateDebounce`
-  // debounces its kicks and `delayError` defers error display (all
-  // react-f0rm ≥0.6); the returned `onBlur` is handed to children so
-  // blur-scheduled modes can observe DOM blur events. The returned
-  // `errors` are the display-layer errors: already `delayError`-aware
-  // (identical to the immediate store when `delayError` is omitted).
-  const {onBlur, errors} = useField({
+  // react-f0rm's useField is the single binding layer: per-field value
+  // subscription, user-change writes with mode gating, blur-scheduled
+  // validation, delayError-gated display errors.
+  const {value, onChange, onBlur, errors} = useField({
     form,
     name,
     validate,
@@ -160,7 +162,6 @@ export default function FormItem<
     delayError,
     rules
   });
-  const control = useFormControl(form, name);
   const invalid = errors.length > 0;
 
   return (
@@ -170,7 +171,7 @@ export default function FormItem<
           {label}
         </label>
       )}
-      {children({id, errorId, invalid, errors, onBlur, control})}
+      {children({id, errorId, invalid, errors, onBlur, value, onChange})}
       {invalid && (
         <span id={errorId} role='alert' x-class={errorText}>
           {errors[0]!.message}

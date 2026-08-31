@@ -2,20 +2,18 @@ import type {FormInstance} from '@/lib';
 
 import {useState} from 'react';
 import {css} from '@linaria/core';
-import {useControl} from 'react-use-control';
-import {Form, getValues, reset, setValue, useForm} from 'react-f0rm';
+import {Form, getValues, reset, setValue, useForm, useValue} from 'react-f0rm';
 
 import {
   Alert,
   Button,
   CodeBlock,
   FormItem,
-  Input,
-  NumberInput,
+  InputCore,
+  NumberInputCore,
   Option,
-  Select,
-  Switch,
-  useFormControl,
+  SelectCore,
+  SwitchCore,
 } from '@/lib';
 import A11yNote from '@/views/ComponentDetail/A11yNote';
 import PropsTable from '@/views/ComponentDetail/PropsTable';
@@ -83,14 +81,13 @@ const hint = css`
 `;
 
 /**
- * Field-level subscription demo: reads the live `name`/`seats` values through
- * the bridged Control handle, without subscribing to the rest of the form.
+ * Field-level subscription demo: reads the live `name`/`seats` values
+ * through react-f0rm's own useValue hook — haze no longer ships a form
+ * binding hook, react-f0rm's Field/useValue is the single source.
  */
 function LiveValues({form}: {form: FormInstance<ProfileValues>}) {
-  const nameControl = useFormControl(form, 'name');
-  const seatsControl = useFormControl(form, 'seats');
-  const [name] = useControl(nameControl);
-  const [seats] = useControl(seatsControl);
+  const name = useValue(form, 'name');
+  const seats = useValue(form, 'seats');
 
   return (
     <span className={hint}>
@@ -125,12 +122,13 @@ export default function FormDemo() {
     <div className={page}>
       <h1>Form</h1>
       <p className={intro}>
-        Bind react-f0rm form state to haze-ui controls through the form
-        integration layer (<code>FormItem</code> /{' '}
-        <code>useFormControl</code> from <code>@/lib</code>):{' '}
-        <code>useFormControl</code> turns a form field into a{' '}
-        <code>Control</code> handle, <code>FormItem</code> wires label, error
-        and aria attributes around any haze-ui control.
+        Bind react-f0rm form state to haze-ui controlled cores through{' '}
+        react-f0rm&apos;s own headless <code>useField</code> hook — the same
+        binding layer its built-in <code>Field</code>/<code>Checkbox</code>/
+        <code>Select</code> use — with haze-ui&apos;s <code>FormItem</code>{' '}
+        as the view: <code>FormItem</code> wraps the hook&apos;s state in
+        label, error and aria wiring, and any <code>XxxCore</code> receives
+        the plain <code>{'{value, onChange}'}</code> pair.
       </p>
 
       <div className={section}>
@@ -156,10 +154,11 @@ export default function FormDemo() {
               label='Name'
               validate={validateName}
             >
-              {({id, errorId, invalid, control}) => (
-                <Input
+              {({id, errorId, invalid, value, onChange}) => (
+                <InputCore
                   id={id}
-                  value={control}
+                  value={value}
+                  onChange={onChange}
                   placeholder='Ada Lovelace'
                   aria-invalid={invalid}
                   aria-describedby={invalid ? errorId : undefined}
@@ -174,10 +173,11 @@ export default function FormDemo() {
               label='Email'
               validate={validateEmail}
             >
-              {({id, errorId, invalid, control}) => (
-                <Input
+              {({id, errorId, invalid, value, onChange}) => (
+                <InputCore
                   id={id}
-                  value={control}
+                  value={value}
+                  onChange={onChange}
                   placeholder='ada@example.com'
                   aria-invalid={invalid}
                   aria-describedby={invalid ? errorId : undefined}
@@ -187,21 +187,22 @@ export default function FormDemo() {
           </div>
           <div className={fieldRow}>
             <FormItem form={form} name='role' label='Role'>
-              {({id, control}) => (
-                <Select id={id} value={control}>
+              {({id, value, onChange}) => (
+                <SelectCore id={id} value={value} onChange={onChange}>
                   <Option value='admin'>Admin</Option>
                   <Option value='maintainer'>Maintainer</Option>
                   <Option value='viewer'>Viewer</Option>
-                </Select>
+                </SelectCore>
               )}
             </FormItem>
           </div>
           <div className={fieldRow}>
             <FormItem form={form} name='seats' label='Seats' validate={validateSeats}>
-              {({id, errorId, invalid, control}) => (
-                <NumberInput
+              {({id, errorId, invalid, value, onChange}) => (
+                <NumberInputCore
                   id={id}
-                  value={control}
+                  value={value}
+                  onChange={onChange}
                   min={1}
                   max={100}
                   step={1}
@@ -213,7 +214,9 @@ export default function FormDemo() {
           </div>
           <div className={fieldRow}>
             <FormItem form={form} name='newsletter' label='Subscribe to newsletter'>
-              {({id, control}) => <Switch id={id} checked={control} />}
+              {({id, value, onChange}) => (
+                <SwitchCore id={id} checked={value} onChange={onChange} />
+              )}
             </FormItem>
           </div>
           <div className={row}>
@@ -250,7 +253,7 @@ export default function FormDemo() {
 
       <div className={section}>
         <h2>API</h2>
-        <h3>useFormControl(form, name)</h3>
+        <h3>useField (react-f0rm) — the binding layer</h3>
         <PropsTable
           props={[
             {
@@ -265,9 +268,9 @@ export default function FormDemo() {
             },
             {
               name: 'returns',
-              type: 'Control<PathValue<TValues, typeof name>>',
+              type: '{value, onChange, onBlur, error, errors, invalid, ...}',
               description:
-                'Control handle — pass to value/checked props of haze-ui controls, or read via useControl()',
+                'Headless binding — the same channel react-f0rm\'s Field/Checkbox/Select use; pass value/onChange to any haze-ui core',
             },
           ]}
         />
@@ -293,9 +296,9 @@ export default function FormDemo() {
             },
             {
               name: 'children',
-              type: '(binding: {id, errorId, invalid, errors, control}) => ReactNode',
+              type: '(binding: {id, errorId, invalid, errors, value, onChange}) => ReactNode',
               description:
-                'Render any haze-ui control; spread id/aria attributes and pass control to the value/checked prop',
+                'Render any haze-ui core; spread id/aria attributes and pass value/onChange to the core',
             },
           ]}
         />

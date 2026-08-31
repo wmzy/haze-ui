@@ -1,61 +1,13 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import type { Control } from 'react-use-control';
 
-import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
+
+import SliderCore from './SliderCore';
 
 type SliderProps = {
   value?: Control<number> | number;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value'>;
-
-const base = css`
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
-  outline: none;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &::-webkit-slider-thumb {
-    appearance: none;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: var(--haze-radius-full);
-    background: var(--haze-color-primary);
-    border: 2px solid var(--haze-color-bg);
-    box-shadow: var(--haze-shadow-sm);
-    cursor: pointer;
-    transition:
-      background 0.15s,
-      box-shadow 0.15s;
-  }
-
-  &::-moz-range-thumb {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: var(--haze-radius-full);
-    background: var(--haze-color-primary);
-    border: 2px solid var(--haze-color-bg);
-    box-shadow: var(--haze-shadow-sm);
-    cursor: pointer;
-  }
-
-  &:focus-visible {
-    &::-webkit-slider-thumb {
-      box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-    }
-    &::-moz-range-thumb {
-      box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
 export default function Slider({
   value: valueControl,
@@ -66,14 +18,11 @@ export default function Slider({
   const [value, setValue] = useControl(valueControl as Control<number>, 50);
 
   return (
-    <input
-      type='range'
-      x-class={[base, className]}
+    <SliderCore
       value={value}
-      onChange={(e) => {
-        setValue(Number(e.target.value));
-        onChange?.(e);
-      }}
+      onChange={setValue}
+      onNativeChange={onChange}
+      className={className}
       {...rest}
     />
   );

@@ -52,32 +52,39 @@ export default function MyComponent() {
 
 ## react-f0rm 集成
 
-表单层（`FormItem`、`useFormControl`；peer 依赖 `react-f0rm`）从主 barrel
-导出，把 react-f0rm 的表单状态桥接到 haze-ui 的 control 属性体系：任何支持
-control 属性的组件（`Input`、`Select`、`Switch`、`Textarea`、`TagInput`……）
-都能直连表单字段，无需适配器。
+react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的绑定层——
+内置 `Field`/`Checkbox`/`Select` 组件走的就是同一通道。haze-ui 贡献视图：
+受控核心（`InputCore`、`SelectCore`、`SwitchCore`、`TextareaCore`、
+`TagInputCore`……）直接接收纯 `{value, onChange}` 对，无需适配器；`FormItem`
+在此基础上补 label、错误与 aria 接线。糖衣组件（`Input`、`Select`……）在
+表单之外的独立使用仍保留原有 `Control<T> | T` API。
 
-### useFormControl(form, name)：字段 → Control
+### useField：字段 → {value, onChange}
 
 ```jsx
-import { useForm, setValue } from 'react-f0rm';
-import { Input, useFormControl } from 'haze-ui';
+import { useForm, useField } from 'react-f0rm';
+import { InputCore } from 'haze-ui';
 
 function NameField({ form }) {
-  const name = useFormControl(form, 'name');
-  return <Input value={name} />; // 双向绑定，无需手写 onChange
+  const { value, onChange } = useField({ form, name: 'name' });
+  return <InputCore value={value} onChange={onChange} />; // 双向绑定
 }
 ```
 
-返回的句柄是真正的 `Control`：读取按字段订阅（兄弟字段互不牵连），写入走
-`setValueByPath`，函数式更新基于实时表单值求值。`reset(form, newValues)`
-会重新播种所有桥接的 control，无需重挂组件。
+hook 按字段订阅（兄弟字段互不牵连）；`onChange` 写入走 react-f0rm 的用户
+变更通道，触发与真实输入一致的校验：字段生效的 `mode`（含 `FormItem`/
+`useField` 的单字段覆盖）与表单的 `reValidateMode`。默认 `mode: 'onSubmit'`
++ `reValidateMode: 'onChange'` 下，提交失败后通过绑定的核心组件输入，会逐键
+重新校验并在值合法时立即清除错误——无需失焦、无需重复提交。`onChange` 只接受
+纯值（受控核心只发下一个值，不发函数式更新；需要上一个值时在下次渲染读
+`value`）。`reset(form, newValues)` 会通过订阅机制重新播种所有绑定，无需
+重挂组件。
 
 ### FormItem：label、错误与 aria 接线
 
 ```jsx
 import { Form, useForm } from 'react-f0rm';
-import { FormItem, Input } from 'haze-ui';
+import { FormItem, InputCore } from 'haze-ui';
 
 function ProfileForm() {
   const form = useForm({ initialValues: { email: '' } });
@@ -89,8 +96,8 @@ function ProfileForm() {
         label="Email"
         validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
       >
-        {({ id, errorId, invalid, control }) => (
-          <Input id={id} value={control} aria-invalid={invalid} aria-describedby={errorId} />
+        {({ id, errorId, invalid, value, onChange }) => (
+          <InputCore id={id} value={value} onChange={onChange} aria-invalid={invalid} aria-describedby={errorId} />
         )}
       </FormItem>
     </Form>

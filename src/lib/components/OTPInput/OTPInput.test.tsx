@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import OTPInput from './OTPInput';
+import OTPInputCore from './OTPInputCore';
 
 describe('OTPInput', () => {
   it('renders correct number of inputs', () => {
@@ -34,6 +35,27 @@ describe('OTPInput', () => {
     const { container } = render(<OTPInput onChange={onChange} />);
     const input = container.querySelector('input')!;
     await user.type(input, '5');
+    expect(onChange).toHaveBeenCalledWith('5');
+  });
+});
+
+describe('OTPInputCore', () => {
+  it('renders the given value across cells', () => {
+    const { container } = render(
+      <OTPInputCore value="123" length={4} onChange={() => undefined} />
+    );
+    const inputs = container.querySelectorAll('input');
+    expect(inputs[0]).toHaveValue('1');
+    expect(inputs[1]).toHaveValue('2');
+    expect(inputs[2]).toHaveValue('3');
+    expect(inputs[3]).toHaveValue('');
+  });
+
+  it('calls onChange with the updated code on input', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(<OTPInputCore value="" onChange={onChange} />);
+    await user.type(container.querySelector('input')!, '5');
     expect(onChange).toHaveBeenCalledWith('5');
   });
 });

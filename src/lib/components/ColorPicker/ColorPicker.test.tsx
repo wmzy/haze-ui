@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import ColorPicker from './ColorPicker';
+import ColorPickerCore from './ColorPickerCore';
 
 describe('ColorPicker', () => {
   it('renders a color input', () => {
@@ -33,5 +34,36 @@ describe('ColorPicker', () => {
     render(<ColorPicker value="#ff0000" presets={['#ff0000', '#00ff00']} />);
     expect(screen.getByLabelText('#ff0000')).toBeInTheDocument();
     expect(screen.getByLabelText('#00ff00')).toBeInTheDocument();
+  });
+});
+
+describe('ColorPickerCore', () => {
+  it('renders the given value in both inputs', () => {
+    render(<ColorPickerCore value="#00ff00" onChange={() => undefined} />);
+    expect(screen.getAllByDisplayValue('#00ff00').length).toBe(2);
+  });
+
+  it('calls onChange with the typed value', () => {
+    const onChange = vi.fn();
+    render(<ColorPickerCore value="#ff0000" onChange={onChange} />);
+    const input = screen.getByRole('textbox');
+    // a controlled core resets the DOM value to its `value` prop on every
+    // render, so set the whole string in one change event
+    fireEvent.change(input, {target: {value: '#0000ff'}});
+    expect(onChange).toHaveBeenCalledWith('#0000ff');
+  });
+
+  it('calls onChange with the preset color on click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <ColorPickerCore
+        value="#ff0000"
+        onChange={onChange}
+        presets={['#00ff00']}
+      />
+    );
+    await user.click(screen.getByLabelText('#00ff00'));
+    expect(onChange).toHaveBeenCalledWith('#00ff00');
   });
 });

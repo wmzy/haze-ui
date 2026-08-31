@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TagInput from './TagInput';
+import TagInputCore from './TagInputCore';
 
 describe('TagInput', () => {
   it('renders input with placeholder', () => {
@@ -150,5 +151,29 @@ describe('TagInput', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('TagInputCore', () => {
+  it('renders the given tags', () => {
+    render(<TagInputCore value={['react', 'vue']} onChange={() => undefined} />);
+    expect(screen.getByText('react')).toBeInTheDocument();
+    expect(screen.getByText('vue')).toBeInTheDocument();
+  });
+
+  it('calls onChange with the updated list on Enter', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TagInputCore value={[]} onChange={onChange} />);
+    await user.type(screen.getByRole('textbox'), 'react{Enter}');
+    expect(onChange).toHaveBeenCalledWith(['react']);
+  });
+
+  it('calls onChange with the list minus the removed tag', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TagInputCore value={['react', 'vue']} onChange={onChange} />);
+    await user.click(screen.getByRole('button', {name: 'Remove vue'}));
+    expect(onChange).toHaveBeenCalledWith(['react']);
   });
 });

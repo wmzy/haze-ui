@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Switch from './Switch';
+import SwitchCore from './SwitchCore';
 
 describe('Switch', () => {
   it('renders with switch role', () => {
@@ -51,5 +52,32 @@ describe('Switch', () => {
   it('forwards disabled prop', () => {
     render(<Switch disabled aria-label="toggle" />);
     expect(screen.getByRole('switch')).toBeDisabled();
+  });
+});
+
+describe('SwitchCore', () => {
+  it('renders the given checked value', () => {
+    render(<SwitchCore checked onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('calls onChange with the next checked value on click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<SwitchCore checked={false} onChange={onChange} aria-label="core" />);
+    await user.click(screen.getByRole('switch'));
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+
+  it('does not toggle on its own: rerender drives the DOM', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const {rerender} = render(
+      <SwitchCore checked={false} onChange={onChange} aria-label="core" />
+    );
+    await user.click(screen.getByRole('switch'));
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+    rerender(<SwitchCore checked onChange={onChange} aria-label="core" />);
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
   });
 });

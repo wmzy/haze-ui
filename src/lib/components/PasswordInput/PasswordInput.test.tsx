@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import PasswordInput from './PasswordInput';
+import PasswordInputCore from './PasswordInputCore';
 
 describe('PasswordInput', () => {
   it('renders a password input', () => {
@@ -41,5 +42,33 @@ describe('PasswordInput', () => {
   it('renders with placeholder', () => {
     const { container } = render(<PasswordInput placeholder="Enter password" />);
     expect(container.querySelector('input[placeholder="Enter password"]')).toBeInTheDocument();
+  });
+});
+
+describe('PasswordInputCore', () => {
+  it('renders the given value', () => {
+    const { container } = render(
+      <PasswordInputCore value="secret" onChange={() => undefined} />
+    );
+    expect(container.querySelector('input')).toHaveValue('secret');
+  });
+
+  it('calls onChange with the new value on input', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(<PasswordInputCore value="" onChange={onChange} />);
+    await user.type(container.querySelector('input')!, 'a');
+    expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('toggles visibility without touching onChange', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <PasswordInputCore value="secret" onChange={onChange} />
+    );
+    await user.click(screen.getByRole('button'));
+    expect(container.querySelector('input')).toHaveAttribute('type', 'text');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

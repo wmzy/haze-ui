@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import NumberInput from './NumberInput';
+import NumberInputCore from './NumberInputCore';
 
 describe('NumberInput', () => {
   it('renders a number input with stepper buttons', () => {
@@ -75,5 +76,40 @@ describe('NumberInput', () => {
   it('applies className', () => {
     const { container } = render(<NumberInput className="custom" aria-label="quantity" />);
     expect(container.firstChild).toHaveClass('custom');
+  });
+});
+
+describe('NumberInputCore', () => {
+  it('renders the given value', () => {
+    render(<NumberInputCore value={10} onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('spinbutton')).toHaveValue(10);
+  });
+
+  it('calls onChange with the incremented value on + click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<NumberInputCore value={0} onChange={onChange} aria-label="core" />);
+    await user.click(screen.getByRole('button', {name: 'Increase'}));
+    expect(onChange).toHaveBeenCalledWith(1);
+  });
+
+  it('calls onChange with the decremented value on - click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<NumberInputCore value={5} onChange={onChange} aria-label="core" />);
+    await user.click(screen.getByRole('button', {name: 'Decrease'}));
+    expect(onChange).toHaveBeenCalledWith(4);
+  });
+
+  it('does not step on its own: rerender drives the DOM', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const {rerender} = render(
+      <NumberInputCore value={0} onChange={onChange} aria-label="core" />
+    );
+    await user.click(screen.getByRole('button', {name: 'Increase'}));
+    expect(screen.getByRole('spinbutton')).toHaveValue(0);
+    rerender(<NumberInputCore value={1} onChange={onChange} aria-label="core" />);
+    expect(screen.getByRole('spinbutton')).toHaveValue(1);
   });
 });

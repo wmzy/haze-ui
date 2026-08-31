@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Checkbox from './Checkbox';
+import CheckboxCore from './CheckboxCore';
 
 describe('Checkbox', () => {
   it('renders a checkbox input', () => {
@@ -45,5 +46,32 @@ describe('Checkbox', () => {
   it('forwards disabled prop', () => {
     render(<Checkbox disabled aria-label="test" />);
     expect(screen.getByRole('checkbox')).toBeDisabled();
+  });
+});
+
+describe('CheckboxCore', () => {
+  it('renders the given checked value', () => {
+    render(<CheckboxCore checked onChange={() => undefined} aria-label="core" />);
+    expect(screen.getByRole('checkbox')).toBeChecked();
+  });
+
+  it('calls onChange with the next checked value on click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<CheckboxCore checked={false} onChange={onChange} aria-label="core" />);
+    await user.click(screen.getByRole('checkbox'));
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+
+  it('does not toggle on its own: rerender drives the DOM', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const {rerender} = render(
+      <CheckboxCore checked={false} onChange={onChange} aria-label="core" />
+    );
+    await user.click(screen.getByRole('checkbox'));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    rerender(<CheckboxCore checked onChange={onChange} aria-label="core" />);
+    expect(screen.getByRole('checkbox')).toBeChecked();
   });
 });

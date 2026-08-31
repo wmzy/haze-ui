@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import RadioGroup from './RadioGroup';
+import RadioGroupCore from './RadioGroupCore';
 import Radio from './Radio';
 
 function RadioFixture({ defaultValue = '' }: { defaultValue?: string }) {
@@ -49,5 +50,49 @@ describe('RadioGroup + Radio', () => {
     );
     const fieldset = screen.getByRole('group');
     expect(fieldset).toHaveClass('custom');
+  });
+});
+
+describe('RadioGroupCore', () => {
+  it('renders the given value as the checked radio', () => {
+    render(
+      <RadioGroupCore value="blue" onChange={() => undefined} name="color">
+        <Radio value="red">Red</Radio>
+        <Radio value="blue">Blue</Radio>
+      </RadioGroupCore>
+    );
+    expect(screen.getByRole('radio', {name: 'Blue'})).toBeChecked();
+    expect(screen.getByRole('radio', {name: 'Red'})).not.toBeChecked();
+  });
+
+  it('calls onChange with the selected value on click', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <RadioGroupCore value="" onChange={onChange} name="color">
+        <Radio value="red">Red</Radio>
+        <Radio value="green">Green</Radio>
+      </RadioGroupCore>
+    );
+    await user.click(screen.getByRole('radio', {name: 'Green'}));
+    expect(onChange).toHaveBeenCalledWith('green');
+  });
+
+  it('does not select on its own: rerender drives the DOM', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const {rerender} = render(
+      <RadioGroupCore value="" onChange={onChange} name="color">
+        <Radio value="green">Green</Radio>
+      </RadioGroupCore>
+    );
+    await user.click(screen.getByRole('radio', {name: 'Green'}));
+    expect(screen.getByRole('radio', {name: 'Green'})).not.toBeChecked();
+    rerender(
+      <RadioGroupCore value="green" onChange={onChange} name="color">
+        <Radio value="green">Green</Radio>
+      </RadioGroupCore>
+    );
+    expect(screen.getByRole('radio', {name: 'Green'})).toBeChecked();
   });
 });
