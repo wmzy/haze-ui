@@ -52,7 +52,7 @@
   "peerDependencies": {
     "@linaria/core": "^7.0.0 || ^8.0.0",
     "react": "^19.0.0",
-    "react-f0rm": ">=0.7.0 <0.9.0"
+    "react-f0rm": ">=0.7.0 <0.11.0"
   },
   "dependencies": {
     "react-use-control": "^1.5.0"
