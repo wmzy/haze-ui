@@ -57,7 +57,7 @@ react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的�
 受控核心（`InputCore`、`SelectCore`、`SwitchCore`、`TextareaCore`、
 `TagInputCore`……）直接接收纯 `{value, onChange}` 对，无需适配器；`FormItem`
 在此基础上补 label、错误与 aria 接线。糖衣组件（`Input`、`Select`……）在
-表单之外的独立使用仍保留原有 `Control<T> | T` API。
+表单之外的独立使用仍保留原有 `ControlOrValue<T>`（即 `Control<T> | T`）API。
 
 ### useField：字段 → {value, onChange}
 

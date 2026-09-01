@@ -1,11 +1,11 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import ColorPickerCore from './ColorPickerCore';
 
 type ColorPickerProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   presets?: string[];
   onChange?: (color: string) => void;
   className?: string;

@@ -1,4 +1,4 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
@@ -11,7 +11,7 @@ type ModelOption = {
 };
 
 type ModelPickerProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   onChange?: (value: string) => void;
   options: ModelOption[];
   disabled?: boolean;

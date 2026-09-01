@@ -1,4 +1,4 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ type TransferItem = {
 
 type TransferProps = {
   dataSource: TransferItem[];
-  targetKeys?: Control<string[]> | string[];
+  targetKeys?: ControlOrValue<string[]>;
   onChange?: (targetKeys: string[], direction: 'left' | 'right', moveKeys: string[]) => void;
   className?: string;
 };

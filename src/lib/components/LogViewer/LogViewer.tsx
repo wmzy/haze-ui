@@ -1,4 +1,4 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useMemo } from 'react';
 import { useControl } from 'react-use-control';
@@ -14,7 +14,7 @@ type LogEntry = {
 
 type LogViewerProps = {
   logs: LogEntry[];
-  filter?: Control<LogLevel | null> | LogLevel | null;
+  filter?: ControlOrValue<LogLevel | null>;
   className?: string;
 };
 

@@ -1,5 +1,3 @@
-import type { Control } from 'react-use-control';
-
 import type { TreeNodeData, TreeProps } from './types';
 
 import { useControl } from 'react-use-control';

@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import RadioGroupCore from './RadioGroupCore';
 
 type RadioGroupProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   name?: string;
   className?: string;
   children: ReactNode;

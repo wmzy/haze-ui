@@ -1,12 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import SwitchCore from './SwitchCore';
 
 type SwitchProps = {
-  checked?: Control<boolean> | boolean;
+  checked?: ControlOrValue<boolean>;
   size?: 'sm' | 'md' | 'lg';
 } & Omit<ComponentPropsWithoutRef<'button'>, 'type' | 'checked' | 'onChange'>;
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useCallback, useId, useRef } from 'react';
 import { css } from '@linaria/core';
@@ -10,7 +10,7 @@ import { useFloating } from '../../utils/floating';
 import { DropdownMenuProvider } from './DropdownMenuContext';
 
 type DropdownMenuProps = {
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   onOpenChange?: (open: boolean) => void;
   children: ReactNode;
   className?: string;

@@ -92,10 +92,10 @@ Every component MUST accept an optional `className` prop and merge it into the r
 Stateful components MUST support the control pattern from `react-use-control`:
 
 ```tsx
-import { useControl, type Control } from 'react-use-control';
+import { useControl, type ControlOrValue } from 'react-use-control';
 
 type SelectProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   className?: string;
   children: ReactNode;
 };
@@ -113,7 +113,7 @@ export default function Select({
 Rules:
 
 - Prop name should match the semantic state it represents (e.g. `value`, `open`, `checked`), not a generic `control`
-- Prop type is `Control<T> | T` — accepts either a control object (controlled) or a plain value (uncontrolled default)
+- Prop type is `ControlOrValue<T>` (an alias for `Control<T> | T`) — accepts either a control object (controlled) or a plain value (uncontrolled default)
 - Pass the prop directly to `useControl()` as the single argument: `useControl(valueControl)`
 - Destructure the prop with an alias to avoid shadowing: `value: valueControl`
 - The third return value (`valueCtrl`) can be passed to sub-components for state sharing

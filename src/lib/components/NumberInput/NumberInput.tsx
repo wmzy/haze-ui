@@ -1,12 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import NumberInputCore from './NumberInputCore';
 
 type NumberInputProps = {
-  value?: Control<number> | number;
+  value?: ControlOrValue<number>;
   min?: number;
   max?: number;
   step?: number;

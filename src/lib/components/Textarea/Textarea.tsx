@@ -1,12 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import TextareaCore from './TextareaCore';
 
 type TextareaProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   size?: 'sm' | 'md' | 'lg';
 } & Omit<ComponentPropsWithoutRef<'textarea'>, 'value'>;
 

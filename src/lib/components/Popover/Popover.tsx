@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useId, useRef } from 'react';
@@ -9,7 +9,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 
 type PopoverProps = {
   content: ReactNode;
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   className?: string;
   children: ReactNode;
 };

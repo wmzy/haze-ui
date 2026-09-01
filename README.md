@@ -58,7 +58,7 @@ views: controlled cores (`InputCore`, `SelectCore`, `SwitchCore`,
 `TextareaCore`, `TagInputCore`, ...) take the plain `{value, onChange}`
 pair with zero adapters, and `FormItem` wraps the hook's state in label,
 error and aria wiring. The sugar components (`Input`, `Select`, ...)
-keep their `Control<T> | T` API for standalone use outside forms.
+keep their `ControlOrValue<T>` (`Control<T> | T`) API for standalone use outside forms.
 
 ### useField: field → {value, onChange}
 

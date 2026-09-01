@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { createContext, useContext } from 'react';
@@ -20,7 +20,7 @@ function useCollapsibleContext() {
 
 // Collapsible
 type CollapsibleProps = {
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   defaultOpen?: boolean;
   children: ReactNode;
   className?: string;

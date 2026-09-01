@@ -1,12 +1,12 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import CheckboxCore from './CheckboxCore';
 
 type CheckboxProps = {
-  checked?: Control<boolean> | boolean;
+  checked?: ControlOrValue<boolean>;
   label?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'checked' | 'type'>;
 

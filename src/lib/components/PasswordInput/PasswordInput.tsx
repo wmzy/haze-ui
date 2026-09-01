@@ -1,11 +1,11 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import PasswordInputCore from './PasswordInputCore';
 
 type PasswordInputProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   onChange?: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;

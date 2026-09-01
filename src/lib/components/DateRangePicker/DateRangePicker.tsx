@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import DateRangePickerCore from './DateRangePickerCore';
 
 type DateRangePickerProps = {
-  startDate?: Control<string> | string;
-  endDate?: Control<string> | string;
+  startDate?: ControlOrValue<string>;
+  endDate?: ControlOrValue<string>;
   onStartChange?: (value: string) => void;
   onEndChange?: (value: string) => void;
   separator?: ReactNode;

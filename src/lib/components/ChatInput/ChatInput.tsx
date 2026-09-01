@@ -1,11 +1,11 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useRef, useCallback } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type ChatInputProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   onSend?: (message: string) => void;
   placeholder?: string;
   disabled?: boolean;

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { Children, cloneElement, isValidElement } from 'react';
@@ -8,7 +8,7 @@ import { useControl } from 'react-use-control';
 import { StepperProvider } from './StepperContext';
 
 type StepperProps = {
-  activeStep?: Control<number> | number;
+  activeStep?: ControlOrValue<number>;
   children: ReactNode;
   className?: string;
 };

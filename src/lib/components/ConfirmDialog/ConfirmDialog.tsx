@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type ConfirmDialogProps = {
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   onClose?: () => void;
   onConfirm?: () => void;
   onCancel?: () => void;

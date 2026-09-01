@@ -1,4 +1,4 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useId, useRef, useState, useEffect } from 'react';
@@ -9,8 +9,8 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import ComboboxOption from './ComboboxOption';
 
 type ComboboxProps = {
-  value?: Control<string> | string;
-  open?: Control<boolean> | boolean;
+  value?: ControlOrValue<string>;
+  open?: ControlOrValue<boolean>;
   options: { value: string; label: string }[];
   placeholder?: string;
   className?: string;

@@ -1,11 +1,11 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useState, useRef, useEffect } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type InlineEditProps = {
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   onChange?: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;

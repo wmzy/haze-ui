@@ -1,4 +1,4 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import type { SegmentedOption } from './SegmentedCore';
 
@@ -8,7 +8,7 @@ import SegmentedCore from './SegmentedCore';
 
 type SegmentedProps = {
   options: SegmentedOption[];
-  value?: Control<string> | string;
+  value?: ControlOrValue<string>;
   onChange?: (value: string) => void;
   size?: 'sm' | 'md' | 'lg';
   className?: string;

@@ -1,5 +1,5 @@
 import type { ReactNode, RefObject } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { createContext, useContext, useId, useMemo, useRef } from 'react';
@@ -32,7 +32,7 @@ function useCommandContext() {
 }
 
 type CommandProps = {
-  query?: Control<string> | string;
+  query?: ControlOrValue<string>;
   children: ReactNode;
   className?: string;
 };

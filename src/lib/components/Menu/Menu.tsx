@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useRef } from 'react';
@@ -9,7 +9,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 
 type MenuProps = {
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   trigger?: ReactNode;
   className?: string;
   children: ReactNode;

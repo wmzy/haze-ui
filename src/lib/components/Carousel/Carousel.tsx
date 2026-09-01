@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useRef, useEffect, Children } from 'react';
 import { useControl } from 'react-use-control';
 
 type CarouselProps = {
-  value?: Control<number> | number;
+  value?: ControlOrValue<number>;
   autoPlay?: boolean;
   interval?: number;
   className?: string;

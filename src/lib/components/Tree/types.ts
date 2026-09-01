@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 /**
  * Tree 节点数据接口
@@ -66,11 +66,11 @@ export type TreeProps = {
   /** 自定义节点图标渲染 */
   iconRender?: (node: TreeNodeData) => ReactNode;
   /** （受控）展开的节点 */
-  expandedKeys?: Control<string[]> | string[];
+  expandedKeys?: ControlOrValue<string[]>;
   /** （受控）选中的节点 */
-  selectedKeys?: Control<string[]> | string[];
+  selectedKeys?: ControlOrValue<string[]>;
   /** （受控）复选的节点 */
-  checkedKeys?: Control<string[]> | string[];
+  checkedKeys?: ControlOrValue<string[]>;
   /** 自定义类名 */
   className?: string;
   /** 展开/收起回调 */

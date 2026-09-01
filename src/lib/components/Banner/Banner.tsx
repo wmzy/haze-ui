@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 type BannerProps = {
-  visible?: Control<boolean> | boolean;
+  visible?: ControlOrValue<boolean>;
   onClose?: () => void;
   variant?: 'info' | 'success' | 'warning' | 'danger';
   children: ReactNode;

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       react-use-control:
-        specifier: ^1.4.0
-        version: 1.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^1.5.0
+        version: 1.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^8.0.1
@@ -4557,8 +4557,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-use-control@1.4.0:
-    resolution: {integrity: sha512-f2Hx3fj21ldEW0/eTHvlEyomitE4ODtKS9B9Dka+M0W042N0Uy35+MS5tiROlF0A21rwKDEYV7YpxsCERzqhqQ==}
+  react-use-control@1.5.0:
+    resolution: {integrity: sha512-A3X53wosf5YhnzPELLxJBrbKg3V80R0ogT2sN9zDsM0KnZ1BDRs6+LAIYl1A0k4PgSx7JPDDcN/AQhWf++CnmA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       react: '>=16.8.0'
@@ -9955,7 +9955,7 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
 
-  react-use-control@1.4.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-use-control@1.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)

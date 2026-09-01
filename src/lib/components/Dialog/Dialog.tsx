@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 type DialogProps = {
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   onClose?: () => void;
   /**
    * 对话框标题：渲染为 h2 并以生成的 id 关联 dialog 的

@@ -1,11 +1,11 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import RatingCore from './RatingCore';
 
 type RatingProps = {
-  value?: Control<number> | number;
+  value?: ControlOrValue<number>;
   count?: number;
   allowHalf?: boolean;
   onChange?: (value: number) => void;

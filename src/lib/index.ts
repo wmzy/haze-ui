@@ -226,3 +226,4 @@ export type {
 
 // re-export ecosystem utilities
 export { useControl } from 'react-use-control';
+export type { Control, ControlOrValue } from 'react-use-control';

@@ -1,11 +1,11 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 type PaginationProps = {
-  page?: Control<number> | number;
+  page?: ControlOrValue<number>;
   total: number;
   pageSize?: number;
   size?: 'sm' | 'md' | 'lg';

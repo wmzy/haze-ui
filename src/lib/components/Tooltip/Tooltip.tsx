@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useEffect, useId, useRef } from 'react';
@@ -17,7 +17,7 @@ type TooltipProps = {
   position?: 'top' | 'bottom' | 'left' | 'right';
   /** Milliseconds of hover/focus before the tooltip appears. */
   delay?: number;
-  open?: Control<boolean> | boolean;
+  open?: ControlOrValue<boolean>;
   className?: string;
   children: ReactNode;
 };

@@ -1,12 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import SliderCore from './SliderCore';
 
 type SliderProps = {
-  value?: Control<number> | number;
+  value?: ControlOrValue<number>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value'>;
 
 export default function Slider({

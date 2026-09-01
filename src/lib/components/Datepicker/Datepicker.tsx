@@ -1,12 +1,12 @@
-import type { Control } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import DatepickerCore from './DatepickerCore';
 
 type DatepickerProps = {
-  value?: Control<string> | string;
-  open?: Control<boolean> | boolean;
+  value?: ControlOrValue<string>;
+  open?: ControlOrValue<boolean>;
   min?: string;
   max?: string;
   placeholder?: string;
