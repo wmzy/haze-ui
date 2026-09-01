@@ -154,6 +154,59 @@ render-prop are mutually exclusive.
 - With a typed form, `validate`'s value argument is the field's actual
   type (`PathValueOf<TValues, P>`), not `any`.
 
+#### `input`: declarative binding for haze-ui cores (typed prop forwarding)
+
+The ergonomic form for the controlled cores — pass the component and the
+rest of the JSX goes straight to it, type-checked against its own props:
+
+```jsx
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  input={InputCore}
+  placeholder="you@x.dev"
+  mode="onBlur"
+  validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+/>
+
+// JSX children forward too — a SelectCore's options:
+<FormItem form={form} name="role" label="Role" input={SelectCore}>
+  <option value="admin">Admin</option>
+  <option value="viewer">Viewer</option>
+</FormItem>
+
+// checkbox-style controls keep the valueToProps adapter:
+<FormItem
+  form={form}
+  name="subscribed"
+  label="Subscribe"
+  input={CheckboxCore}
+  valueToProps={(checked) => ({ checked })}
+/>
+```
+
+`input` wires the same id/aria/`onBlur`/`onChange`/value contract as `as`
+— every haze core (`InputCore`, `TextareaCore`, `SelectCore`,
+`TagInputCore`, `CheckboxCore`, `SwitchCore`, …) speaks the plain
+`{value, onChange}` pair, so the default adapters need nothing
+(`TagInputCore`'s `onChange` already emits the next `string[]`; a
+checkbox-style core pairs with `valueToProps`). The differences from
+`as`:
+
+- Forwarded props are **type-checked against the core's own props** —
+  `input={InputCore} size="xl"` is a compile error, while `asProps` is an
+  untyped bag.
+- JSX **children** forward to the core (a `SelectCore`'s `<option>`s);
+  the render-prop children and `input` are mutually exclusive (a
+  render-prop next to `input` throws — it's a migration leftover).
+- The wiring (`id`, `aria-invalid`, `aria-describedby`, `onBlur`,
+  `onChange`, `value`/`checked`) and FormItem's own prop names are
+  **reserved**: they are excluded from the forwarded type and always win
+  at runtime. A control prop that collides with one (e.g. CheckboxCore's
+  own `label`) is unreachable through `input` — use the render-prop or
+  `as`/`asProps` for it.
+
 #### `mode`: per-field validation timing (react-f0rm ≥ 0.6)
 
 Pass `mode` to validate one field on its own schedule instead of the

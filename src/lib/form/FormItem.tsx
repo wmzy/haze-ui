@@ -89,7 +89,10 @@ export type FormItemAsProps = {
   valueToProps?: (value: any) => Record<string, any>;
 };
 
-export type FormItemProps<
+/** FormItem's own, non-polymorphic props — everything the item itself
+ * consumes regardless of how the control is bound (render-prop, `as`
+ * or `input`). */
+export type FormItemOwnProps<
   TValues extends Record<string, any> = any,
   P extends FieldPath<TValues> | Name = Name
 > = {
@@ -125,14 +128,71 @@ export type FormItemProps<
   /** Custom error renderer: when provided and the field has errors, the
    * built-in error span renders `renderError(errors[0].message, errorId)`
    * instead of the bare message. The span itself — id, `role='alert'`,
-   * styling — stays FormItem's, in both the `as` and children modes. */
+   * styling — stays FormItem's, in every control-binding mode. */
   renderError?: (error: string, id: string) => ReactNode;
   className?: string;
-} & FormItemAsProps &
+};
+
+/**
+ * Props FormItem wires itself onto an `input`/`as` control — the bridge's
+ * own contract. Used to keep them out of `input`'s forwarded rest props
+ * (type level) and to document that they always win (runtime level):
+ * passing one anyway is a compile error, never a silent override.
+ */
+type FormItemWiredProps = {
+  id?: unknown;
+  onBlur?: unknown;
+  onChange?: unknown;
+  /** the value channel: `value` directly, or the prop `valueToProps`
+   * derives (e.g. `checked` for CheckboxCore) — either way FormItem's */
+  value?: unknown;
+  checked?: unknown;
+  'aria-invalid'?: unknown;
+  'aria-describedby'?: unknown;
+};
+
+export type FormItemProps<
+  TValues extends Record<string, any> = any,
+  P extends FieldPath<TValues> | Name = Name,
+  TInputProps extends Record<string, any> = Record<never, never>
+> = FormItemOwnProps<TValues, P> &
+  FormItemAsProps & {
+    /**
+     * Declarative binding for haze-ui cores: pass the component
+     * (`InputCore`, `TextareaCore`, `TagInputCore`, `SelectCore`,
+     * `CheckboxCore`, …) and FormItem wires `id`, `aria-invalid`,
+     * `aria-describedby`, `onBlur`, `onChange` and the value channel
+     * itself. Every other prop — and JSX children (a `SelectCore`'s
+     * `<option>`s) — is forwarded to the component, fully type-checked
+     * against its own props. Cores' `onChange` emits the next plain value
+     * (identity `eventToValue`); checkbox-style controls pair with
+     * `valueToProps={(checked) => ({checked})}`. Props FormItem owns or
+     * wires (label, className, id, aria-*, onBlur, onChange, value,
+     * checked, …) are reserved and cannot be forwarded — use the
+     * render-prop or `as`/`asProps` for a colliding control prop.
+     */
+    input?: ComponentType<TInputProps>;
+  } & Omit<
+      TInputProps,
+      | keyof FormItemOwnProps<TValues, P>
+      | keyof FormItemAsProps
+      | keyof FormItemWiredProps
+      | 'input'
+    > &
   (
-    | {as: ComponentType<any>; children?: never}
+    | {as: ComponentType<any>; input?: never; children?: never}
     | {
         as?: undefined;
+        input: ComponentType<TInputProps>;
+        /** JSX children forward to the control (SelectCore's options);
+         * the render-prop form is mutually exclusive with `input`. */
+        children?: 'children' extends keyof TInputProps
+          ? TInputProps['children']
+          : undefined;
+      }
+    | {
+        as?: undefined;
+        input?: undefined;
         children: (binding: FormItemBinding<TValues, P>) => ReactNode;
       }
   );
@@ -190,13 +250,34 @@ const errorText = css`
  * value lands as `{value}` or, with `valueToProps`, whatever props the
  * control wants (e.g. `{checked}` for CheckboxCore).
  *
+ * The ergonomic form for haze-ui cores is `input`: the rest of the JSX
+ * props — and JSX children, e.g. a `SelectCore`'s `<option>`s — are
+ * forwarded to the component, type-checked against its own props
+ * (`input` and the render-prop children are mutually exclusive):
+ *
+ * ```tsx
+ * <FormItem
+ *   form={form}
+ *   name='email'
+ *   input={InputCore}
+ *   placeholder='Email'
+ *   mode='onBlur'
+ * />
+ * ```
+ *
+ * The same wiring as `as` applies (id, aria, onBlur, onChange, value);
+ * wired and FormItem-owned prop names are reserved — a control prop that
+ * collides (CheckboxCore's `label`) needs the render-prop or
+ * `as`/`asProps` channel.
+ *
  * When the field has errors, the first error's message is rendered into a
  * `<span id={errorId} role='alert'>` next to the control; with no errors
  * no extra element is rendered.
  */
 export default function FormItem<
   TValues extends Record<string, any> = any,
-  P extends FieldPath<TValues> | Name = Name
+  P extends FieldPath<TValues> | Name = Name,
+  TInputProps extends Record<string, any> = Record<never, never>
 >({
   form,
   name,
@@ -210,10 +291,12 @@ export default function FormItem<
   renderError,
   as: As,
   asProps,
+  input: Input,
   eventToValue,
   valueToProps,
-  children
-}: FormItemProps<TValues, P>) {
+  children,
+  ...inputProps
+}: FormItemProps<TValues, P, TInputProps>) {
   const generatedId = useId();
   const id = `haze-field-${generatedId}`;
   const errorId = `${id}-error`;
@@ -237,6 +320,22 @@ export default function FormItem<
   // `eventToValue={(e) => e.target.value}`.
   const toValue: (e: any) => any = eventToValue ?? ((e: unknown) => e);
 
+  // `input` and the render-prop children are mutually exclusive (types
+  // enforce it; this guards untyped callers). A render-prop next to an
+  // `input` is a migration leftover — fail loudly instead of silently
+  // dropping one of the two bindings.
+  if (Input && typeof children === 'function') {
+    throw new Error(
+      'FormItem: `input` and the render-prop `children` are mutually exclusive — the input component is wired declaratively; remove the render-prop.'
+    );
+  }
+
+  // JSX on a bare type parameter trips overload resolution (children of
+  // `(IntrinsicAttributes & TInputProps)["children"]`); render through a
+  // permissive view of the component — the call-site types live on
+  // FormItemProps, not here.
+  const InputComponent = Input as ComponentType<Record<string, any>> | undefined;
+
   return (
     <div x-class={[item, className]}>
       {label !== undefined && (
@@ -244,7 +343,21 @@ export default function FormItem<
           {label}
         </label>
       )}
-      {As ? (
+      {InputComponent ? (
+        <InputComponent
+          // forwarded props first — the wiring below is the bridge's
+          // contract and always wins (they're excluded from the
+          // forwarded type, so a typed caller can never hit the clash)
+          {...(inputProps as Record<string, any>)}
+          id={id}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? errorId : undefined}
+          onBlur={onBlur}
+          onChange={(e: any) => onChange(toValue(e))}
+          {...(valueToProps ? valueToProps(value) : {value})}>
+          {children as ReactNode}
+        </InputComponent>
+      ) : As ? (
         <As
           id={id}
           aria-invalid={invalid || undefined}
@@ -255,7 +368,15 @@ export default function FormItem<
           {...(valueToProps ? valueToProps(value) : {value})}
         />
       ) : (
-        children({id, errorId, invalid, errors, onBlur, value, onChange})
+        (children as (binding: FormItemBinding<TValues, P>) => ReactNode)({
+          id,
+          errorId,
+          invalid,
+          errors,
+          onBlur,
+          value,
+          onChange
+        })
       )}
       {invalid && (
         <span id={errorId} role='alert' x-class={errorText}>

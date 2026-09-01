@@ -1,6 +1,6 @@
-import type {ChangeEvent} from 'react';
+import type {ChangeEvent, ReactNode} from 'react';
 
-import type {FieldValidator, FormInstance} from './index';
+import type {FieldValidator, FormInstance, FormItemBinding} from './index';
 
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,6 +9,8 @@ import {Form, createForm, getError, getValue, reset, setValue} from 'react-f0rm'
 
 import {CheckboxCore} from '../components/Checkbox';
 import {InputCore} from '../components/Input';
+import {SelectCore} from '../components/Select';
+import {TagInputCore} from '../components/TagInput';
 
 import {FormItem} from '.';
 
@@ -572,6 +574,196 @@ describe('FormItem', () => {
       'aria-describedby',
       alert.id
     );
+  });
+
+  it('input={InputCore}: declarative bridge wires aria chain and forwards props', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          input={InputCore}
+          placeholder='you@x.dev'
+          type='email'
+          data-testid='email-input'
+          validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+        />
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    const input = screen.getByTestId('email-input');
+    // forwarded rest props reach the control untouched
+    expect(input).toHaveAttribute('placeholder', 'you@x.dev');
+    expect(input).toHaveAttribute('type', 'email');
+    // the label points at the control `input` rendered
+    expect(screen.getByText('Email')).toHaveAttribute('for', input.id);
+
+    // failed submit lights the declarative aria chain: invalid control
+    // pointing at the error span
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('must be an email');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', alert.id);
+
+    // typing is two-way through the bridge and clears the error
+    await user.type(input, 'a@b.c');
+    expect(getValue(form, 'email')).toBe('a@b.c');
+    expect(input).toHaveValue('a@b.c');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).not.toHaveAttribute('aria-describedby');
+
+    // …and store writes flow back into the control
+    act(() => setValue(form, 'email', 'back@flow.dev'));
+    expect(input).toHaveValue('back@flow.dev');
+  });
+
+  it('input forwards JSX children to the control (SelectCore options)', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {role: 'viewer'}});
+
+    render(
+      <FormItem form={form} name='role' label='Role' input={SelectCore}>
+        <option value='admin'>Admin</option>
+        <option value='maintainer'>Maintainer</option>
+        <option value='viewer'>Viewer</option>
+      </FormItem>
+    );
+
+    const select = screen.getByLabelText('Role');
+    // children forwarded: the options render and the seeded value holds
+    expect(select).toHaveValue('viewer');
+    expect(
+      screen.getByRole('option', {name: 'Maintainer'})
+    ).toBeInTheDocument();
+
+    await user.selectOptions(select, 'admin');
+    expect(getValue(form, 'role')).toBe('admin');
+    act(() => setValue(form, 'role', 'maintainer'));
+    expect(select).toHaveValue('maintainer');
+  });
+
+  it('input={TagInputCore}: string[] value channel needs no adapter, aria lands on the inner input', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {tagList: [] as string[]}});
+
+    render(
+      <FormItem
+        form={form}
+        name='tagList'
+        label='Tags'
+        input={TagInputCore}
+        placeholder='Add tags'
+        validate={(tags: string[]) =>
+          tags.length > 0 ? undefined : 'at least one tag'
+        }
+      />
+    );
+
+    // the wired id lands on the focusable inner input, not the root div
+    const inner = screen.getByPlaceholderText('Add tags');
+    expect(screen.getByText('Tags')).toHaveAttribute('for', inner.id);
+
+    // adding a tag writes the plain string[] — no event unwrapping
+    await user.type(inner, 'react{Enter}');
+    expect(getValue(form, 'tagList')).toEqual(['react']);
+    expect(screen.getByText('react')).toBeInTheDocument();
+
+    // the declarative aria chain reaches the inner input once errored
+    act(() => setValue(form, 'tagList', [], {shouldValidate: true}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('at least one tag');
+    expect(inner).toHaveAttribute('aria-invalid', 'true');
+    expect(inner).toHaveAttribute('aria-describedby', alert.id);
+  });
+
+  it('input + valueToProps adapts checkbox-style controls', async () => {
+    const user = userEvent.setup();
+    const form = createForm({
+      initialValues: {email: '', subscribed: false}
+    });
+
+    render(
+      <FormItem
+        form={form}
+        name='subscribed'
+        label='Subscribe'
+        input={CheckboxCore}
+        data-testid='subscribe'
+        valueToProps={(checked) => ({checked: !!checked})}
+      />
+    );
+
+    const checkbox = screen.getByTestId('subscribe');
+    expect(screen.getByLabelText('Subscribe')).toBe(checkbox);
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+    expect(getValue(form, 'subscribed')).toBe(true);
+    act(() => setValue(form, 'subscribed', false));
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('input rejects the render-prop children at runtime (mutually exclusive)', () => {
+    const form = createForm({initialValues: {email: ''}});
+    // a migration leftover: the render-prop kept next to `input` — typed
+    // callers can't build this (the union excludes it), so reach it the
+    // way an untyped caller would
+    const legacyRenderProp = ({
+      value,
+      onChange
+    }: FormItemBinding<{email: string}, 'email'>) => (
+      <InputCore value={value} onChange={onChange} />
+    );
+
+    expect(() =>
+      render(
+        <FormItem form={form} name='email' input={InputCore}>
+          {legacyRenderProp as unknown as ReactNode}
+        </FormItem>
+      )
+    ).toThrow(/mutually exclusive/);
+  });
+
+  it('input: forwarded props are type-checked, wired props are reserved', () => {
+    const form = createForm({initialValues: {email: ''}});
+    const element = (
+      <>
+        <FormItem form={form} name='email' input={InputCore} size='lg' />
+        {/* forwarded props check against InputCoreProps: 'xl' is not a size */}
+        <FormItem
+          form={form}
+          name='email'
+          input={InputCore}
+          // @ts-expect-error 'xl' is not 'sm' | 'md' | 'lg'
+          size='xl'
+        />
+        {/* the wiring is FormItem's — onChange can't be forwarded through input */}
+        <FormItem
+          form={form}
+          name='email'
+          input={InputCore}
+          // @ts-expect-error onChange is wired by the bridge, not forwarded
+          onChange={(v: string) => v}
+        />
+        {/* without input the prop surface stays closed */}
+        <FormItem
+          form={form}
+          name='email'
+          // @ts-expect-error unknown prop on the render-prop form
+          placeholder='nope'
+        >
+          {() => null}
+        </FormItem>
+      </>
+    );
+    expect(element).toBeTruthy();
   });
 
   it('generic validate: a typed form flows PathValueOf<TValues, P> into the validator', () => {

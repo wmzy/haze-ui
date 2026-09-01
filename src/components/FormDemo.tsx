@@ -148,23 +148,17 @@ export default function FormDemo() {
           onInvalidSubmit={() => setSubmitted(null)}
         >
           <div className={fieldRow}>
+            {/* `input` 声明式桥（haze-ui ≥1.13）：组件引用直传，其余
+                props 原样透传并按 InputCore 自己的 props 做类型校验，
+                id/aria/onBlur/onChange/value 由 FormItem 接线 */}
             <FormItem
               form={form}
               name='name'
               label='Name'
               validate={validateName}
-            >
-              {({id, errorId, invalid, value, onChange}) => (
-                <InputCore
-                  id={id}
-                  value={value}
-                  onChange={onChange}
-                  placeholder='Ada Lovelace'
-                  aria-invalid={invalid}
-                  aria-describedby={invalid ? errorId : undefined}
-                />
-              )}
-            </FormItem>
+              input={InputCore}
+              placeholder='Ada Lovelace'
+            />
           </div>
           <div className={fieldRow}>
             <FormItem
@@ -186,14 +180,12 @@ export default function FormDemo() {
             </FormItem>
           </div>
           <div className={fieldRow}>
-            <FormItem form={form} name='role' label='Role'>
-              {({id, value, onChange}) => (
-                <SelectCore id={id} value={value} onChange={onChange}>
-                  <Option value='admin'>Admin</Option>
-                  <Option value='maintainer'>Maintainer</Option>
-                  <Option value='viewer'>Viewer</Option>
-                </SelectCore>
-              )}
+            {/* JSX children 同样透传——SelectCore 的选项直接写在
+                FormItem 里 */}
+            <FormItem form={form} name='role' label='Role' input={SelectCore}>
+              <Option value='admin'>Admin</Option>
+              <Option value='maintainer'>Maintainer</Option>
+              <Option value='viewer'>Viewer</Option>
             </FormItem>
           </div>
           <div className={fieldRow}>

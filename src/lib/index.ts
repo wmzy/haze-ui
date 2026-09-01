@@ -219,6 +219,7 @@ export type {
   FieldValidator,
   FormItemAsProps,
   FormItemBinding,
+  FormItemOwnProps,
   FormItemProps,
   FormInstance,
   PathValueOf,

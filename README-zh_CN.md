@@ -146,6 +146,54 @@ function ProfileForm() {
 - 携带类型化的表单时，`validate` 的 value 参数是字段的真实类型
   （`PathValueOf<TValues, P>`），不再是 `any`。
 
+### `input`：面向 haze 核心组件的声明式绑定（类型化透传）
+
+受控核心组件的顺手形态——直接传组件引用，其余 JSX 属性原样透传，并按
+组件自己的 props 做编译期校验：
+
+```jsx
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  input={InputCore}
+  placeholder="you@x.dev"
+  mode="onBlur"
+  validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+/>
+
+// JSX children 也透传——SelectCore 的选项：
+<FormItem form={form} name="role" label="角色" input={SelectCore}>
+  <option value="admin">Admin</option>
+  <option value="viewer">Viewer</option>
+</FormItem>
+
+// 复选类控件仍配 valueToProps 适配：
+<FormItem
+  form={form}
+  name="subscribed"
+  label="订阅"
+  input={CheckboxCore}
+  valueToProps={(checked) => ({ checked })}
+/>
+```
+
+`input` 与 `as` 接的是同一套 id/aria/`onBlur`/`onChange`/值契约——所有
+haze 核心组件（`InputCore`、`TextareaCore`、`SelectCore`、
+`TagInputCore`、`CheckboxCore`、`SwitchCore`……）都说纯 `{value, onChange}`
+对，默认适配器零配置（`TagInputCore` 的 `onChange` 本来就发出下一个
+`string[]`；复选类核心配 `valueToProps`）。与 `as` 的差异：
+
+- 透传属性**按核心组件自己的 props 做类型校验**——
+  `input={InputCore} size="xl"` 是编译错误，而 `asProps` 是无类型的包。
+- JSX **children** 透传给核心组件（`SelectCore` 的 `<option>`）；渲染函数
+  children 与 `input` 互斥（`input` 旁边挂渲染函数会 throw——那是迁移
+  残留）。
+- 接线属性（`id`、`aria-invalid`、`aria-describedby`、`onBlur`、
+  `onChange`、`value`/`checked`）与 FormItem 自己的属性名**保留**：类型上
+  从透传面剔除、运行时恒定优先。与控件属性撞名的（如 CheckboxCore 自己
+  的 `label`）经 `input` 不可达——请改用渲染函数或 `as`/`asProps`。
+
 ## 相关项目 
 
 - [react-use-control](https://github.com/wmzy/react-use-control)
