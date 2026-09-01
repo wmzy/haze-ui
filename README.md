@@ -49,6 +49,42 @@ Component CSS files are kebab-case versions of the component name
 cover that component's rules — tokens (themes, spacing, typography)
 always come from `haze-ui/css/tokens.css`.
 
+## ButtonLink: a real anchor with the Button skin
+
+Navigation that must look like a button should still *be* a link —
+rendering `as={Button}` drops `href` onto a `<button>` (an invalid
+attribute: no ⌘/middle-click new tab, nothing for crawlers or no-JS).
+`ButtonLink` renders a native `<a>` wearing Button's full appearance —
+same `variant`/`size`/`square` props, same hover/active/focus and
+disabled visual states:
+
+```jsx
+import { ButtonLink } from 'haze-ui';
+
+<ButtonLink href='/page/2' variant='outline'>Next page</ButtonLink>
+
+// anchors have no `disabled` attribute — report the state with
+// aria-disabled (+ tabIndex={-1} to leave the focus order); ButtonLink
+// styles it exactly like Button's :disabled
+<ButtonLink href='/prev' aria-disabled tabIndex={-1}>← Previous</ButtonLink>
+```
+
+Everything else extends the native `<a>` attributes and is spread onto
+the anchor (`target`, `rel`, `download`, `aria-*`, …), with the ref
+forwarded — the same composition shape `NavLink` uses, so routers can
+swap their own Link element through an `as` prop:
+
+```jsx
+// with a typed router Link (href + SPA onClick injected by the router):
+<TypedLink to='/articles' search={{offset: 20}} as={ButtonLink}>
+  Next page
+</TypedLink>
+```
+
+Both components share one skin (a styles module), so a theme tweak to
+`Button` re-skins `ButtonLink` in lockstep. CSS: `haze-ui/css/button.css`
+covers both.
+
 ## react-f0rm Integration
 
 react-f0rm owns form field state, and its headless `useField` hook is

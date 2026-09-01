@@ -6,8 +6,8 @@ export { TOKEN_REGISTRY, COMPONENT_TOKENS } from './tokens/registry';
 export type { TokenDef } from './tokens/registry';
 
 // components
-export { Button } from './components/Button';
-export type { ButtonProps } from './components/Button';
+export { Button, ButtonLink } from './components/Button';
+export type { ButtonProps, ButtonLinkProps } from './components/Button';
 export { Input, InputCore } from './components/Input';
 export type { InputProps, InputCoreProps } from './components/Input';
 export { Select, Option, SelectCore } from './components/Select';

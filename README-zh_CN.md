@@ -50,6 +50,37 @@ export default function MyComponent() {
 `haze-ui/css/otp-input.css`）。按组件的文件只包含该组件自己的规则，
 主题/间距/排印等令牌始终来自 `haze-ui/css/tokens.css`。
 
+## ButtonLink：带按钮外观的真链接
+
+长得像按钮的导航仍然应该「是」链接——`as={Button}` 会把 `href` 落到
+`<button>` 上（非法属性：⌘/中键开新标签失效，爬虫与无 JS 环境无从跟随）。
+`ButtonLink` 渲染原生 `<a>`，穿 Button 的全套外观——同样的
+`variant`/`size`/`square` props，同样的 hover/active/焦点与禁用视觉：
+
+```jsx
+import { ButtonLink } from 'haze-ui';
+
+<ButtonLink href='/page/2' variant='outline'>下一页</ButtonLink>
+
+// 锚点没有 `disabled` 属性——用 aria-disabled 上报状态（配
+// tabIndex={-1} 移出焦点序）；ButtonLink 按 Button 的 :disabled 同款渲染
+<ButtonLink href='/prev' aria-disabled tabIndex={-1}>← 上一页</ButtonLink>
+```
+
+其余 props 全部扩展自原生 `<a>` 属性并透传到锚点（`target`、`rel`、
+`download`、`aria-*`……），ref 一并转发——与 `NavLink` 相同的组合形态，
+路由库可用 `as` 把自己的 Link 元素换下来：
+
+```jsx
+// 配类型化路由 Link（href 与 SPA onClick 由路由注入）：
+<TypedLink to='/articles' search={{offset: 20}} as={ButtonLink}>
+  下一页
+</TypedLink>
+```
+
+两个组件共享同一份皮肤（styles 模块），对 Button 的主题微调会同步
+重皮肤 ButtonLink。CSS：`haze-ui/css/button.css` 同时覆盖两者。
+
 ## react-f0rm 集成
 
 react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的绑定层——

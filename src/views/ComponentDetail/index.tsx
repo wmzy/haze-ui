@@ -10,6 +10,7 @@ const noop = () => {
 
 import {
   Button,
+  ButtonLink,
   Input,
   Select,
   Option,
@@ -268,6 +269,35 @@ function ButtonDemo() {
           <Button variant='ghost' disabled>
             Disabled Ghost
           </Button>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>ButtonLink — a real anchor with the Button skin</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Navigation that must look like a button: <code>ButtonLink</code>{' '}
+          renders a native <code>&lt;a&gt;</code> (href, ⌘/middle-click,
+          crawlers) wearing the same variants/sizes. Anchors have no{' '}
+          <code>disabled</code> attribute — report the state with{' '}
+          <code>aria-disabled</code> plus <code>tabIndex=&#123;-1&#125;</code>.
+        </p>
+        <div className={row}>
+          <ButtonLink href='#button'>Link Solid</ButtonLink>
+          <ButtonLink href='#button' variant='outline'>
+            Link Outline
+          </ButtonLink>
+          <ButtonLink href='#button' variant='ghost'>
+            Link Ghost
+          </ButtonLink>
+          <ButtonLink href='#button' variant='outline' aria-disabled tabIndex={-1}>
+            Link Disabled
+          </ButtonLink>
         </div>
       </div>
 
