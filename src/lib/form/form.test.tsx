@@ -1,10 +1,13 @@
-import type {FormInstance} from './index';
+import type {ChangeEvent} from 'react';
+
+import type {FieldValidator, FormInstance} from './index';
 
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import {Form, createForm, getError, getValue, reset, setValue} from 'react-f0rm';
 
+import {CheckboxCore} from '../components/Checkbox';
 import {InputCore} from '../components/Input';
 
 import {FormItem} from '.';
@@ -428,5 +431,174 @@ describe('FormItem', () => {
     expect(getError(form, 'email')!.message).toBe('also invalid');
     expect(screen.getByRole('alert')).toHaveTextContent('also invalid');
     expect(validate).toHaveBeenCalledTimes(2);
+  });
+
+  it('as={InputCore}: declarative binding wires label, aria and two-way value', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          as={InputCore}
+          asProps={{'data-testid': 'email-input'}}
+          validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+        />
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    const input = screen.getByTestId('email-input');
+    // the label points at the control `as` rendered
+    expect(screen.getByText('Email')).toHaveAttribute('for', input.id);
+    expect(input).toHaveValue('');
+
+    // failed submit errors the field: the as-mode aria wiring lights up
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('must be an email');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', alert.id);
+
+    // typing through the as control writes back through the binding and
+    // (default reValidateMode) clears the error as soon as the value is valid
+    await user.type(input, 'a@b.c');
+    expect(getValue(form, 'email')).toBe('a@b.c');
+    expect(input).toHaveValue('a@b.c');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // invalid is false → the as-mode attributes are omitted (undefined),
+    // not rendered as "false"
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('as + valueToProps/eventToValue adapt checkbox-style controls both ways', async () => {
+    const user = userEvent.setup();
+    const form = createForm({
+      initialValues: {email: '', subscribed: false, newsletter: false}
+    });
+
+    // A DOM-element-shaped control: its onChange receives the raw event and
+    // its value lives in `checked` — exactly the shape eventToValue and
+    // valueToProps each adapt in one line.
+    function NativeCheckbox(props: Record<string, any>) {
+      return <input type='checkbox' data-testid='native-cb' {...props} />;
+    }
+
+    render(
+      <>
+        <FormItem
+          form={form}
+          name='subscribed'
+          label='Subscribe'
+          as={NativeCheckbox}
+          valueToProps={(checked) => ({checked: !!checked})}
+          eventToValue={(e: ChangeEvent<HTMLInputElement>) =>
+            e.target.checked
+          }
+        />
+        <FormItem
+          form={form}
+          name='newsletter'
+          label='Newsletter'
+          as={CheckboxCore}
+          asProps={{'data-testid': 'core-cb'}}
+          valueToProps={(checked) => ({checked: !!checked})}
+        />
+      </>
+    );
+
+    const native = screen.getByTestId('native-cb');
+    const core = screen.getByTestId('core-cb');
+    expect(screen.getByLabelText('Subscribe')).toBe(native);
+    expect(native).not.toBeChecked();
+    expect(core).not.toBeChecked();
+
+    // DOM event → field value through eventToValue; field value → checked
+    // prop through valueToProps
+    await user.click(native);
+    expect(getValue(form, 'subscribed')).toBe(true);
+    expect(native).toBeChecked();
+
+    // …and the other direction: a store write re-renders the adapted control
+    act(() => setValue(form, 'subscribed', false));
+    expect(native).not.toBeChecked();
+
+    // CheckboxCore: same valueToProps, identity eventToValue (haze cores
+    // emit the next plain value — no adapter needed)
+    await user.click(core);
+    expect(getValue(form, 'newsletter')).toBe(true);
+    act(() => setValue(form, 'newsletter', false));
+    expect(core).not.toBeChecked();
+  });
+
+  it('renderError customizes the error span while keeping the alert wiring', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          as={InputCore}
+          asProps={{'data-testid': 'email-input'}}
+          validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+          renderError={(error, id) => (
+            <em data-testid='custom-error' data-error-id={id}>
+              {`custom: ${error}`}
+            </em>
+          )}
+        />
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+
+    const alert = screen.getByRole('alert');
+    const custom = screen.getByTestId('custom-error');
+    // the custom renderer's content lives inside the same alert span…
+    expect(alert).toContainElement(custom);
+    expect(custom).toHaveTextContent('custom: must be an email');
+    // …its second argument is that span's id…
+    expect(custom).toHaveAttribute('data-error-id', alert.id);
+    // …and the control still describes the span
+    expect(screen.getByTestId('email-input')).toHaveAttribute(
+      'aria-describedby',
+      alert.id
+    );
+  });
+
+  it('generic validate: a typed form flows PathValueOf<TValues, P> into the validator', () => {
+    const form = createForm({initialValues: {name: '', email: ''}});
+    const seen: string[] = [];
+
+    // Compile-time contract: with a typed form, the value argument is the
+    // field's actual type — Profile['email'] is string, so `v.includes`
+    // typechecks — and a mismatched parameterization is rejected.
+    const typed: FieldValidator<Profile, 'email'> = (v) => {
+      seen.push(v);
+      return v.includes('@') ? undefined : 'must be an email';
+    };
+    // @ts-expect-error Profile['name'] is string — number parameters don't fit
+    const mismatch: FieldValidator<Profile, 'name'> = (v: number) => `${v}`;
+    expect([typed, mismatch].every((fn) => typeof fn === 'function')).toBe(
+      true
+    );
+
+    renderEmailItem(form, {validate: typed});
+
+    act(() => setValue(form, 'email', 'nope', {shouldValidate: true}));
+    expect(seen).toEqual(['nope']);
+    expect(screen.getByRole('alert')).toHaveTextContent('must be an email');
+
+    act(() => setValue(form, 'email', 'ok@x.dev', {shouldValidate: true}));
+    expect(seen).toEqual(['nope', 'ok@x.dev']);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

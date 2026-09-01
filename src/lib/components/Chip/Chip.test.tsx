@@ -38,4 +38,20 @@ describe('Chip', () => {
     render(<Chip variant="outline">Outlined</Chip>);
     expect(screen.getByText('Outlined')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Chip>Simple</Chip>
+        <Chip icon={<span aria-hidden="true">i</span>} onClose={() => undefined}>
+          Deletable
+        </Chip>
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

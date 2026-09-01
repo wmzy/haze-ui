@@ -46,4 +46,17 @@ describe('ConfirmDialog', () => {
     const { container } = render(<ConfirmDialog open className="custom">Body</ConfirmDialog>);
     expect(container.firstChild).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ConfirmDialog open title="Confirm Action" onCancel={() => undefined}>
+        Are you sure?
+      </ConfirmDialog>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

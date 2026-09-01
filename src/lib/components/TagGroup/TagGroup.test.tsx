@@ -48,4 +48,18 @@ describe('TagGroup', () => {
     render(<TagGroupItem className="custom">Tag</TagGroupItem>);
     expect(screen.getByText('Tag')).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <TagGroup>
+        <TagGroupItem onClose={() => undefined}>React</TagGroupItem>
+        <TagGroupItem>Vue</TagGroupItem>
+      </TagGroup>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

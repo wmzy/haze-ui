@@ -1,14 +1,27 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
+
+import {
+  getEnabledMenuItems,
+  useMenuKeyboard,
+  useRovingTabindex,
+} from '../../utils/menuKeyboard';
 
 type CommandContextValue = {
   query: string;
   setQuery: (q: string) => void;
+  inputRef: RefObject<HTMLInputElement | null>;
+  listRef: RefObject<HTMLDivElement | null>;
+  /** Id of the listbox element — wires the container's aria-controls. */
+  listId: string;
 };
+
+/** Command options are listbox options, not menu items. */
+const OPTION_SELECTOR = '[role="option"]';
 
 const CommandContext = createContext<CommandContextValue | undefined>(undefined);
 
@@ -37,12 +50,25 @@ const base = css`
 `;
 
 export default function Command({ query: queryControl, children, className }: CommandProps) {
-  const [query, setQuery] = useControl(queryControl as Control<string>, '');
-  const value = useMemo(() => ({ query, setQuery }), [query, setQuery]);
+  const [query, setQuery] = useControl(queryControl, '');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const value = useMemo(
+    () => ({ query, setQuery, inputRef, listRef, listId }),
+    [query, setQuery, listId]
+  );
 
   return (
     <CommandContext.Provider value={value}>
-      <div x-class={[base, className]} role="combobox">
+      <div
+        x-class={[base, className]}
+        role="combobox"
+        // The palette list is always rendered, so the combobox is always
+        // expanded; aria-controls points at the CommandList listbox.
+        aria-expanded={true}
+        aria-controls={listId}
+      >
         {children}
       </div>
     </CommandContext.Provider>
@@ -72,14 +98,23 @@ const inputStyle = css`
 `;
 
 export function CommandInput({ placeholder, className }: CommandInputProps) {
-  const { query, setQuery } = useCommandContext();
+  const { query, setQuery, inputRef, listRef } = useCommandContext();
   return (
     <input
+      ref={inputRef}
       x-class={[inputStyle, className]}
       type="text"
       placeholder={placeholder}
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      onKeyDown={(e) => {
+        // WAI-ARIA combobox pattern: arrows move focus into the list.
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        e.preventDefault();
+        const items = getEnabledMenuItems(listRef.current, OPTION_SELECTOR);
+        const target = e.key === 'ArrowDown' ? items[0] : items[items.length - 1];
+        target?.focus();
+      }}
     />
   );
 }
@@ -97,8 +132,25 @@ const listStyle = css`
 `;
 
 export function CommandList({ children, className }: CommandListProps) {
+  const { inputRef, listRef, listId } = useCommandContext();
+
+  useRovingTabindex({ menuRef: listRef, active: true, selector: OPTION_SELECTOR });
+  const handleKeyDown = useMenuKeyboard({
+    menuRef: listRef,
+    selector: OPTION_SELECTOR,
+    // The palette is always rendered — "closing" it means handing focus
+    // back to the input (Escape/Tab from the list).
+    onClose: () => inputRef.current?.focus(),
+  });
+
   return (
-    <div x-class={[listStyle, className]} role="listbox">
+    <div
+      ref={listRef}
+      x-class={[listStyle, className]}
+      role="listbox"
+      id={listId}
+      onKeyDown={handleKeyDown}
+    >
       {children}
     </div>
   );
@@ -126,6 +178,12 @@ const itemStyle = css`
   &:active {
     background: var(--haze-color-bg-muted);
   }
+
+  &:focus-visible {
+    outline: none;
+    background: var(--haze-color-bg-subtle);
+    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
+  }
 `;
 
 export function CommandItem({ children, className, onSelect }: CommandItemProps) {
@@ -139,7 +197,14 @@ export function CommandItem({ children, className, onSelect }: CommandItemProps)
     <div
       x-class={[itemStyle, className]}
       role="option"
+      tabIndex={-1}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        // Options are divs, not buttons — activate from the keyboard here.
+        e.preventDefault();
+        onSelect?.();
+      }}
     >
       {children}
     </div>

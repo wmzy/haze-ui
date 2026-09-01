@@ -24,4 +24,13 @@ describe('Container', () => {
     rerender(<Container size="xl">Content</Container>);
     expect(container.firstChild).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Container>Content</Container>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

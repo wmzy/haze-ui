@@ -33,4 +33,13 @@ describe('FileInput', () => {
     const { container } = render(<FileInput multiple />);
     expect(container.querySelector('input')).toHaveAttribute('multiple');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<FileInput accept="image/*">Upload photo</FileInput>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

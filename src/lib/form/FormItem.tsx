@@ -1,11 +1,13 @@
-import type {ReactNode} from 'react';
+import type {ComponentType, ReactNode} from 'react';
 
 import type {
   FieldError,
   FieldPath,
   FieldRules,
   Name,
-  ValidationMode,FormInstance, PathValueOf
+  ValidationMode,
+  FormInstance,
+  PathValueOf
 } from 'react-f0rm';
 
 
@@ -19,9 +21,18 @@ import {useField} from 'react-f0rm';
  * `Validator`: return an error (string, FieldError, or an array mixing
  * both) or `undefined` when valid; return a Promise for async validation.
  * `meta.signal` aborts as soon as the round is superseded.
+ *
+ * Generic like react-f0rm's own `useField` `validate`: with `form` (a
+ * `FormInstance<TValues>`) and `name` (a `FieldPath<TValues>`) in scope,
+ * the value argument is `PathValueOf<TValues, P>` — the field's actual
+ * type — instead of `any`. The bare defaults keep untyped call sites
+ * exactly as permissive as before.
  */
-export type FieldValidator = (
-  value: any,
+export type FieldValidator<
+  TValues extends Record<string, any> = any,
+  P extends FieldPath<TValues> | Name = Name
+> = (
+  value: PathValueOf<TValues, P>,
   meta: {form: FormInstance; signal: AbortSignal}
 ) =>
   | string
@@ -53,6 +64,31 @@ export type FormItemBinding<TValues, P extends FieldPath<TValues> | Name> = {
   onChange: (next: PathValueOf<TValues, P>) => void;
 };
 
+/**
+ * Declarative `as` binding for `FormItem` — the same props shape as
+ * react-f0rm `Field`'s `as` (deliberately *not* Radix's `asChild`): pass
+ * any component as the field control and `FormItem` wires the id, aria
+ * attributes, `onBlur` and `onChange` itself.
+ */
+export type FormItemAsProps = {
+  /** Component rendered as the field control. When provided it takes
+   * precedence over the children render-prop. */
+  as?: ComponentType<any>;
+  /** Extra props spread onto the `as` component. They land before the
+   * value props, so `value`/`valueToProps` win conflicts — the same
+   * precedence react-f0rm's `Field` uses. */
+  asProps?: Record<string, any>;
+  /** Converts what the `as` component passes to its `onChange` into the
+   * field value. Defaults to identity — haze cores' `onChange` emits the
+   * next plain value; pass `(e) => e.target.value` when `as` is a raw
+   * DOM-element component. */
+  eventToValue?: (e: any) => any;
+  /** Derives the value props for the `as` component from the field value —
+   * e.g. `(checked) => ({checked})` for `CheckboxCore`. Defaults to
+   * passing `{value}`. */
+  valueToProps?: (value: any) => Record<string, any>;
+};
+
 export type FormItemProps<
   TValues extends Record<string, any> = any,
   P extends FieldPath<TValues> | Name = Name
@@ -61,8 +97,9 @@ export type FormItemProps<
   name: P;
   label?: ReactNode;
   /** Field-level validator, registered through react-f0rm's own
-   * `useField` channel — validated per the form's `mode` and on submit. */
-  validate?: FieldValidator;
+   * `useField` channel — validated per the form's `mode` and on submit.
+   * With a typed form the value argument is `PathValueOf<TValues, P>`. */
+  validate?: FieldValidator<TValues, P>;
   /** Per-field validation mode override (react-f0rm ≥0.6): when given,
    * this field validates on its own schedule — e.g. `'onBlur'` — instead
    * of the form's `mode`; other fields are unaffected. Omit to keep the
@@ -85,9 +122,20 @@ export type FormItemProps<
    * `validate` — both sources' errors merge, rules errors ahead. Omit for
    * `validate`-only validation. */
   rules?: FieldRules;
+  /** Custom error renderer: when provided and the field has errors, the
+   * built-in error span renders `renderError(errors[0].message, errorId)`
+   * instead of the bare message. The span itself — id, `role='alert'`,
+   * styling — stays FormItem's, in both the `as` and children modes. */
+  renderError?: (error: string, id: string) => ReactNode;
   className?: string;
-  children: (binding: FormItemBinding<TValues, P>) => ReactNode;
-};
+} & FormItemAsProps &
+  (
+    | {as: ComponentType<any>; children?: never}
+    | {
+        as?: undefined;
+        children: (binding: FormItemBinding<TValues, P>) => ReactNode;
+      }
+  );
 
 const item = css`
   display: flex;
@@ -127,8 +175,23 @@ const errorText = css`
  * </FormItem>
  * ```
  *
+ * Or declaratively, react-f0rm `Field`-style (`as` and children are
+ * mutually exclusive — pick one):
+ *
+ * ```tsx
+ * <FormItem form={form} name='email' label='Email' as={InputCore} />
+ * ```
+ *
+ * With `as`, the id/aria/onBlur/onChange wiring happens here: the control
+ * gets `id`, `aria-invalid`/`aria-describedby` while the field errors,
+ * and `onChange={(v) => onChange(toValue(v))}` where `toValue` defaults
+ * to identity (haze cores emit plain values — pass
+ * `eventToValue={(e) => e.target.value}` for a raw DOM element) and the
+ * value lands as `{value}` or, with `valueToProps`, whatever props the
+ * control wants (e.g. `{checked}` for CheckboxCore).
+ *
  * When the field has errors, the first error's message is rendered into a
- * `<span id={errorId} role='alert'>` next to the children; with no errors
+ * `<span id={errorId} role='alert'>` next to the control; with no errors
  * no extra element is rendered.
  */
 export default function FormItem<
@@ -144,6 +207,11 @@ export default function FormItem<
   delayError,
   rules,
   className,
+  renderError,
+  as: As,
+  asProps,
+  eventToValue,
+  valueToProps,
   children
 }: FormItemProps<TValues, P>) {
   const generatedId = useId();
@@ -164,6 +232,11 @@ export default function FormItem<
   });
   const invalid = errors.length > 0;
 
+  // Identity by default: haze cores' onChange emits the next plain value.
+  // A raw DOM-element `as` passes the event instead — adapt it with
+  // `eventToValue={(e) => e.target.value}`.
+  const toValue: (e: any) => any = eventToValue ?? ((e: unknown) => e);
+
   return (
     <div x-class={[item, className]}>
       {label !== undefined && (
@@ -171,10 +244,24 @@ export default function FormItem<
           {label}
         </label>
       )}
-      {children({id, errorId, invalid, errors, onBlur, value, onChange})}
+      {As ? (
+        <As
+          id={id}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? errorId : undefined}
+          onBlur={onBlur}
+          onChange={(e: any) => onChange(toValue(e))}
+          {...asProps}
+          {...(valueToProps ? valueToProps(value) : {value})}
+        />
+      ) : (
+        children({id, errorId, invalid, errors, onBlur, value, onChange})
+      )}
       {invalid && (
         <span id={errorId} role='alert' x-class={errorText}>
-          {errors[0]!.message}
+          {renderError
+            ? renderError(errors[0]!.message, errorId)
+            : errors[0]!.message}
         </span>
       )}
     </div>

@@ -1,8 +1,10 @@
 import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useState, useId, useRef, useEffect } from 'react';
+import { useId, useRef, useState, useEffect } from 'react';
 import { useControl } from 'react-use-control';
+
+import { FloatingPanel, useFloating } from '../../utils/floating';
 
 import ComboboxOption from './ComboboxOption';
 
@@ -43,23 +45,18 @@ const input = css`
   }
 `;
 
+/**
+ * min-width keeps the fallback/absolute tier as wide as the input, the
+ * way the anchored tier's `span-left` area does for free.
+ */
 const listbox = css`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  margin-top: var(--haze-space-1);
+  min-width: 100%;
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
   box-shadow: var(--haze-shadow-lg);
-`;
-
-const hidden = css`
-  display: none;
 `;
 
 export default function Combobox({
@@ -69,12 +66,20 @@ export default function Combobox({
   placeholder,
   className,
 }: ComboboxProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef: inputRef,
+    panelRef,
+  });
 
   const filtered = options.filter((o) =>
     o.label.toLowerCase().includes(query.toLowerCase())
@@ -115,10 +120,11 @@ export default function Combobox({
     <div x-class={[wrapper, className]}>
       <input
         ref={inputRef}
-        role='combobox'
+        role="combobox"
+        style={floating.triggerStyle}
         aria-expanded={open}
         aria-controls={id}
-        aria-autocomplete='list'
+        aria-autocomplete="list"
         className={input}
         value={query}
         placeholder={placeholder}
@@ -127,9 +133,19 @@ export default function Combobox({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        // A click on an already-focused input light-dismisses the panel
+        // without refiring focus — reopen explicitly so the list stays up.
+        onClick={() => setOpen(true)}
         onKeyDown={handleKeyDown}
       />
-      <div id={id} role='listbox' x-class={[listbox, !open && hidden]}>
+      <FloatingPanel
+        ref={panelRef}
+        behavior={floating}
+        placement="bottom-span"
+        id={id}
+        role="listbox"
+        visualClass={listbox}
+      >
         {filtered.map((o, i) => (
           <ComboboxOption
             key={o.value}
@@ -141,7 +157,7 @@ export default function Combobox({
             {o.label}
           </ComboboxOption>
         ))}
-      </div>
+      </FloatingPanel>
     </div>
   );
 }

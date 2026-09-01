@@ -42,4 +42,18 @@ describe('Avatar', () => {
     const img = container.querySelector('img');
     expect(img).toHaveAttribute('alt', '');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Avatar src="https://example.com/avatar.png" alt="Jane Doe" />
+        <Avatar alt="John" />
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

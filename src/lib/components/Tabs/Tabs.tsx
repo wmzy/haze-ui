@@ -23,7 +23,7 @@ export default function Tabs({
   className,
   children,
 }: TabsProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <div x-class={[base, className]}>

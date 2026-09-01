@@ -17,4 +17,18 @@ describe('Badge', () => {
     render(<Badge className="custom">New</Badge>);
     expect(screen.getByText('New')).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Badge>New</Badge>
+        <Badge variant="success">Saved</Badge>
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

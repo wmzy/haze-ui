@@ -46,4 +46,13 @@ describe('DiffViewer', () => {
     expect(removedLine?.className).toContain('removed');
     expect(screen.getByText('-')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<DiffViewer oldValue={'a\nb'} newValue={'a\nc'} />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

@@ -23,11 +23,11 @@ export default function DateRangePicker({
   className,
 }: DateRangePickerProps) {
   const [startDate, setStartDate] = useControl(
-    startDateControl as Control<string>,
+    startDateControl,
     ''
   );
   const [endDate, setEndDate] = useControl(
-    endDateControl as Control<string>,
+    endDateControl,
     ''
   );
 

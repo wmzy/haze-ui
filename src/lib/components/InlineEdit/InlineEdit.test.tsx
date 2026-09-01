@@ -67,4 +67,24 @@ describe('InlineEdit', () => {
     await user.click(screen.getByText('Hello'));
     expect(screen.queryByDisplayValue('Hello')).not.toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<InlineEdit value="Hello" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations while editing', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<InlineEdit value="Hello" />);
+    await user.click(screen.getByText('Hello'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

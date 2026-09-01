@@ -76,6 +76,7 @@ export default function PasswordInputCore({
       <input
         x-class={[input]}
         type={visible ? 'text' : 'password'}
+        aria-label="Password"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

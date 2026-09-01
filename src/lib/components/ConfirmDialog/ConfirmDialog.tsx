@@ -109,7 +109,7 @@ export default function ConfirmDialog({
   variant = 'default',
   className,
 }: ConfirmDialogProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
 
   if (!open) return null;
 

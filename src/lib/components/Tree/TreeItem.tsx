@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { TreeNodeData } from './types';
 
 import { css } from '@linaria/core';
+import { useId } from 'react';
 
 type TreeItemProps = {
   node: TreeNodeData;
@@ -270,6 +271,9 @@ export default function TreeItem({
 }: TreeItemProps) {
   const hasChildren = !!node.children?.length;
   const isLeaf = node.isLeaf ?? !hasChildren;
+  // 与 Dialog 的 haze-dialog-title-${useId()} 同一套生成模式：给节点标题
+  // 一个稳定 id，供复选框 aria-labelledby 引用（ReactNode 标题也能命名）。
+  const titleId = `haze-tree-title-${useId()}`;
 
   const indentLevels = Array.from({ length: level }, (_, i) => ({
     showLine: showLine && !isLast[i],
@@ -334,6 +338,7 @@ export default function TreeItem({
             aria-checked={
               checked === 'halfChecked' ? 'mixed' : checked === 'checked'
             }
+            aria-labelledby={titleId}
             x-class={[
               checkbox,
               checked === 'checked' && checkboxChecked,
@@ -363,7 +368,7 @@ export default function TreeItem({
           </span>
         )}
 
-        <span className={title}>{titleContent}</span>
+        <span className={title} id={titleId}>{titleContent}</span>
       </div>
     </div>
   );

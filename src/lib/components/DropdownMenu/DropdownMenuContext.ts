@@ -1,6 +1,9 @@
-import type {Dispatch, RefObject, SetStateAction} from 'react';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
 
-import {createContext, useContext} from 'react';
+import type { FloatingBehavior } from '../../utils/floating';
+
+import { createContext, useContext } from 'react';
+
 
 type DropdownMenuContextValue = {
   open: boolean;
@@ -14,15 +17,22 @@ type DropdownMenuContextValue = {
    * opens the menu by keyboard — consumed by Content's mount effect,
    * which runs after the items exist.
    */
-  focusRequestRef: {current: 'first' | 'last' | null};
+  focusRequestRef: { current: 'first' | 'last' | null };
+  /** Floating-panel behavior shared by the trigger and content. */
+  floating: FloatingBehavior;
 };
 
-const DropdownMenuContext = createContext<DropdownMenuContextValue | undefined>(undefined);
+const DropdownMenuContext = createContext<DropdownMenuContextValue | undefined>(
+  undefined
+);
 
 export const DropdownMenuProvider = DropdownMenuContext.Provider;
 
 export function useDropdownMenuContext() {
   const ctx = useContext(DropdownMenuContext);
-  if (!ctx) throw new Error('DropdownMenu components must be used within <DropdownMenu>');
+  if (!ctx)
+    throw new Error(
+      'DropdownMenu components must be used within <DropdownMenu>'
+    );
   return ctx;
 }

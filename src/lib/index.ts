@@ -217,6 +217,7 @@ export type { LogViewerProps, LogEntry, LogLevel } from './components/LogViewer'
 export { FormItem } from './form';
 export type {
   FieldValidator,
+  FormItemAsProps,
   FormItemBinding,
   FormItemProps,
   FormInstance,

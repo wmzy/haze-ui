@@ -18,7 +18,7 @@ export default function RadioGroup({
   className,
   children,
 }: RadioGroupProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <RadioGroupCore

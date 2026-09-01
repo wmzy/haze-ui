@@ -1,6 +1,7 @@
 export {default as FormItem} from './FormItem';
 export type {
   FieldValidator,
+  FormItemAsProps,
   FormItemBinding,
   FormItemProps
 } from './FormItem';

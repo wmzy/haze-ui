@@ -61,4 +61,19 @@ describe('StepTimeline', () => {
     render(<StepTimelineItem label="S" className="custom" />);
     expect(screen.getByText('S').closest('[class*="custom"]')).toBeTruthy();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <StepTimeline>
+        <StepTimelineItem label="Step 1" status="done" />
+        <StepTimelineItem label="Step 2" status="active" description="In progress" />
+        <StepTimelineItem label="Step 3" status="error" description="Failed" />
+      </StepTimeline>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Combobox from './Combobox';
@@ -62,8 +62,43 @@ describe('Combobox', () => {
     expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('closes on outside pointerdown', async () => {
+    const user = userEvent.setup();
+    render(
+      <div>
+        <Combobox options={OPTIONS} />
+        <button>outside</button>
+      </div>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.pointerDown(screen.getByText('outside'));
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('applies className', () => {
     const { container } = render(<Combobox options={OPTIONS} className="custom" />);
     expect(container.firstChild).toHaveClass('custom');
+  });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Combobox options={OPTIONS} placeholder="Search fruit" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when the listbox is open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Combobox options={OPTIONS} placeholder="Search fruit" />);
+    await user.click(screen.getByRole('combobox'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });

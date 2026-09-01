@@ -36,4 +36,23 @@ describe('StreamingText', () => {
     const { container } = render(<StreamingText text="Hi" className="custom" />);
     expect(container.firstChild).toHaveClass('custom');
   });
+
+  it('has no axe violations once streaming settles', async () => {
+    const { axe } = await import('jest-axe');
+    render(<StreamingText text="Hello world" speed={100} />);
+    // each character's timer is scheduled from the previous render, so
+    // advance one interval per act tick
+    for (let i = 0; i < 12; i++) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(screen.getByText('Hello world')).toBeInTheDocument();
+    // jest-axe is async — run it under real timers.
+    vi.useRealTimers();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

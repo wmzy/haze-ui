@@ -119,4 +119,32 @@ describe('Table', () => {
     );
     expect(screen.getByRole('columnheader')).toHaveTextContent('Header');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell as="th" scope="col">Name</TableCell>
+            <TableCell as="th" scope="col">Age</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>Alice</TableCell>
+            <TableCell>30</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Bob</TableCell>
+            <TableCell>25</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

@@ -52,4 +52,18 @@ describe('ConversationList', () => {
     render(<ConversationItem title="Chat" end={<span>Delete</span>} />);
     expect(screen.getByText('Delete')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ConversationList>
+        <ConversationItem title="Chat 1" subtitle="Last message" active />
+        <ConversationItem title="Chat 2" end={<span>2 unread</span>} />
+      </ConversationList>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

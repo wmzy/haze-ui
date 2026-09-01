@@ -50,7 +50,14 @@ export default function ContextMenuItem({ children, onClick, disabled, className
   };
 
   return (
-    <button x-class={[item, className]} type="button" onClick={handleClick} disabled={disabled}>
+    <button
+      x-class={[item, className]}
+      type="button"
+      role="menuitem"
+      tabIndex={-1}
+      onClick={handleClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

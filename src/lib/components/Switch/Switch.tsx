@@ -18,7 +18,7 @@ export default function Switch({
   ...rest
 }: SwitchProps) {
   const [checked, setChecked] = useControl(
-    checkedControl as Control<boolean>,
+    checkedControl,
     false
   );
 

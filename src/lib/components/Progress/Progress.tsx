@@ -83,6 +83,7 @@ export default function Progress({
     return (
       <div
         role="progressbar"
+        aria-label="Progress"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={clamped}
@@ -113,6 +114,7 @@ export default function Progress({
   return (
     <div
       role="progressbar"
+      aria-label="Progress"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={clamped}

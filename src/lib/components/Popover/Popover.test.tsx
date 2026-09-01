@@ -35,6 +35,63 @@ describe('Popover', () => {
     const panelId = trigger.getAttribute('aria-controls')!;
     expect(document.getElementById(panelId)).toHaveClass('custom');
   });
+
+  it('closes on outside pointerdown in the fallback path', () => {
+    render(<Popover content="Body">Trigger</Popover>);
+    const trigger = screen.getByText('Trigger');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.pointerDown(document.body);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('closes on Escape in the fallback path', () => {
+    render(<Popover content="Body">Trigger</Popover>);
+    const trigger = screen.getByText('Trigger');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Popover content="Popover body">Trigger</Popover>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Popover content="Popover body">Trigger</Popover>);
+    await user.click(screen.getByText('Trigger'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('toggles on trigger clicks early in a page\'s life (performance.now ≈ 0)', () => {
+    // Regression: the light-dismiss race sentinels once used 0 as
+    // "never", but in a browser performance.now() counts from navigation
+    // start — so every trigger click in the first CLICK_WINDOW of a page
+    // load was swallowed as a supposed post-dismiss click. jsdom's clock
+    // starts at process spawn and never shows it; mock the clock.
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(10);
+    try {
+      render(<Popover content="Body">Trigger</Popover>);
+      const trigger = screen.getByText('Trigger');
+      fireEvent.click(trigger);
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      fireEvent.click(trigger);
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    } finally {
+      clock.mockRestore();
+    }
+  });
 });
 
 // jsdom implements neither the Popover API nor ToggleEvent; polyfill the
@@ -173,8 +230,8 @@ describe('Popover (native popover API)', () => {
     // property the anchored styles resolve. (The trigger's own
     // `anchor-name` declaration cannot be asserted here: jsdom's CSSOM
     // silently drops unknown camelCase properties.)
-    expect(getPanel().style.getPropertyValue('--haze-popover-anchor')).toMatch(
-      /^--haze-popover-/
+    expect(getPanel().style.getPropertyValue('--haze-floating-anchor')).toMatch(
+      /^--haze-floating-/
     );
   });
 
@@ -188,7 +245,7 @@ describe('Popover (native popover API)', () => {
     expect(panel.style.top).not.toBe('');
     expect(panel.style.left).not.toBe('');
     // anchor wiring is absent in this mode
-    expect(panel.style.getPropertyValue('--haze-popover-anchor')).toBe('');
+    expect(panel.style.getPropertyValue('--haze-floating-anchor')).toBe('');
     expect(trigger.getAttribute('style')).toBeNull();
   });
 });

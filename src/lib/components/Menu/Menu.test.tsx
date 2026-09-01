@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useControl } from 'react-use-control';
 
 import Menu from './Menu';
 import MenuItem from './MenuItem';
@@ -29,16 +30,46 @@ describe('Menu', () => {
 
   it('closes menu on outside click', async () => {
     const user = userEvent.setup();
-    render(
-      <div>
-        <Menu trigger={<button>Open</button>}>
-          <MenuItem>Action</MenuItem>
-        </Menu>
-        <button>outside</button>
-      </div>
-    );
+    function Harness() {
+      const [open, , openCtrl] = useControl(undefined, false);
+      return (
+        <div>
+          <Menu open={openCtrl} trigger={<button>Open</button>}>
+            <MenuItem>Action</MenuItem>
+          </Menu>
+          <button>outside</button>
+          <output data-testid="open-state">{String(open)}</output>
+        </div>
+      );
+    }
+    render(<Harness />);
     await user.click(screen.getByText('Open'));
+    expect(screen.getByTestId('open-state')).toHaveTextContent('true');
     await user.click(screen.getByText('outside'));
+    expect(screen.getByTestId('open-state')).toHaveTextContent('false');
+  });
+
+  it('moves focus with ArrowDown and closes on Escape', () => {
+    function Harness() {
+      const [open, , openCtrl] = useControl(undefined, false);
+      return (
+        <div>
+          <Menu open={openCtrl} trigger="T">
+            <MenuItem>Action 1</MenuItem>
+            <MenuItem>Action 2</MenuItem>
+          </Menu>
+          <output data-testid="open-state">{String(open)}</output>
+        </div>
+      );
+    }
+    render(<Harness />);
+    const menu = screen.getByRole('menu');
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(screen.getByText('Action 1')).toHaveFocus();
+    fireEvent.keyDown(screen.getByText('Action 1'), { key: 'ArrowDown' });
+    expect(screen.getByText('Action 2')).toHaveFocus();
+    fireEvent.keyDown(screen.getByText('Action 2'), { key: 'Escape' });
+    expect(screen.getByTestId('open-state')).toHaveTextContent('false');
   });
 
   it('applies className to menu panel', () => {
@@ -48,6 +79,25 @@ describe('Menu', () => {
       </Menu>
     );
     expect(screen.getByRole('menu')).toHaveClass('custom');
+  });
+
+  it('has no axe violations while open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Menu trigger={<button>Open</button>}>
+        <MenuItem>Action 1</MenuItem>
+        <MenuDivider />
+        <MenuItem>Action 2</MenuItem>
+      </Menu>
+    );
+    await user.click(screen.getByText('Open'));
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });
 

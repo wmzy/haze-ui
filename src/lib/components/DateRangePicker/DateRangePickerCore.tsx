@@ -59,6 +59,7 @@ export default function DateRangePickerCore({
       <input
         type="date"
         x-class={[input]}
+        aria-label="Start date"
         value={startDate}
         onChange={(e) => onStartChange(e.target.value)}
       />
@@ -66,6 +67,7 @@ export default function DateRangePickerCore({
       <input
         type="date"
         x-class={[input]}
+        aria-label="End date"
         value={endDate}
         onChange={(e) => onEndChange(e.target.value)}
       />

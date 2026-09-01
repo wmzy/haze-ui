@@ -43,6 +43,28 @@ describe('PasswordInput', () => {
     const { container } = render(<PasswordInput placeholder="Enter password" />);
     expect(container.querySelector('input[placeholder="Enter password"]')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<PasswordInput value="secret" />);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when password is visible', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<PasswordInput value="secret" />);
+    await user.click(screen.getByRole('button'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('PasswordInputCore', () => {

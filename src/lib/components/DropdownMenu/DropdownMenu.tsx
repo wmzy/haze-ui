@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
-import { useRef, useEffect, useCallback, useId } from 'react';
-import { useControl } from 'react-use-control';
+import { useCallback, useId, useRef } from 'react';
 import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
+
+import { useFloating } from '../../utils/floating';
 
 import { DropdownMenuProvider } from './DropdownMenuContext';
 
@@ -25,8 +27,7 @@ export default function DropdownMenu({
   children,
   className,
 }: DropdownMenuProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useControl(openControl, false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const contentId = useId();
@@ -41,16 +42,12 @@ export default function DropdownMenu({
     [open, setOpen, onOpenChange]
   );
 
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        handleSetOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open, handleSetOpen]);
+  const floating = useFloating({
+    open,
+    setOpen: handleSetOpen,
+    triggerRef,
+    panelRef: contentRef,
+  });
 
   return (
     <DropdownMenuProvider
@@ -61,11 +58,10 @@ export default function DropdownMenu({
         contentRef,
         contentId,
         focusRequestRef,
+        floating,
       }}
     >
-      <div ref={ref} x-class={[wrapper, className]}>
-        {children}
-      </div>
+      <div x-class={[wrapper, className]}>{children}</div>
     </DropdownMenuProvider>
   );
 }

@@ -26,4 +26,18 @@ describe('Divider', () => {
     expect(el).toHaveAttribute('role', 'separator');
     expect(el).toHaveAttribute('aria-orientation', 'vertical');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <div>
+        <Divider />
+        <Divider orientation="vertical" />
+      </div>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

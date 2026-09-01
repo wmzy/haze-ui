@@ -78,4 +78,19 @@ describe('Breadcrumb', () => {
     );
     expect(screen.getByRole('navigation')).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Breadcrumb>
+        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem href="/docs">Docs</BreadcrumbItem>
+        <BreadcrumbItem>Current page</BreadcrumbItem>
+      </Breadcrumb>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

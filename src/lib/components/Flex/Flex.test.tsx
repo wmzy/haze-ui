@@ -47,4 +47,13 @@ describe('Flex', () => {
     const { container } = render(<Flex wrap>Content</Flex>);
     expect(container.firstChild).toHaveStyle({ flexWrap: 'wrap' });
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Flex gap={8} direction="column">Content</Flex>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

@@ -51,4 +51,17 @@ describe('Drawer', () => {
     });
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Drawer open>
+        <p>Drawer body</p>
+      </Drawer>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

@@ -23,6 +23,22 @@ describe('Stat', () => {
     render(<Stat title="X" value="1" className="custom" />);
     expect(screen.getByText('1').parentElement?.parentElement).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <StatGroup>
+        <Stat title="Revenue" value="$1,234" trend="up" trendValue="+12%" />
+        <Stat title="Users" value="100" description="Active users" />
+      </StatGroup>
+    );
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('StatGroup', () => {

@@ -54,6 +54,18 @@ const grid = css`
   text-align: center;
 `;
 
+/* Rows and cells participate in the parent grid through `display: contents`
+   so the 7-column layout stays driven by the grid container while the ARIA
+   tree gets the row → columnheader/gridcell structure `role="grid"`
+   requires (axe aria-required-children). */
+const rowContents = css`
+  display: contents;
+`;
+
+const cellContents = css`
+  display: contents;
+`;
+
 const weekday = css`
   padding: var(--haze-space-1);
   font-weight: var(--haze-weight-medium);
@@ -175,8 +187,16 @@ export default function Calendar({ value, min, max, onSelect }: CalendarProps) {
     year: 'numeric',
   });
 
+  // Chunk the flat 7-aligned cell list into week rows (display: contents,
+  // so layout is unchanged) — `role="grid"` requires row → columnheader /
+  // gridcell structure (ARIA 1.2, axe aria-required-children).
+  const weeks: typeof cells[] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
+
   return (
-    <div x-class={[calendarWrapper]} role='grid' aria-label={monthLabel}>
+    <div x-class={[calendarWrapper]}>
       <div x-class={[header]}>
         <button
           type='button'
@@ -196,30 +216,37 @@ export default function Calendar({ value, min, max, onSelect }: CalendarProps) {
           ›
         </button>
       </div>
-      <div x-class={[grid]}>
-        {WEEKDAYS.map((w) => (
-          <span key={w} x-class={[weekday]}>
-            {w}
-          </span>
+      <div x-class={[grid]} role='grid' aria-label={monthLabel}>
+        <div role='row' x-class={[rowContents]}>
+          {WEEKDAYS.map((w) => (
+            <span key={w} role='columnheader' x-class={[weekday]}>
+              {w}
+            </span>
+          ))}
+        </div>
+        {weeks.map((week, weekIndex) => (
+          <div role='row' key={weekIndex} x-class={[rowContents]}>
+            {week.map((c) => {
+              const dateStr = formatDate(c.year, c.month, c.day);
+              return (
+                <span role='gridcell' key={dateStr} x-class={[cellContents]}>
+                  <button
+                    type='button'
+                    x-class={[
+                      dayBtn,
+                      dateStr === value && daySelected,
+                      c.outside && dayOutside,
+                    ]}
+                    disabled={isDisabled(dateStr)}
+                    onClick={() => onSelect(dateStr)}
+                  >
+                    {c.day}
+                  </button>
+                </span>
+              );
+            })}
+          </div>
         ))}
-        {cells.map((c, i) => {
-          const dateStr = formatDate(c.year, c.month, c.day);
-          return (
-            <button
-              key={i}
-              type='button'
-              x-class={[
-                dayBtn,
-                dateStr === value && daySelected,
-                c.outside && dayOutside,
-              ]}
-              disabled={isDisabled(dateStr)}
-              onClick={() => onSelect(dateStr)}
-            >
-              {c.day}
-            </button>
-          );
-        })}
       </div>
     </div>
   );

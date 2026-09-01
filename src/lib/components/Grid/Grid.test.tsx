@@ -17,6 +17,20 @@ describe('Grid', () => {
     const { container } = render(<Grid>z</Grid>);
     expect(container.firstChild).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Grid>
+        <GridItem span={6}>half</GridItem>
+        <GridItem span={6}>other half</GridItem>
+      </Grid>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('GridItem', () => {

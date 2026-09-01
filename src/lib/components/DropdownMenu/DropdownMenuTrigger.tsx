@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
-import { getEnabledMenuItems } from './useMenuKeyboard';
+import { getEnabledMenuItems } from '../../utils/menuKeyboard';
+
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuTriggerProps = {
@@ -19,8 +20,11 @@ const trigger = css`
   color: inherit;
 `;
 
-export default function DropdownMenuTrigger({ children, className }: DropdownMenuTriggerProps) {
-  const { open, setOpen, triggerRef, contentRef, contentId, focusRequestRef } =
+export default function DropdownMenuTrigger({
+  children,
+  className,
+}: DropdownMenuTriggerProps) {
+  const { open, setOpen, triggerRef, contentRef, contentId, focusRequestRef, floating } =
     useDropdownMenuContext();
 
   // Open the menu and land focus on its first/last item. When the menu is
@@ -44,7 +48,9 @@ export default function DropdownMenuTrigger({ children, className }: DropdownMen
       aria-haspopup="menu"
       aria-expanded={open}
       aria-controls={open ? contentId : undefined}
-      onClick={() => setOpen((prev) => !prev)}
+      style={floating.triggerStyle}
+      onPointerDown={floating.onTriggerPointerDown}
+      onClick={floating.onTriggerClick}
       onKeyDown={(e) => {
         if (e.key === 'ArrowDown') {
           e.preventDefault();

@@ -37,4 +37,13 @@ describe('Image', () => {
     fireEvent.error(screen.getByRole('img'));
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Image src="photo.jpg" alt="A photo" aspectRatio="16/9" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

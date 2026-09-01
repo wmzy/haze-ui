@@ -26,7 +26,7 @@ export default function Stepper({
   children,
   className,
 }: StepperProps) {
-  const [activeStep, setActiveStep] = useControl(activeStepControl as Control<number>, 0);
+  const [activeStep, setActiveStep] = useControl(activeStepControl, 0);
   const totalSteps = Children.count(children);
 
   return (

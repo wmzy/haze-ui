@@ -99,7 +99,7 @@ export default function Transfer({
   onChange,
   className,
 }: TransferProps) {
-  const [targetKeys, setTargetKeys] = useControl(targetKeysControl as Control<string[]>, []);
+  const [targetKeys, setTargetKeys] = useControl(targetKeysControl, []);
   const [selectedSource, setSelectedSource] = useState<string[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<string[]>([]);
 

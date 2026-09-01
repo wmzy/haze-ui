@@ -23,4 +23,15 @@ describe('ScrollArea', () => {
     // jsdom 30+ 的 getComputedStyle 会把 vh 解析为像素，故直接断言 inline style
     expect((container.firstChild as HTMLElement).style.maxHeight).toBe('50vh');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<ScrollArea maxHeight={200}>Content</ScrollArea>);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

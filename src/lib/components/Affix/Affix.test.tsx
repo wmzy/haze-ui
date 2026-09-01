@@ -36,4 +36,13 @@ describe('Affix', () => {
     const el = container.firstChild as HTMLElement;
     expect(el.style.zIndex).toBe('999');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Affix>Fixed content</Affix>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

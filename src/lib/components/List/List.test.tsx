@@ -50,4 +50,20 @@ describe('List', () => {
     );
     expect(screen.getByRole('listitem')).toHaveClass('item-custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <List>
+        <ListItem>Plain item</ListItem>
+        <ListItem>
+          <a href="#details">Item with a link</a>
+        </ListItem>
+      </List>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

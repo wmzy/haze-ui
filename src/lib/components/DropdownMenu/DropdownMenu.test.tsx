@@ -64,6 +64,14 @@ describe('DropdownMenu', () => {
     expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
   });
 
+  it('hides content on outside pointerdown', () => {
+    renderMenu();
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
   it('calls item onClick', async () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
@@ -325,7 +333,7 @@ describe('DropdownMenu', () => {
   });
 
   it('getEnabledMenuItems returns empty list for a null container', async () => {
-    const { getEnabledMenuItems } = await import('./useMenuKeyboard');
+    const { getEnabledMenuItems } = await import('../../utils/menuKeyboard');
     expect(getEnabledMenuItems(null)).toEqual([]);
   });
 });

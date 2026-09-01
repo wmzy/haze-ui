@@ -30,4 +30,17 @@ describe('AspectRatio', () => {
     const el = container.firstChild as HTMLElement;
     expect(el.style.paddingBottom).toBe('100%');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <AspectRatio>
+        <img src="https://example.com/photo.png" alt="Cover photo" />
+      </AspectRatio>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

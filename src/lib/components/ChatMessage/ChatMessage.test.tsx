@@ -48,4 +48,20 @@ describe('ChatMessage', () => {
     render(<ChatMessage role="user" status="sending">Msg</ChatMessage>);
     expect(screen.getByText('Sending...')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <ChatMessage role="user" name="Alice" timestamp="10:30">Hello there</ChatMessage>
+        <ChatMessage role="assistant" avatar={<span aria-hidden="true">AI</span>} name="Bot">
+          Hi, how can I help?
+        </ChatMessage>
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

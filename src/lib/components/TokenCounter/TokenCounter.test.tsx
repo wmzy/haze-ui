@@ -28,4 +28,13 @@ describe('TokenCounter', () => {
     const bar = container.querySelector('[style*="width"]');
     expect(bar).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<TokenCounter used={500} max={4000} label="Context" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

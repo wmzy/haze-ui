@@ -56,4 +56,22 @@ describe('ApprovalCard', () => {
     await user.click(screen.getByText('Deny'));
     expect(onDeny).toHaveBeenCalled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ApprovalCard
+        title="Confirm Action"
+        description="This will delete files"
+        onApprove={() => undefined}
+        onDeny={() => undefined}
+      >
+        <p>Extra info</p>
+      </ApprovalCard>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

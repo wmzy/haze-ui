@@ -19,7 +19,7 @@ export default function Rating({
   onChange,
   className,
 }: RatingProps) {
-  const [value, setValue] = useControl(valueControl as Control<number>, 0);
+  const [value, setValue] = useControl(valueControl, 0);
 
   return (
     <RatingCore

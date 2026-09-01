@@ -2,8 +2,11 @@ import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useControl } from 'react-use-control';
+
+import { FloatingPanel, useFloating } from '../../utils/floating';
+import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 
 type MenuProps = {
   open?: Control<boolean> | boolean;
@@ -18,11 +21,6 @@ const container = css`
 `;
 
 const panel = css`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  margin-top: var(--haze-space-1);
   min-width: 160px;
   padding: var(--haze-space-1) 0;
   border: 1px solid var(--haze-color-border);
@@ -31,35 +29,45 @@ const panel = css`
   box-shadow: var(--haze-shadow-lg);
 `;
 
-const hidden = css`
-  display: none;
-`;
-
 export default function Menu({
   open: openControl,
   trigger,
   className,
   children,
 }: MenuProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useControl(openControl, false);
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, setOpen]);
+  const floating = useFloating({ open, setOpen, triggerRef, panelRef });
+
+  useRovingTabindex({ menuRef: panelRef, active: open });
+  const handleKeyDown = useMenuKeyboard({
+    menuRef: panelRef,
+    onClose: () => setOpen(false),
+  });
 
   return (
-    <div ref={ref} className={container}>
-      <span onClick={() => setOpen((prev) => !prev)}>{trigger}</span>
-      <div role='menu' x-class={[panel, !open && hidden, className]}>
+    <div x-class={container}>
+      <span
+        ref={triggerRef}
+        style={floating.triggerStyle}
+        onPointerDown={floating.onTriggerPointerDown}
+        onClick={floating.onTriggerClick}
+      >
+        {trigger}
+      </span>
+      <FloatingPanel
+        ref={panelRef}
+        behavior={floating}
+        placement="bottom"
+        role="menu"
+        visualClass={panel}
+        className={className}
+        onKeyDown={handleKeyDown}
+      >
         {children}
-      </div>
+      </FloatingPanel>
     </div>
   );
 }

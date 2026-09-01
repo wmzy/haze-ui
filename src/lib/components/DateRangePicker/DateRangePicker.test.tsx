@@ -80,4 +80,15 @@ describe('DateRangePickerCore', () => {
     fireEvent.change(inputs[1]!, {target: {value: '2024-01-31'}});
     expect(onEndChange).toHaveBeenCalledWith('2024-01-31');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <DateRangePicker startDate="2024-01-01" endDate="2024-01-31" separator="to" />
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

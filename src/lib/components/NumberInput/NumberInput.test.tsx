@@ -77,6 +77,17 @@ describe('NumberInput', () => {
     const { container } = render(<NumberInput className="custom" aria-label="quantity" />);
     expect(container.firstChild).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<NumberInput value={5} aria-label="quantity" />);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('NumberInputCore', () => {

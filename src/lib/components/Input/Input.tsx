@@ -17,7 +17,7 @@ export default function Input({
   onChange,
   ...rest
 }: InputProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <InputCore

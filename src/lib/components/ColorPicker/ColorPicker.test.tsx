@@ -35,6 +35,17 @@ describe('ColorPicker', () => {
     expect(screen.getByLabelText('#ff0000')).toBeInTheDocument();
     expect(screen.getByLabelText('#00ff00')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ColorPicker value="#ff0000" presets={['#ff0000', '#00ff00', '#0000ff']} />
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('ColorPickerCore', () => {

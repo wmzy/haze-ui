@@ -1,11 +1,23 @@
 import type { ReactNode } from 'react';
+import type { Control } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
+import { useControl } from 'react-use-control';
+
+import {
+  floatingPlacementClasses,
+  useFloating,
+  useFloatingPosition,
+  type FloatingPlacement,
+} from '../../utils/floating';
 
 type TooltipProps = {
   content: ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  /** Milliseconds of hover/focus before the tooltip appears. */
+  delay?: number;
+  open?: Control<boolean> | boolean;
   className?: string;
   children: ReactNode;
 };
@@ -16,8 +28,6 @@ const wrapper = css`
 `;
 
 const bubble = css`
-  position: absolute;
-  z-index: 1000;
   padding: var(--haze-space-1) var(--haze-space-2);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-text);
@@ -27,56 +37,72 @@ const bubble = css`
   line-height: var(--haze-leading-normal);
   white-space: nowrap;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
 `;
 
-const positions = {
-  top: css`
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: var(--haze-space-1);
-  `,
-  bottom: css`
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: var(--haze-space-1);
-  `,
-  left: css`
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-right: var(--haze-space-1);
-  `,
-  right: css`
-    left: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-left: var(--haze-space-1);
-  `,
-} as const;
-
-const showOnInteract = css`
-  &:hover > [role='tooltip'],
-  &:focus-within > [role='tooltip'] {
-    opacity: 1;
-  }
-`;
+/** `position` prop → floating placement; sides center over the trigger. */
+const placements = {
+  top: 'top',
+  bottom: 'bottom-center',
+  left: 'left',
+  right: 'right',
+} as const satisfies Record<string, FloatingPlacement>;
 
 export default function Tooltip({
   content,
   position = 'top',
+  delay = 150,
+  open: openControl,
   className,
   children,
 }: TooltipProps) {
+  const [open, setOpen] = useControl(openControl, false);
   const id = useId();
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const panelRef = useRef<HTMLSpanElement>(null);
+  const placement = placements[position];
+
+  const floating = useFloating({ open, setOpen, triggerRef, panelRef });
+  useFloatingPosition({ behavior: floating, placement });
+
+  // Hover/focus intent: show after `delay`, hide at once; leaving before
+  // the delay cancels the pending show.
+  const showTimerRef = useRef(0);
+  useEffect(() => () => window.clearTimeout(showTimerRef.current), []);
+
+  const show = () => {
+    window.clearTimeout(showTimerRef.current);
+    showTimerRef.current = window.setTimeout(() => setOpen(true), delay);
+  };
+  const hide = () => {
+    window.clearTimeout(showTimerRef.current);
+    setOpen(false);
+  };
 
   return (
-    <span x-class={[wrapper, showOnInteract, className]}>
-      <span aria-describedby={id}>{children}</span>
-      <span id={id} role='tooltip' x-class={[bubble, positions[position]]}>
+    <span x-class={[wrapper, className]}>
+      <span
+        ref={triggerRef}
+        style={floating.triggerStyle}
+        aria-describedby={id}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+      >
+        {children}
+      </span>
+      {/* A span panel (not FloatingPanel's div): phrasing content context. */}
+      <span
+        id={id}
+        ref={panelRef}
+        role="tooltip"
+        {...floating.panelAttrs}
+        x-class={[
+          bubble,
+          ...floating.panelClasses,
+          ...floatingPlacementClasses(floating, placement),
+        ]}
+      >
         {content}
       </span>
     </span>

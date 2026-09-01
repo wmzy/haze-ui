@@ -107,6 +107,37 @@ describe('Carousel', () => {
     vi.advanceTimersByTime(1000);
     vi.useRealTimers();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Carousel>
+        <CarouselSlide>Slide 1</CarouselSlide>
+        <CarouselSlide>Slide 2</CarouselSlide>
+        <CarouselSlide>Slide 3</CarouselSlide>
+      </Carousel>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations after navigating to the next slide', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Carousel>
+        <CarouselSlide>Slide 1</CarouselSlide>
+        <CarouselSlide>Slide 2</CarouselSlide>
+      </Carousel>
+    );
+    await user.click(screen.getByRole('button', { name: 'Next slide' }));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('CarouselSlide', () => {

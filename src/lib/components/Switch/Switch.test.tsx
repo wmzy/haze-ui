@@ -53,6 +53,27 @@ describe('Switch', () => {
     render(<Switch disabled aria-label="toggle" />);
     expect(screen.getByRole('switch')).toBeDisabled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Switch aria-label="toggle" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when checked', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Switch aria-label="toggle" />);
+    await user.click(screen.getByRole('switch'));
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('SwitchCore', () => {

@@ -73,4 +73,28 @@ describe('Tabs', () => {
       'Tabs compound components must be used within <Tabs>'
     );
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<TabsFixture />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations after switching to the second tab', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<TabsFixture defaultValue="one" />);
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

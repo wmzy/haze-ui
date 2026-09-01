@@ -53,6 +53,7 @@ export default function MenuItem({
     <button
       type='button'
       role='menuitem'
+      tabIndex={-1}
       x-class={[item, className]}
       disabled={disabled}
       onClick={onSelect}

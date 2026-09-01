@@ -103,7 +103,7 @@ const levelClassMap: Record<LogLevel, string> = {
 const ALL_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
 export default function LogViewer({ logs, filter: filterControl, className }: LogViewerProps) {
-  const [filter, setFilter] = useControl(filterControl as Control<LogLevel | null>, null);
+  const [filter, setFilter] = useControl(filterControl, null);
 
   const filtered = useMemo(
     () => (filter ? logs.filter((l) => l.level === filter) : logs),

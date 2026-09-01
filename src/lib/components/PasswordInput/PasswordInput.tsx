@@ -19,7 +19,7 @@ export default function PasswordInput({
   disabled,
   className,
 }: PasswordInputProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <PasswordInputCore

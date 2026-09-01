@@ -30,4 +30,22 @@ describe('Alert', () => {
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Alert>Something happened</Alert>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when closable', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Alert variant="warning" closable>Session expiring soon</Alert>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

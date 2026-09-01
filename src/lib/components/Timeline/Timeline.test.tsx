@@ -49,4 +49,18 @@ describe('Timeline', () => {
     );
     expect(screen.getByText('Event').parentElement?.parentElement).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Timeline>
+        <TimelineItem title="Step 1" description="Details here" time="2024-01-01" />
+        <TimelineItem title="Step 2" color="primary" />
+      </Timeline>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

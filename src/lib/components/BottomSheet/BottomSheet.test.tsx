@@ -33,4 +33,18 @@ describe('BottomSheet', () => {
     await user.click(screen.getByText('Content'));
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <BottomSheet open>
+        <h2>Sheet title</h2>
+        <p>Sheet content</p>
+      </BottomSheet>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

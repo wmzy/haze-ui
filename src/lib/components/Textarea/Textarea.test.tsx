@@ -43,6 +43,15 @@ describe('Textarea', () => {
     expect(textarea).toBeDisabled();
     expect(textarea).toHaveAttribute('rows', '5');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Textarea aria-label="Bio" placeholder="Enter text" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('TextareaCore', () => {

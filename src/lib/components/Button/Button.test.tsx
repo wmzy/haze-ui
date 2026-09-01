@@ -47,4 +47,18 @@ describe('Button', () => {
     render(<Button square>X</Button>);
     expect(screen.getByRole('button', { name: 'X' })).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Button>Save changes</Button>
+        <Button square disabled aria-label="Close panel">X</Button>
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

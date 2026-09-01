@@ -17,7 +17,7 @@ export default function Textarea({
   onChange,
   ...rest
 }: TextareaProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <TextareaCore

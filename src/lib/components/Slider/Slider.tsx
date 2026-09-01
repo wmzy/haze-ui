@@ -15,7 +15,7 @@ export default function Slider({
   onChange,
   ...rest
 }: SliderProps) {
-  const [value, setValue] = useControl(valueControl as Control<number>, 50);
+  const [value, setValue] = useControl(valueControl, 50);
 
   return (
     <SliderCore

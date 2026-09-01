@@ -78,7 +78,7 @@ export default function ChatInput({
   maxLength,
   className,
 }: ChatInputProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = useCallback(() => {

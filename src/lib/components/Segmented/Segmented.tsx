@@ -21,7 +21,7 @@ export default function Segmented({
   size,
   className,
 }: SegmentedProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <SegmentedCore

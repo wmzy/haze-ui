@@ -25,4 +25,18 @@ describe('ChatContainer', () => {
     expect(screen.getByText('Msg 2')).toBeInTheDocument();
     expect(screen.getByText('Msg 3')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ChatContainer>
+        <div>Msg 1</div>
+        <div>Msg 2</div>
+      </ChatContainer>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

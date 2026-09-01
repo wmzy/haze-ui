@@ -5,33 +5,44 @@ import { useCallback, useEffect, useRef } from 'react';
 /** How long typed characters keep accumulating before the buffer resets. */
 const TYPEAHEAD_WINDOW_MS = 500;
 
-/** Enabled menu items inside a menu container, in DOM order. */
+/** Default item selector: enabled menu items inside a menu container. */
+const MENU_ITEM_SELECTOR = '[role="menuitem"]:not([disabled])';
+
+/** Enabled items inside a container, in DOM order. */
 export function getEnabledMenuItems(
-  container: HTMLElement | null
+  container: HTMLElement | null,
+  selector: string = MENU_ITEM_SELECTOR
 ): HTMLElement[] {
   if (!container) return [];
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      '[role="menuitem"]:not([disabled])'
-    )
-  );
+  return Array.from(container.querySelectorAll<HTMLElement>(selector));
 }
+
 type UseMenuKeyboardOptions = {
-  /** Element containing the `[role=menuitem]` children. */
+  /** Element containing the item children (`[role=menuitem]` by default). */
   menuRef: RefObject<HTMLElement | null>;
-  /** Called when the menu should close via keyboard; the caller returns
-   * focus to the trigger. */
+  /**
+   * Called when the menu should close via keyboard; the caller returns
+   * focus to the trigger.
+   */
   onClose: () => void;
+  /**
+   * Item selector for containers that are not a `role="menu"` — e.g. the
+   * `[role=option]` list of a Command palette.
+   */
+  selector?: string;
 };
 
 /**
- * Keyboard behavior for a `role="menu"` container with roving-tabindex
- * items: ↑/↓ move focus (wrapping, skipping disabled items), Home/End
- * jump to the ends, Escape closes (returning focus to the trigger), Tab
- * closes, and printable characters run typeahead — matching the WAI-ARIA
- * Menu Button pattern.
+ * Keyboard behavior for a roving-tabindex item container (WAI-ARIA menu
+ * button / listbox pattern): ↑/↓ move focus (wrapping, skipping disabled
+ * items), Home/End jump to the ends, Escape closes (returning focus to
+ * the trigger), Tab closes, and printable characters run typeahead.
  */
-export function useMenuKeyboard({ menuRef, onClose }: UseMenuKeyboardOptions) {
+export function useMenuKeyboard({
+  menuRef,
+  onClose,
+  selector,
+}: UseMenuKeyboardOptions) {
   const typedRef = useRef('');
   const resetTimerRef = useRef(0);
 
@@ -42,7 +53,7 @@ export function useMenuKeyboard({ menuRef, onClose }: UseMenuKeyboardOptions) {
 
   return useCallback(
     (event: ReactKeyboardEvent) => {
-      const items = getEnabledMenuItems(menuRef.current);
+      const items = getEnabledMenuItems(menuRef.current, selector);
       if (items.length === 0) return;
       const current = items.indexOf(document.activeElement as HTMLElement);
 
@@ -108,6 +119,60 @@ export function useMenuKeyboard({ menuRef, onClose }: UseMenuKeyboardOptions) {
         }
       }
     },
-    [menuRef, onClose]
+    [menuRef, onClose, selector]
   );
+}
+
+type UseRovingTabindexOptions = {
+  menuRef: RefObject<HTMLElement | null>;
+  /**
+   * While false the effect is inert — panels that stay mounted when
+   * closed (Menu, Combobox-style listboxes) manage the tab stops only
+   * while open.
+   */
+  active: boolean;
+  selector?: string;
+};
+
+/**
+ * Roving tabindex for a menu/listbox container: exactly one item is a tab
+ * stop at any time. On activation the current stop is kept (first item
+ * initially); a `focusin` listener moves the stop with focus, and a
+ * MutationObserver re-syncs when the item set changes (e.g. a filtered
+ * Command list).
+ */
+export function useRovingTabindex({
+  menuRef,
+  active,
+  selector = MENU_ITEM_SELECTOR,
+}: UseRovingTabindexOptions) {
+  useEffect(() => {
+    const menu = menuRef.current;
+    if (!active || !menu) return;
+
+    const sync = () => {
+      const items = getEnabledMenuItems(menu, selector);
+      if (items.length === 0) return;
+      const stop = items.findIndex((el) => el.tabIndex === 0);
+      const next = stop >= 0 ? stop : 0;
+      items.forEach((el, index) => {
+        el.tabIndex = index === next ? 0 : -1;
+      });
+    };
+    sync();
+
+    const observer = new MutationObserver(sync);
+    observer.observe(menu, { childList: true, subtree: true });
+
+    const handleFocusIn = (event: FocusEvent) => {
+      getEnabledMenuItems(menu, selector).forEach((el) => {
+        el.tabIndex = el === event.target ? 0 : -1;
+      });
+    };
+    menu.addEventListener('focusin', handleFocusIn);
+    return () => {
+      observer.disconnect();
+      menu.removeEventListener('focusin', handleFocusIn);
+    };
+  }, [menuRef, active, selector]);
 }

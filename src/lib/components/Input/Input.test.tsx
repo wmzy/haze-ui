@@ -40,6 +40,15 @@ describe('Input', () => {
     render(<Input disabled placeholder="test" />);
     expect(screen.getByPlaceholderText('test')).toBeDisabled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Input placeholder="Enter text" aria-label="Name" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('InputCore', () => {

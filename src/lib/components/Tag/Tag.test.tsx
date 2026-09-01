@@ -37,4 +37,18 @@ describe('Tag', () => {
     await user.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Tag>Static</Tag>
+        <Tag closable onClose={() => undefined}>Removable</Tag>
+      </>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

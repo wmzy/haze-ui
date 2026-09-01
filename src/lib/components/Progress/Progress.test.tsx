@@ -40,4 +40,18 @@ describe('Progress', () => {
     render(<Progress value={150} />);
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const options = { rules: { region: { enabled: false } } };
+    const { unmount } = render(<Progress value={50} />);
+    let results = await axe(document.body, options);
+    expect(results.violations).toEqual([]);
+    unmount();
+    render(<Progress variant="circle" value={75} />);
+    results = await axe(document.body, options);
+    expect(results.violations).toEqual([]);
+  });
 });

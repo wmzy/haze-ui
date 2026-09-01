@@ -37,6 +37,17 @@ describe('OTPInput', () => {
     await user.type(input, '5');
     expect(onChange).toHaveBeenCalledWith('5');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<OTPInput value="12" length={4} />);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('OTPInputCore', () => {

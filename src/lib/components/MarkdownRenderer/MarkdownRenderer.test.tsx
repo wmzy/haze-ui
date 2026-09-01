@@ -60,4 +60,19 @@ describe('MarkdownRenderer', () => {
     const { container } = render(<MarkdownRenderer content="---" />);
     expect(container.querySelector('hr')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <MarkdownRenderer
+        content={'# Title\n\nSome **bold** text and a [link](https://example.com).\n\n- item 1\n- item 2'}
+      />
+    );
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

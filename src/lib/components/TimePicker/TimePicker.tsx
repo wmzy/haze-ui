@@ -22,7 +22,7 @@ export default function TimePicker({
   className,
   ...rest
 }: TimePickerProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <TimePickerCore

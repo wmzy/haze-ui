@@ -114,4 +114,22 @@ describe('NavigationBar', () => {
     expect(ref.current).toBe(screen.getByText('Home'));
     expect(ref.current?.tagName).toBe('A');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <NavigationBar brand="Haze" end={<button>Login</button>}>
+        <NavLink href="/">Home</NavLink>
+        <NavLink href="/docs" active>
+          Docs
+        </NavLink>
+      </NavigationBar>,
+    );
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

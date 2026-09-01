@@ -103,7 +103,7 @@ export default function Pagination({
   className,
   ...rest
 }: PaginationProps) {
-  const [page, setPage] = useControl(pageControl as Control<number>, 1);
+  const [page, setPage] = useControl(pageControl, 1);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pages = getPageNumbers(page, totalPages);
 

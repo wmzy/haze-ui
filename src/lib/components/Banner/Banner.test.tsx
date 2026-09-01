@@ -50,4 +50,22 @@ describe('Banner', () => {
     rerender(<Banner variant="warning">Warning</Banner>);
     expect(container.firstChild).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Banner>Scheduled maintenance tonight</Banner>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when dismissible', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Banner variant="warning" onClose={() => undefined}>Cookies are used</Banner>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

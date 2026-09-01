@@ -100,7 +100,7 @@ export default function Carousel({
   className,
   children,
 }: CarouselProps) {
-  const [current, setCurrent] = useControl(valueControl as Control<number>, 0);
+  const [current, setCurrent] = useControl(valueControl, 0);
   const trackRef = useRef<HTMLDivElement>(null);
   const count = Children.count(children);
 

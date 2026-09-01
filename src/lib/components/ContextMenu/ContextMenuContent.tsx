@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { FloatingPanel } from '../../utils/floating';
+import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+
 import { useContextMenuContext } from './ContextMenuContext';
 
 type ContextMenuContentProps = {
@@ -9,6 +12,10 @@ type ContextMenuContentProps = {
   className?: string;
 };
 
+/**
+ * Point-positioned panel: fixed at the cursor coordinates recorded by the
+ * trigger, so no anchor/JS placement runs (`placement` stays unset).
+ */
 const content = css`
   position: fixed;
   min-width: 10rem;
@@ -20,15 +27,33 @@ const content = css`
   z-index: 100;
 `;
 
-export default function ContextMenuContent({ children, className }: ContextMenuContentProps) {
-  const { open, x, y } = useContextMenuContext();
+export default function ContextMenuContent({
+  children,
+  className,
+}: ContextMenuContentProps) {
+  const { open, setOpen, x, y, contentRef, floating } = useContextMenuContext();
+
+  const handleKeyDown = useMenuKeyboard({
+    menuRef: contentRef,
+    onClose: () => setOpen(false),
+  });
+
+  useRovingTabindex({ menuRef: contentRef, active: open });
 
   if (!open) return null;
 
   return (
-    <div x-class={[content, className]} style={{ left: x, top: y }}>
+    <FloatingPanel
+      ref={contentRef}
+      behavior={floating}
+      role="menu"
+      visualClass={content}
+      className={className}
+      style={{ left: x, top: y }}
+      onKeyDown={handleKeyDown}
+    >
       {children}
-    </div>
+    </FloatingPanel>
   );
 }
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Datepicker from './Datepicker';
@@ -118,8 +118,11 @@ describe('DatepickerCore', () => {
     );
     // jsdom applies no CSS, so the closed dropdown stays in the DOM with
     // the hidden-style class attached; assert that instead of visibility.
+    // Calendar root (calendarWrapper) sits inside the FloatingPanel div,
+    // which carries visual skin + fallback-placement + hidden classes.
     const grid = container.querySelector('[role="grid"]')!;
-    expect(grid.parentElement!.className.split(' ').length).toBe(2);
+    const panel = grid.parentElement!.parentElement!;
+    expect(panel.className.split(' ').length).toBe(3);
   });
 
   it('calls onChange with the selected date and onOpenChange(false)', async () => {
@@ -153,5 +156,30 @@ describe('DatepickerCore', () => {
     );
     await user.click(screen.getByPlaceholderText('Select date'));
     expect(onOpenChange).toHaveBeenCalledWith(true);
+  });
+
+  it('calls onOpenChange(false) on Escape while open', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <DatepickerCore
+        value=""
+        onChange={() => undefined}
+        open
+        onOpenChange={onOpenChange}
+      />
+    );
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('has no axe violations when the calendar is open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Datepicker value="2025-01-15" />);
+    await user.click(screen.getByPlaceholderText('Select date'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });

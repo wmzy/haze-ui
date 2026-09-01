@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import Disclosure from './Disclosure';
 
@@ -43,5 +44,25 @@ describe('Disclosure', () => {
       <Disclosure summary="S" open={false}>C</Disclosure>
     );
     expect(container.querySelector('details')?.open).toBe(false);
+  });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Disclosure summary="Click to expand">Hidden content</Disclosure>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Disclosure summary="Click to expand">Hidden content</Disclosure>);
+    await user.click(screen.getByText('Click to expand'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });

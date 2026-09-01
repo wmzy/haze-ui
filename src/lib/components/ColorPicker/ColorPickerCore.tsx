@@ -94,12 +94,14 @@ export default function ColorPickerCore({
           type="color"
           x-class={[colorInput]}
           value={value}
+          aria-label="Pick color"
           onChange={(e) => onChange(e.target.value)}
         />
         <input
           type="text"
           x-class={[textInput]}
           value={value}
+          aria-label="Hex color"
           onChange={(e) => onChange(e.target.value)}
         />
       </div>

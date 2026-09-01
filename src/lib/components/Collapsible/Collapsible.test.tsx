@@ -67,4 +67,35 @@ describe('Collapsible', () => {
     );
     expect(screen.getByText('Open content')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Collapsible>
+        <CollapsibleTrigger>Toggle</CollapsibleTrigger>
+        <CollapsibleContent>Hidden content</CollapsibleContent>
+      </Collapsible>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Collapsible>
+        <CollapsibleTrigger>Toggle</CollapsibleTrigger>
+        <CollapsibleContent>Visible content</CollapsibleContent>
+      </Collapsible>
+    );
+    await user.click(screen.getByRole('button', { name: 'Toggle' }));
+    expect(screen.getByText('Visible content')).toBeInTheDocument();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

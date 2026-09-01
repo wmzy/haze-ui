@@ -69,7 +69,7 @@ export default function Banner({
   children,
   className,
 }: BannerProps) {
-  const [visible, setVisible] = useControl(visibleControl as Control<boolean>, true);
+  const [visible, setVisible] = useControl(visibleControl, true);
 
   if (!visible) return null;
 

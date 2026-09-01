@@ -21,8 +21,8 @@ export default function Datepicker({
   placeholder,
   className,
 }: DatepickerProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [value, setValue] = useControl(valueControl, '');
+  const [open, setOpen] = useControl(openControl, false);
 
   return (
     <DatepickerCore

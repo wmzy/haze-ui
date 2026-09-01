@@ -1,5 +1,9 @@
+import type { SetStateAction } from 'react';
+
 import { css } from '@linaria/core';
-import { useRef, useEffect } from 'react';
+import { useCallback, useId, useRef } from 'react';
+
+import { FloatingPanel, useFloating } from '../../utils/floating';
 
 import Calendar from './Calendar';
 
@@ -44,19 +48,10 @@ const input = css`
 `;
 
 const dropdown = css`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  margin-top: var(--haze-space-1);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);
   background: var(--haze-color-bg);
   box-shadow: var(--haze-shadow-lg);
-`;
-
-const hiddenStyle = css`
-  display: none;
 `;
 
 export default function DatepickerCore({
@@ -69,30 +64,51 @@ export default function DatepickerCore({
   placeholder = 'Select date',
   className,
 }: DatepickerCoreProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        onOpenChange(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open, onOpenChange]);
+  // Adapt the value/onChange pair to the state-setter shape the floating
+  // behavior drives (functional updates included).
+  const setOpen = useCallback(
+    (next: SetStateAction<boolean>) =>
+      onOpenChange(typeof next === 'function' ? next(open) : next),
+    [onOpenChange, open]
+  );
+
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef: inputRef,
+    panelRef,
+  });
 
   return (
-    <div ref={ref} x-class={[wrapper, className]}>
+    <div x-class={[wrapper, className]}>
       <input
+        ref={inputRef}
         readOnly
+        style={floating.triggerStyle}
         className={input}
         value={value}
         placeholder={placeholder}
-        onClick={() => onOpenChange(!open)}
-        aria-haspopup='dialog'
+        // aria-expanded is not supported on the implicit textbox role
+        // (ARIA 1.2, axe aria-allowed-attr); combobox is the honest role
+        // for a readonly input that opens a popup panel.
+        role='combobox'
+        aria-haspopup="dialog"
         aria-expanded={open}
+        aria-controls={panelId}
+        onPointerDown={floating.onTriggerPointerDown}
+        onClick={floating.onTriggerClick}
       />
-      <div x-class={[dropdown, !open && hiddenStyle]}>
+      <FloatingPanel
+        ref={panelRef}
+        behavior={floating}
+        placement="bottom"
+        visualClass={dropdown}
+        id={panelId}
+      >
         <Calendar
           value={value}
           min={min}
@@ -102,7 +118,7 @@ export default function DatepickerCore({
             onOpenChange(false);
           }}
         />
-      </div>
+      </FloatingPanel>
     </div>
   );
 }

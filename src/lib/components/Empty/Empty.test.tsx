@@ -27,4 +27,13 @@ describe('Empty', () => {
     render(<Empty className="custom" />);
     expect(screen.getByText('No data').parentElement).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Empty description="Nothing here"><button>Retry</button></Empty>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

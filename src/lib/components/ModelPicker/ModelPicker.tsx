@@ -58,7 +58,7 @@ export default function ModelPicker({
   disabled,
   className,
 }: ModelPickerProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setValue(e.target.value);
@@ -67,7 +67,7 @@ export default function ModelPicker({
 
   return (
     <div x-class={[wrapper, className]}>
-      <select x-class={[select]} value={value} onChange={handleChange} disabled={disabled}>
+      <select x-class={[select]} aria-label="Model" value={value} onChange={handleChange} disabled={disabled}>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}{opt.contextLength ? ` (${opt.contextLength})` : ''}

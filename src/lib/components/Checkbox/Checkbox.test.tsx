@@ -47,6 +47,20 @@ describe('Checkbox', () => {
     render(<Checkbox disabled aria-label="test" />);
     expect(screen.getByRole('checkbox')).toBeDisabled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Checkbox aria-label="Agree to terms" />
+        <Checkbox checked disabled aria-label="Subscribe to newsletter" />
+      </>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('CheckboxCore', () => {

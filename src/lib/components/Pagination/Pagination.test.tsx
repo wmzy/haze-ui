@@ -42,4 +42,15 @@ describe('Pagination', () => {
     render(<Pagination className="custom" total={50} />);
     expect(screen.getByRole('navigation')).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Pagination total={50} pageSize={10} />);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

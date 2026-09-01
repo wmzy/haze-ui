@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import type { Control } from 'react-use-control';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useControl } from 'react-use-control';
+import { useCallback, useRef, useState } from 'react';
 import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
+
+import { useFloating } from '../../utils/floating';
 
 import { ContextMenuProvider } from './ContextMenuContext';
 
@@ -25,10 +27,14 @@ export default function ContextMenu({
   children,
   className,
 }: ContextMenuProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
+  // Doubles as the floating trigger ref: the wrapper contains both the
+  // trigger area and the panel, so outside-close treats clicks on the
+  // host as inside.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleSetOpen = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
@@ -36,7 +42,7 @@ export default function ContextMenu({
       setOpen(next);
       onOpenChange?.(next);
     },
-    [open, setOpen, onOpenChange],
+    [open, setOpen, onOpenChange]
   );
 
   const setPosition = useCallback((px: number, py: number) => {
@@ -44,20 +50,26 @@ export default function ContextMenu({
     setY(py);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        handleSetOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open, handleSetOpen]);
+  const floating = useFloating({
+    open,
+    setOpen: handleSetOpen,
+    triggerRef: wrapperRef,
+    panelRef: contentRef,
+  });
 
   return (
-    <ContextMenuProvider value={{ open, setOpen: handleSetOpen, x, y, setPosition }}>
-      <div ref={ref} x-class={[wrapper, className]}>
+    <ContextMenuProvider
+      value={{
+        open,
+        setOpen: handleSetOpen,
+        x,
+        y,
+        setPosition,
+        contentRef,
+        floating,
+      }}
+    >
+      <div ref={wrapperRef} x-class={[wrapper, className]}>
         {children}
       </div>
     </ContextMenuProvider>

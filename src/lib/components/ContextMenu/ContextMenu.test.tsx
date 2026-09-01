@@ -104,4 +104,83 @@ describe('ContextMenu', () => {
     await user.click(screen.getByText('Item'));
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it('exposes menu semantics when open', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuItem>Paste</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+  });
+
+  it('moves focus with ArrowDown through items', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuItem>Paste</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(screen.getByText('Copy')).toHaveFocus();
+    fireEvent.keyDown(screen.getByText('Copy'), { key: 'ArrowDown' });
+    expect(screen.getByText('Paste')).toHaveFocus();
+  });
+
+  it('closes on Escape', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem disabled>Paste</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.contextMenu(screen.getByText('Target'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

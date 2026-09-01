@@ -48,7 +48,7 @@ export default function BottomSheet({
   children,
   className,
 }: BottomSheetProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
 
   if (!open) return null;
 

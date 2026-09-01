@@ -27,4 +27,13 @@ describe('CodeBlock', () => {
     const { container } = render(<CodeBlock>hello</CodeBlock>);
     expect(container.querySelector('pre > code')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<CodeBlock language="js">const x = 1;</CodeBlock>);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

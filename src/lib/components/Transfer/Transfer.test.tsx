@@ -92,4 +92,26 @@ describe('Transfer', () => {
     expect(screen.getByText('Source (3)')).toBeInTheDocument();
     expect(screen.getByText('Target (0)')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Transfer dataSource={items} targetKeys={['a']} />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations after moving an item', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Transfer dataSource={items} targetKeys={[]} />);
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(screen.getByRole('button', { name: '>' }));
+    expect(screen.getByText('Target (1)')).toBeInTheDocument();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

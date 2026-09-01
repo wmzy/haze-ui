@@ -220,4 +220,25 @@ describe('Tree', () => {
     await user.click(checkboxes[1]!);
     expect(onCheck).toHaveBeenCalled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Tree treeData={basicData} />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations when a node is expanded and checkable', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(<Tree treeData={basicData} checkable />);
+    await user.click(screen.getByText('parent 0'));
+    expect(screen.getByText('leaf 0-0-0')).toBeInTheDocument();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

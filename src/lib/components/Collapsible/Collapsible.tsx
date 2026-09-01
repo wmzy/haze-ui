@@ -36,7 +36,7 @@ export function Collapsible({
   children,
   className,
 }: CollapsibleProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, defaultOpen);
+  const [open, setOpen] = useControl(openControl, defaultOpen);
   const toggle = () => setOpen((v) => !v);
 
   return (

@@ -80,15 +80,15 @@ export default function Tree({
   onCheck,
 }: TreeProps) {
   const [expandedKeys, setExpandedKeys] = useControl(
-    expandedKeysControl as Control<string[]> | undefined,
+    expandedKeysControl,
     []
   );
   const [selectedKeys, setSelectedKeys] = useControl(
-    selectedKeysControl as Control<string[]> | undefined,
+    selectedKeysControl,
     []
   );
   const [checkedKeysRaw, setCheckedKeysRaw] = useControl(
-    checkedKeysControl as Control<string[]> | undefined,
+    checkedKeysControl,
     []
   );
 

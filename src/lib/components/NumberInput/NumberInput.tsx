@@ -23,7 +23,7 @@ export default function NumberInput({
   onChange,
   ...rest
 }: NumberInputProps) {
-  const [value, setValue] = useControl(valueControl as Control<number>, 0);
+  const [value, setValue] = useControl(valueControl, 0);
 
   return (
     <NumberInputCore

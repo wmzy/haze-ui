@@ -58,4 +58,20 @@ describe('Icon', () => {
     const { container } = render(<Icon />);
     expect(container.firstChild).toHaveAttribute('aria-hidden', 'true');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <div>
+        <Icon icon={MockSvgIcon} />
+        <button type="button">
+          <Icon><svg /></Icon>Confirm
+        </button>
+      </div>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

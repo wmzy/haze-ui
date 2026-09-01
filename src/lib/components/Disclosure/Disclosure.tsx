@@ -77,7 +77,7 @@ export default function Disclosure({
   className,
   children,
 }: DisclosureProps) {
-  const [open] = useControl(openControl as Control<boolean>, false);
+  const [open] = useControl(openControl, false);
   const ref = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {

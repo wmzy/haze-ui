@@ -26,4 +26,15 @@ describe('Skeleton', () => {
     expect(el.style.width).toBe('50%');
     expect(el.style.height).toBe('2rem');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<Skeleton width={100} height={20} />);
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

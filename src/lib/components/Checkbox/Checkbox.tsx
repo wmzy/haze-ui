@@ -18,7 +18,7 @@ export default function Checkbox({
   ...rest
 }: CheckboxProps) {
   const [checked, setChecked] = useControl(
-    checkedControl as Control<boolean>,
+    checkedControl,
     false
   );
 

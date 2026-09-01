@@ -54,7 +54,7 @@ export default function InlineEdit({
   disabled,
   className,
 }: InlineEditProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +95,7 @@ export default function InlineEdit({
       <input
         ref={inputRef}
         x-class={[editing, className]}
+        aria-label={placeholder}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}

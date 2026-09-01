@@ -59,4 +59,21 @@ describe('Stepper', () => {
     );
     expect(screen.getByText('Details')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Stepper activeStep={1}>
+        <Step title="Cart" />
+        <Step title="Payment" description="Card details" />
+        <Step title="Done" />
+      </Stepper>
+    );
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

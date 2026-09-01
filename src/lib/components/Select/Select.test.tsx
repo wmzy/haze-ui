@@ -80,6 +80,26 @@ describe('Select', () => {
     );
     expect(screen.getByRole('combobox')).toBeDisabled();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Select aria-label="fruit">
+        <option value="apple">Apple</option>
+        <option value="banana">Banana</option>
+      </Select>
+    );
+    // Native <select> renders no extra DOM when open, so the "open" state
+    // is exercised by making a selection before scanning.
+    await user.selectOptions(screen.getByRole('combobox'), 'banana');
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('SelectCore', () => {

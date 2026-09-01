@@ -34,7 +34,7 @@ export default function TagInput({
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedby,
 }: TagInputProps) {
-  const [tags, setTags] = useControl(valueControl as Control<string[]>, []);
+  const [tags, setTags] = useControl(valueControl, []);
 
   return (
     <TagInputCore

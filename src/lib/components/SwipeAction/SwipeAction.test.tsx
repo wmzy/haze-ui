@@ -98,4 +98,17 @@ describe('SwipeAction', () => {
     await user.pointer([{ target: content, coords: { clientX: 500 } }]);
     expect(content).toHaveStyle({ transform: 'translateX(0px)' });
   });
+
+  it('has no axe violations with actions on both sides', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <SwipeAction left={<span>Delete</span>} right={<span>Archive</span>}>
+        Content
+      </SwipeAction>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

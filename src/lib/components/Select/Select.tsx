@@ -19,7 +19,7 @@ export default function Select({
   onChange,
   ...rest
 }: SelectProps) {
-  const [value, setValue] = useControl(valueControl as Control<string>, '');
+  const [value, setValue] = useControl(valueControl, '');
 
   return (
     <SelectCore

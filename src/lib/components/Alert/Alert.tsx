@@ -86,7 +86,7 @@ export default function Alert({
   className,
   children,
 }: AlertProps) {
-  const [visible, setVisible] = useControl(visibleControl as Control<boolean>, true);
+  const [visible, setVisible] = useControl(visibleControl, true);
 
   if (!visible) return null;
 

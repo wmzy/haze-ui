@@ -95,4 +95,22 @@ describe('ToastContainer + useToast', () => {
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByText('Temp')).not.toBeInTheDocument();
   });
+
+  it('has no axe violations while a toast is shown', async () => {
+    const { axe } = await import('jest-axe');
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer>{children}</ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('Saved successfully', { variant: 'success', duration: 0 });
+    });
+
+    expect(await screen.findByText('Saved successfully')).toBeInTheDocument();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

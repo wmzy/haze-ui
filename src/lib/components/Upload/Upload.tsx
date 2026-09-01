@@ -93,6 +93,9 @@ export default function Upload({
         accept={accept}
         multiple={multiple}
         onChange={handleChange}
+        // implementation detail of the dropzone (role="button"): hide it
+        // from a11y tree and tab order; input.click() still opens the dialog
+        hidden
       />
       {children || (
         <>

@@ -108,4 +108,17 @@ describe('Dialog', () => {
     });
     expect(opener).toHaveFocus();
   });
+
+  it('has no axe violations when open', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Dialog open title="Confirm action">
+        <p>Dialog body</p>
+      </Dialog>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

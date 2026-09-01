@@ -54,7 +54,7 @@ export default function Dialog({
   className,
   children,
 }: DialogProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
   const ref = useRef<HTMLDialogElement>(null);
   // 打开前的焦点元素（打开者）。showModal 会把焦点移进 dialog，原生关闭
   // 后浏览器只回落到 body——键盘用户会“迷路”，所以这里记下并主动归还。

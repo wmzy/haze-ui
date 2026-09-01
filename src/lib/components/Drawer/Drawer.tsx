@@ -67,7 +67,7 @@ export default function Drawer({
   className,
   children,
 }: DrawerProps) {
-  const [open, setOpen] = useControl(openControl as Control<boolean>, false);
+  const [open, setOpen] = useControl(openControl, false);
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {

@@ -54,4 +54,20 @@ describe('VirtualList', () => {
     const el = container.firstChild as HTMLElement;
     expect(el.style.height).toBe('300px');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <VirtualList
+        items={items}
+        height={200}
+        itemHeight={40}
+        renderItem={(item) => <div>{item}</div>}
+      />,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

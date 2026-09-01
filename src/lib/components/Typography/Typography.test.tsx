@@ -67,4 +67,19 @@ describe('Paragraph', () => {
     render(<Paragraph className="custom">x</Paragraph>);
     expect(screen.getByText('x')).toHaveClass('custom');
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Title>Hello</Title>
+        <Text type="secondary">secondary text</Text>
+        <Paragraph>paragraph body</Paragraph>
+      </>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

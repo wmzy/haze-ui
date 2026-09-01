@@ -18,7 +18,7 @@ export default function ColorPicker({
   className,
 }: ColorPickerProps) {
   const [value, setValue] = useControl(
-    valueControl as Control<string>,
+    valueControl,
     '#000000'
   );
 

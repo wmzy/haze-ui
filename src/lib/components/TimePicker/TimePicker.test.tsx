@@ -33,6 +33,15 @@ describe('TimePicker', () => {
     const { container } = render(<TimePicker placeholder="Select time" />);
     expect(container.querySelector('input[placeholder="Select time"]')).toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(<TimePicker aria-label="Start time" value="14:30" />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });
 
 describe('TimePickerCore', () => {
