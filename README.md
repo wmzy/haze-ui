@@ -114,6 +114,46 @@ function ProfileForm() {
 surfaces the first error in a `role="alert"` element — no manual
 `FieldError` wiring.
 
+#### `as`: declarative binding (react-f0rm Field-style)
+
+Skip the render-prop: pass any component as `as` and `FormItem` wires the
+id, aria attributes, `onBlur` and `onChange` itself — the same props shape
+as react-f0rm's `Field`, not Radix's `asChild`. `as` and the children
+render-prop are mutually exclusive.
+
+```jsx
+// text field: nothing else to wire
+<FormItem form={form} name="email" label="Email" as={InputCore} />
+
+// checkbox-style control: value lives in `checked`
+<FormItem
+  form={form}
+  name="subscribed"
+  label="Subscribe"
+  as={CheckboxCore}
+  valueToProps={(checked) => ({ checked: !!checked })}
+/>
+
+// DOM-element-shaped control: adapt event and value in one line each
+<FormItem
+  form={form}
+  name="email"
+  as={NativeInput}
+  eventToValue={(e) => e.target.value}
+  renderError={(error, id) => <em id={id}>{error}</em>}
+/>
+```
+
+- `eventToValue` defaults to identity — haze cores' `onChange` emits the
+  next plain value; pass `(e) => e.target.value` when `as` is a raw DOM
+  element component.
+- `asProps` spreads extra props onto the control before the value props,
+  so `value`/`valueToProps` win conflicts (Field.tsx precedence).
+- `renderError(error, id)` replaces the built-in error span's content;
+  the span itself (`id`, `role="alert"`, styling) stays FormItem's.
+- With a typed form, `validate`'s value argument is the field's actual
+  type (`PathValueOf<TValues, P>`), not `any`.
+
 #### `mode`: per-field validation timing (react-f0rm ≥ 0.6)
 
 Pass `mode` to validate one field on its own schedule instead of the
@@ -199,3 +239,26 @@ Anyone and everyone is welcome to contribute.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## FAQ
+
+### Components render without any styles
+
+haze-ui ships styles as separate CSS subpaths — the JS entry does not
+import any stylesheet. Import the full bundle once:
+
+```js
+import 'haze-ui/styles.css';
+```
+
+or import the tokens plus each component's own rules:
+
+```js
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css';
+```
+
+### Is there a CommonJS build?
+
+No — haze-ui is ESM-only (`"type": "module"`). Use a bundler or runtime
+with ESM support (Vite, webpack 5, Next.js, Node ≥ 18, …).

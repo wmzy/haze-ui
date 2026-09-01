@@ -108,6 +108,44 @@ function ProfileForm() {
 `FormItem` 生成字段/错误的 id、渲染 `<label htmlFor>`，并把首个错误渲染进
 `role="alert"` 元素——无需手挂 `FieldError`。
 
+### `as`：声明式绑定（react-f0rm Field 风格）
+
+不想写渲染函数时，把组件直接传给 `as`，`FormItem` 自动接好 id、aria、
+`onBlur` 和 `onChange`——props 形态对齐 react-f0rm 的 `Field`，而非 Radix
+的 `asChild`。`as` 与 children 渲染函数二选一。
+
+```jsx
+// 文本字段：无需再接任何东西
+<FormItem form={form} name="email" label="Email" as={InputCore} />
+
+// 复选类控件：值在 `checked` 里
+<FormItem
+  form={form}
+  name="subscribed"
+  label="订阅"
+  as={CheckboxCore}
+  valueToProps={(checked) => ({ checked: !!checked })}
+/>
+
+// DOM 元素形态的控件：事件与值各用一行适配
+<FormItem
+  form={form}
+  name="email"
+  as={NativeInput}
+  eventToValue={(e) => e.target.value}
+  renderError={(error, id) => <em id={id}>{error}</em>}
+/>
+```
+
+- `eventToValue` 默认恒等——haze 核心组件的 `onChange` 发出下一个纯值；
+  `as` 是原生 DOM 元素组件时传 `(e) => e.target.value`。
+- `asProps` 在值之前展开到控件上，因此 `value`/`valueToProps` 冲突时优先
+  （与 Field.tsx 一致）。
+- `renderError(error, id)` 替换内置错误 span 的内容；span 本身（id、
+  `role="alert"`、样式）仍由 FormItem 渲染。
+- 携带类型化的表单时，`validate` 的 value 参数是字段的真实类型
+  （`PathValueOf<TValues, P>`），不再是 `any`。
+
 ## 相关项目 
 
 - [react-use-control](https://github.com/wmzy/react-use-control)
@@ -120,3 +158,26 @@ function ProfileForm() {
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+
+## 常见问题
+
+### 组件渲染出来没有样式
+
+haze-ui 的样式通过独立 CSS 子路径发布，JS 入口不内联任何样式文件。
+全量引入一次即可：
+
+```js
+import 'haze-ui/styles.css';
+```
+
+或按组件引入 tokens 与该组件自己的规则：
+
+```js
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css';
+```
+
+### 是否提供 CommonJS 构建？
+
+不提供——haze-ui 仅发布 ESM（`"type": "module"`）。请使用支持 ESM 的
+打包器或运行时（Vite、webpack 5、Next.js、Node ≥ 18 等）。

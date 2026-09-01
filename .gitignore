@@ -23,6 +23,10 @@ tmp
 *.zip
 *.tgz
 
+# Playwright
+/test-results
+/playwright-report
+
 /.nyc_output
 
 /dist

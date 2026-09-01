@@ -12,9 +12,13 @@
  * Components never import each other, so a component dir's CSS is
  * self-contained; tokens are the only shared layer and live in tokens.css.
  * Per-component files therefore require tokens.css (once), not each other.
+ * Shared internal layers under src/lib/utils (the floating primitives) are
+ * the one exception: their CSS is inlined into every consuming component's
+ * file so those files stay self-contained too.
  *
  * Invariants enforced at the end (non-zero exit on failure):
- *   - every `.wyw-in-js.css` file is covered by exactly one group
+ *   - every `.wyw-in-js.css` file is covered by at least one group
+ *     (shared layers intentionally ride along with several)
  *   - the aggregate's class-name set equals the union of module CSS
  *   - no dangling `.wyw-in-js.css` import/require survives in dist JS —
  *     the styles are carried by `haze-ui/styles.css` / `haze-ui/css/*`,
@@ -52,6 +56,23 @@ if (moduleCssFiles.length === 0) {
   process.exit(1);
 }
 
+// Shared internal layers under src/lib/utils: their CSS must ride along
+// with every consuming component group, or per-component files such as
+// css/popover.css would carry only the visual skin without the floating
+// positioning classes. Key = module path below dist (no extension);
+// value = consuming css group names.
+const sharedLayers = {
+  'utils/floating': [
+    'combobox',
+    'context-menu',
+    'datepicker',
+    'dropdown-menu',
+    'menu',
+    'popover',
+    'tooltip',
+  ],
+};
+
 // Map output name -> list of module css paths (relative to dist/).
 const groups = new Map();
 for (const rel of moduleCssFiles) {
@@ -63,12 +84,28 @@ for (const rel of moduleCssFiles) {
     name = kebab(segments[1]);
   } else if (segments[0] === 'form') {
     name = 'form';
+  } else if (segments[0] === 'utils') {
+    // Handled below via sharedLayers.
+    continue;
   } else {
     console.error(`split-css: unexpected module CSS location ${rel}`);
     process.exit(1);
   }
   if (!groups.has(name)) groups.set(name, []);
   groups.get(name).push(rel);
+}
+
+// Inline each shared layer's CSS into its consumer groups.
+for (const [key, consumers] of Object.entries(sharedLayers)) {
+  const rel = `${key}.wyw-in-js.css`;
+  if (!moduleCssFiles.includes(rel)) {
+    console.error(`split-css: shared layer ${key} emitted no module CSS — stale sharedLayers entry?`);
+    process.exit(1);
+  }
+  for (const name of consumers) {
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(rel);
+  }
 }
 
 const read = (rel) => readFileSync(path.join(distDir, rel), 'utf8').trim();
