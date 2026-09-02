@@ -1,6 +1,15 @@
-import type {ChangeEvent, ReactNode} from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  ChangeEvent,
+  ReactNode
+} from 'react';
 
-import type {FieldValidator, FormInstance, FormItemBinding} from './index';
+import type {
+  FieldValidator,
+  FormInstance,
+  FormItemBinding,
+  FormItemRawElementBinding
+} from './index';
 
 import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -16,6 +25,12 @@ import {FormItem} from '.';
 
 
 type Profile = {name: string; email: string};
+
+/** A DOM-element-shaped control: forwards everything to a raw `<input>`,
+ * so its `onChange` emits the DOM event, not the next plain value. */
+function NativeInput(props: ComponentPropsWithoutRef<'input'>) {
+  return <input data-testid='native-input' {...props} />;
+}
 
 describe('FormItem', () => {
   function renderEmailItem(form: FormInstance<Profile>, extra?: object) {
@@ -710,6 +725,136 @@ describe('FormItem', () => {
     expect(checkbox).not.toBeChecked();
   });
 
+  it("input={element: 'input'}: raw native input wires the same bridge two-way", async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+          type='email'
+          placeholder='you@x.dev'
+          maxLength={16}
+          validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+        />
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    const input = screen.getByPlaceholderText('you@x.dev');
+    // forwarded element attributes reach the native input untouched
+    expect(input).toHaveAttribute('type', 'email');
+    expect(input).toHaveAttribute('maxlength', '16');
+    // the label points at the native element the binding rendered
+    expect(screen.getByText('Email')).toHaveAttribute('for', input.id);
+
+    // failed submit lights the same declarative aria chain as the cores
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('must be an email');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', alert.id);
+
+    // typing extracts the value through the binding's own adapter
+    await user.type(input, 'a@b.c');
+    expect(getValue(form, 'email')).toBe('a@b.c');
+    expect(input).toHaveValue('a@b.c');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(input).not.toHaveAttribute('aria-invalid');
+
+    // …and store writes flow back into the native element
+    act(() => setValue(form, 'email', 'back@flow.dev'));
+    expect(input).toHaveValue('back@flow.dev');
+  });
+
+  it("input={element: 'textarea' | 'select'}: element attrs forward, options render as children", async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {bio: '', role: 'viewer'}});
+
+    render(
+      <>
+        <FormItem
+          form={form}
+          name='bio'
+          label='Bio'
+          input={{element: 'textarea', eventToValue: (e: ChangeEvent<HTMLTextAreaElement>) => e.target.value}}
+          rows={4}
+        />
+        <FormItem
+          form={form}
+          name='role'
+          label='Role'
+          input={{element: 'select', eventToValue: (e: ChangeEvent<HTMLSelectElement>) => e.target.value}}
+        >
+          <option value='admin'>Admin</option>
+          <option value='maintainer'>Maintainer</option>
+          <option value='viewer'>Viewer</option>
+        </FormItem>
+      </>
+    );
+
+    const bio = screen.getByLabelText('Bio');
+    expect(bio).toHaveAttribute('rows', '4');
+    await user.type(bio, 'hello');
+    expect(getValue(form, 'bio')).toBe('hello');
+    act(() => setValue(form, 'bio', 'back'));
+    expect(bio).toHaveValue('back');
+
+    const select = screen.getByLabelText('Role');
+    expect(select).toHaveValue('viewer');
+    expect(screen.getByRole('option', {name: 'Maintainer'})).toBeInTheDocument();
+    await user.selectOptions(select, 'admin');
+    expect(getValue(form, 'role')).toBe('admin');
+    act(() => setValue(form, 'role', 'maintainer'));
+    expect(select).toHaveValue('maintainer');
+  });
+
+  it('input + eventToValue opts a DOM-element-shaped component into raw semantics', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {email: ''}});
+
+    render(
+      <FormItem
+        form={form}
+        name='email'
+        label='Email'
+        input={NativeInput}
+        eventToValue={(e: ChangeEvent<HTMLInputElement>) => e.target.value}
+        placeholder='native'
+      />
+    );
+
+    const input = screen.getByTestId('native-input');
+    expect(screen.getByText('Email')).toHaveAttribute('for', input.id);
+    await user.type(input, 'x@y.z');
+    expect(getValue(form, 'email')).toBe('x@y.z');
+    act(() => setValue(form, 'email', 'back@flow.dev'));
+    expect(input).toHaveValue('back@flow.dev');
+  });
+
+  it('a raw element binding without eventToValue still extracts target.value (untyped callers)', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {email: ''}});
+
+    render(
+      <FormItem
+        form={form}
+        name='email'
+        label='Email'
+        // typed callers cannot build this (the binding requires its
+        // adapter) — reach it the way an untyped caller would
+        input={{element: 'input'} as unknown as FormItemRawElementBinding}
+      />
+    );
+
+    await user.type(screen.getByLabelText('Email'), 'a@b.c');
+    expect(getValue(form, 'email')).toBe('a@b.c');
+  });
+
   it('input rejects the render-prop children at runtime (mutually exclusive)', () => {
     const form = createForm({initialValues: {email: ''}});
     // a migration leftover: the render-prop kept next to `input` — typed
@@ -726,6 +871,19 @@ describe('FormItem', () => {
       render(
         <FormItem form={form} name='email' input={InputCore}>
           {legacyRenderProp as unknown as ReactNode}
+        </FormItem>
+      )
+    ).toThrow(/mutually exclusive/);
+
+    // the raw element binding is a full `input` form — same exclusion
+    expect(() =>
+      render(
+        <FormItem
+          form={form}
+          name='email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+        >
+          {(() => null) as unknown as ReactNode}
         </FormItem>
       )
     ).toThrow(/mutually exclusive/);
@@ -760,6 +918,95 @@ describe('FormItem', () => {
           placeholder='nope'
         >
           {() => null}
+        </FormItem>
+      </>
+    );
+    expect(element).toBeTruthy();
+  });
+
+  it('input raw bindings: adapter required, element attrs checked, wired props reserved', () => {
+    const form = createForm({initialValues: {bio: '', email: '', role: ''}});
+    const element = (
+      <>
+        {/* raw element: forwarded props check against the element's own
+            attributes, per element */}
+        <FormItem
+          form={form}
+          name='email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+          type='email'
+          placeholder='x'
+        />
+        <FormItem
+          form={form}
+          name='bio'
+          input={{element: 'textarea', eventToValue: (e: ChangeEvent<HTMLTextAreaElement>) => e.target.value}}
+          rows={4}
+        />
+        {/* raw component: the top-level eventToValue is the explicit
+            opt-in from plain-value (core) to event-emitting (raw) */}
+        <FormItem
+          form={form}
+          name='email'
+          input={NativeInput}
+          eventToValue={(e: ChangeEvent<HTMLInputElement>) => e.target.value}
+          placeholder='x'
+        />
+        {/* the raw element binding requires its own adapter */}
+        <FormItem
+          form={form}
+          name='email'
+          // @ts-expect-error eventToValue is required in the binding object
+          input={{element: 'input'}}
+          placeholder='x'
+        />
+        {/* forwarded props check against the element's attributes */}
+        <FormItem
+          form={form}
+          name='email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+          // @ts-expect-error not an <input> attribute
+          badProp='x'
+        />
+        <FormItem
+          form={form}
+          name='bio'
+          input={{element: 'textarea', eventToValue: (e: ChangeEvent<HTMLTextAreaElement>) => e.target.value}}
+          // @ts-expect-error list is not a <textarea> attribute
+          list='datalist-id'
+        />
+        {/* wired props stay reserved on the raw channel */}
+        <FormItem
+          form={form}
+          name='email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+          // @ts-expect-error onChange is wired by the bridge, not forwarded
+          onChange={() => 'x'}
+        />
+        {/* only the three form elements are raw-bindable */}
+        <FormItem
+          form={form}
+          name='email'
+          // @ts-expect-error 'text' is not a raw element name
+          input={{element: 'text', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+        />
+        {/* the adapter lives in the binding, not at the top level */}
+        {/* @ts-expect-error pick one adapter slot, not both */}
+        <FormItem
+          form={form}
+          name='email'
+          input={{element: 'input', eventToValue: (e: ChangeEvent<HTMLInputElement>) => e.target.value}}
+          eventToValue={(e: ChangeEvent<HTMLInputElement>) => e.target.value}
+        />
+        {/* per-element attrs: maxLength is not a <select> attribute */}
+        <FormItem
+          form={form}
+          name='role'
+          input={{element: 'select', eventToValue: (e: ChangeEvent<HTMLSelectElement>) => e.target.value}}
+          // @ts-expect-error maxLength is not a <select> attribute
+          maxLength={3}
+        >
+          <option value='admin'>Admin</option>
         </FormItem>
       </>
     );

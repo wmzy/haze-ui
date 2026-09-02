@@ -221,6 +221,8 @@ export type {
   FormItemBinding,
   FormItemOwnProps,
   FormItemProps,
+  FormItemRawElement,
+  FormItemRawElementBinding,
   FormInstance,
   PathValueOf,
 } from './form';

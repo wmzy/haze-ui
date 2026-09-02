@@ -1,4 +1,8 @@
-import type {ComponentType, ReactNode} from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  ComponentType,
+  ReactNode
+} from 'react';
 
 import type {
   FieldError,
@@ -78,15 +82,39 @@ export type FormItemAsProps = {
    * value props, so `value`/`valueToProps` win conflicts — the same
    * precedence react-f0rm's `Field` uses. */
   asProps?: Record<string, any>;
-  /** Converts what the `as` component passes to its `onChange` into the
-   * field value. Defaults to identity — haze cores' `onChange` emits the
-   * next plain value; pass `(e) => e.target.value` when `as` is a raw
-   * DOM-element component. */
+  /** Converts what the control passes to its `onChange` into the field
+   * value. Defaults to identity — haze cores' `onChange` emits the next
+   * plain value; pass `(e) => e.target.value` when the control is
+   * DOM-element-shaped (a raw `as` component, or a raw component on the
+   * `input` channel, where passing the adapter is also the explicit
+   * opt-in from core to raw semantics). */
   eventToValue?: (e: any) => any;
   /** Derives the value props for the `as` component from the field value —
    * e.g. `(checked) => ({checked})` for `CheckboxCore`. Defaults to
    * passing `{value}`. */
   valueToProps?: (value: any) => Record<string, any>;
+};
+
+/**
+ * The raw DOM form elements `FormItem`'s `input` channel accepts by tag
+ * name. Their `onChange` emits a DOM event, not a plain value, so the
+ * binding always carries its own `eventToValue` adapter — see
+ * `FormItemRawElementBinding`.
+ */
+export type FormItemRawElement = 'input' | 'textarea' | 'select';
+
+/**
+ * Raw-DOM binding for `FormItem`'s `input` channel — the explicit raw
+ * counterpart of passing a core component: a native form element by tag
+ * name, paired with the `eventToValue` adapter that extracts the next
+ * value from the DOM event. Every other JSX prop forwards to the
+ * element, type-checked against that element's own HTML attributes.
+ */
+export type FormItemRawElementBinding<
+  TRawElement extends FormItemRawElement = FormItemRawElement
+> = {
+  element: TRawElement;
+  eventToValue: (e: any) => any;
 };
 
 /** FormItem's own, non-polymorphic props — everything the item itself
@@ -135,7 +163,7 @@ export type FormItemOwnProps<
 
 /**
  * Props FormItem wires itself onto an `input`/`as` control — the bridge's
- * own contract. Used to keep them out of `input`'s forwarded rest props
+ * own contract. Used to keep them out of the forwarded rest props
  * (type level) and to document that they always win (runtime level):
  * passing one anyway is a compile error, never a silent override.
  */
@@ -151,39 +179,69 @@ type FormItemWiredProps = {
   'aria-describedby'?: unknown;
 };
 
+/**
+ * Prop names the bridge owns or wires — excluded from the forwarded rest
+ * props on every channel (core component, raw element, `as`).
+ */
+type FormItemReservedProps<
+  TValues extends Record<string, any> = any,
+  P extends FieldPath<TValues> | Name = Name
+> =
+  | keyof FormItemOwnProps<TValues, P>
+  | keyof FormItemAsProps
+  | keyof FormItemWiredProps
+  | 'input';
+
 export type FormItemProps<
   TValues extends Record<string, any> = any,
   P extends FieldPath<TValues> | Name = Name,
-  TInputProps extends Record<string, any> = Record<never, never>
+  TInputProps extends Record<string, any> = Record<never, never>,
+  TRawElement extends FormItemRawElement = never
 > = FormItemOwnProps<TValues, P> &
-  FormItemAsProps & {
+  Omit<FormItemAsProps, 'eventToValue'> & {
     /**
-     * Declarative binding for haze-ui cores: pass the component
-     * (`InputCore`, `TextareaCore`, `TagInputCore`, `SelectCore`,
-     * `CheckboxCore`, …) and FormItem wires `id`, `aria-invalid`,
-     * `aria-describedby`, `onBlur`, `onChange` and the value channel
-     * itself. Every other prop — and JSX children (a `SelectCore`'s
-     * `<option>`s) — is forwarded to the component, fully type-checked
-     * against its own props. Cores' `onChange` emits the next plain value
-     * (identity `eventToValue`); checkbox-style controls pair with
-     * `valueToProps={(checked) => ({checked})}`. Props FormItem owns or
-     * wires (label, className, id, aria-*, onBlur, onChange, value,
-     * checked, …) are reserved and cannot be forwarded — use the
-     * render-prop or `as`/`asProps` for a colliding control prop.
+     * Declarative binding for the field control, in two forms:
+     *
+     * - a component (`InputCore`, `TextareaCore`, `TagInputCore`,
+     *   `SelectCore`, `CheckboxCore`, …, or any DOM-element-shaped
+     *   component): FormItem wires `id`, `aria-invalid`,
+     *   `aria-describedby`, `onBlur`, `onChange` and the value channel
+     *   itself. Haze cores' `onChange` emits the next plain value
+     *   (identity `eventToValue`); checkbox-style controls pair with
+     *   `valueToProps={(checked) => ({checked})}`. A DOM-element-shaped
+     *   component opts into raw semantics by passing `eventToValue`
+     *   (e.g. `(e) => e.target.value`) — the adapter's presence is the
+     *   explicit switch from value-direct to event-emitting.
+     * - a `FormItemRawElementBinding` — `{element: 'input' |
+     *   'textarea' | 'select', eventToValue}` — for a native DOM
+     *   element: same wiring, value extracted from the DOM event by the
+     *   required adapter (the top-level `eventToValue` is not this
+     *   form's slot).
+     *
+     * Every other prop — and JSX children (a `SelectCore`'s
+     * `<option>`s) — is forwarded to the control, fully type-checked
+     * against its own props (the component's, or the raw element's HTML
+     * attributes). Props FormItem owns or wires (label, className, id,
+     * aria-*, onBlur, onChange, value, checked, …) are reserved and
+     * cannot be forwarded — use the render-prop or `as`/`asProps` for a
+     * colliding control prop.
      */
-    input?: ComponentType<TInputProps>;
-  } & Omit<
-      TInputProps,
-      | keyof FormItemOwnProps<TValues, P>
-      | keyof FormItemAsProps
-      | keyof FormItemWiredProps
-      | 'input'
-    > &
+    input?: ComponentType<TInputProps> | FormItemRawElementBinding<TRawElement>;
+  } &
+  ([TRawElement] extends [never]
+    ? Omit<TInputProps, FormItemReservedProps<TValues, P>>
+    : Omit<ComponentPropsWithoutRef<TRawElement>, FormItemReservedProps<TValues, P>>) &
   (
-    | {as: ComponentType<any>; input?: never; children?: never}
+    | {
+        as: ComponentType<any>;
+        input?: never;
+        children?: never;
+        eventToValue?: FormItemAsProps['eventToValue'];
+      }
     | {
         as?: undefined;
         input: ComponentType<TInputProps>;
+        eventToValue?: FormItemAsProps['eventToValue'];
         /** JSX children forward to the control (SelectCore's options);
          * the render-prop form is mutually exclusive with `input`. */
         children?: 'children' extends keyof TInputProps
@@ -192,7 +250,17 @@ export type FormItemProps<
       }
     | {
         as?: undefined;
+        input: FormItemRawElementBinding<TRawElement>;
+        /** the raw element binding carries its own `eventToValue` — the
+         * top-level prop is not accepted next to it */
+        eventToValue?: never;
+        /** JSX children forward to the element (a select's options). */
+        children?: ReactNode;
+      }
+    | {
+        as?: undefined;
         input?: undefined;
+        eventToValue?: never;
         children: (binding: FormItemBinding<TValues, P>) => ReactNode;
       }
   );
@@ -270,6 +338,29 @@ const errorText = css`
  * collides (CheckboxCore's `label`) needs the render-prop or
  * `as`/`asProps` channel.
  *
+ * `input` also accepts raw DOM bindings — no core required:
+ *
+ * ```tsx
+ * // a native element: the binding carries its own eventToValue, and the
+ * // rest of the JSX is type-checked against that element's attributes
+ * <FormItem
+ *   form={form}
+ *   name='email'
+ *   input={{element: 'input', eventToValue: (e) => e.target.value}}
+ *   type='email'
+ *   placeholder='Email'
+ * />
+ *
+ * // a DOM-element-shaped component: the top-level eventToValue is the
+ * // explicit opt-in from plain-value (core) to event-emitting (raw)
+ * <FormItem
+ *   form={form}
+ *   name='email'
+ *   input={NativeInput}
+ *   eventToValue={(e) => e.target.value}
+ * />
+ * ```
+ *
  * When the field has errors, the first error's message is rendered into a
  * `<span id={errorId} role='alert'>` next to the control; with no errors
  * no extra element is rendered.
@@ -277,7 +368,8 @@ const errorText = css`
 export default function FormItem<
   TValues extends Record<string, any> = any,
   P extends FieldPath<TValues> | Name = Name,
-  TInputProps extends Record<string, any> = Record<never, never>
+  TInputProps extends Record<string, any> = Record<never, never>,
+  TRawElement extends FormItemRawElement = never
 >({
   form,
   name,
@@ -296,7 +388,7 @@ export default function FormItem<
   valueToProps,
   children,
   ...inputProps
-}: FormItemProps<TValues, P, TInputProps>) {
+}: FormItemProps<TValues, P, TInputProps, TRawElement>) {
   const generatedId = useId();
   const id = `haze-field-${generatedId}`;
   const errorId = `${id}-error`;
@@ -315,10 +407,26 @@ export default function FormItem<
   });
   const invalid = errors.length > 0;
 
-  // Identity by default: haze cores' onChange emits the next plain value.
-  // A raw DOM-element `as` passes the event instead — adapt it with
-  // `eventToValue={(e) => e.target.value}`.
-  const toValue: (e: any) => any = eventToValue ?? ((e: unknown) => e);
+  // The raw element binding carries its own adapter; a bare component
+  // falls back to the top-level `eventToValue` (the explicit raw opt-in
+  // for a DOM-element-shaped component). Identity otherwise: haze cores'
+  // onChange emits the next plain value. The `element` key discriminates
+  // the binding from object-shaped components (memo/forwardRef).
+  const rawBinding =
+    Input && typeof Input === 'object' && 'element' in Input
+      ? (Input as FormItemRawElementBinding)
+      : undefined;
+
+  // A raw element binding without its adapter is a type error; an
+  // untyped caller that skips it anyway still gets the DOM contract —
+  // all three supported elements carry the next value on
+  // `event.target.value` (typed structurally) — instead of an Event
+  // object in the store.
+  const targetValue = (e: {target?: {value?: unknown}}) => e.target?.value;
+  const toValue: (e: any) => any =
+    rawBinding?.eventToValue ??
+    eventToValue ??
+    (rawBinding ? targetValue : (e: unknown) => e);
 
   // `input` and the render-prop children are mutually exclusive (types
   // enforce it; this guards untyped callers). A render-prop next to an
@@ -333,8 +441,11 @@ export default function FormItem<
   // JSX on a bare type parameter trips overload resolution (children of
   // `(IntrinsicAttributes & TInputProps)["children"]`); render through a
   // permissive view of the component — the call-site types live on
-  // FormItemProps, not here.
-  const InputComponent = Input as ComponentType<Record<string, any>> | undefined;
+  // FormItemProps, not here. A raw binding's `element` is a tag name,
+  // which JSX accepts as the element type directly.
+  const InputComponent = (
+    rawBinding ? rawBinding.element : Input
+  ) as ComponentType<Record<string, any>> | FormItemRawElement | undefined;
 
   return (
     <div x-class={[item, className]}>

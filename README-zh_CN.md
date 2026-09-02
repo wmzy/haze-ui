@@ -177,7 +177,7 @@ function ProfileForm() {
 - 携带类型化的表单时，`validate` 的 value 参数是字段的真实类型
   （`PathValueOf<TValues, P>`），不再是 `any`。
 
-### `input`：面向 haze 核心组件的声明式绑定（类型化透传）
+### `input`：面向 haze 核心组件与原生 DOM 控件的声明式绑定（类型化透传）
 
 受控核心组件的顺手形态——直接传组件引用，其余 JSX 属性原样透传，并按
 组件自己的 props 做编译期校验：
@@ -224,6 +224,41 @@ haze 核心组件（`InputCore`、`TextareaCore`、`SelectCore`、
   `onChange`、`value`/`checked`）与 FormItem 自己的属性名**保留**：类型上
   从透传面剔除、运行时恒定优先。与控件属性撞名的（如 CheckboxCore 自己
   的 `label`）经 `input` 不可达——请改用渲染函数或 `as`/`asProps`。
+
+`input` 同样接受原生 DOM 绑定——无需核心组件。两种 raw 形态都显式携带
+`eventToValue` 适配器，值通道从不靠猜：
+
+```jsx
+// 原生表单元素：绑定对象把标签名和适配器配成一对，其余 JSX 属性
+// 按该元素自己的 HTML 属性做类型校验（textarea 的 rows、select 的
+// option children）
+<FormItem
+  form={form}
+  name="bio"
+  label="简介"
+  input={{element: 'textarea', eventToValue: (e) => e.target.value}}
+  rows={4}
+/>
+
+// DOM 元素形态的组件：顶层 eventToValue 就是从纯值（核心）切到事件
+// 语义（raw）的显式开关
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  input={NativeInput}
+  eventToValue={(e) => e.target.value}
+/>
+```
+
+- 元素绑定接受 `'input' | 'textarea' | 'select'`，且**必须**携带
+  `eventToValue`——缺适配器的 `input={{element: 'input'}}` 是编译错误
+  （运行时未类型调用方漏传时也按 DOM 契约取 `e.target.value`，绝不把
+  Event 对象写进 store）。
+- 组件旁的顶层 `eventToValue` 把该绑定切到 raw 语义，与 `as` 通道一致；
+  透传属性仍按组件自己的 props 校验。
+- 保留属性规则同样生效：`id`、`onBlur`、`onChange`、`value`/`checked`、
+  aria-* 与 FormItem 自己的属性名在 raw 通道上同样不可透传。
 
 ## 相关项目 
 

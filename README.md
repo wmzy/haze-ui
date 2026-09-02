@@ -190,7 +190,7 @@ render-prop are mutually exclusive.
 - With a typed form, `validate`'s value argument is the field's actual
   type (`PathValueOf<TValues, P>`), not `any`.
 
-#### `input`: declarative binding for haze-ui cores (typed prop forwarding)
+#### `input`: declarative binding for cores and raw DOM controls (typed prop forwarding)
 
 The ergonomic form for the controlled cores — pass the component and the
 rest of the JSX goes straight to it, type-checked against its own props:
@@ -242,6 +242,45 @@ checkbox-style core pairs with `valueToProps`). The differences from
   at runtime. A control prop that collides with one (e.g. CheckboxCore's
   own `label`) is unreachable through `input` — use the render-prop or
   `as`/`asProps` for it.
+
+`input` also takes raw DOM bindings — no core required. The two raw
+forms are explicit about their `eventToValue` adapter, so the value
+channel is never guessed:
+
+```jsx
+// a native form element: the binding pairs the tag with its adapter,
+// and the rest of the JSX is type-checked against that element's own
+// HTML attributes (rows on a textarea, options as a select's children)
+<FormItem
+  form={form}
+  name="bio"
+  label="Bio"
+  input={{element: 'textarea', eventToValue: (e) => e.target.value}}
+  rows={4}
+/>
+
+// a DOM-element-shaped component: the top-level eventToValue is the
+// explicit opt-in from plain-value (core) to event-emitting (raw)
+<FormItem
+  form={form}
+  name="email"
+  label="Email"
+  input={NativeInput}
+  eventToValue={(e) => e.target.value}
+/>
+```
+
+- The element binding accepts `'input' | 'textarea' | 'select'` and
+  **requires** its `eventToValue` — `input={{element: 'input'}}` without
+  the adapter is a compile error (at runtime an untyped caller that
+  skips it still gets `e.target.value`, the DOM contract, never an Event
+  in the store).
+- The top-level `eventToValue` next to a component `input` switches that
+  binding to raw semantics, mirroring the `as` channel; forwarded props
+  still check against the component's own props.
+- The same reserved-prop rule applies: `id`, `onBlur`, `onChange`,
+  `value`/`checked`, aria-*, and FormItem's own names are never
+  forwarded on the raw channel either.
 
 #### `mode`: per-field validation timing (react-f0rm ≥ 0.6)
 

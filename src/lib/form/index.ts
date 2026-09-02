@@ -4,6 +4,8 @@ export type {
   FormItemAsProps,
   FormItemBinding,
   FormItemOwnProps,
-  FormItemProps
+  FormItemProps,
+  FormItemRawElement,
+  FormItemRawElementBinding
 } from './FormItem';
 export type {FormInstance, PathValueOf} from 'react-f0rm';
