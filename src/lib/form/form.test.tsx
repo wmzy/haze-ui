@@ -20,6 +20,8 @@ import {CheckboxCore} from '../components/Checkbox';
 import {InputCore} from '../components/Input';
 import {SelectCore} from '../components/Select';
 import {TagInputCore} from '../components/TagInput';
+import {TransferCore} from '../components/Transfer';
+import {UploadCore} from '../components/Upload';
 
 import {FormItem} from '.';
 
@@ -696,6 +698,90 @@ describe('FormItem', () => {
     expect(alert).toHaveTextContent('at least one tag');
     expect(inner).toHaveAttribute('aria-invalid', 'true');
     expect(inner).toHaveAttribute('aria-describedby', alert.id);
+  });
+
+  it('input={TransferCore}: string[] target keys two-way bound, aria chain on the root', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {members: [] as string[]}});
+
+    render(
+      <FormItem
+        form={form}
+        name='members'
+        label='Members'
+        input={TransferCore}
+        dataSource={[
+          {key: 'a', title: 'Alice'},
+          {key: 'b', title: 'Bob'},
+          {key: 'c', title: 'Carol'}
+        ]}
+        validate={(keys: string[]) =>
+          keys.length > 0 ? undefined : 'pick at least one member'
+        }
+      />
+    );
+
+    // seeded empty value renders all items on the source side
+    expect(screen.getByText('Source (3)')).toBeInTheDocument();
+    expect(screen.getByText('Target (0)')).toBeInTheDocument();
+
+    // moving a member writes the plain string[] — no event unwrapping
+    await user.click(screen.getByRole('checkbox', {name: 'Alice'}));
+    await user.click(screen.getByRole('button', {name: '>'}));
+    expect(getValue(form, 'members')).toEqual(['a']);
+
+    // external writes flow back into the panels
+    act(() => setValue(form, 'members', ['a', 'b']));
+    expect(screen.getByText('Source (1)')).toBeInTheDocument();
+    expect(screen.getByText('Target (2)')).toBeInTheDocument();
+
+    // the declarative aria chain reaches the control root once errored
+    act(() => setValue(form, 'members', [], {shouldValidate: true}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('pick at least one member');
+    const control = document.querySelector(
+      `[aria-describedby="${alert.id}"]`
+    );
+    expect(control).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('input={UploadCore}: File[] value channel, label htmlFor reaches the dropzone', async () => {
+    const form = createForm({initialValues: {attachments: [] as File[]}});
+
+    render(
+      <FormItem
+        form={form}
+        name='attachments'
+        label='Attachments'
+        input={UploadCore}
+        multiple
+        validate={(files: File[]) =>
+          files.length > 0 ? undefined : 'at least one file'
+        }
+      />
+    );
+
+    // the dropzone is the focusable root, so the label chain lands on it
+    const dropzone = screen.getByRole('button');
+    expect(screen.getByText('Attachments')).toHaveAttribute(
+      'for',
+      dropzone.getAttribute('id')!
+    );
+
+    // picking files writes the plain File[] — no event unwrapping
+    const input = document.querySelector<HTMLInputElement>(
+      'input[type="file"]'
+    )!;
+    const file = new File(['hello'], 'hello.txt', {type: 'text/plain'});
+    await userEvent.upload(input, file);
+    expect(getValue(form, 'attachments')).toEqual([file]);
+
+    // the declarative aria chain reaches the dropzone once errored
+    act(() => setValue(form, 'attachments', [], {shouldValidate: true}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('at least one file');
+    expect(dropzone).toHaveAttribute('aria-invalid', 'true');
+    expect(dropzone).toHaveAttribute('aria-describedby', alert.id);
   });
 
   it('input + valueToProps adapts checkbox-style controls', async () => {

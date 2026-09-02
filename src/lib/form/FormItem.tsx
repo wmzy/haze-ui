@@ -203,7 +203,8 @@ export type FormItemProps<
      * Declarative binding for the field control, in two forms:
      *
      * - a component (`InputCore`, `TextareaCore`, `TagInputCore`,
-     *   `SelectCore`, `CheckboxCore`, …, or any DOM-element-shaped
+     *   `SelectCore`, `TransferCore`, `UploadCore`, `CheckboxCore`, …,
+     *   or any DOM-element-shaped
      *   component): FormItem wires `id`, `aria-invalid`,
      *   `aria-describedby`, `onBlur`, `onChange` and the value channel
      *   itself. Haze cores' `onChange` emits the next plain value

@@ -90,8 +90,8 @@ covers both.
 react-f0rm owns form field state, and its headless `useField` hook is
 the single binding layer — the same channel its built-in
 `Field`/`Checkbox`/`Select` components use. haze-ui contributes the
-views: controlled cores (`InputCore`, `SelectCore`, `SwitchCore`,
-`TextareaCore`, `TagInputCore`, ...) take the plain `{value, onChange}`
+views: controlled cores (`InputCore`, `SelectCore`, `SwitchCore`, `TextareaCore`,
+`TagInputCore`, `TransferCore`, `UploadCore`, ...) take the plain `{value, onChange}`
 pair with zero adapters, and `FormItem` wraps the hook's state in label,
 error and aria wiring. The sugar components (`Input`, `Select`, ...)
 keep their `ControlOrValue<T>` (`Control<T> | T`) API for standalone use outside forms.
@@ -224,11 +224,12 @@ rest of the JSX goes straight to it, type-checked against its own props:
 
 `input` wires the same id/aria/`onBlur`/`onChange`/value contract as `as`
 — every haze core (`InputCore`, `TextareaCore`, `SelectCore`,
-`TagInputCore`, `CheckboxCore`, `SwitchCore`, …) speaks the plain
-`{value, onChange}` pair, so the default adapters need nothing
-(`TagInputCore`'s `onChange` already emits the next `string[]`; a
-checkbox-style core pairs with `valueToProps`). The differences from
-`as`:
+`TagInputCore`, `TransferCore`, `UploadCore`, `CheckboxCore`, `SwitchCore`, …)
+speaks the plain `{value, onChange}` pair, so the default adapters need
+nothing (`TagInputCore`'s `onChange` already emits the next `string[]`;
+`TransferCore` emits the next `string[]` plus move metadata, `UploadCore`
+the next `File[]`; a checkbox-style core pairs with `valueToProps`). The
+differences from `as`:
 
 - Forwarded props are **type-checked against the core's own props** —
   `input={InputCore} size="xl"` is a compile error, while `asProps` is an

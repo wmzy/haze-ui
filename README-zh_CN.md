@@ -86,7 +86,8 @@ import { ButtonLink } from 'haze-ui';
 react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的绑定层——
 内置 `Field`/`Checkbox`/`Select` 组件走的就是同一通道。haze-ui 贡献视图：
 受控核心（`InputCore`、`SelectCore`、`SwitchCore`、`TextareaCore`、
-`TagInputCore`……）直接接收纯 `{value, onChange}` 对，无需适配器；`FormItem`
+`TagInputCore`、`TransferCore`、`UploadCore`……）直接接收纯 `{value, onChange}`
+对，无需适配器；`FormItem`
 在此基础上补 label、错误与 aria 接线。糖衣组件（`Input`、`Select`……）在
 表单之外的独立使用仍保留原有 `ControlOrValue<T>`（即 `Control<T> | T`）API。
 
@@ -211,9 +212,11 @@ function ProfileForm() {
 
 `input` 与 `as` 接的是同一套 id/aria/`onBlur`/`onChange`/值契约——所有
 haze 核心组件（`InputCore`、`TextareaCore`、`SelectCore`、
-`TagInputCore`、`CheckboxCore`、`SwitchCore`……）都说纯 `{value, onChange}`
+`TagInputCore`、`TransferCore`、`UploadCore`、`CheckboxCore`、
+`SwitchCore`……）都说纯 `{value, onChange}`
 对，默认适配器零配置（`TagInputCore` 的 `onChange` 本来就发出下一个
-`string[]`；复选类核心配 `valueToProps`）。与 `as` 的差异：
+`string[]`；`TransferCore` 发出下一个 `string[]` 附带移动元信息，
+`UploadCore` 发出下一个 `File[]`；复选类核心配 `valueToProps`）。与 `as` 的差异：
 
 - 透传属性**按核心组件自己的 props 做类型校验**——
   `input={InputCore} size="xl"` 是编译错误，而 `asProps` 是无类型的包。

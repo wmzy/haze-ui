@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Transfer from './Transfer';
+import TransferCore from './TransferCore';
 
 const items = [
   { key: 'a', title: 'Item A' },
@@ -113,5 +114,74 @@ describe('Transfer', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('TransferCore', () => {
+  it('renders panels straight from the value prop', () => {
+    render(<TransferCore dataSource={items} value={['a']} onChange={() => undefined} />);
+    expect(screen.getByText('Source (2)')).toBeInTheDocument();
+    expect(screen.getByText('Target (1)')).toBeInTheDocument();
+  });
+
+  it('applies className', () => {
+    const { container } = render(
+      <TransferCore dataSource={items} value={[]} onChange={() => undefined} className="custom" />
+    );
+    expect(container.firstChild).toHaveClass('custom');
+  });
+
+  it('emits the next value with direction and moveKeys on move right', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TransferCore dataSource={items} value={['b']} onChange={onChange} />);
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(screen.getByRole('button', { name: '>' }));
+    expect(onChange).toHaveBeenCalledWith(['b', 'a'], 'right', ['a']);
+  });
+
+  it('emits the next value with direction and moveKeys on move left', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TransferCore dataSource={items} value={['a', 'b']} onChange={onChange} />);
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(screen.getByRole('button', { name: '<' }));
+    expect(onChange).toHaveBeenCalledWith(['b'], 'left', ['a']);
+  });
+
+  it('stays fully controlled: panels follow external value changes', () => {
+    const { rerender } = render(
+      <TransferCore dataSource={items} value={[]} onChange={() => undefined} />
+    );
+    expect(screen.getByText('Target (0)')).toBeInTheDocument();
+    rerender(
+      <TransferCore dataSource={items} value={['a', 'c']} onChange={() => undefined} />
+    );
+    expect(screen.getByText('Source (1)')).toBeInTheDocument();
+    expect(screen.getByText('Target (2)')).toBeInTheDocument();
+  });
+
+  it('forwards bridge props (id, aria, blur) to the root container', async () => {
+    const user = userEvent.setup();
+    const onBlur = vi.fn();
+    const { container } = render(
+      <TransferCore
+        dataSource={items}
+        value={[]}
+        onChange={() => undefined}
+        id="members"
+        aria-invalid
+        aria-describedby="members-error"
+        onBlur={onBlur}
+      />
+    );
+    const root = container.firstChild as HTMLElement;
+    expect(root).toHaveAttribute('id', 'members');
+    expect(root).toHaveAttribute('aria-invalid', 'true');
+    expect(root).toHaveAttribute('aria-describedby', 'members-error');
+    // React's synthetic blur bubbles from the inner checkboxes
+    await user.click(screen.getByRole('checkbox', { name: 'Item A' }));
+    await user.click(document.body);
+    expect(onBlur).toHaveBeenCalled();
   });
 });

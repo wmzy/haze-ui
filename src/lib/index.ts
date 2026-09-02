@@ -121,10 +121,10 @@ export { ResizableGroup, ResizablePanel, ResizableHandle } from './components/Re
 export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps } from './components/Resizable';
 export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/Collapsible';
 export type { CollapsibleProps, CollapsibleTriggerProps, CollapsibleContentProps } from './components/Collapsible';
-export { Transfer } from './components/Transfer';
-export type { TransferProps, TransferItem } from './components/Transfer';
-export { Upload } from './components/Upload';
-export type { UploadProps } from './components/Upload';
+export { Transfer, TransferCore } from './components/Transfer';
+export type { TransferProps, TransferItem, TransferCoreProps } from './components/Transfer';
+export { Upload, UploadCore } from './components/Upload';
+export type { UploadProps, UploadCoreProps } from './components/Upload';
 export { ColorPicker, ColorPickerCore } from './components/ColorPicker';
 export type { ColorPickerProps, ColorPickerCoreProps } from './components/ColorPicker';
 export { Rating, RatingCore } from './components/Rating';
