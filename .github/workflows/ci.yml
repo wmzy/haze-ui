@@ -21,6 +21,7 @@ jobs:
       - run: pnpm install
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm typecheck
       - run: pnpm build
       - run: npm run size
 

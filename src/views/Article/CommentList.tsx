@@ -14,9 +14,9 @@ import * as articleService from '@/services/article';
 
 type Props = { title: string };
 
-const cache = createMemoryCacheProvider<Comment[], unknown[]>({
+const cache = createMemoryCacheProvider<Comment[], [title: string]>({
   cacheTime: 10000,
-  hash: (k: unknown[]) => JSON.stringify(k),
+  hash: (k) => JSON.stringify(k),
 });
 
 export default function CommentList({ title }: Props) {

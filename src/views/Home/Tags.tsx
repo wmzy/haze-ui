@@ -14,9 +14,9 @@ import { Flex, Tag, Skeleton } from '@/lib';
 import * as articleService from '@/services/article';
 import { tagListSchema } from '@/types/index.schema';
 
-const cache = createMemoryCacheProvider<string[], string[]>({
+const cache = createMemoryCacheProvider<string[], []>({
   cacheTime: 10000,
-  hash: (k: string[]) => JSON.stringify(k),
+  hash: (k) => JSON.stringify(k),
 });
 
 const stale = css`
