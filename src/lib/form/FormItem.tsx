@@ -79,8 +79,9 @@ export type FormItemAsProps = {
    * precedence over the children render-prop. */
   as?: ComponentType<any>;
   /** Extra props spread onto the `as` component. They land before the
-   * value props, so `value`/`valueToProps` win conflicts — the same
-   * precedence react-f0rm's `Field` uses. */
+   * bridge wiring and the value props, so `id`, `aria-*`, `onBlur`,
+   * `onChange` and `value`/`valueToProps` win conflicts — the same
+   * precedence as the input channel and react-f0rm's `Field`. */
   asProps?: Record<string, any>;
   /** Converts what the control passes to its `onChange` into the field
    * value. Defaults to identity — haze cores' `onChange` emits the next
@@ -471,12 +472,17 @@ export default function FormItem<
         </InputComponent>
       ) : As ? (
         <As
+          // asProps first — the wiring below is the bridge's contract
+          // and always wins, the same precedence as the input channel
+          // (asProps is untyped, so a collision is a silent runtime
+          // override by the wiring, never a compile error); the value
+          // props still land last
+          {...asProps}
           id={id}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? errorId : undefined}
           onBlur={onBlur}
           onChange={(e: any) => onChange(toValue(e))}
-          {...asProps}
           {...(valueToProps ? valueToProps(value) : {value})}
         />
       ) : (

@@ -554,6 +554,116 @@ describe('FormItem', () => {
     expect(core).not.toBeChecked();
   });
 
+  it('as: asProps land before the wiring — colliding props lose, the rest pass through', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {email: ''}});
+    const asPropsOnChange = vi.fn();
+    const asPropsOnBlur = vi.fn();
+
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          as={InputCore}
+          asProps={{
+            'data-testid': 'email-input',
+            'aria-label': 'Contact address',
+            id: 'asProps-id',
+            'aria-invalid': 'false',
+            'aria-describedby': 'asProps-desc',
+            onChange: asPropsOnChange,
+            onBlur: asPropsOnBlur
+          }}
+          validate={(v) => (v.includes('@') ? undefined : 'must be an email')}
+        />
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    const input = screen.getByTestId('email-input');
+
+    // non-colliding asProps pass through untouched…
+    expect(input).toHaveAttribute('aria-label', 'Contact address');
+    // …while every colliding one loses to the bridge wiring, the same
+    // precedence as the input channel: the generated id wins, and the
+    // label still points at the control the wiring identified
+    expect(input.id).toMatch(/^haze-field-/);
+    expect(screen.getByText('Email')).toHaveAttribute('for', input.id);
+
+    // typing runs the wiring's onChange — the store gets the value, the
+    // asProps copy never fires
+    await user.type(input, 'no-at-sign');
+    expect(asPropsOnChange).not.toHaveBeenCalled();
+    expect(getValue(form, 'email')).toBe('no-at-sign');
+    expect(input).toHaveValue('no-at-sign');
+
+    // the submit click blurs the field — the wiring's onBlur runs, the
+    // asProps copy doesn't — and the failed submit errors the field
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(asPropsOnBlur).not.toHaveBeenCalled();
+    expect(asPropsOnChange).not.toHaveBeenCalled();
+
+    // the wiring's aria chain lights up over the asProps values:
+    // aria-invalid/aria-describedby come from the bridge, not asProps
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('must be an email');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', alert.id);
+  });
+
+  it('as: the store value wins over a colliding asProps.value', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {email: 'from-store'}});
+
+    render(
+      <FormItem
+        form={form}
+        name='email'
+        as={InputCore}
+        asProps={{
+          'data-testid': 'email-input',
+          value: 'from-asProps'
+        }}
+      />
+    );
+
+    // rendered value comes from the store, not asProps
+    expect(screen.getByTestId('email-input')).toHaveValue('from-store');
+
+    // and keeps tracking the store as the field changes
+    await user.type(screen.getByTestId('email-input'), '-typed');
+    expect(getValue(form, 'email')).toBe('from-store-typed');
+    expect(screen.getByTestId('email-input')).toHaveValue('from-store-typed');
+  });
+
+  it('input: forwarded props pass through while the wiring onChange writes back to the store', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {email: ''}});
+
+    render(
+      <FormItem
+        form={form}
+        name='email'
+        input={InputCore}
+        placeholder='you@x.dev'
+        data-testid='email-input'
+      />
+    );
+
+    // forwarded rest props reach the control untouched, symmetric with
+    // the as channel's asProps passthrough
+    const input = screen.getByTestId('email-input');
+    expect(input).toHaveAttribute('placeholder', 'you@x.dev');
+
+    // user changes route through the bridge's onChange into the store —
+    // the same wiring that wins collisions on the as channel
+    await user.type(input, 'a@b');
+    expect(getValue(form, 'email')).toBe('a@b');
+    expect(input).toHaveValue('a@b');
+  });
+
   it('renderError customizes the error span while keeping the alert wiring', async () => {
     const user = userEvent.setup();
     const form = createForm({initialValues: {name: '', email: ''}});
