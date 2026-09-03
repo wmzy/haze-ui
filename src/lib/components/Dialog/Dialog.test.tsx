@@ -61,7 +61,7 @@ describe('Dialog', () => {
   it('fires onClose exactly once on Esc (cancel → close)', () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
     act(() => {
       // 模拟浏览器 Esc 行为：先 cancel（未阻止则关闭），关闭发出 close
       dialog.dispatchEvent(new Event('cancel'));
@@ -73,7 +73,7 @@ describe('Dialog', () => {
   it('fires onClose exactly once on programmatic close()', () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
     act(() => {
       dialog.close();
     });
