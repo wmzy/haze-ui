@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
+import { existsSync, readdirSync } from 'node:fs';
+
 import { transformAsync } from '@babel/core';
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
@@ -11,6 +13,29 @@ import rollupPluginTypeAsJsonSchema from 'rollup-plugin-type-as-json-schema';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isLibBuild = process.env.BUILD_LIB === 'true';
 const isDemoBuild = process.env.BUILD_DEMO === 'true';
+
+// Lib entries: the root barrel plus every per-directory barrel that the
+// package's `exports` subpaths (./components/*, ./form, ./tokens) point
+// at. preserveModules tree-shakes re-export-only modules that are not
+// entries — without listing them, dist/components/*/index.js would not
+// exist and the subpaths would not resolve.
+const libEntries = [
+  path.resolve(__dirname, 'src/lib/index.ts'),
+  ...['components', 'form', 'tokens'].flatMap((group) =>
+    readdirSync(path.resolve(__dirname, `src/lib/${group}`), {
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isDirectory())
+      .map((dir) =>
+        path.resolve(__dirname, `src/lib/${group}/${dir.name}/index.ts`)
+      )
+      .concat(
+        group === 'components'
+          ? []
+          : [path.resolve(__dirname, `src/lib/${group}/index.ts`)]
+      )
+  ),
+].filter((entry) => existsSync(entry));
 
 function jsxPlusPlugin(): Plugin {
   return {
@@ -36,7 +61,7 @@ const buildConfig = (() => {
   if (isLibBuild) {
     return {
       lib: {
-        entry: path.resolve(__dirname, 'src/lib/index.ts'),
+        entry: libEntries,
         formats: ['es'] as const,
       },
       rollupOptions: {

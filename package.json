@@ -12,6 +12,21 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./components/*": {
+      "types": "./dist/types/components/*/index.d.ts",
+      "import": "./dist/components/*/index.js",
+      "default": "./dist/components/*/index.js"
+    },
+    "./form": {
+      "types": "./dist/types/form/index.d.ts",
+      "import": "./dist/form/index.js",
+      "default": "./dist/form/index.js"
+    },
+    "./tokens": {
+      "types": "./dist/types/tokens/index.d.ts",
+      "import": "./dist/tokens/index.js",
+      "default": "./dist/tokens/index.js"
+    },
     "./styles.css": "./dist/haze-ui.css",
     "./css/*": "./dist/css/*"
   },
