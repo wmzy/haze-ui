@@ -5,8 +5,10 @@
  * intentionally not part of E2E.
  */
 import { css } from '@linaria/core';
+import { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useControl } from 'react-use-control';
+import { Form, createForm } from 'react-f0rm';
 
 import { Dialog } from '../../src/lib/components/Dialog';
 import { Datepicker } from '../../src/lib/components/Datepicker';
@@ -17,7 +19,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../src/lib/components/DropdownMenu';
+import { InputCore } from '../../src/lib/components/Input';
 import { Popover } from '../../src/lib/components/Popover';
+import { ToastContainer, useToast } from '../../src/lib/components/Toast';
+import { FormItem } from '../../src/lib/form';
 import { lightTheme } from '../../src/lib/tokens/colors';
 import { spacing } from '../../src/lib/tokens/spacing';
 import { typography } from '../../src/lib/tokens/typography';
@@ -42,6 +47,11 @@ const heading = css`
   margin: 0 0 16px;
   font-size: var(--haze-text-lg);
   font-weight: var(--haze-weight-semibold);
+`;
+
+/* Bare harness buttons get axe's 24px target-size minimum (WCAG 2.5.8). */
+const demoBtn = css`
+  padding: 6px 16px;
 `;
 
 function App() {
@@ -98,7 +108,52 @@ function App() {
         <Datepicker value={dateControl} />
         <p id="datepicker-value">{date}</p>
       </section>
+
+      <section id="toast-demo">
+        <h2 className={heading}>Toast</h2>
+        <ToastContainer>
+          <ToastDemoSection />
+        </ToastContainer>
+      </section>
+
+      <section id="form-demo">
+        <h2 className={heading}>FormItem</h2>
+        <FormDemoSection />
+      </section>
     </div>
+  );
+}
+
+function ToastDemoSection() {
+  const notify = useToast();
+  return (
+    <button
+      type="button"
+      id="toast-opener"
+      className={demoBtn}
+      onClick={() =>
+        notify('Saved successfully', {variant: 'success', duration: 0})
+      }
+    >
+      Show toast
+    </button>
+  );
+}
+
+function FormDemoSection() {
+  const form = useMemo(() => createForm({initialValues: {email: ''}}), []);
+  return (
+    <Form form={form} onSubmit={() => undefined}>
+      <FormItem
+        form={form}
+        name="email"
+        label="Email"
+        input={InputCore}
+        placeholder="you@x.dev"
+        validate={(v: string) => (v.includes('@') ? undefined : 'must be an email')}
+      />
+      <button type="submit" className={demoBtn}>Submit</button>
+    </Form>
   );
 }
 

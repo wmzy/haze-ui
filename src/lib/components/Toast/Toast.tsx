@@ -41,13 +41,17 @@ const variants = {
     color: var(--haze-color-text);
     border: 1px solid var(--haze-color-border);
   `,
+  // Variant text uses the standard text token: the accent tokens
+  // (#16a34a / #f59e0b …) sit under the 4.5:1 threshold on the tinted
+  // background (axe color-contrast). The accent stays visible through
+  // the border and the background tint — same shape as `info`.
   success: css`
     background: color-mix(
       in srgb,
       var(--haze-color-success) 10%,
       var(--haze-color-bg)
     );
-    color: var(--haze-color-success);
+    color: var(--haze-color-text);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-success) 25%, transparent);
   `,
@@ -57,7 +61,7 @@ const variants = {
       var(--haze-color-warning) 10%,
       var(--haze-color-bg)
     );
-    color: var(--haze-color-warning);
+    color: var(--haze-color-text);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
   `,
@@ -67,7 +71,7 @@ const variants = {
       var(--haze-color-danger) 10%,
       var(--haze-color-bg)
     );
-    color: var(--haze-color-danger);
+    color: var(--haze-color-text);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
   `,
@@ -88,6 +92,13 @@ const closeBtn = css`
   line-height: 1;
   opacity: 0.6;
   transition: opacity 0.15s;
+  /* WCAG 2.5.8 target size: the × glyph alone is ~18px — box it out to
+   * the 24px minimum with the glyph centered. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
 
   &:hover {
     opacity: 1;
