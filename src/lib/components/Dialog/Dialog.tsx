@@ -92,8 +92,10 @@ export default function Dialog({
       }}
       onClick={(e) => {
         if (e.target === ref.current) {
+          // 只改状态：effect 里的 el.close() 会触发原生 close 事件，
+          // onClose 与焦点归还都在那个公共出口统一发生。这里再调一次
+          // onClose?.() 会双触发（backdrop 路径命中两次回调）。
           setOpen(false);
-          onClose?.();
         }
       }}
     >

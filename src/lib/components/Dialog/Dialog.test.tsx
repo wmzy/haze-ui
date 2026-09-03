@@ -44,7 +44,7 @@ describe('Dialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('closes when clicking backdrop', () => {
+  it('fires onClose exactly once when clicking the backdrop', () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
     const dialog = screen.getByRole('dialog');
@@ -53,7 +53,31 @@ describe('Dialog', () => {
         new MouseEvent('click', { bubbles: true })
       );
     });
-    expect(onClose).toHaveBeenCalled();
+    // backdrop 点击只 setOpen(false)；onClose 由 effect 中 el.close() 触发
+    // 的原生 close 事件统一发出——修复前 onClick 里会先多调一次。
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires onClose exactly once on Esc (cancel → close)', () => {
+    const onClose = vi.fn();
+    render(<Dialog open onClose={onClose}>Content</Dialog>);
+    const dialog = screen.getByRole('dialog');
+    act(() => {
+      // 模拟浏览器 Esc 行为：先 cancel（未阻止则关闭），关闭发出 close
+      dialog.dispatchEvent(new Event('cancel'));
+      dialog.close();
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires onClose exactly once on programmatic close()', () => {
+    const onClose = vi.fn();
+    render(<Dialog open onClose={onClose}>Content</Dialog>);
+    const dialog = screen.getByRole('dialog');
+    act(() => {
+      dialog.close();
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('labels the dialog via aria-labelledby when title is set', () => {
