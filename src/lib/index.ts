@@ -215,6 +215,9 @@ export type { LogViewerProps, LogEntry, LogLevel } from './components/LogViewer'
 export { AsyncSection } from './components/AsyncSection';
 export type { AsyncSectionProps } from './components/AsyncSection';
 
+// hooks
+export { useTitle } from './hooks';
+
 // form integration (react-f0rm peer)
 export { FormItem } from './form';
 export type {

@@ -106,6 +106,26 @@ import { AsyncSection } from 'haze-ui';
 </AsyncSection>
 ```
 
+## useTitle: view-level document.title
+
+`useTitle(title)` sets `document.title` while the view is mounted and
+restores the pre-entry title (the static `<title>` from the host page) on
+unmount. Two timing pitfalls are baked into the implementation: the write
+and the restore are two separate effects (a single `[title]` effect would
+restore the *previous round's* title, not the entry default, on every prop
+change), and the entry snapshot is taken at effect time, not render time —
+a route swap is one commit, so at render time the old view's cleanup has
+not run yet and `document.title` still holds the previous page.
+
+```jsx
+import { useTitle } from 'haze-ui';
+
+function SettingsView() {
+  useTitle('Settings');
+  // ...
+}
+```
+
 ## react-f0rm Integration
 
 react-f0rm owns form field state, and its headless `useField` hook is

@@ -100,6 +100,24 @@ import { AsyncSection } from 'haze-ui';
 </AsyncSection>
 ```
 
+## useTitle：视图级 document.title
+
+`useTitle(title)` 挂载期间把 `document.title` 设为页标题，卸载时恢复
+「进入前」的值（宿主页面的静态 `<title>`）。实现里固化了两个时序坑：
+写入与恢复拆成两个 effect（单 `[title]` effect 的 cleanup 在每次 prop
+变化后都会执行，会把标题写回上一轮的值而非入口默认）；进入前值的快照
+取在 effect 期而非渲染期——路由换树是同一次 commit，渲染期旧视图的
+cleanup 还没跑，`document.title` 仍是上一页的标题。
+
+```jsx
+import { useTitle } from 'haze-ui';
+
+function SettingsView() {
+  useTitle('Settings');
+  // ...
+}
+```
+
 ## react-f0rm 集成
 
 react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的绑定层——
