@@ -85,4 +85,17 @@ test.describe('Popover', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(panel).toBeHidden();
   });
+
+  test('is keyboard reachable: Tab focuses the trigger, Enter/Space toggle', async ({ page }) => {
+    const trigger = page.getByText('Open popover');
+    await page.keyboard.press('Tab');
+    await expect(trigger).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // Space must toggle, not scroll the page
+    await page.keyboard.press('Space');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
 });
