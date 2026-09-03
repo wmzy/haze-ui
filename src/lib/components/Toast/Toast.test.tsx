@@ -1,9 +1,9 @@
 import { expect } from 'vitest';
-import { render, screen, renderHook, act } from '@testing-library/react';
+import { render, screen, renderHook, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Toast from './Toast';
-import ToastContainer from './ToastContainer';
+import ToastContainer, { toastPlacements } from './ToastContainer';
 import useToast from './useToast';
 
 describe('Toast', () => {
@@ -51,6 +51,107 @@ describe('Toast', () => {
     expect(onClose).not.toHaveBeenCalled();
     vi.useRealTimers();
   });
+
+  it('pauses the countdown while hovered and resumes with the remaining time', async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({
+      advanceTimers: (delay) => {
+        vi.advanceTimersByTime(delay);
+      },
+    });
+    const onClose = vi.fn();
+    render(<Toast onClose={onClose} duration={3000}>Message</Toast>);
+
+    vi.advanceTimersByTime(1000);
+    // RTL's asyncWrapper parks userEvent on a fake setTimeout(0) that only a
+    // concurrent clock advance can flush (it tries jest.advanceTimersByTime,
+    // which is a no-op under vitest).
+    const hoverPromise = user.hover(screen.getByText('Message'));
+    await vi.advanceTimersByTimeAsync(0);
+    await hoverPromise;
+    expect(onClose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(10_000);
+    expect(onClose).not.toHaveBeenCalled();
+
+    // 1000ms elapsed while running, so only 2000ms of budget are left.
+    const unhoverPromise = user.unhover(screen.getByText('Message'));
+    await vi.advanceTimersByTimeAsync(0);
+    await unhoverPromise;
+    vi.advanceTimersByTime(1999);
+    expect(onClose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onClose).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it('pauses the countdown while focused and resumes with the remaining time', () => {
+    vi.useFakeTimers();
+    const onClose = vi.fn();
+    render(<Toast onClose={onClose} duration={3000}>Message</Toast>);
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
+
+    vi.advanceTimersByTime(1000);
+    fireEvent.focus(closeBtn);
+    vi.advanceTimersByTime(10_000);
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.blur(closeBtn);
+    vi.advanceTimersByTime(1999);
+    expect(onClose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onClose).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it('stays paused while either hover or focus is active without resetting the budget', async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({
+      advanceTimers: (delay) => {
+        vi.advanceTimersByTime(delay);
+      },
+    });
+    const onClose = vi.fn();
+    render(<Toast onClose={onClose} duration={3000}>Message</Toast>);
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
+
+    vi.advanceTimersByTime(1000);
+    const hoverPromise = user.hover(screen.getByText('Message'));
+    await vi.advanceTimersByTimeAsync(0);
+    await hoverPromise;
+    fireEvent.focus(closeBtn); // second pause source, must not re-arm the timer
+    vi.advanceTimersByTime(10_000);
+    expect(onClose).not.toHaveBeenCalled();
+
+    const unhoverPromise = user.unhover(screen.getByText('Message')); // still focused
+    await vi.advanceTimersByTimeAsync(0);
+    await unhoverPromise;
+    vi.advanceTimersByTime(10_000);
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.blur(closeBtn); // resume with the 2000ms left since the hover
+    vi.advanceTimersByTime(1999);
+    expect(onClose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onClose).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it('keeps the countdown when the onClose callback identity changes', () => {
+    vi.useFakeTimers();
+    const onClose = vi.fn();
+    const { rerender } = render(
+      <Toast onClose={onClose} duration={3000}>Message</Toast>
+    );
+
+    vi.advanceTimersByTime(2000);
+    rerender(
+      <Toast onClose={() => onClose()} duration={3000}>Message</Toast>
+    );
+    // Only 1000ms of budget remain; a re-armed timer would need the full 3000ms.
+    vi.advanceTimersByTime(1000);
+    expect(onClose).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
 });
 
 describe('ToastContainer + useToast', () => {
@@ -94,6 +195,58 @@ describe('ToastContainer + useToast', () => {
     expect(screen.getByText('Temp')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByText('Temp')).not.toBeInTheDocument();
+  });
+
+  it('drops the oldest toast when maxCount is exceeded', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer maxCount={2}>{children}</ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('One', { duration: 0 });
+      result.current('Two', { duration: 0 });
+      result.current('Three', { duration: 0 });
+    });
+
+    expect(screen.queryByText('One')).not.toBeInTheDocument();
+    const two = screen.getByText('Two');
+    const three = screen.getByText('Three');
+    expect(two).toBeInTheDocument();
+    expect(three).toBeInTheDocument();
+    expect(
+      two.compareDocumentPosition(three) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('pins the container to the top-right edge with placement="top-right"', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer placement='top-right'>{children}</ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('Placed', { duration: 0 });
+    });
+
+    const containerEl = screen.getByRole('alert').parentElement;
+    expect(containerEl).toHaveClass(toastPlacements['top-right']);
+    expect(containerEl).not.toHaveClass(toastPlacements['bottom-right']);
+  });
+
+  it('keeps the bottom-right placement by default', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer>{children}</ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('Placed', { duration: 0 });
+    });
+
+    const containerEl = screen.getByRole('alert').parentElement;
+    expect(containerEl).toHaveClass(toastPlacements['bottom-right']);
+    expect(containerEl).not.toHaveClass(toastPlacements['top-right']);
   });
 
   it('has no axe violations while a toast is shown', async () => {
