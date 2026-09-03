@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { placeFloatingPanel } from '../../utils/floating';
+
 import Popover from './Popover';
 
 describe('Popover', () => {
@@ -275,5 +277,154 @@ describe('Popover (native popover API)', () => {
     // anchor wiring is absent in this mode
     expect(panel.style.getPropertyValue('--haze-floating-anchor')).toBe('');
     expect(trigger.getAttribute('style')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier-2 JS positioning: viewport flip / clamp. The anchored tier flips
+// declaratively (position-try-fallbacks); the JS tier below must not let
+// a panel near the viewport edge overflow it.
+// ---------------------------------------------------------------------------
+
+type MockRect = {top: number; left: number; bottom: number; right: number; width: number; height: number};
+
+const zeroRect = () =>
+  ({top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({})}) as DOMRect;
+
+/** Point panel/trigger elements at controlled rects; jsdom layout is zero. */
+function mockRects(panelRect: MockRect, triggerRect: MockRect) {
+  return vi
+    .spyOn(Element.prototype, 'getBoundingClientRect')
+    .mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.rect === 'panel' || this.hasAttribute('popover'))
+        return {...zeroRect(), ...panelRect};
+      if (this.dataset.rect === 'trigger' || this.getAttribute('role') === 'button')
+        return {...zeroRect(), ...triggerRect};
+      return zeroRect();
+    });
+}
+
+describe('tier-2 placement: viewport flip (placeFloatingPanel)', () => {
+  // jsdom viewport: 1024 x 768.
+  const panel = {top: 0, left: 0, bottom: 200, right: 150, width: 150, height: 200};
+  const trigger = {top: 300, left: 100, bottom: 330, right: 180, width: 80, height: 30};
+
+  function mount(panelRect: MockRect, triggerRect: MockRect) {
+    const panelEl = document.createElement('div');
+    panelEl.dataset.rect = 'panel';
+    const triggerEl = document.createElement('span');
+    triggerEl.dataset.rect = 'trigger';
+    document.body.append(panelEl, triggerEl);
+    const spy = mockRects(panelRect, triggerRect);
+    return {panelEl, triggerEl, restore: () => { spy.mockRestore(); panelEl.remove(); triggerEl.remove(); }};
+  }
+
+  it('keeps the plain position when the panel fits (default unchanged)', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, trigger);
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'bottom');
+      expect(panelEl.style.top).toBe('330px');
+      expect(panelEl.style.left).toBe('100px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('flips bottom→top when the trigger sits at the bottom edge', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, {
+      ...trigger, top: 700, bottom: 730,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'bottom-span');
+      // flipped above the trigger, horizontal start alignment kept
+      expect(panelEl.style.top).toBe('500px');
+      expect(panelEl.style.left).toBe('100px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('flips top→bottom when the trigger sits at the top edge', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, {
+      ...trigger, top: 10, bottom: 40, left: 462, right: 562,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'top');
+      // flipped below the trigger, center alignment kept
+      // (centerX = 462 + 80/2 − 150/2)
+      expect(panelEl.style.top).toBe('40px');
+      expect(panelEl.style.left).toBe('427px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('flips right→left when the trigger sits at the right edge', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, {
+      ...trigger, top: 100, bottom: 130, left: 980, right: 1060,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'right');
+      expect(panelEl.style.left).toBe('830px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('flips left→right when the trigger sits at the left edge', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, {
+      ...trigger, top: 100, bottom: 130, left: -40, right: 40,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'left');
+      expect(panelEl.style.left).toBe('40px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('clamps into the viewport when neither side fits', () => {
+    const tall = {...panel, height: 900, bottom: 900};
+    const {panelEl, triggerEl, restore} = mount(tall, {
+      ...trigger, top: 700, bottom: 730,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'bottom');
+      // no room above (700 < 900) and none below: clamp to the top edge
+      expect(panelEl.style.top).toBe('0px');
+      expect(panelEl.style.left).toBe('100px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('clamps horizontally at the right edge without flipping', () => {
+    const {panelEl, triggerEl, restore} = mount(panel, {
+      ...trigger, left: 950, right: 1030,
+    });
+    try {
+      placeFloatingPanel(panelEl, triggerEl, 'bottom-span');
+      expect(panelEl.style.top).toBe('330px');
+      expect(panelEl.style.left).toBe('874px');
+    } finally {
+      restore();
+    }
+  });
+
+  it('flips to the other side through the Popover component path (tier 2)', () => {
+    installNativePopover();
+    vi.spyOn(CSS, 'supports').mockReturnValue(false);
+    const rectSpy = mockRects(panel, {...trigger, top: 700, bottom: 730});
+    try {
+      render(<Popover content="Body">Trigger</Popover>);
+      fireEvent.click(screen.getByText('Trigger'));
+      const panelEl = document.querySelector('[popover]') as HTMLElement;
+      expect(panelEl.style.top).toBe('500px');
+      expect(panelEl.style.left).toBe('100px');
+    } finally {
+      rectSpy.mockRestore();
+      removeNativePopover();
+      vi.restoreAllMocks();
+    }
   });
 });

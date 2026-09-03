@@ -464,8 +464,15 @@ function readGap(
  * Place a fixed panel from the trigger's rect (tier 2). Centers compute
  * from the panel's own rect, so this needs layout — fine in real engines,
  * and unreachable in jsdom where the fallback tier renders instead.
+ *
+ * Viewport awareness: a placement that would push the panel past the
+ * viewport edge flips to the opposite side when that side has room for
+ * it (bottom↔top, left↔right — the secondary-axis alignment stays as
+ * chosen); when neither side fits, the position is clamped into the
+ * viewport instead. Exported for direct testing like
+ * `supportsNativePopover` above.
  */
-function placeFloatingPanel(
+export function placeFloatingPanel(
   panel: HTMLElement,
   trigger: HTMLElement,
   placement: FloatingPlacement
@@ -473,35 +480,93 @@ function placeFloatingPanel(
   if (placement === 'point') return;
   const rect = trigger.getBoundingClientRect();
   const box = panel.getBoundingClientRect();
+  const viewport = {width: window.innerWidth, height: window.innerHeight};
   const centerX = rect.left + rect.width / 2 - box.width / 2;
   const centerY = rect.top + rect.height / 2 - box.height / 2;
-  switch (placement) {
-    case 'bottom':
-    case 'bottom-span':
-      panel.style.top = `${rect.bottom + readGap(panel, 'marginTop')}px`;
-      panel.style.left = `${rect.left}px`;
-      return;
-    case 'bottom-center':
-      panel.style.top = `${rect.bottom + readGap(panel, 'marginTop')}px`;
-      panel.style.left = `${centerX}px`;
-      return;
-    case 'bottom-end':
-      panel.style.top = `${rect.bottom + readGap(panel, 'marginTop')}px`;
-      panel.style.left = `${rect.right - box.width}px`;
-      return;
-    case 'top':
-      panel.style.top = `${rect.top - box.height - readGap(panel, 'marginBottom')}px`;
-      panel.style.left = `${centerX}px`;
-      return;
-    case 'left':
-      panel.style.top = `${centerY}px`;
-      panel.style.left = `${rect.left - box.width - readGap(panel, 'marginRight')}px`;
-      return;
-    case 'right':
-      panel.style.top = `${centerY}px`;
-      panel.style.left = `${rect.right + readGap(panel, 'marginLeft')}px`;
-      return;
+  // The gap classes are the only declarative part of this tier — read
+  // them back as the clearance between trigger and panel edges.
+  const gap = {
+    below: readGap(panel, 'marginTop'),
+    above: readGap(panel, 'marginBottom'),
+    after: readGap(panel, 'marginLeft'),
+    before: readGap(panel, 'marginRight'),
+  };
+
+  // Coordinates for a vertical placement (panel over/under the trigger),
+  // keeping the requested horizontal alignment across a vertical flip.
+  const verticalPos = (
+    side: 'top' | 'bottom',
+    align: 'start' | 'center' | 'end'
+  ) => ({
+    top:
+      side === 'bottom'
+        ? rect.bottom + gap.below
+        : rect.top - box.height - gap.above,
+    left:
+      align === 'start'
+        ? rect.left
+        : align === 'end'
+          ? rect.right - box.width
+          : centerX,
+  });
+  // Coordinates for a horizontal placement (panel beside the trigger);
+  // the vertical center is shared by both sides.
+  const horizontalPos = (side: 'left' | 'right') => ({
+    top: centerY,
+    left:
+      side === 'right'
+        ? rect.right + gap.after
+        : rect.left - box.width - gap.before,
+  });
+
+  // The original placement's axes: flips only swap the primary side.
+  const verticals = {
+    bottom: {side: 'bottom', align: 'start'},
+    'bottom-span': {side: 'bottom', align: 'start'},
+    'bottom-center': {side: 'bottom', align: 'center'},
+    'bottom-end': {side: 'bottom', align: 'end'},
+    top: {side: 'top', align: 'center'},
+  } as const;
+
+  let {top, left} =
+    placement === 'left' || placement === 'right'
+      ? horizontalPos(placement)
+      : verticalPos(verticals[placement].side, verticals[placement].align);
+
+  if (placement === 'left' || placement === 'right') {
+    const overflows =
+      placement === 'right'
+        ? left + box.width > viewport.width
+        : left < 0;
+    const fitsFlipped =
+      placement === 'right'
+        ? rect.left - box.width - gap.before >= 0
+        : rect.right + box.width + gap.after <= viewport.width;
+    if (overflows && fitsFlipped) {
+      ({top, left} = horizontalPos(placement === 'right' ? 'left' : 'right'));
+    }
+  } else {
+    const {side, align} = verticals[placement];
+    const overflows =
+      side === 'bottom' ? top + box.height > viewport.height : top < 0;
+    const fitsFlipped =
+      side === 'bottom'
+        ? rect.top - box.height - gap.above >= 0
+        : rect.bottom + box.height + gap.below <= viewport.height;
+    if (overflows && fitsFlipped) {
+      ({top, left} = verticalPos(side === 'bottom' ? 'top' : 'bottom', align));
+    }
   }
+
+  // Neither side fits (or the panel is taller/wider than the viewport):
+  // clamp the panel fully into view.
+  top = Math.min(Math.max(top, 0), Math.max(0, viewport.height - box.height));
+  left = Math.min(
+    Math.max(left, 0),
+    Math.max(0, viewport.width - box.width)
+  );
+  panel.style.top = `${top}px`;
+  panel.style.left = `${left}px`;
 }
 
 /**
