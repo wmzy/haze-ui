@@ -85,6 +85,27 @@ Both components share one skin (a styles module), so a theme tweak to
 `Button` re-skins `ButtonLink` in lockstep. CSS: `haze-ui/css/button.css`
 covers both.
 
+## AsyncSection: loading / error / content in one place
+
+`AsyncSection` collapses the three states every async view hand-rolls into
+one component: `loading` renders the spinner placeholder, a non-null
+`error` renders an alert box with an optional `Retry` button (an `Error`
+instance contributes its `message`; `errorText` overrides), and otherwise
+the children render. `loading` wins when both are set — the retry path
+(loading again before the old error clears) shows the placeholder, not
+the stale error. All copy is configurable; the retry button only renders
+when `onRetry` is provided.
+
+```jsx
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/async-section.css';
+import { AsyncSection } from 'haze-ui';
+
+<AsyncSection loading={loading} error={error} onRetry={refetch}>
+  {data}
+</AsyncSection>
+```
+
 ## react-f0rm Integration
 
 react-f0rm owns form field state, and its headless `useField` hook is

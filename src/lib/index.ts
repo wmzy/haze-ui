@@ -212,6 +212,8 @@ export { DiffViewer } from './components/DiffViewer';
 export type { DiffViewerProps, DiffLine } from './components/DiffViewer';
 export { LogViewer } from './components/LogViewer';
 export type { LogViewerProps, LogEntry, LogLevel } from './components/LogViewer';
+export { AsyncSection } from './components/AsyncSection';
+export type { AsyncSectionProps } from './components/AsyncSection';
 
 // form integration (react-f0rm peer)
 export { FormItem } from './form';

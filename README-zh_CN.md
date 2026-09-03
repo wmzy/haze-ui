@@ -81,6 +81,25 @@ import { ButtonLink } from 'haze-ui';
 两个组件共享同一份皮肤（styles 模块），对 Button 的主题微调会同步
 重皮肤 ButtonLink。CSS：`haze-ui/css/button.css` 同时覆盖两者。
 
+## AsyncSection：加载 / 错误 / 内容三态归一
+
+`AsyncSection` 把每个异步视图都要手写一遍的三个分支收敛为一个组件：
+`loading` 渲染 Spinner 占位；`error` 非空渲染 Alert 样式错误框与可选的
+`Retry` 按钮（`Error` 实例自动取 `message`，`errorText` 可覆盖）；否则
+渲染 children。两者同时为真时 `loading` 优先——重试路径（旧错误未清除
+时再次进入加载）显示占位而非过期错误。文案全部可配；只有传入 `onRetry`
+才渲染重试按钮。
+
+```jsx
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/async-section.css';
+import { AsyncSection } from 'haze-ui';
+
+<AsyncSection loading={loading} error={error} onRetry={refetch}>
+  {data}
+</AsyncSection>
+```
+
 ## react-f0rm 集成
 
 react-f0rm 持有表单字段状态，它的无头 `useField` hook 是唯一的绑定层——
