@@ -36,6 +36,34 @@ describe('Popover', () => {
     expect(document.getElementById(panelId)).toHaveClass('custom');
   });
 
+  it('is Tab-focusable and exposes aria-haspopup', async () => {
+    const user = userEvent.setup();
+    render(<Popover content="Popover body">Trigger</Popover>);
+    const trigger = screen.getByRole('button', {name: 'Trigger'});
+    expect(trigger).toHaveAttribute('tabindex', '0');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+
+    await user.tab();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('toggles with Enter and Space keys', async () => {
+    const user = userEvent.setup();
+    render(<Popover content="Body">Trigger</Popover>);
+    const trigger = screen.getByText('Trigger');
+    await user.tab();
+
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('closes on outside pointerdown in the fallback path', () => {
     render(<Popover content="Body">Trigger</Popover>);
     const trigger = screen.getByText('Trigger');

@@ -55,10 +55,21 @@ export default function Popover({
         // aria-allowed-attr). The trigger span is the clickable popover
         // trigger — role=button is its honest semantics.
         role='button'
+        tabIndex={0}
+        aria-haspopup='true'
         aria-expanded={open}
         aria-controls={id}
         onPointerDown={floating.onTriggerPointerDown}
         onClick={floating.onTriggerClick}
+        onKeyDown={(e) => {
+          // The trigger is a span, not a button: Enter/Space have no
+          // native activation, so the button contract is completed here.
+          // preventDefault on Space keeps the page from scrolling.
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            floating.onTriggerClick();
+          }
+        }}
       >
         {children}
       </span>
