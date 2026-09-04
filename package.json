@@ -28,7 +28,8 @@
       "default": "./dist/tokens/index.js"
     },
     "./styles.css": "./dist/haze-ui.css",
-    "./css/*": "./dist/css/*"
+    "./css/*": "./dist/css/*",
+    "./css-manifest.json": "./dist/css-manifest.json"
   },
   "files": [
     "dist"

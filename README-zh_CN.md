@@ -50,6 +50,23 @@ export default function MyComponent() {
 `haze-ui/css/otp-input.css`）。按组件的文件只包含该组件自己的规则，
 主题/间距/排印等令牌始终来自 `haze-ui/css/tokens.css`。
 
+不要在工具链里硬编码这条 kebab-case 规则：子组件与受控核心（*Core）
+共用所在目录的家族文件（`InputCore` → `input.css`、`ButtonLink` →
+`button.css`、`Title`/`Text` → `typography.css`）。权威的「导出 → css
+文件」映射随包以数据形式发布：`haze-ui/css-manifest.json`，由
+`scripts/split-css.mjs` 在构建期从实际 CSS 产物推导生成（非手工维护）：
+
+```json
+{
+  "families": { "Button": "button", "ButtonLink": "button", "InputCore": "input", "useToast": "toast" },
+  "noCss": ["COMPONENT_TOKENS", "TOKEN_REGISTRY", "useControl", "useTitle"]
+}
+```
+
+`families` 覆盖所有有样式产物的具名导出（含家族归并）；`noCss` 列出
+无样式产物的纯逻辑导出。构建插件 / codemod 应读取该 manifest，而非
+自行推导文件名——映射与构建产物同步演进，不漂移。
+
 ## ButtonLink：带按钮外观的真链接
 
 长得像按钮的导航仍然应该「是」链接——`as={Button}` 会把 `href` 落到

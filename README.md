@@ -49,6 +49,25 @@ Component CSS files are kebab-case versions of the component name
 cover that component's rules — tokens (themes, spacing, typography)
 always come from `haze-ui/css/tokens.css`.
 
+Don't hardcode that kebab-case rule in tooling: sub-components and cores
+share their directory's family file (`InputCore` → `input.css`,
+`ButtonLink` → `button.css`, `Title`/`Text` → `typography.css`). The
+authoritative export → css-file mapping ships as data:
+`haze-ui/css-manifest.json`, generated at build time by
+`scripts/split-css.mjs` from the actual CSS output (never hand-edited):
+
+```json
+{
+  "families": { "Button": "button", "ButtonLink": "button", "InputCore": "input", "useToast": "toast" },
+  "noCss": ["COMPONENT_TOKENS", "TOKEN_REGISTRY", "useControl", "useTitle"]
+}
+```
+
+`families` covers every named export that has styles (family absorption
+included); `noCss` lists pure-logic exports with no css of their own.
+Bundler plugins and codemods should read this manifest instead of
+re-deriving file names — the mapping changes in lockstep with the build.
+
 ## ButtonLink: a real anchor with the Button skin
 
 Navigation that must look like a button should still *be* a link —
