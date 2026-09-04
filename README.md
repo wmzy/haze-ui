@@ -24,6 +24,13 @@ npm i haze-ui
 pnpm add haze-ui
 ```
 
+### Browser support
+
+Since v1.13, haze-ui colors are generated in **OKLCH**, with interaction
+states (hover/active/subtle/focus-ring) derived at runtime via CSS relative
+color syntax. This requires Chrome/Edge 119+, Safari 16.4+, or Firefox 128+;
+no HSL/hex fallbacks are shipped.
+
 ### Usage
 
 Import the component and its CSS. Two CSS loading modes:

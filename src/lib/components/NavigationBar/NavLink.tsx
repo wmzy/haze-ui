@@ -39,7 +39,7 @@ const link = css`
 
   &:hover {
     color: var(--haze-color-text);
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
   }
 `;
 

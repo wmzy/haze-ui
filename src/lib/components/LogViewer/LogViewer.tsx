@@ -31,7 +31,7 @@ const toolbar = css`
   display: flex;
   gap: var(--haze-space-1);
   padding: var(--haze-space-2) var(--haze-space-3);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   border-bottom: 1px solid var(--haze-color-border);
 `;
 
@@ -84,8 +84,8 @@ const levelBadge = css`
 
 const levelDebug = css`color: var(--haze-color-text-muted);`;
 const levelInfo = css`color: var(--haze-color-primary);`;
-const levelWarn = css`color: var(--haze-color-warning, #eab308);`;
-const levelError = css`color: var(--haze-color-danger, #dc2626);`;
+const levelWarn = css`color: var(--haze-color-warning);`;
+const levelError = css`color: var(--haze-color-danger);`;
 
 const messageStyle = css`
   flex: 1;

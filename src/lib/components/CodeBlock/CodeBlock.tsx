@@ -10,7 +10,7 @@ type CodeBlockProps = {
 
 const block = css`
   position: relative;
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   font-family: var(--haze-font-mono);

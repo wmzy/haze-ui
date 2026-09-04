@@ -27,9 +27,9 @@ const base = css`
 const solidColors = {
   default: css`background: var(--haze-color-bg-muted); color: var(--haze-color-text-secondary);`,
   primary: css`background: var(--haze-color-primary-subtle); color: var(--haze-color-primary);`,
-  success: css`background: color-mix(in srgb, var(--haze-color-success) 15%, transparent); color: var(--haze-color-success);`,
-  warning: css`background: color-mix(in srgb, var(--haze-color-warning) 15%, transparent); color: var(--haze-color-warning);`,
-  danger: css`background: color-mix(in srgb, var(--haze-color-danger) 15%, transparent); color: var(--haze-color-danger);`,
+  success: css`background: var(--haze-color-success-subtle); color: var(--haze-color-success);`,
+  warning: css`background: var(--haze-color-warning-subtle); color: var(--haze-color-warning);`,
+  danger: css`background: var(--haze-color-danger-subtle); color: var(--haze-color-danger);`,
 } as const;
 
 const outlineColors = {

@@ -25,7 +25,7 @@ const display = css`
   transition: background 0.15s;
 
   &:hover {
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
   }
 `;
 

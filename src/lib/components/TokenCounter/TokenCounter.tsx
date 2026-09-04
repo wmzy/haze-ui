@@ -15,7 +15,7 @@ const wrapper = css`
 
 const bar = css`
   height: 0.25rem;
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   border-radius: var(--haze-radius-full);
   overflow: hidden;
   margin-top: var(--haze-space-1);
@@ -28,8 +28,8 @@ const fill = css`
 `;
 
 const fillNormal = css`background: var(--haze-color-primary);`;
-const fillWarning = css`background: var(--haze-color-warning, #eab308);`;
-const fillDanger = css`background: var(--haze-color-danger, #dc2626);`;
+const fillWarning = css`background: var(--haze-color-warning);`;
+const fillDanger = css`background: var(--haze-color-danger);`;
 
 const info = css`
   display: flex;

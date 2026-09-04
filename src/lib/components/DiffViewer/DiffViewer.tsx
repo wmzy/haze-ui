@@ -26,7 +26,7 @@ const wrapper = css`
 const header = css`
   display: flex;
   padding: var(--haze-space-2) var(--haze-space-3);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-muted);
   border-bottom: 1px solid var(--haze-color-border);
@@ -58,19 +58,19 @@ const lineContent = css`
 `;
 
 const added = css`
-  background: var(--haze-color-success-light, #dcfce7);
+  background: var(--haze-color-success-subtle);
 `;
 
 const removed = css`
-  background: var(--haze-color-danger-light, #fee2e2);
+  background: var(--haze-color-danger-subtle);
 `;
 
 const addedPrefix = css`
-  color: var(--haze-color-success, #16a34a);
+  color: var(--haze-color-success);
 `;
 
 const removedPrefix = css`
-  color: var(--haze-color-danger, #dc2626);
+  color: var(--haze-color-danger);
 `;
 
 function computeDiff(oldText: string, newText: string): DiffLine[] {

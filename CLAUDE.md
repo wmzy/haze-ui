@@ -40,10 +40,13 @@ Compound components (Accordion, Tabs, Table, etc.) have sub-components in the sa
 
 All visual values are CSS custom properties prefixed `--haze-{category}-{name}`. Components must never hardcode colors, spacing, or typography — always reference tokens.
 
-- `colors.ts` — `lightTheme` / `darkTheme` Linaria classes
+Color tokens are **generated** from `src/lib/tokens/palette.ts` (primitive 12-step OKLCH scales + semantic aliases + relative-color interaction-state formulas like `oklch(from var(--haze-color-primary) calc(l - 0.045) c h)`). Edit `palette.ts` — never `colors.ts` / `registry.ts` by hand; both regenerate from the palette, and `registry.ts` + `contrast.test.ts` / `oklch.test.ts` verify the output against it.
+
+- `palette.ts` / `oklch.ts` — source of truth: OKLCH math + palette/scale definitions
+- `colors.ts` — generated `lightTheme` / `darkTheme` Linaria classes
 - `spacing.ts` — spacing, radius, shadow tokens
 - `typography.ts` — font, size, weight tokens
-- `registry.ts` — `TOKEN_REGISTRY` (all token definitions) and `COMPONENT_TOKENS` (per-component token mappings)
+- `registry.ts` — generated `TOKEN_REGISTRY` (all token definitions) and `COMPONENT_TOKENS` (per-component token mappings)
 
 ### Key Pattern: Controllable State
 

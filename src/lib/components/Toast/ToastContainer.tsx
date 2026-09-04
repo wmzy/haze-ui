@@ -14,6 +14,10 @@ type ToastPlacement =
   | 'bottom-left'
   | 'bottom-right';
 
+/* eslint-disable react-refresh/only-export-components --
+   toastPlacements is colocated with the component that renders it; this
+   file is not a fast-refresh boundary for consumers. */
+
 type ToastContainerProps = {
   children: ReactNode;
   /** Max simultaneous toasts; the oldest one is dropped on overflow. */

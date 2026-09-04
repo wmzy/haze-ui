@@ -24,20 +24,20 @@ const banner = css`
 
 const variants: Record<string, string> = {
   info: css`
-    background: var(--haze-color-info-light, #e0f2fe);
-    color: var(--haze-color-info, #0284c7);
+    background: var(--haze-color-info-subtle);
+    color: var(--haze-color-info);
   `,
   success: css`
-    background: var(--haze-color-success-light, #dcfce7);
-    color: var(--haze-color-success, #16a34a);
+    background: var(--haze-color-success-subtle);
+    color: var(--haze-color-success);
   `,
   warning: css`
-    background: var(--haze-color-warning-light, #fef9c3);
-    color: var(--haze-color-warning, #ca8a04);
+    background: var(--haze-color-warning-subtle);
+    color: var(--haze-color-warning);
   `,
   danger: css`
-    background: var(--haze-color-danger-light, #fee2e2);
-    color: var(--haze-color-danger, #dc2626);
+    background: var(--haze-color-danger-subtle);
+    color: var(--haze-color-danger);
   `,
 };
 

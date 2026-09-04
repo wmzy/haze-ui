@@ -13,7 +13,7 @@ const tag = css`
   align-items: center;
   gap: var(--haze-space-1);
   padding: var(--haze-space-1) var(--haze-space-3);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   color: var(--haze-color-text);
   border-radius: var(--haze-radius-full);
   font-size: var(--haze-text-sm);

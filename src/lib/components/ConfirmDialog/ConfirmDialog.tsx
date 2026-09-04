@@ -73,7 +73,7 @@ const cancelBtn = css`
   color: var(--haze-color-text);
 
   &:hover {
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
   }
 `;
 
@@ -88,12 +88,18 @@ const confirmBtn = css`
 `;
 
 const dangerBtn = css`
-  background: var(--haze-color-danger, #dc2626);
-  border: 1px solid var(--haze-color-danger, #dc2626);
-  color: white;
+  background: var(--haze-color-danger);
+  border: 1px solid var(--haze-color-danger);
+  color: var(--haze-color-text-inverse);
 
   &:hover {
-    opacity: 0.9;
+    background: var(--haze-color-danger-hover);
+    border-color: var(--haze-color-danger-hover);
+  }
+
+  &:active {
+    background: var(--haze-color-danger-active);
+    border-color: var(--haze-color-danger-active);
   }
 `;
 

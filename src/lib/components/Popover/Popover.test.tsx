@@ -288,8 +288,10 @@ describe('Popover (native popover API)', () => {
 
 type MockRect = {top: number; left: number; bottom: number; right: number; width: number; height: number};
 
+// Plain object (cast at the mock's return): spreading a DOMRect-typed
+// value would drop its class prototype (no-misused-spread).
 const zeroRect = () =>
-  ({top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({})}) as DOMRect;
+  ({top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({})});
 
 /** Point panel/trigger elements at controlled rects; jsdom layout is zero. */
 function mockRects(panelRect: MockRect, triggerRect: MockRect) {
@@ -418,7 +420,7 @@ describe('tier-2 placement: viewport flip (placeFloatingPanel)', () => {
     try {
       render(<Popover content="Body">Trigger</Popover>);
       fireEvent.click(screen.getByText('Trigger'));
-      const panelEl = document.querySelector('[popover]') as HTMLElement;
+      const panelEl = document.querySelector<HTMLElement>('[popover]')!;
       expect(panelEl.style.top).toBe('500px');
       expect(panelEl.style.left).toBe('100px');
     } finally {

@@ -26,19 +26,19 @@ const variants = {
     color: var(--haze-color-text-secondary);
   `,
   success: css`
-    background: color-mix(in srgb, var(--haze-color-success) 15%, transparent);
+    background: var(--haze-color-success-subtle);
     color: var(--haze-color-success);
   `,
   warning: css`
-    background: color-mix(in srgb, var(--haze-color-warning) 15%, transparent);
+    background: var(--haze-color-warning-subtle);
     color: var(--haze-color-warning);
   `,
   danger: css`
-    background: color-mix(in srgb, var(--haze-color-danger) 15%, transparent);
+    background: var(--haze-color-danger-subtle);
     color: var(--haze-color-danger);
   `,
   info: css`
-    background: color-mix(in srgb, var(--haze-color-info) 15%, transparent);
+    background: var(--haze-color-info-subtle);
     color: var(--haze-color-info);
   `,
 } as const;

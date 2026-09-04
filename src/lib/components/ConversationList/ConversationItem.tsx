@@ -27,12 +27,12 @@ const item = css`
   color: var(--haze-color-text);
 
   &:hover {
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
   }
 `;
 
 const activeItem = css`
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
 `;
 
 const body = css`

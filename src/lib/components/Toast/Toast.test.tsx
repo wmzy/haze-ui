@@ -145,7 +145,7 @@ describe('Toast', () => {
 
     vi.advanceTimersByTime(2000);
     rerender(
-      <Toast onClose={() => onClose()} duration={3000}>Message</Toast>
+      <Toast onClose={() => { onClose(); }} duration={3000}>Message</Toast>
     );
     // Only 1000ms of budget remain; a re-armed timer would need the full 3000ms.
     vi.advanceTimersByTime(1000);

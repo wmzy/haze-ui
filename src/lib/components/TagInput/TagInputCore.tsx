@@ -55,7 +55,7 @@ const tag = css`
   align-items: center;
   gap: var(--haze-space-1);
   padding: var(--haze-space-0) var(--haze-space-2);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   border-radius: var(--haze-radius-sm);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);

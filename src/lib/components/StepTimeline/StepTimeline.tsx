@@ -67,15 +67,15 @@ const markerActive = css`
 `;
 
 const markerDone = css`
-  border-color: var(--haze-color-success, #16a34a);
-  background: var(--haze-color-success, #16a34a);
-  color: white;
+  border-color: var(--haze-color-success);
+  background: var(--haze-color-success);
+  color: var(--haze-color-text-inverse);
 `;
 
 const markerError = css`
-  border-color: var(--haze-color-danger, #dc2626);
-  background: var(--haze-color-danger, #dc2626);
-  color: white;
+  border-color: var(--haze-color-danger);
+  background: var(--haze-color-danger);
+  color: var(--haze-color-text-inverse);
 `;
 
 const body = css`

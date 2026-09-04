@@ -14,7 +14,7 @@ type ApprovalCardProps = {
 };
 
 const card = css`
-  border: 1px solid var(--haze-color-warning, #eab308);
+  border: 1px solid var(--haze-color-warning);
   border-radius: var(--haze-radius-md);
   overflow: hidden;
   font-family: var(--haze-font-sans);
@@ -23,7 +23,7 @@ const card = css`
 
 const header = css`
   padding: var(--haze-space-3) var(--haze-space-4);
-  background: var(--haze-color-warning-light, #fef9c3);
+  background: var(--haze-color-warning-subtle);
   font-size: var(--haze-text-sm);
   font-weight: var(--haze-weight-medium);
   color: var(--haze-color-text);
@@ -67,7 +67,7 @@ const denyBtn = css`
   color: var(--haze-color-text);
 
   &:hover {
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
   }
 `;
 

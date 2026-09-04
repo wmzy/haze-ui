@@ -32,15 +32,15 @@ const variants = {
     color: var(--haze-color-primary);
   `,
   success: css`
-    background: color-mix(in srgb, var(--haze-color-success) 15%, transparent);
+    background: var(--haze-color-success-subtle);
     color: var(--haze-color-success);
   `,
   warning: css`
-    background: color-mix(in srgb, var(--haze-color-warning) 15%, transparent);
+    background: var(--haze-color-warning-subtle);
     color: var(--haze-color-warning);
   `,
   danger: css`
-    background: color-mix(in srgb, var(--haze-color-danger) 15%, transparent);
+    background: var(--haze-color-danger-subtle);
     color: var(--haze-color-danger);
   `,
 } as const;

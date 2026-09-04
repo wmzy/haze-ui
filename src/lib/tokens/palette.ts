@@ -1,0 +1,317 @@
+/**
+ * OKLCH-derived color palette — the single source of truth for haze-ui color
+ * tokens.
+ *
+ * Primitive 12-step scales are seeded from the hex values of the previous
+ * hand-tuned token system, so every semantic base color lands within ΔE ≤ 1.0
+ * of its predecessor. Semantic tokens alias primitive steps; interaction
+ * states (hover / active / subtle / focus-ring / border-hover) are emitted as
+ * CSS relative-color formulas so consumer overrides of a base color propagate
+ * to its derived states at runtime.
+ */
+
+import type {Oklch} from './oklch';
+
+import {clampChroma, formatOklch, parseHex, parseOklch} from './oklch';
+
+export type Mode = 'light' | 'dark';
+export type Family = 'gray' | 'blue' | 'green' | 'amber' | 'red';
+
+export type PrimitiveScales = Record<Mode, Record<Family, readonly string[]>>;
+
+export type SemanticColorToken = {
+  /** CSS custom property name, e.g. '--haze-color-primary'. */
+  name: string;
+  /** Human-readable label for the docs registry. */
+  label: string;
+  /** Emitted CSS value per mode: a primitive alias or a relative-color formula. */
+  css: Record<Mode, string>;
+  /** Concrete computed value per mode (formula math applied to the aliased base). */
+  resolved: Record<Mode, Oklch>;
+};
+
+type ModeParams = {
+  /** Hue-preserving lightness shift for hover states (added to l). */
+  hover: number;
+  /** Lightness shift for active states (added to l). */
+  active: number;
+  /** Lightness shift for border-hover (added to l). */
+  borderHover: number;
+  /** Fixed lightness used by subtle backgrounds. */
+  subtleL: number;
+  /** Chroma damping factor used by subtle backgrounds (multiplied into c). */
+  subtleC: number;
+};
+
+/**
+ * Interaction-state parameters. The values are chosen so the resolved states
+ * reproduce the previous hand-tuned primary states within ΔE ≤ 1
+ * (light #0052cc/#003d99/#e6f0ff, dark #6aa6ff/#80b3ff/#1a2e4a). The same
+ * parameters are applied to every semantic family.
+ */
+const DERIVED_PARAMS: Record<Mode, ModeParams> = {
+  light: {hover: -0.045, active: -0.09, borderHover: -0.09, subtleL: 0.945, subtleC: 0.2},
+  dark: {hover: 0.05, active: 0.09, borderHover: 0.08, subtleL: 0.26, subtleC: 0.35},
+};
+
+const FOCUS_RING_ALPHA = 0.4;
+
+/**
+ * Lightness nudge applied to the gray-9 anchor (= text-muted). Needed to
+ * clear the 3.0:1 contrast floor on bg-muted in both modes; the resulting ΔE
+ * against the old hexes (0.008 light / 0.014 dark) is far inside the ≤ 1.0
+ * migration budget.
+ */
+const TEXT_MUTED_ADJUST: Record<Mode, number> = {light: -0.008, dark: 0.014};
+
+type ScaleSeed = Readonly<Record<number, string>>;
+
+/**
+ * Migration seeds: step → previous hex value. Anchored steps are reproduced
+ * exactly (up to 3-decimal OKLCH rounding); the remaining steps are
+ * interpolated (lightness monotonic 1→12, chroma peaking at the anchor steps
+ * and tapering toward both ends).
+ */
+const SEEDS: Record<Mode, Record<Family, ScaleSeed>> = {
+  light: {
+    gray: {1: '#ffffff', 2: '#f7f8fa', 3: '#eef0f4', 4: '#e0e0e0', 9: '#8a8a8a', 11: '#4a4a4a', 12: '#1a1a1a'},
+    blue: {9: '#0066ff', 10: '#2563eb'},
+    green: {9: '#15803d'},
+    amber: {9: '#f59e0b'},
+    red: {9: '#dc2626'},
+  },
+  dark: {
+    gray: {1: '#121212', 2: '#1e1e1e', 3: '#2a2a2a', 4: '#333333', 9: '#707070', 11: '#b0b0b0', 12: '#e8e8e8'},
+    blue: {8: '#3b82f6', 9: '#4d94ff'},
+    green: {8: '#22c55e'},
+    amber: {8: '#fbbf24'},
+    red: {8: '#ef4444'},
+  },
+};
+
+/** Endpoints of chromatic scales: light runs near-white → near-black, dark the inverse. */
+const CHROMATIC_ENDPOINTS: Record<Mode, {l1: number; l12: number; c1: number; c12: number}> = {
+  light: {l1: 0.982, l12: 0.16, c1: 0.018, c12: 0.045},
+  dark: {l1: 0.155, l12: 0.982, c1: 0.03, c12: 0.012},
+};
+
+type Point = {x: number; y: number};
+
+/** Piecewise-linear interpolation over sorted points (clamped at both ends). */
+function interpolateAt(points: readonly Point[], x: number): number {
+  const first = points[0]!;
+  if (x <= first.x) return first.y;
+  for (let i = 1; i < points.length; i++) {
+    const point = points[i]!;
+    if (x <= point.x) {
+      const previous = points[i - 1]!;
+      const t = (x - previous.x) / (point.x - previous.x);
+      return previous.y + t * (point.y - previous.y);
+    }
+  }
+  return points[points.length - 1]!.y;
+}
+
+function seedAnchors(seed: ScaleSeed, mode: Mode, gray: boolean): readonly {step: number; color: Oklch}[] {
+  return Object.entries(seed)
+    .map(([step, hex]) => {
+      const parsed = parseHex(hex);
+      const isTextMutedStep = gray && Number(step) === 9;
+      const l = isTextMutedStep ? parsed.l + TEXT_MUTED_ADJUST[mode] : parsed.l;
+      // The gray family is achromatic by definition: drop the residual chroma
+      // the old hexes carried (~0.005 — imperceptible, ΔE-wise).
+      return {step: Number(step), color: gray ? {l, c: 0, h: 0} : parsed};
+    })
+    .sort((a, b) => a.step - b.step);
+}
+
+function formatSteps(luminancePoints: readonly Point[], chromaAt: (step: number) => number, hueAt: (step: number) => number): readonly string[] {
+  const steps: string[] = [];
+  for (let step = 1; step <= 12; step++) {
+    // Gamut-clamp (chroma reduction at fixed lightness/hue) every step.
+    steps.push(formatOklch(clampChroma({l: interpolateAt(luminancePoints, step), c: chromaAt(step), h: hueAt(step)})));
+  }
+  return steps;
+}
+
+function buildGrayScale(seed: ScaleSeed, mode: Mode): readonly string[] {
+  const anchors = seedAnchors(seed, mode, true);
+  return formatSteps(anchors.map((a) => ({x: a.step, y: a.color.l})), () => 0, () => 0);
+}
+
+function buildChromaticScale(seed: ScaleSeed, mode: Mode): readonly string[] {
+  const anchors = seedAnchors(seed, mode, false);
+  const endpoints = CHROMATIC_ENDPOINTS[mode];
+  const luminancePoints = [{x: 1, y: endpoints.l1}, ...anchors.map((a) => ({x: a.step, y: a.color.l})), {x: 12, y: endpoints.l12}];
+  const chromaPoints = [{x: 1, y: endpoints.c1}, ...anchors.map((a) => ({x: a.step, y: a.color.c})), {x: 12, y: endpoints.c12}];
+  const huePoints = [
+    {x: 1, y: anchors[0]!.color.h},
+    ...anchors.map((a) => ({x: a.step, y: a.color.h})),
+    {x: 12, y: anchors[anchors.length - 1]!.color.h},
+  ];
+  return formatSteps(
+    luminancePoints,
+    (step) => interpolateAt(chromaPoints, step),
+    (step) => interpolateAt(huePoints, step),
+  );
+}
+
+const PRIMITIVES: PrimitiveScales = {
+  light: {
+    gray: buildGrayScale(SEEDS.light.gray, 'light'),
+    blue: buildChromaticScale(SEEDS.light.blue, 'light'),
+    green: buildChromaticScale(SEEDS.light.green, 'light'),
+    amber: buildChromaticScale(SEEDS.light.amber, 'light'),
+    red: buildChromaticScale(SEEDS.light.red, 'light'),
+  },
+  dark: {
+    gray: buildGrayScale(SEEDS.dark.gray, 'dark'),
+    blue: buildChromaticScale(SEEDS.dark.blue, 'dark'),
+    green: buildChromaticScale(SEEDS.dark.green, 'dark'),
+    amber: buildChromaticScale(SEEDS.dark.amber, 'dark'),
+    red: buildChromaticScale(SEEDS.dark.red, 'dark'),
+  },
+};
+
+function primitiveAt(mode: Mode, family: Family, step: number): string {
+  const value = PRIMITIVES[mode][family][step - 1];
+  if (value === undefined) {
+    throw new Error(`Missing primitive ${family}-${step} in ${mode} mode`);
+  }
+  return value;
+}
+
+const STATUS_FAMILY: Record<StatusKey, Family> = {primary: 'blue', success: 'green', warning: 'amber', danger: 'red', info: 'blue'};
+
+/** Steps are fitted to lightness order: light scales darken toward 12, dark scales lighten. */
+const STATUS_STEP: Record<Mode, Record<StatusKey, number>> = {
+  light: {primary: 9, success: 9, warning: 9, danger: 9, info: 10},
+  dark: {primary: 9, success: 8, warning: 8, danger: 8, info: 8},
+};
+
+const NEUTRAL_STEP: Record<NeutralKey, number> = {
+  bg: 1,
+  'bg-subtle': 2,
+  'bg-muted': 3,
+  text: 12,
+  'text-secondary': 11,
+  'text-muted': 9,
+  border: 4,
+};
+
+type StatusKey = 'primary' | 'success' | 'warning' | 'danger' | 'info';
+type NeutralKey = 'bg' | 'bg-subtle' | 'bg-muted' | 'text' | 'text-secondary' | 'text-muted' | 'border';
+type DerivedKind = 'hover' | 'active' | 'subtle' | 'border-hover' | 'focus-ring';
+
+const primitiveVar = (family: Family, step: number): string => `var(--haze-${family}-${step})`;
+
+const primitiveResolved = (mode: Mode, family: Family, step: number): Oklch => parseOklch(primitiveAt(mode, family, step));
+
+const lightnessCalc = (delta: number): string => `calc(l ${delta < 0 ? '-' : '+'} ${Math.abs(delta)})`;
+
+/** CSS relative-color formula: derived at runtime from the base token, so base overrides propagate. */
+function derivedCss(mode: Mode, baseVar: string, kind: DerivedKind): string {
+  const params = DERIVED_PARAMS[mode];
+  switch (kind) {
+    case 'hover':
+      return `oklch(from ${baseVar} ${lightnessCalc(params.hover)} c h)`;
+    case 'active':
+      return `oklch(from ${baseVar} ${lightnessCalc(params.active)} c h)`;
+    case 'subtle':
+      return `oklch(from ${baseVar} ${params.subtleL} calc(c * ${params.subtleC}) h)`;
+    case 'border-hover':
+      return `oklch(from ${baseVar} ${lightnessCalc(params.borderHover)} c h)`;
+    case 'focus-ring':
+      return `oklch(from ${baseVar} l c h / ${FOCUS_RING_ALPHA})`;
+  }
+}
+
+/** Same math the relative-color formulas perform, applied in TypeScript. */
+function derivedResolved(mode: Mode, base: Oklch, kind: DerivedKind): Oklch {
+  const params = DERIVED_PARAMS[mode];
+  switch (kind) {
+    case 'hover':
+      return clampChroma({l: base.l + params.hover, c: base.c, h: base.h});
+    case 'active':
+      return clampChroma({l: base.l + params.active, c: base.c, h: base.h});
+    case 'subtle':
+      return clampChroma({l: params.subtleL, c: base.c * params.subtleC, h: base.h});
+    case 'border-hover':
+      return clampChroma({l: base.l + params.borderHover, c: base.c, h: base.h});
+    case 'focus-ring':
+      return {l: base.l, c: base.c, h: base.h, alpha: FOCUS_RING_ALPHA};
+  }
+}
+
+function aliasToken(name: string, label: string, family: Family, step: Record<Mode, number>): SemanticColorToken {
+  return {
+    name,
+    label,
+    css: {light: primitiveVar(family, step.light), dark: primitiveVar(family, step.dark)},
+    resolved: {light: primitiveResolved('light', family, step.light), dark: primitiveResolved('dark', family, step.dark)},
+  };
+}
+
+function derivedToken(name: string, label: string, baseName: string, base: Record<Mode, Oklch>, kind: DerivedKind): SemanticColorToken {
+  const baseVar = `var(${baseName})`;
+  return {
+    name,
+    label,
+    css: {light: derivedCss('light', baseVar, kind), dark: derivedCss('dark', baseVar, kind)},
+    resolved: {light: derivedResolved('light', base.light, kind), dark: derivedResolved('dark', base.dark, kind)},
+  };
+}
+
+function statusGroup(key: StatusKey): readonly SemanticColorToken[] {
+  const base = aliasToken(`--haze-color-${key}`, key[0]!.toUpperCase() + key.slice(1), STATUS_FAMILY[key], {
+    light: STATUS_STEP.light[key],
+    dark: STATUS_STEP.dark[key],
+  });
+  return [
+    base,
+    derivedToken(`${base.name}-hover`, `${base.label} Hover`, base.name, base.resolved, 'hover'),
+    derivedToken(`${base.name}-active`, `${base.label} Active`, base.name, base.resolved, 'active'),
+    derivedToken(`${base.name}-subtle`, `${base.label} Subtle`, base.name, base.resolved, 'subtle'),
+  ];
+}
+
+function neutralToken(key: NeutralKey, label: string): SemanticColorToken {
+  return aliasToken(`--haze-color-${key}`, label, 'gray', {light: NEUTRAL_STEP[key], dark: NEUTRAL_STEP[key]});
+}
+
+const primaryTokens = statusGroup('primary');
+const primaryBase = primaryTokens[0]!;
+
+/**
+ * Text inverse sits on saturated fills, not on the theme background: light
+ * mode is pure white, dark mode reuses the light scale's darkest gray (the
+ * previous #1a1a1a) rather than any dark-mode step.
+ */
+const textInverse: SemanticColorToken = {
+  name: '--haze-color-text-inverse',
+  label: 'Text Inverse',
+  css: {light: 'oklch(1 0 0)', dark: primitiveAt('light', 'gray', 12)},
+  resolved: {light: {l: 1, c: 0, h: 0}, dark: primitiveResolved('light', 'gray', 12)},
+};
+
+const borderToken = neutralToken('border', 'Border');
+
+const SEMANTIC_COLOR_TOKENS: readonly SemanticColorToken[] = [
+  ...primaryTokens,
+  neutralToken('bg', 'Background'),
+  neutralToken('bg-subtle', 'Background Subtle'),
+  neutralToken('bg-muted', 'Background Muted'),
+  neutralToken('text', 'Text'),
+  neutralToken('text-secondary', 'Text Secondary'),
+  neutralToken('text-muted', 'Text Muted'),
+  textInverse,
+  borderToken,
+  derivedToken('--haze-color-border-hover', 'Border Hover', borderToken.name, borderToken.resolved, 'border-hover'),
+  ...statusGroup('success'),
+  ...statusGroup('warning'),
+  ...statusGroup('danger'),
+  ...statusGroup('info'),
+  derivedToken('--haze-color-focus-ring', 'Focus Ring', primaryBase.name, primaryBase.resolved, 'focus-ring'),
+];
+
+export {PRIMITIVES, SEMANTIC_COLOR_TOKENS};

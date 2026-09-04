@@ -1,5 +1,6 @@
 import type {ChangeEvent} from 'react';
 import type {TokenDef} from '@/lib';
+import type {Oklch} from '@/lib/tokens';
 import type {CustomTheme, ResolvedMode, ThemeTokens} from '@/contexts/theme';
 
 import {useCallback, useMemo, useRef, useState} from 'react';
@@ -25,6 +26,7 @@ import {
   Switch,
   Slider,
 } from '@/lib';
+import {formatOklch, parseHex, parseOklch} from '@/lib/tokens';
 import {useTheme, buildDefaultTokens} from '@/contexts/theme';
 import {page, section} from '@/views/ComponentDetail/styles';
 
@@ -79,30 +81,82 @@ const tokenInput = css`
   min-width: 0;
 `;
 
-const colorInputWrap = css`
+const colorRow = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--haze-space-2);
+  padding: var(--haze-space-2) 0;
+  border-bottom: 1px solid var(--haze-color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const colorHeader = css`
   display: flex;
   align-items: center;
-  gap: var(--haze-space-2);
+  gap: var(--haze-space-3);
+  min-width: 0;
+`;
+
+const colorValueWrap = css`
   flex: 1;
   min-width: 0;
 `;
 
-const colorPicker = css`
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--haze-color-border);
+const colorSwatch = css`
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
   border-radius: var(--haze-radius-sm);
-  padding: 0;
-  cursor: pointer;
-  background: none;
+  border: 1px solid var(--haze-color-border);
+`;
 
-  &::-webkit-color-swatch-wrapper {
-    padding: 2px;
+const channelGrid = css`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--haze-space-3);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
-  &::-webkit-color-swatch {
-    border: none;
-    border-radius: 2px;
+`;
+
+const channelRow = css`
+  display: flex;
+  align-items: center;
+  gap: var(--haze-space-2);
+  min-width: 0;
+`;
+
+const channelLabel = css`
+  flex: 0 0 auto;
+  font-family: var(--haze-font-mono);
+  font-size: var(--haze-text-xs);
+  color: var(--haze-color-text-muted);
+`;
+
+const channelSlider = css`
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  accent-color: var(--haze-color-primary);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    accent-color: var(--haze-color-border);
   }
+`;
+
+const channelReadout = css`
+  flex: 0 0 auto;
+  min-width: 3.5em;
+  text-align: right;
+  font-family: var(--haze-font-mono);
+  font-size: var(--haze-text-xs);
+  color: var(--haze-color-text-secondary);
 `;
 
 const nativeInput = css`
@@ -204,21 +258,97 @@ const hiddenFileInput = css`
 
 const CATEGORIES: TokenDef['category'][] = ['color', 'typography', 'spacing', 'radius', 'shadow'];
 
-function isHexLike(v: string) {
-  return /^#[0-9a-fA-F]{3,8}$/.test(v);
+type ChannelKey = 'l' | 'c' | 'h';
+
+const CHANNELS: {key: ChannelKey; short: string; min: number; max: number; step: number}[] = [
+  {key: 'l', short: 'L', min: 0, max: 1, step: 0.005},
+  {key: 'c', short: 'C', min: 0, max: 0.4, step: 0.005},
+  {key: 'h', short: 'H', min: 0, max: 360, step: 1},
+];
+
+const CHANNEL_NAMES: Record<ChannelKey, string> = {l: 'lightness', c: 'chroma', h: 'hue'};
+
+/** Parse a hex or oklch() color string; null when the value is not one of those. */
+function parseColorValue(value: string): Oklch | null {
+  const v = value.trim();
+  const parse = v.startsWith('#')
+    ? parseHex
+    : /^oklch\(/i.test(v)
+      ? parseOklch
+      : null;
+  if (!parse) return null;
+  try {
+    return parse(v);
+  } catch {
+    return null;
+  }
 }
 
-function rgbaToHex(rgba: string): string {
-  const m = /rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/.exec(rgba);
-  if (!m) return '#000000';
-  const [, r, g, b] = m;
-  return `#${[r, g, b].map((c) => Number(c).toString(16).padStart(2, '0')).join('')}`;
+/** Replace one OKLCH channel, preserving the others (including alpha). */
+function withChannel(color: Oklch, key: ChannelKey, v: number): Oklch {
+  if (key === 'l') return {...color, l: v};
+  if (key === 'c') return {...color, c: v};
+  return {...color, h: v};
 }
 
-function toPickerValue(v: string): string {
-  if (isHexLike(v)) return v;
-  if (v.startsWith('rgba') || v.startsWith('rgb')) return rgbaToHex(v);
-  return '#000000';
+function formatChannelReadout(key: ChannelKey, v: number): string {
+  return key === 'h' ? `${Math.round(v)}°` : v.toFixed(3);
+}
+
+type ColorTokenRowProps = {
+  name: string;
+  label: string;
+  value: string;
+  onChange: (name: string, value: string) => void;
+};
+
+function ColorTokenRow({name, label, value, onChange}: ColorTokenRowProps) {
+  const parsed = parseColorValue(value);
+  const setChannel = (key: ChannelKey, v: number) => {
+    if (!parsed) return;
+    onChange(name, formatOklch(withChannel(parsed, key, v)));
+  };
+
+  return (
+    <div className={colorRow}>
+      <div className={colorHeader}>
+        <span className={tokenLabel} title={name}>{label}</span>
+        <span className={colorSwatch} style={{background: value}} />
+        <div className={colorValueWrap}>
+          <input
+            className={nativeInput}
+            value={value}
+            aria-label={`${label} value`}
+            onChange={(e) => onChange(name, e.target.value)}
+          />
+        </div>
+      </div>
+      <div className={channelGrid}>
+        {CHANNELS.map((ch) => {
+          const num = parsed ? parsed[ch.key] : 0;
+          return (
+            <div key={ch.key} className={channelRow}>
+              <span className={channelLabel} aria-hidden="true">{ch.short}</span>
+              <input
+                type="range"
+                className={channelSlider}
+                min={ch.min}
+                max={ch.max}
+                step={ch.step}
+                value={num}
+                disabled={!parsed}
+                aria-label={`${label} ${CHANNEL_NAMES[ch.key]}`}
+                onChange={(e) => setChannel(ch.key, Number(e.target.value))}
+              />
+              <span className={channelReadout} aria-hidden="true">
+                {parsed ? formatChannelReadout(ch.key, num) : '—'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function countTokens(tokens: ThemeTokens): number {
@@ -367,6 +497,8 @@ export default function ThemeEditor() {
       <h1>Theme Editor</h1>
       <p style={{color: 'var(--haze-color-text-secondary)', marginBottom: 'var(--haze-space-6)'}}>
         Customize design tokens for both light and dark modes. Each theme stores separate overrides per mode.
+        Color values are OKLCH — edit lightness / chroma / hue per token, or paste any CSS color;
+        overriding a base color re-derives its hover / active / subtle states live in the preview.
       </p>
 
       {customThemes.length > 0 && (
@@ -467,32 +599,27 @@ export default function ThemeEditor() {
                 <div className={section}>
                   {tokens.map((token) => {
                     const val = currentValue(token.name);
+                    if (token.type === 'color') {
+                      return (
+                        <ColorTokenRow
+                          key={token.name}
+                          name={token.name}
+                          label={token.label}
+                          value={val}
+                          onChange={setToken}
+                        />
+                      );
+                    }
                     return (
                       <div key={token.name} className={tokenRow}>
                         <span className={tokenLabel} title={token.name}>{token.label}</span>
-                        {token.type === 'color' ? (
-                          <div className={colorInputWrap}>
-                            <input
-                              type="color"
-                              className={colorPicker}
-                              value={toPickerValue(val)}
-                              onChange={(e) => setToken(token.name, e.target.value)}
-                            />
-                            <input
-                              className={nativeInput}
-                              value={val}
-                              onChange={(e) => setToken(token.name, e.target.value)}
-                            />
-                          </div>
-                        ) : (
-                          <div className={tokenInput}>
-                            <input
-                              className={nativeInput}
-                              value={val}
-                              onChange={(e) => setToken(token.name, e.target.value)}
-                            />
-                          </div>
-                        )}
+                        <div className={tokenInput}>
+                          <input
+                            className={nativeInput}
+                            value={val}
+                            onChange={(e) => setToken(token.name, e.target.value)}
+                          />
+                        </div>
                       </div>
                     );
                   })}

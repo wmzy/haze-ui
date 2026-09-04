@@ -30,7 +30,7 @@ const avatarSlot = css`
   width: 2rem;
   height: 2rem;
   border-radius: var(--haze-radius-full);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@ const bubbleUser = css`
 `;
 
 const bubbleAssistant = css`
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   color: var(--haze-color-text);
   border-bottom-left-radius: var(--haze-radius-sm);
 `;
@@ -91,7 +91,7 @@ const statusText = css`
 `;
 
 const statusError = css`
-  color: var(--haze-color-danger, #dc2626);
+  color: var(--haze-color-danger);
 `;
 
 const roleMap = {

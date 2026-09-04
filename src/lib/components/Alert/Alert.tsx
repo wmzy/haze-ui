@@ -26,25 +26,25 @@ const base = css`
 
 const variants = {
   info: css`
-    background: color-mix(in srgb, var(--haze-color-info) 10%, transparent);
+    background: var(--haze-color-info-subtle);
     color: var(--haze-color-info);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-info) 25%, transparent);
   `,
   success: css`
-    background: color-mix(in srgb, var(--haze-color-success) 10%, transparent);
+    background: var(--haze-color-success-subtle);
     color: var(--haze-color-success);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-success) 25%, transparent);
   `,
   warning: css`
-    background: color-mix(in srgb, var(--haze-color-warning) 10%, transparent);
+    background: var(--haze-color-warning-subtle);
     color: var(--haze-color-warning);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
   `,
   danger: css`
-    background: color-mix(in srgb, var(--haze-color-danger) 10%, transparent);
+    background: var(--haze-color-danger-subtle);
     color: var(--haze-color-danger);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-danger) 25%, transparent);

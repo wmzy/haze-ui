@@ -53,7 +53,7 @@ const spin = css`
   }
 `;
 
-// 与 Alert danger 变体同一套 color-mix 配比，保持错误语义的视觉一致。
+// 与 Alert danger 变体同一套配色（subtle 背景 + 25% color-mix 边框），保持错误语义的视觉一致。
 const errorBox = css`
   display: flex;
   flex-direction: column;
@@ -61,7 +61,7 @@ const errorBox = css`
   gap: var(--haze-space-4);
   padding: var(--haze-space-3) var(--haze-space-4);
   border-radius: var(--haze-radius-md);
-  background: color-mix(in srgb, var(--haze-color-danger) 10%, transparent);
+  background: var(--haze-color-danger-subtle);
   border: 1px solid
     color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
   font-size: var(--haze-text-sm);

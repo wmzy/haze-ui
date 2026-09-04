@@ -25,7 +25,7 @@ const header = css`
   align-items: center;
   gap: var(--haze-space-2);
   padding: var(--haze-space-2) var(--haze-space-3);
-  background: var(--haze-color-muted);
+  background: var(--haze-color-bg-muted);
   font-family: var(--haze-font-mono);
   font-size: var(--haze-text-xs);
 `;
@@ -39,8 +39,8 @@ const statusIcon = css`
 
 const statusPending = css`background: var(--haze-color-text-muted);`;
 const statusRunning = css`background: var(--haze-color-primary); animation: pulse 1.5s infinite;`;
-const statusDone = css`background: var(--haze-color-success, #16a34a);`;
-const statusError = css`background: var(--haze-color-danger, #dc2626);`;
+const statusDone = css`background: var(--haze-color-success);`;
+const statusError = css`background: var(--haze-color-danger);`;
 
 const body = css`
   padding: var(--haze-space-3);

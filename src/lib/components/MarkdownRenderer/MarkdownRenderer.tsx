@@ -41,7 +41,7 @@ const wrapper = css`
   & code {
     font-family: var(--haze-font-mono);
     font-size: 0.875em;
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
     padding: 0.125em 0.375em;
     border-radius: var(--haze-radius-sm);
   }
@@ -49,7 +49,7 @@ const wrapper = css`
   & pre {
     margin-bottom: var(--haze-space-3);
     padding: var(--haze-space-4);
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
     border-radius: var(--haze-radius-md);
     overflow-x: auto;
 
@@ -84,7 +84,7 @@ const wrapper = css`
   }
 
   & th {
-    background: var(--haze-color-muted);
+    background: var(--haze-color-bg-muted);
     font-weight: var(--haze-weight-medium);
   }
 
