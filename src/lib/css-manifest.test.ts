@@ -23,11 +23,17 @@ const built = existsSync(path.join(distDir, 'css-manifest.json'));
 
 type CssManifest = { families: Record<string, string>; noCss: string[] };
 
+// describe.skip 仍会执行工厂函数（vitest 同 jest 语义：skip 只标记执行，
+// 收集阶段照跑）——dist 缺席时工厂里不能做文件 IO，否则普通 CI
+// （先 test 后 build）在本用例上套件级炸红。读操作一律以 built 门控。
+const manifest = built
+  ? (JSON.parse(
+      readFileSync(path.join(distDir, 'css-manifest.json'), 'utf8')
+    ) as CssManifest)
+  : { families: {}, noCss: [] };
+
 const manifestContract = built ? describe : describe.skip;
 manifestContract('dist 发布契约：css-manifest.json 与产物一致', () => {
-  const manifest = JSON.parse(
-    readFileSync(path.join(distDir, 'css-manifest.json'), 'utf8')
-  ) as CssManifest;
   const families = manifest.families;
   const noCss = manifest.noCss;
 
