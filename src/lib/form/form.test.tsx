@@ -1236,4 +1236,47 @@ describe('FormItem', () => {
     expect(seen).toEqual(['nope', 'ok@x.dev']);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('has no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {name: '', email: ''}});
+
+    // Same fixture as the aria-chain case above: a failed submit leaves a
+    // field with a visible validation error in the document.
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          label='Email'
+          validate={(v: string) =>
+            v.includes('@') ? undefined : 'must be an email'
+          }
+        >
+          {({id, errorId, invalid, value, onChange}) => (
+            <InputCore
+              id={id}
+              data-testid='email-input'
+              value={value}
+              onChange={onChange}
+              aria-describedby={errorId}
+              aria-invalid={invalid}
+            />
+          )}
+        </FormItem>
+        <button type='submit'>Submit</button>
+      </Form>
+    );
+
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(screen.getByRole('alert')).toHaveTextContent('must be an email');
+
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

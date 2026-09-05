@@ -55,6 +55,7 @@ export default function ContextMenu({
     setOpen: handleSetOpen,
     triggerRef: wrapperRef,
     panelRef: contentRef,
+    animated: true,
   });
 
   return (

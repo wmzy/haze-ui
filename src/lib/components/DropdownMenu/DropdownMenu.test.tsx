@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import DropdownMenu from './DropdownMenu';
@@ -61,15 +61,23 @@ describe('DropdownMenu', () => {
     );
     await user.click(screen.getByText('Open'));
     await user.click(screen.getByText('Item 1'));
-    expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+    // Animated exit: the panel unmounts once the fade-out settles —
+    // immediate in jsdom (no CSS durations), but across the double rAF
+    // of whenExitSettles, hence waitFor.
+    await waitFor(() =>
+      expect(screen.queryByText('Item 1')).not.toBeInTheDocument()
+    );
   });
 
-  it('hides content on outside pointerdown', () => {
+  it('hides content on outside pointerdown', async () => {
     renderMenu();
     fireEvent.click(screen.getByRole('button', { name: 'Open' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
     fireEvent.pointerDown(document.body);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    // Same animated-exit handover as above.
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    );
   });
 
   it('calls item onClick', async () => {
@@ -191,7 +199,7 @@ describe('DropdownMenu', () => {
     await user.keyboard('{ArrowDown}');
     expect(menuItems()[0]).toHaveFocus();
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
     expect(trigger).toHaveFocus();
   });
 
@@ -201,7 +209,7 @@ describe('DropdownMenu', () => {
     trigger.focus();
     await user.keyboard('{ArrowDown}');
     await user.keyboard('{Tab}');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
     expect(trigger).toHaveFocus();
   });
 
@@ -224,7 +232,7 @@ describe('DropdownMenu', () => {
     trigger.focus();
     await user.keyboard('{ArrowDown}');
     await user.keyboard('{Enter}');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
     expect(trigger).toHaveFocus();
   });
 
@@ -237,6 +245,36 @@ describe('DropdownMenu', () => {
     const tabbables = menuItems().filter((el) => el.tabIndex === 0);
     expect(tabbables).toHaveLength(1);
     expect(tabbables[0]).toBe(menuItems()[1]);
+  });
+
+  it('mirrors the animated lifecycle as data-state on the panel', () => {
+    renderMenu();
+    const trigger = screen.getByRole('button', { name: 'Open' });
+    fireEvent.click(trigger);
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'open');
+    fireEvent.click(menuItems()[0]!);
+    // 'closed' lands immediately (it drives the fade-out); the unmount
+    // is what waits for the exit to settle.
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'closed');
+  });
+
+  it('keeps the panel mounted during the exit window, then unmounts', async () => {
+    renderMenu();
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    fireEvent.pointerDown(document.body);
+    // Synchronously after close the panel is still mounted — fading out
+    // with data-state=closed. jsdom reports no CSS durations, so the
+    // settle completes across the double rAF of whenExitSettles.
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'closed');
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    );
+  });
+
+  it('renders nothing before the first open', () => {
+    renderMenu();
+    // `exited` starts true for a never-opened animated panel.
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('has no axe violations while open', async () => {
@@ -335,5 +373,135 @@ describe('DropdownMenu', () => {
   it('getEnabledMenuItems returns empty list for a null container', async () => {
     const { getEnabledMenuItems } = await import('../../utils/menuKeyboard');
     expect(getEnabledMenuItems(null)).toEqual([]);
+  });
+});
+
+// jsdom implements neither the Popover API nor ToggleEvent; polyfill the
+// minimal surface the component relies on (same approach as Popover's
+// tests) to exercise the native tier-2 path for collisionPadding.
+class ToggleEventPolyfill extends Event {
+  newState: string;
+  constructor(type: string, init: { newState: string }) {
+    super(type);
+    this.newState = init.newState;
+  }
+}
+
+function installNativePopover() {
+  Object.defineProperty(HTMLElement.prototype, 'popover', {
+    configurable: true,
+    value: 'manual',
+  });
+  HTMLElement.prototype.showPopover = function (this: HTMLElement) {
+    this.setAttribute('data-popover-open', '');
+    this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
+  };
+  HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
+    if (!this.hasAttribute('data-popover-open')) return;
+    this.removeAttribute('data-popover-open');
+    this.dispatchEvent(
+      new ToggleEventPolyfill('toggle', { newState: 'closed' })
+    );
+  };
+}
+
+type PopoverProtoPatch = {
+  popover?: unknown;
+  showPopover?: () => void;
+  hidePopover?: () => void;
+};
+
+function removeNativePopover() {
+  const proto = HTMLElement.prototype as PopoverProtoPatch;
+  delete proto.popover;
+  delete proto.showPopover;
+  delete proto.hidePopover;
+}
+
+type MockRect = {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+  width: number;
+  height: number;
+};
+
+// Plain object (cast at the mock's return): spreading a DOMRect-typed
+// value would drop its class prototype.
+const zeroRect = () =>
+  ({top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({})});
+
+/**
+ * Point the panel (popover element) and the trigger (a BUTTON — here the
+ * menu's own trigger and items share the shape; only the trigger's rect
+ * feeds placement) at controlled rects; jsdom layout is zero.
+ */
+function mockRects(panelRect: MockRect, triggerRect: MockRect) {
+  return vi
+    .spyOn(Element.prototype, 'getBoundingClientRect')
+    .mockImplementation(function (this: HTMLElement) {
+      if (this.hasAttribute('popover')) return {...zeroRect(), ...panelRect};
+      if (this.tagName === 'BUTTON') return {...zeroRect(), ...triggerRect};
+      return zeroRect();
+    });
+}
+
+describe('DropdownMenu collisionPadding (tier 2)', () => {
+  // jsdom viewport: 1024 x 768.
+  const panel = {top: 0, left: 0, bottom: 200, right: 150, width: 150, height: 200};
+  const trigger = {top: 300, left: 100, bottom: 330, right: 180, width: 80, height: 30};
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('shifts the panel into the padded viewport on open', () => {
+    installNativePopover();
+    vi.spyOn(CSS, 'supports').mockReturnValue(false);
+    // Trigger at the right edge: bottom start alignment overflows the
+    // cross axis, so the panel shifts to the padded viewport edge.
+    const rectSpy = mockRects(panel, {...trigger, left: 950, right: 1030});
+    try {
+      render(
+        <DropdownMenu collisionPadding={16}>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Alpha</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+      const panelEl = document.querySelector<HTMLElement>('[popover]')!;
+      // viewport 1024 − padding 16 − panel 150 = 858 (874 unpadded).
+      expect(panelEl.style.left).toBe('858px');
+      expect(panelEl.style.top).toBe('330px');
+    } finally {
+      rectSpy.mockRestore();
+      removeNativePopover();
+    }
+  });
+
+  it('keeps the unpadded default placement (collisionPadding unset)', () => {
+    installNativePopover();
+    vi.spyOn(CSS, 'supports').mockReturnValue(false);
+    const rectSpy = mockRects(panel, {...trigger, left: 950, right: 1030});
+    try {
+      render(
+        <DropdownMenu>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Alpha</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+      const panelEl = document.querySelector<HTMLElement>('[popover]')!;
+      // No padding: shift clamps to the raw viewport edge (1024 − 150).
+      expect(panelEl.style.left).toBe('874px');
+    } finally {
+      rectSpy.mockRestore();
+      removeNativePopover();
+    }
   });
 });

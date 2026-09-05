@@ -161,6 +161,26 @@ describe('Tooltip', () => {
     }
   });
 
+  it('mirrors the animated lifecycle as data-state on the bubble', () => {
+    vi.useFakeTimers();
+    try {
+      render(<TooltipHarness content="Tip" />);
+      const bubble = screen.getByRole('tooltip');
+      expect(bubble).toHaveAttribute('data-state', 'closed');
+      hover();
+      act(() => {
+        vi.advanceTimersByTime(150);
+      });
+      expect(bubble).toHaveAttribute('data-state', 'open');
+      leave();
+      // 'closed' lands immediately — it drives the fade-out; the hidden
+      // handover is what waits out the exit animation.
+      expect(bubble).toHaveAttribute('data-state', 'closed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(<Tooltip content="Helpful tip"><button>Hover me</button></Tooltip>);
@@ -182,5 +202,93 @@ describe('Tooltip', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Anchored-tier collision: the bubble span is nudged back into the
+// padded viewport via `translate` (jsdom's permissive CSS.supports keeps
+// the anchor branch active once the popover API is installed).
+// ---------------------------------------------------------------------------
+
+class ToggleEventPolyfill extends Event {
+  newState: string;
+  constructor(type: string, init: { newState: string }) {
+    super(type);
+    this.newState = init.newState;
+  }
+}
+
+function installNativePopover() {
+  Object.defineProperty(HTMLElement.prototype, 'popover', {
+    configurable: true,
+    value: 'manual',
+  });
+  HTMLElement.prototype.showPopover = function (this: HTMLElement) {
+    this.setAttribute('data-popover-open', '');
+    this.dispatchEvent(
+      new ToggleEventPolyfill('toggle', { newState: 'open' })
+    );
+  };
+  HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
+    if (!this.hasAttribute('data-popover-open')) return;
+    this.removeAttribute('data-popover-open');
+    this.dispatchEvent(
+      new ToggleEventPolyfill('toggle', { newState: 'closed' })
+    );
+  };
+}
+
+type PopoverProtoPatch = {
+  popover?: unknown;
+  showPopover?: () => void;
+  hidePopover?: () => void;
+};
+
+function removeNativePopover() {
+  const proto = HTMLElement.prototype as PopoverProtoPatch;
+  delete proto.popover;
+  delete proto.showPopover;
+  delete proto.hidePopover;
+}
+
+describe('Tooltip (anchored-tier collision)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('nudges the bubble inside the padded viewport with collisionPadding', () => {
+    installNativePopover();
+    // Bubble overflows the right edge by 50px: left 924 + width 150 > 1024.
+    const rectSpy = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.getAttribute('role') === 'tooltip') {
+          return {
+            top: 300, left: 924, bottom: 350, right: 1074,
+            width: 150, height: 50, x: 0, y: 0, toJSON: () => ({}),
+          };
+        }
+        return {
+          top: 0, left: 0, bottom: 0, right: 0,
+          width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}),
+        };
+      });
+    try {
+      render(
+        <Tooltip content="Tip" collisionPadding={24} open>
+          <button>Hover me</button>
+        </Tooltip>
+      );
+      // jsdom's UA sheet gives a not-really-open [popover] element
+      // display:none, so the role query must opt into hidden results.
+      const bubble = screen.getByRole('tooltip', { hidden: true });
+      // 1024 − 24 − 150 − 924 = −74 on the cross axis; 'top' placement
+      // keeps the primary axis to position-try-fallbacks.
+      expect(bubble.style.translate).toBe('-74px 0px');
+    } finally {
+      rectSpy.mockRestore();
+      removeNativePopover();
+    }
   });
 });

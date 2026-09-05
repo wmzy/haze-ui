@@ -72,6 +72,40 @@ describe('Menu', () => {
     expect(screen.getByTestId('open-state')).toHaveTextContent('false');
   });
 
+  it('focuses the first item on open and returns focus to the trigger on Escape', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu trigger={<button>Open</button>}>
+        <MenuItem>Action 1</MenuItem>
+        <MenuItem>Action 2</MenuItem>
+      </Menu>
+    );
+    const trigger = screen.getByText('Open');
+    await user.click(trigger);
+    // Opening moves focus into the menu (useFocusScope autoFocus).
+    expect(screen.getByText('Action 1')).toHaveFocus();
+    // Escape: focus used to drop to <body> once the hidden panel took
+    // the focused item out of the tab order — the scope returns it.
+    fireEvent.keyDown(screen.getByText('Action 1'), { key: 'Escape' });
+    expect(trigger).toHaveFocus();
+  });
+
+  it('mirrors the animated lifecycle as data-state without unmounting the panel', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu trigger={<button>Open</button>}>
+        <MenuItem>Action</MenuItem>
+      </Menu>
+    );
+    const menu = screen.getByRole('menu');
+    // Resident panel: mounted while closed, data-state drives the fade.
+    expect(menu).toHaveAttribute('data-state', 'closed');
+    await user.click(screen.getByText('Open'));
+    expect(menu).toHaveAttribute('data-state', 'open');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'closed');
+  });
+
   it('applies className to menu panel', () => {
     render(
       <Menu className="custom" trigger={<button>Open</button>}>

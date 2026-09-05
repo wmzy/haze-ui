@@ -46,7 +46,7 @@
     "lint": "eslint --fix src *.mjs",
     "deploy": "npm run build:demo && gh-pages -d dist",
     "test": "vitest run",
-    "test:e2e": "playwright test --config e2e/playwright.config.ts",
+    "test:e2e": "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1 playwright test --config e2e/playwright.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",

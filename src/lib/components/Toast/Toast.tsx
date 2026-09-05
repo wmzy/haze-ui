@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useRef } from 'react';
@@ -8,7 +8,7 @@ type ToastProps = {
   onClose: () => void;
   duration: number;
   children: ReactNode;
-};
+} & Omit<ComponentPropsWithRef<'div'>, 'children' | 'onClose'>;
 
 const base = css`
   display: flex;
@@ -21,7 +21,17 @@ const base = css`
   line-height: var(--haze-leading-normal);
   box-shadow: var(--haze-shadow-lg);
   pointer-events: auto;
-  animation: toastIn 0.2s ease-out;
+
+  /* Presence (mounted by ToastContainer) injects data-state on this root:
+   * open plays the entrance, closed plays the exit while the toast stays
+   * mounted until the animation settles. */
+  &[data-state='open'] {
+    animation: toastIn var(--haze-duration-normal) var(--haze-ease);
+  }
+
+  &[data-state='closed'] {
+    animation: toastOut var(--haze-duration-fast) var(--haze-ease);
+  }
 
   @keyframes toastIn {
     from {
@@ -31,6 +41,13 @@ const base = css`
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes toastOut {
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
     }
   }
 `;
@@ -99,6 +116,8 @@ export default function Toast({
   onClose,
   duration,
   children,
+  className,
+  ...rest
 }: ToastProps) {
   const remainingRef = useRef(duration);
   const startedAtRef = useRef(0);
@@ -155,7 +174,7 @@ export default function Toast({
   return (
     <div
       role='alert'
-      x-class={[base, variants[variant]]}
+      x-class={[base, variants[variant], className]}
       onPointerEnter={() => {
         hoveredRef.current = true;
         syncPaused();
@@ -172,6 +191,7 @@ export default function Toast({
         focusedRef.current = false;
         syncPaused();
       }}
+      {...rest}
     >
       <div className={contentStyle}>{children}</div>
       <button

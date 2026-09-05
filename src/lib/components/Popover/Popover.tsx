@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useId, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
@@ -10,6 +11,11 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 type PopoverProps = {
   content: ReactNode;
   open?: ControlOrValue<boolean>;
+  /**
+   * Viewport inset the panel treats as collision space: a number applies
+   * to all four edges, an object per edge.
+   */
+  collisionPadding?: CollisionPadding;
   className?: string;
   children: ReactNode;
 };
@@ -35,6 +41,7 @@ const panelVisuals = css`
 export default function Popover({
   content,
   open: openControl,
+  collisionPadding,
   className,
   children,
 }: PopoverProps) {
@@ -43,7 +50,20 @@ export default function Popover({
 
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const floating = useFloating({ open, setOpen, triggerRef, panelRef });
+  // Stable identity: useFloatingPosition re-runs its effect on every
+  // change of this object.
+  const collision = useMemo(
+    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    [collisionPadding]
+  );
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef,
+    panelRef,
+    animated: true,
+    collision,
+  });
 
   return (
     <span className={container}>

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * DropdownMenu smoke in a real browser: full menu-button keyboard pattern
@@ -13,6 +13,18 @@ async function activeItemLabel(page: Page): Promise<string> {
   );
 }
 
+/**
+ * The panel fades in/out over var(--haze-duration-fast) (120ms) driven by
+ * data-state. Asserting mid-animation can observe a half-faded panel, so
+ * open flows wait for the enter animation to settle (data-state='open' +
+ * computed opacity back at 1) and close flows rely on toBeHidden()'s
+ * auto-retry — the unmount only happens once the exit settles.
+ */
+async function expectOpenAnimationSettled(menu: Locator): Promise<void> {
+  await expect(menu).toHaveAttribute('data-state', 'open');
+  await expect(menu).toHaveCSS('opacity', '1');
+}
+
 test.describe('DropdownMenu', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -24,6 +36,7 @@ test.describe('DropdownMenu', () => {
     await page.keyboard.press('ArrowDown');
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
+    await expectOpenAnimationSettled(menu);
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     return { trigger, menu };
   }
@@ -69,6 +82,8 @@ test.describe('DropdownMenu', () => {
     const { trigger, menu } = await openWithKeyboard(page);
     await expect.poll(() => activeItemLabel(page)).toBe('Apple');
     await page.keyboard.press('Escape');
+    // toBeHidden auto-retries through the 120ms fade-out: the panel
+    // unmounts only once the exit animation settles.
     await expect(menu).toBeHidden();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect.poll(() => activeItemLabel(page)).toBe('Actions');
@@ -77,8 +92,10 @@ test.describe('DropdownMenu', () => {
   test('clicking an item closes the menu and refocuses the trigger', async ({ page }) => {
     const trigger = page.getByRole('button', { name: 'Actions' });
     await trigger.click();
+    const menu = page.getByRole('menu');
+    await expectOpenAnimationSettled(menu);
     await page.getByRole('menuitem', { name: 'Cherry' }).click();
-    await expect(page.getByRole('menu')).toBeHidden();
+    await expect(menu).toBeHidden();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect.poll(() => activeItemLabel(page)).toBe('Actions');
   });
@@ -88,6 +105,7 @@ test.describe('DropdownMenu', () => {
     await trigger.click();
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
+    await expectOpenAnimationSettled(menu);
     await expect
       .poll(() => menu.evaluate((el) => el.matches(':popover-open')))
       .toBe(true);

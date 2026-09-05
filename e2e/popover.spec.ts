@@ -12,8 +12,31 @@ async function openPopover(page: Page): Promise<{ trigger: Locator; panel: Locat
   const panelId = await trigger.getAttribute('aria-controls');
   const panel = page.locator(`[id="${panelId}"]`);
   await expect(panel).toBeVisible();
+  await waitForOpenAnimationToSettle(panel);
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   return { trigger, panel };
+}
+
+/**
+ * Panels fade in over var(--haze-duration-fast) via data-state
+ * animations. Geometry is stable (opacity-only keyframes on floating
+ * panels), but pixel reads / scans must observe the settled state. The
+ * attribute check runs first so the poll cannot pass in the commit
+ * window before the enter animation has even been created; a panel
+ * without data-state (not animated) settles immediately.
+ */
+async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
+  await expect
+    .poll(() =>
+      panel.evaluate((el) => {
+        if (el.dataset.state === 'closed') return false;
+        return (
+          el.getAnimations({ subtree: true }).length === 0 &&
+          getComputedStyle(el).opacity === '1'
+        );
+      })
+    )
+    .toBe(true);
 }
 
 test.describe('Popover', () => {
@@ -33,6 +56,9 @@ test.describe('Popover', () => {
 
     await t.click();
     await expect(t).toHaveAttribute('aria-expanded', 'false');
+    // The panel stays visible through its ~120ms fade-out (data-state
+    // closed) and only then hides — the auto-waiting matcher absorbs
+    // that exit window.
     await expect(panel).toBeHidden();
   });
 

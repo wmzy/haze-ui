@@ -82,6 +82,18 @@ describe('Combobox', () => {
     expect(container.firstChild).toHaveClass('custom');
   });
 
+  it('mirrors the animated lifecycle as data-state on the listbox', async () => {
+    const user = userEvent.setup();
+    render(<Combobox options={OPTIONS} />);
+    const input = screen.getByRole('combobox');
+    const listbox = document.getElementById(input.getAttribute('aria-controls')!)!;
+    expect(listbox).toHaveAttribute('data-state', 'closed');
+    await user.click(input);
+    expect(listbox).toHaveAttribute('data-state', 'open');
+    await user.keyboard('{Escape}');
+    expect(listbox).toHaveAttribute('data-state', 'closed');
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(<Combobox options={OPTIONS} placeholder="Search fruit" />);

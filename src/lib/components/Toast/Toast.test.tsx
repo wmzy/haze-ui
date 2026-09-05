@@ -1,10 +1,17 @@
 import { expect } from 'vitest';
-import { render, screen, renderHook, act, fireEvent } from '@testing-library/react';
+import { render, screen, renderHook, act, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Toast from './Toast';
 import ToastContainer, { toastPlacements } from './ToastContainer';
+import { useToastContext } from './ToastContext';
 import useToast from './useToast';
+
+/** Renders the live toast list length inside the container. */
+function ToastCount() {
+  const { toasts } = useToastContext();
+  return <div data-testid="toast-count">{toasts.length}</div>;
+}
 
 describe('Toast', () => {
   it('throws when useToast is used outside ToastContainer', () => {
@@ -194,7 +201,92 @@ describe('ToastContainer + useToast', () => {
 
     expect(screen.getByText('Temp')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByText('Temp')).not.toBeInTheDocument();
+    // Removal is two-phase: the toast unmounts once the exit settles
+    // (immediately under jsdom, which reports no animation duration).
+    await waitFor(() =>
+      expect(screen.queryByText('Temp')).not.toBeInTheDocument()
+    );
+  });
+
+  it('keeps a closing toast mounted until the exit settles, then drops it from the list', async () => {
+    const user = userEvent.setup();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer>
+        <ToastCount />
+        {children}
+      </ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('Temp', { duration: 0 });
+    });
+
+    // Entering: mounted with data-state="open" on the toast root.
+    expect(screen.getByRole('alert')).toHaveAttribute('data-state', 'open');
+    expect(screen.getByTestId('toast-count')).toHaveTextContent('1');
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    // Exit in flight: still mounted and listed, but flipped to closed.
+    expect(screen.getByRole('alert')).toHaveAttribute('data-state', 'closed');
+    expect(screen.getByText('Temp')).toBeInTheDocument();
+    expect(screen.getByTestId('toast-count')).toHaveTextContent('1');
+
+    // Exit settled: unmounted from the DOM and removed from the list.
+    await waitFor(() =>
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    );
+    expect(screen.getByTestId('toast-count')).toHaveTextContent('0');
+  });
+
+  it('unmounts only after the declared exit animation ends (real-browser path)', async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContainer>{children}</ToastContainer>
+    );
+    const { result } = renderHook(() => useToast(), { wrapper });
+
+    act(() => {
+      result.current('Animated', { duration: 0 });
+    });
+
+    // Simulate a browser that computed the toastOut animation (jsdom
+    // itself reports no durations, making every exit settle instantly).
+    const alertEl = screen.getByRole('alert');
+    const real = window.getComputedStyle.bind(window);
+    const styleSpy = vi
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation((element, pseudoElement) =>
+        element === alertEl
+          ? ({
+              animationName: 'toastOut',
+              animationDuration: '0.2s',
+              animationDelay: '0s',
+              transitionProperty: 'none',
+              transitionDuration: '0s',
+              transitionDelay: '0s',
+            } as unknown as CSSStyleDeclaration)
+          : real(element, pseudoElement)
+      );
+
+    try {
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+      // Past the double frame: the settle is listening, the exit is pending.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      });
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+
+      act(() => {
+        alertEl.dispatchEvent(new Event('animationend'));
+      });
+      await waitFor(() =>
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      );
+    } finally {
+      styleSpy.mockRestore();
+    }
   });
 
   it('drops the oldest toast when maxCount is exceeded', () => {

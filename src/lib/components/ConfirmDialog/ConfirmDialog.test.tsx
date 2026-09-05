@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useControl } from 'react-use-control';
 
 import ConfirmDialog from './ConfirmDialog';
 
@@ -12,6 +13,12 @@ describe('ConfirmDialog', () => {
   it('renders title', () => {
     render(<ConfirmDialog open title="Confirm Action">Body</ConfirmDialog>);
     expect(screen.getByText('Confirm Action')).toBeInTheDocument();
+  });
+
+  it('has dialog role with aria-modal and labels itself via the title', () => {
+    render(<ConfirmDialog open title="Confirm Action">Body</ConfirmDialog>);
+    const dialog = screen.getByRole('dialog', { name: 'Confirm Action' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
   });
 
   it('renders default button text', () => {
@@ -40,6 +47,81 @@ describe('ConfirmDialog', () => {
     render(<ConfirmDialog open onCancel={onCancel}>Body</ConfirmDialog>);
     await user.click(screen.getByText('Cancel'));
     expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('unmounts after the exit settles when confirmed', async () => {
+    const user = userEvent.setup();
+    render(<ConfirmDialog open>Body</ConfirmDialog>);
+    await user.click(screen.getByText('Confirm'));
+    // Presence 退场跨 rAF，jsdom 无 CSS 时长也需异步等待卸载
+    await waitFor(() =>
+      expect(screen.queryByText('Body')).not.toBeInTheDocument()
+    );
+  });
+
+  it('closes on overlay click after the exit settles', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<ConfirmDialog open onClose={onClose}>Body</ConfirmDialog>);
+    await user.click(screen.getByRole('dialog').parentElement!);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(screen.queryByText('Body')).not.toBeInTheDocument()
+    );
+  });
+
+  it('closes on Escape', async () => {
+    const onClose = vi.fn();
+    render(
+      <ConfirmDialog open onClose={onClose}>
+        Body
+      </ConfirmDialog>
+    );
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(screen.queryByText('Body')).not.toBeInTheDocument()
+    );
+  });
+
+  it('moves initial focus to the first action when opened', () => {
+    render(<ConfirmDialog open>Body</ConfirmDialog>);
+    expect(screen.getByText('Cancel')).toHaveFocus();
+  });
+
+  it('restores focus to the opener when closed', async () => {
+    function Harness() {
+      const [, setOpen, openCtrl] = useControl(undefined, false);
+      return (
+        <>
+          <button onClick={() => setOpen(true)}>Open confirm</button>
+          <ConfirmDialog open={openCtrl} onClose={() => setOpen(false)}>
+            Body
+          </ConfirmDialog>
+        </>
+      );
+    }
+    const user = userEvent.setup();
+    render(<Harness />);
+    const opener = screen.getByText('Open confirm');
+    await user.click(opener);
+    expect(screen.getByText('Cancel')).toHaveFocus();
+    await user.click(screen.getByText('Cancel'));
+    expect(opener).toHaveFocus();
+    await waitFor(() =>
+      expect(screen.queryByText('Body')).not.toBeInTheDocument()
+    );
+  });
+
+  it('traps Tab focus within the dialog', () => {
+    render(<ConfirmDialog open>Body</ConfirmDialog>);
+    const cancel = screen.getByText('Cancel');
+    const confirm = screen.getByText('Confirm');
+    confirm.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(cancel).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(confirm).toHaveFocus();
   });
 
   it('applies className', () => {

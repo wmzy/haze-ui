@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import {
@@ -18,6 +19,8 @@ type TooltipProps = {
   /** Milliseconds of hover/focus before the tooltip appears. */
   delay?: number;
   open?: ControlOrValue<boolean>;
+  /** Viewport inset the bubble treats as collision space. */
+  collisionPadding?: CollisionPadding;
   className?: string;
   children: ReactNode;
 };
@@ -52,6 +55,7 @@ export default function Tooltip({
   position = 'top',
   delay = 150,
   open: openControl,
+  collisionPadding,
   className,
   children,
 }: TooltipProps) {
@@ -61,8 +65,23 @@ export default function Tooltip({
   const panelRef = useRef<HTMLSpanElement>(null);
   const placement = placements[position];
 
-  const floating = useFloating({ open, setOpen, triggerRef, panelRef });
-  useFloatingPosition({ behavior: floating, placement });
+  // Stable identity: useFloatingPosition re-runs its effect on every
+  // change of this object.
+  const collision = useMemo(
+    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    [collisionPadding]
+  );
+  // Manual wiring (span panel, not FloatingPanel): the behavior still
+  // owns the animated lifecycle — dataState, the exit-delayed hidden
+  // class inside panelClasses — and this hook owns placement/nudge.
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef,
+    panelRef,
+    animated: true,
+  });
+  useFloatingPosition({ behavior: floating, placement, collision });
 
   // Hover/focus intent: show after `delay`, hide at once; leaving before
   // the delay cancels the pending show.
@@ -96,6 +115,7 @@ export default function Tooltip({
         id={id}
         ref={panelRef}
         role="tooltip"
+        data-state={floating.dataState}
         {...floating.panelAttrs}
         x-class={[
           bubble,

@@ -1,4 +1,4 @@
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { useControl } from 'react-use-control';
 
 import Dialog from './Dialog';
@@ -34,6 +34,11 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog', { hidden: true })).toHaveClass('custom');
   });
 
+  it('reflects open state via data-state', () => {
+    render(<Dialog open>Dialog body</Dialog>);
+    expect(screen.getByRole('dialog')).toHaveAttribute('data-state', 'open');
+  });
+
   it('calls onClose when dialog fires close event', () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
@@ -44,7 +49,7 @@ describe('Dialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('fires onClose exactly once when clicking the backdrop', () => {
+  it('fires onClose exactly once when clicking the backdrop', async () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
     const dialog = screen.getByRole('dialog');
@@ -54,20 +59,22 @@ describe('Dialog', () => {
       );
     });
     // backdrop 点击只 setOpen(false)；onClose 由 effect 中 el.close() 触发
-    // 的原生 close 事件统一发出——修复前 onClick 里会先多调一次。
-    expect(onClose).toHaveBeenCalledTimes(1);
+    // 的原生 close 事件统一发出——退场跨 rAF，异步等待。
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
-  it('fires onClose exactly once on Esc (cancel → close)', () => {
+  it('prevents native cancel and closes through the animated path on Esc', async () => {
     const onClose = vi.fn();
     render(<Dialog open onClose={onClose}>Content</Dialog>);
     const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    const cancel = new Event('cancel', { cancelable: true });
     act(() => {
-      // 模拟浏览器 Esc 行为：先 cancel（未阻止则关闭），关闭发出 close
-      dialog.dispatchEvent(new Event('cancel'));
-      dialog.close();
+      // 模拟浏览器 Esc 行为：先发 cancel 请求关闭
+      dialog.dispatchEvent(cancel);
     });
-    expect(onClose).toHaveBeenCalledTimes(1);
+    // 原生立即关闭被拦截，统一改走 React 状态 → 退场动画 → el.close()
+    expect(cancel.defaultPrevented).toBe(true);
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
   it('fires onClose exactly once on programmatic close()', () => {
@@ -77,6 +84,21 @@ describe('Dialog', () => {
     act(() => {
       dialog.close();
     });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the dialog open during the exit and closes it after it settles', async () => {
+    const onClose = vi.fn();
+    render(<Dialog open onClose={onClose}>Content</Dialog>);
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    expect(dialog).toHaveAttribute('open');
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    // 状态已翻 closed，但退场期间 open 属性保留（等待 whenExitSettles）
+    expect(dialog).toHaveAttribute('data-state', 'closed');
+    expect(dialog).toHaveAttribute('open');
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -97,6 +119,25 @@ describe('Dialog', () => {
   it('does not set aria-labelledby without a title', () => {
     render(<Dialog open>Content</Dialog>);
     expect(screen.getByRole('dialog')).not.toHaveAttribute('aria-labelledby');
+  });
+
+  it('moves initial focus into the dialog when opened', () => {
+    function Harness() {
+      const [, setOpen, openCtrl] = useControl(undefined, false);
+      return (
+        <>
+          <button onClick={() => setOpen(true)}>Open dialog</button>
+          <Dialog open={openCtrl}>
+            <button type="button">Inner</button>
+          </Dialog>
+        </>
+      );
+    }
+    render(<Harness />);
+    act(() => {
+      fireEvent.click(screen.getByText('Open dialog'));
+    });
+    expect(screen.getByText('Inner')).toHaveFocus();
   });
 
   it('restores focus to the opener when the dialog closes', () => {

@@ -38,7 +38,9 @@ const statusIcon = css`
 `;
 
 const statusPending = css`background: var(--haze-color-text-muted);`;
-const statusRunning = css`background: var(--haze-color-primary); animation: pulse 1.5s infinite;`;
+// No pulse animation: `pulse` keyframes were never defined, so the
+// declaration never ran — the running state stays a solid primary dot.
+const statusRunning = css`background: var(--haze-color-primary);`;
 const statusDone = css`background: var(--haze-color-success);`;
 const statusError = css`background: var(--haze-color-danger);`;
 

@@ -119,10 +119,26 @@ describe('DatepickerCore', () => {
     // jsdom applies no CSS, so the closed dropdown stays in the DOM with
     // the hidden-style class attached; assert that instead of visibility.
     // Calendar root (calendarWrapper) sits inside the FloatingPanel div,
-    // which carries visual skin + fallback-placement + hidden classes.
+    // which carries visual skin + fallback-placement + hidden + animated
+    // (fade, opacity-only) classes. The panel was never opened, so the
+    // animated exit already counts as settled and the hidden class is
+    // applied synchronously.
     const grid = container.querySelector('[role="grid"]')!;
     const panel = grid.parentElement!.parentElement!;
-    expect(panel.className.split(' ').length).toBe(3);
+    expect(panel.className.split(' ').length).toBe(4);
+    expect(panel).toHaveAttribute('data-state', 'closed');
+  });
+
+  it('mirrors the animated lifecycle as data-state on the panel', async () => {
+    const user = userEvent.setup();
+    render(<Datepicker />);
+    const input = screen.getByPlaceholderText('Select date');
+    const panel = document.getElementById(input.getAttribute('aria-controls')!)!;
+    expect(panel).toHaveAttribute('data-state', 'closed');
+    await user.click(input);
+    expect(panel).toHaveAttribute('data-state', 'open');
+    fireEvent.pointerDown(document.body);
+    expect(panel).toHaveAttribute('data-state', 'closed');
   });
 
   it('calls onChange with the selected date and onOpenChange(false)', async () => {

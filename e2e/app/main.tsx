@@ -24,6 +24,7 @@ import { Popover } from '../../src/lib/components/Popover';
 import { ToastContainer, useToast } from '../../src/lib/components/Toast';
 import { FormItem } from '../../src/lib/form';
 import { lightTheme } from '../../src/lib/tokens/colors';
+import { motion } from '../../src/lib/tokens/motion';
 import { spacing } from '../../src/lib/tokens/spacing';
 import { typography } from '../../src/lib/tokens/typography';
 
@@ -61,7 +62,7 @@ function App() {
   const [date, , dateControl] = useControl(undefined, '2026-09-01');
 
   return (
-    <div className={`${shell} ${lightTheme} ${spacing} ${typography}`}>
+    <div className={`${shell} ${lightTheme} ${spacing} ${typography} ${motion}`}>
       <section id="popover-demo">
         <h2 className={heading}>Popover</h2>
         <Popover content="Popover body">Open popover</Popover>

@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 
 type MenuProps = {
@@ -39,13 +40,29 @@ export default function Menu({
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const floating = useFloating({ open, setOpen, triggerRef, panelRef });
+  const floating = useFloating({ open, setOpen, triggerRef, panelRef, animated: true });
 
   useRovingTabindex({ menuRef: panelRef, active: open });
   const handleKeyDown = useMenuKeyboard({
     menuRef: panelRef,
     onClose: () => setOpen(false),
   });
+
+  // Declared after useFloating and useRovingTabindex: the showPopover
+  // effect (a native popover is display:none until shown — focusing it
+  // would be silently dropped in Chromium) and the roving sync (the
+  // first item must be the tab stop before autoFocus runs) both fire
+  // first in the same commit. returnFocus repairs the Escape gap: the
+  // hidden panel would otherwise leave focus on <body>.
+  const setScope = useFocusScope({ enabled: open, autoFocus: true, returnFocus: true });
+
+  const setPanelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      panelRef.current = node;
+      setScope(node);
+    },
+    [panelRef, setScope]
+  );
 
   return (
     <div x-class={container}>
@@ -58,7 +75,7 @@ export default function Menu({
         {trigger}
       </span>
       <FloatingPanel
-        ref={panelRef}
+        ref={setPanelRef}
         behavior={floating}
         placement="bottom"
         role="menu"

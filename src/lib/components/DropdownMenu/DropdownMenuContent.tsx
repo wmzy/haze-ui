@@ -72,7 +72,10 @@ export default function DropdownMenuContent({
     target?.focus();
   }, [open, floating.shown, contentRef, focusRequestRef]);
 
-  if (!open) return null;
+  // Animated exit: the panel stays mounted (fading out via
+  // data-state=closed) until the exit settles — `exited` starts true
+  // before the first open, so a never-opened menu renders nothing.
+  if (!open && floating.exited) return null;
 
   return (
     <FloatingPanel

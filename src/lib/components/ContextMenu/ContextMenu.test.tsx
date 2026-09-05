@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import ContextMenu from './ContextMenu';
@@ -57,7 +57,12 @@ describe('ContextMenu', () => {
     );
     fireEvent.contextMenu(screen.getByText('Target'));
     await user.click(screen.getByText('Copy'));
-    expect(screen.queryByText('Copy')).not.toBeInTheDocument();
+    // Animated exit: the panel unmounts once the fade-out settles —
+    // immediate in jsdom (no CSS durations), but across the double rAF
+    // of whenExitSettles, hence waitFor.
+    await waitFor(() =>
+      expect(screen.queryByText('Copy')).not.toBeInTheDocument()
+    );
   });
 
   it('calls item onClick', async () => {
@@ -127,13 +132,13 @@ describe('ContextMenu', () => {
         </ContextMenuContent>
       </ContextMenu>,
     );
-    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    // Opening auto-focuses the first item (useFocusScope).
     expect(screen.getByText('Copy')).toHaveFocus();
     fireEvent.keyDown(screen.getByText('Copy'), { key: 'ArrowDown' });
     expect(screen.getByText('Paste')).toHaveFocus();
   });
 
-  it('closes on Escape', () => {
+  it('closes on Escape', async () => {
     render(
       <ContextMenu open>
         <ContextMenuContent>
@@ -142,6 +147,82 @@ describe('ContextMenu', () => {
       </ContextMenu>,
     );
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    // Same animated-exit handover as the item-click close.
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    );
+  });
+
+  it('focuses the first item when opened', () => {
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuItem>Paste</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.contextMenu(screen.getByText('Target'));
+    expect(screen.getByText('Copy')).toHaveFocus();
+  });
+
+  it('returns focus to the right-click target on Escape', () => {
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div tabIndex={0}>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    // Focused right-click target: the scope's return-focus destination.
+    const target = screen.getByText('Target');
+    target.focus();
+    fireEvent.contextMenu(target);
+    expect(screen.getByText('Copy')).toHaveFocus();
+    fireEvent.keyDown(screen.getByText('Copy'), { key: 'Escape' });
+    expect(target).toHaveFocus();
+  });
+
+  it('mirrors the animated lifecycle as data-state on the panel', async () => {
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.contextMenu(screen.getByText('Target'));
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'open');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    // 'closed' lands immediately (it drives the fade-out); the unmount
+    // is what waits for the exit to settle.
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'closed');
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    );
+  });
+
+  it('renders nothing before the first open', () => {
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    // `exited` starts true for a never-opened animated panel.
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 

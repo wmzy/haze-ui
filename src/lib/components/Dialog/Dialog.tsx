@@ -2,8 +2,11 @@ import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
+
+import { useFocusScope } from '../../utils/focus-scope';
+import { whenExitSettles } from '../../utils/presence';
 
 type DialogProps = {
   open?: ControlOrValue<boolean>;
@@ -29,8 +32,26 @@ const overlay = css`
   max-width: 480px;
   width: 100%;
 
+  &[open][data-state='open'] {
+    animation: haze-dialog-in var(--haze-duration-normal) var(--haze-ease);
+  }
+
+  &[open][data-state='closed'] {
+    animation: haze-dialog-out var(--haze-duration-fast) var(--haze-ease);
+  }
+
   &::backdrop {
     background: rgba(0, 0, 0, 0.4);
+  }
+
+  &[open][data-state='open']::backdrop {
+    animation: haze-dialog-backdrop-in var(--haze-duration-normal)
+      var(--haze-ease);
+  }
+
+  &[open][data-state='closed']::backdrop {
+    animation: haze-dialog-backdrop-out var(--haze-duration-fast)
+      var(--haze-ease);
   }
 
   &:focus-visible {
@@ -38,6 +59,32 @@ const overlay = css`
     box-shadow:
       var(--haze-shadow-xl),
       0 0 0 3px var(--haze-color-focus-ring);
+  }
+
+  @keyframes haze-dialog-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes haze-dialog-out {
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes haze-dialog-backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes haze-dialog-backdrop-out {
+    to {
+      opacity: 0;
+    }
   }
 `;
 
@@ -55,46 +102,62 @@ export default function Dialog({
   children,
 }: DialogProps) {
   const [open, setOpen] = useControl(openControl, false);
-  const ref = useRef<HTMLDialogElement>(null);
-  // 打开前的焦点元素（打开者）。showModal 会把焦点移进 dialog，原生关闭
-  // 后浏览器只回落到 body——键盘用户会“迷路”，所以这里记下并主动归还。
-  const openerRef = useRef<HTMLElement | null>(null);
+  const ref = useRef<HTMLDialogElement | null>(null);
+  // 声明在 showModal effect 之前：scope 激活时先记录 opener（此时的
+  // activeElement 还没被 showModal 转进 dialog），关闭时由 scope 归还。
+  // 原生 modal 已锁定 Tab，无需 trapped。
+  const setScope = useFocusScope({ enabled: open, trapped: false });
   // 与 FormItem 的 haze-field-${useId} 同一套生成模式，保证前缀可读且不冲突。
   const titleId = `haze-dialog-title-${useId()}`;
+
+  const setDialogRef = useCallback(
+    (node: HTMLDialogElement | null) => {
+      ref.current = node;
+      setScope(node);
+    },
+    [setScope]
+  );
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (open && !el.open) {
-      // 必须在 showModal 转移焦点之前记录打开者。
-      openerRef.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
       el.showModal();
     } else if (!open && el.open) {
-      el.close();
+      // 退场动画（data-state=closed 驱动 CSS animation）结束后再真正
+      // close()，原生 close 事件（onClose 回调链路）保持由 close 触发。
+      // jsdom 无 CSS 时长 → whenExitSettles 跨 2 个 rAF 立即完成。
+      const settle = whenExitSettles(el);
+      const finish = () => {
+        // settle 期间被重新打开时 data-state 已翻回 open，本退场流作废
+        if (el.getAttribute('data-state') === 'closed') el.close();
+      };
+      if (settle) void settle.then(finish);
+      else finish();
     }
   }, [open]);
 
   return (
     <dialog
-      ref={ref}
+      ref={setDialogRef}
+      data-state={open ? 'open' : 'closed'}
       aria-labelledby={title !== undefined ? titleId : undefined}
       x-class={[overlay, className]}
       onClose={() => {
         setOpen(false);
-        // 原生 close 事件是所有关闭路径（Esc/cancel、backdrop、close()）
-        // 的公共出口，在这里归还焦点即可全覆盖。
-        openerRef.current?.focus();
-        openerRef.current = null;
         onClose?.();
+      }}
+      onCancel={(e) => {
+        // 原生 Esc/backdrop 的关闭请求会绕过退场动画立即关闭 dialog：
+        // 阻止默认行为，统一改走 React 状态 → 退场动画 → el.close()。
+        e.preventDefault();
+        setOpen(false);
       }}
       onClick={(e) => {
         if (e.target === ref.current) {
           // 只改状态：effect 里的 el.close() 会触发原生 close 事件，
-          // onClose 与焦点归还都在那个公共出口统一发生。这里再调一次
-          // onClose?.() 会双触发（backdrop 路径命中两次回调）。
+          // onClose 在那个公共出口统一发生。这里再调一次 onClose?.()
+          // 会双触发（backdrop 路径命中两次回调）。
           setOpen(false);
         }
       }}

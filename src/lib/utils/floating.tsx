@@ -10,8 +10,13 @@ import type {
   SetStateAction,
 } from 'react';
 
+import type { CollisionStrategy } from './collision';
+
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+
+import { computeFloatingPosition, resolvePadding } from './collision';
+import { whenExitSettles } from './presence';
 
 /**
  * Internal floating-panel primitives shared by Popover, DropdownMenu,
@@ -93,20 +98,69 @@ const floatingFixed = css`
   position: fixed;
 `;
 
-/** Fallback path: panel visually hidden while closed. */
-const floatingHidden = css`
+/**
+ * Fallback path: panel visually hidden while closed. Exported so tests
+ * can assert the (animated-delayed) hidden handover like any consumer.
+ */
+export const floatingHidden = css`
   display: none;
 `;
 
-/** Anchored path: declarative placement relative to the trigger. */
+/**
+ * Animated panels fade in/out through `data-state` — opacity only.
+ * Transform is banned on floating panels: both JS-positioned tiers
+ * measure the panel's rect, and getBoundingClientRect includes
+ * transforms, so a translating/scaling panel would poison placement.
+ * `forwards` keeps a finished fade-out at opacity 0 until the hidden
+ * handover lands (a one-frame flash-back would otherwise show).
+ */
+export const floatingAnimated = css`
+  &[data-state='open'] {
+    animation: haze-floating-in var(--haze-duration-fast) var(--haze-ease);
+  }
+
+  &[data-state='closed'] {
+    animation: haze-floating-out var(--haze-duration-fast) var(--haze-ease)
+      forwards;
+  }
+
+  @keyframes haze-floating-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes haze-floating-out {
+    to {
+      opacity: 0;
+    }
+  }
+`;
+
+/**
+ * Anchored path: declarative placement relative to the trigger.
+ *
+ * position-area semantics trap: `left`/`right` name the region BESIDE the
+ * anchor (the panel hugs the anchor-adjacent edge of that region), not an
+ * alignment under it — `bottom left` renders the panel detached to the
+ * left of the trigger in Chromium. Under-anchor alignments are expressed
+ * with the spans: `span-right` puts the panel's left edge at the
+ * trigger's left edge (start-aligned), `span-left` its right edge at the
+ * trigger's right edge (end-aligned). Both match the tier-2 geometry
+ * ('bottom'/'bottom-span' align start, 'bottom-end' align end) and the
+ * fallback tier's top:100%;left:0 / right:0 classes; the spans also give
+ * the panel a real cell, without which Chromium never engages
+ * position-try-fallbacks (flip-block) on the degenerate side-column
+ * cell.
+ */
 const anchoredBottom = css`
-  position-area: bottom left;
+  position-area: bottom span-right;
   margin-top: var(--haze-space-1);
   position-try-fallbacks: flip-block;
 `;
 
 const anchoredBottomSpan = css`
-  position-area: bottom span-left;
+  position-area: bottom span-right;
   margin-top: var(--haze-space-1);
   position-try-fallbacks: flip-block;
 `;
@@ -118,7 +172,7 @@ const anchoredBottomCenter = css`
 `;
 
 const anchoredBottomEnd = css`
-  position-area: bottom right;
+  position-area: bottom span-left;
   margin-top: var(--haze-space-1);
   position-try-fallbacks: flip-block;
 `;
@@ -266,6 +320,19 @@ type UseFloatingOptions = {
   triggerRef: RefObject<HTMLElement | null>;
   /** The floating panel element. */
   panelRef: RefObject<HTMLElement | null>;
+  /**
+   * Fade the panel in/out via `data-state` (opacity only) and keep it
+   * visible until its exit animation settles, instead of hiding the
+   * instant `open` flips false. Enables `dataState`/`exited` below; in
+   * jsdom (no CSS durations) the exit settles within two frames, so
+   * tests observe the handover with waitFor.
+   */
+  animated?: boolean;
+  /**
+   * Collision knobs consumed by useFloatingPosition on the JS-positioned
+   * tiers (the tier-2 flip/shift and the tier-1 cross-axis nudge).
+   */
+  collision?: CollisionStrategy;
 };
 
 export type FloatingBehavior = {
@@ -282,6 +349,23 @@ export type FloatingBehavior = {
    * display:none element and is silently dropped (Chromium).
    */
   shown: boolean;
+  /**
+   * Panel lifecycle phase for CSS: 'open' while `open` is true (enter
+   * animation), 'closed' the moment it flips false (exit animation runs
+   * while the panel is still visible). `undefined` when not animated.
+   * Render as the panel's `data-state` attribute.
+   */
+  dataState: 'open' | 'closed' | undefined;
+  /**
+   * True when the panel is fully closed — nothing visible, nothing
+   * animating. Animated: false from the moment `open` flips true until
+   * the exit settles, then true again (and true before the first open).
+   * Non-animated: mirrors `!open`. Consumers that unmount panel content
+   * gate on `!open && exited`.
+   */
+  exited: boolean;
+  /** Collision strategy FloatingPanel forwards to useFloatingPosition. */
+  collision: CollisionStrategy | undefined;
   /** Unique CSS anchor name for this instance (anchored path). */
   anchorName: string;
   /** Inline style for the trigger: declares `anchor-name`. */
@@ -292,7 +376,12 @@ export type FloatingBehavior = {
   onTriggerClick: () => void;
   /** Spread on the panel: popover attribute + anchor custom property. */
   panelAttrs: { popover: 'auto' | undefined; style: CSSProperties | undefined };
-  /** Positioning-skeleton entries for the panel's x-class array. */
+  /**
+   * Positioning-skeleton entries for the panel's x-class array. With
+   * `animated`, the fallback hidden class is only applied once the exit
+   * settled (`exited`), keeping the panel measurable/visible through its
+   * fade-out.
+   */
   panelClasses: (string | false)[];
   triggerRef: RefObject<HTMLElement | null>;
   panelRef: RefObject<HTMLElement | null>;
@@ -303,6 +392,8 @@ export function useFloating({
   setOpen,
   triggerRef,
   panelRef,
+  animated,
+  collision,
 }: UseFloatingOptions): FloatingBehavior {
   const id = useId();
   // useId() contains ":" which is invalid in a CSS dashed-ident; strip it.
@@ -310,6 +401,17 @@ export function useFloating({
 
   const native = supportsNativePopover();
   const anchored = supportsAnchorPositioning();
+
+  // Animated bookkeeping: `exited` starts matching `!open` (never opened
+  // ⇒ already exited) and flips false the moment `open` does. Returning
+  // to true happens only after the exit settles — via the native toggle
+  // handler (hidePopover) or the fallback effect below. Without the
+  // reset-on-open, a close right after the first open would see a stale
+  // `exited === true` and skip the exit animation entirely.
+  const [exited, setExited] = useState(!open);
+  useEffect(() => {
+    if (open) setExited(false);
+  }, [open]);
 
   // Mirrors the panel's live popover visibility, maintained from `toggle`
   // events (which cover browser-side closes too, unlike React state).
@@ -331,14 +433,25 @@ export function useFloating({
   // Playwright; jsdom's clock starts at process spawn and never showed it).
   const pointerDismissAt = useRef(-Infinity);
   const suppressClickAt = useRef(-Infinity);
+  // Our own hidePopover(), whose queued `toggle` echo has not landed yet.
+  // Keyed by element: a stale request for a swapped-out panel must not be
+  // mistaken for the echo of a hide performed on the current one.
+  const hideRequestedRef = useRef<{el: HTMLElement} | null>(null);
 
   // Native path: React state drives the popover (mirroring Dialog's
   // showModal()/close() pattern) and browser-side closes — Escape, light
   // dismiss on any outside pointerdown — sync back through `toggle`,
   // which does not bubble, hence the native listener. One effect on
-  // purpose: the listener must be bound before showPopover() runs, or the
-  // toggle it dispatches synchronously falls between effect cleanup and
-  // setup.
+  // purpose: the listener must be bound before showPopover() runs.
+  //
+  // `toggle` events are QUEUED by the browser (delivered before the next
+  // rendering opportunity), not dispatched synchronously — a rapid
+  // React state flip can therefore land between our showPopover() /
+  // hidePopover() call and its echo. The handler must reconcile those
+  // echoes instead of re-syncing them back into state: echoing an "open"
+  // after a close would resurrect the closed state (reproduced by
+  // Enter→Space under parallel e2e load), and echoing a "closed" after a
+  // reopen would kill it.
   useEffect(() => {
     const el = panelRef.current;
     if (!el || !native) return;
@@ -347,31 +460,91 @@ export function useFloating({
       shownRef.current = false;
       setShown(false);
     }
+    // Cancels a pending animated hide when the effect re-runs (reopen,
+    // unmount, option flip) before the exit animation settles.
+    let exitActive = true;
+
+    const hideNow = () => {
+      hideRequestedRef.current = {el};
+      el.hidePopover();
+    };
+    // Hide a currently-shown panel: immediately, or once the animated
+    // exit has settled. Shared by the effect body (React-driven close)
+    // and the toggle handler (late show-echo reconciliation below).
+    const beginExit = () => {
+      if (!shownRef.current || el !== panelRef.current) return;
+      if (animated) {
+        // Animated exit: the popover stays shown with data-state=closed so
+        // the fade-out can play; hide it once the animation settles. A
+        // reopen cancels via exitActive; a browser-side close during the
+        // animation flips shownRef first, so the guard skips the
+        // (throwing) hidePopover on an already-hidden popover.
+        const hideWhenSettled = () => {
+          if (!exitActive || !shownRef.current || el !== panelRef.current) {
+            return;
+          }
+          hideNow();
+        };
+        const settle = whenExitSettles(el);
+        if (settle) void settle.then(hideWhenSettled);
+        else hideWhenSettled();
+      } else {
+        hideNow();
+      }
+    };
+
     const handleToggle = (event: Event) => {
       const newState = (event as ToggleEvent).newState;
       shownRef.current = newState === 'open';
       setShown(shownRef.current);
-      if (newState === 'closed' && open) {
-        // The trigger is not a declarative invoker (it is rarely a button
-        // wired via `popovertarget`), so while the popover is open a
-        // pointerdown on the trigger light-dismisses it; the click that
-        // follows would then toggle it right back open. Attribute closes
-        // inside the pointerdown window to the trigger and swallow that
-        // one click.
-        if (performance.now() - pointerDismissAt.current < CLICK_WINDOW) {
-          suppressClickAt.current = performance.now();
+      if (newState === 'closed') {
+        // An animated panel only counts as exited once it is really
+        // hidden — for an exit animation that is after it settles.
+        if (animated) setExited(true);
+        // Echo of our own hidePopover: if a reopen flipped `open` back on
+        // before the queued event landed, re-show to match React (the
+        // panel is definitionally hidden right after a "closed" toggle,
+        // so this cannot throw). Never a browser-side close.
+        const echo = hideRequestedRef.current?.el === el;
+        hideRequestedRef.current = null;
+        if (echo) {
+          if (open) el.showPopover();
+          return;
         }
-        pointerDismissAt.current = -Infinity;
-        setOpen(false);
-      } else if (newState === 'open' && !open) {
-        setOpen(true);
+        if (open) {
+          // The trigger is not a declarative invoker (it is rarely a button
+          // wired via `popovertarget`), so while the popover is open a
+          // pointerdown on the trigger light-dismisses it; the click that
+          // follows would then toggle it right back open. Attribute closes
+          // inside the pointerdown window to the trigger and swallow that
+          // one click.
+          if (performance.now() - pointerDismissAt.current < CLICK_WINDOW) {
+            suppressClickAt.current = performance.now();
+          }
+          pointerDismissAt.current = -Infinity;
+          setOpen(false);
+        }
+      } else if (!open) {
+        // Echo of our own showPopover — with no declarative invoker,
+        // nothing but this effect can open the panel, so a browser-side
+        // "open" to sync back does not exist. If a close flipped `open`
+        // off before the queued event landed, the panel is physically
+        // shown while React wants it hidden: run the exit now instead of
+        // resurrecting the closed state.
+        beginExit();
       }
     };
     el.addEventListener('toggle', handleToggle);
-    if (open && !shownRef.current) el.showPopover();
-    else if (!open && shownRef.current) el.hidePopover();
-    return () => el.removeEventListener('toggle', handleToggle);
-  }, [native, open, setOpen, panelRef]);
+    if (open) {
+      if (!shownRef.current) el.showPopover();
+    } else {
+      beginExit();
+    }
+    return () => {
+      exitActive = false;
+      el.removeEventListener('toggle', handleToggle);
+    };
+  }, [native, open, setOpen, panelRef, animated]);
 
   // Fallback path: the popover API's light dismiss and Escape close have
   // no native equivalent, so approximate them in JS while open.
@@ -397,6 +570,26 @@ export function useFloating({
     };
   }, [native, open, setOpen, triggerRef, panelRef]);
 
+  // Fallback path (no popover API): there is no toggle event and no
+  // hidePopover to defer — the animated exit is waited out here, after
+  // which `exited` re-renders the hidden class into panelClasses. Runs
+  // only while a not-yet-exited close is pending; a reopen cancels via
+  // the active flag.
+  useEffect(() => {
+    if (native || !animated || open || exited) return;
+    let active = true;
+    const el = panelRef.current;
+    const settle = el ? whenExitSettles(el) : null;
+    const finish = () => {
+      if (active) setExited(true);
+    };
+    if (settle) void settle.then(finish);
+    else finish();
+    return () => {
+      active = false;
+    };
+  }, [native, animated, open, exited, panelRef]);
+
   const onTriggerPointerDown = useCallback(() => {
     if (open) pointerDismissAt.current = performance.now();
   }, [open]);
@@ -415,6 +608,9 @@ export function useFloating({
     anchored,
     // Fallback path has no toggle events: visibility === React state.
     shown: native ? shown : open,
+    dataState: animated ? (open ? 'open' : 'closed') : undefined,
+    exited: animated ? exited : !open,
+    collision,
     anchorName,
     triggerStyle: anchored ? { anchorName } : undefined,
     onTriggerPointerDown,
@@ -429,7 +625,9 @@ export function useFloating({
       native && floatingNative,
       native && anchored && floatingAnchored,
       native && !anchored && floatingFixed,
-      !native && !open && floatingHidden,
+      // Animated fallbacks stay un-hidden until the exit settled above.
+      !native && !open && (!animated || exited) && floatingHidden,
+      !!animated && floatingAnimated,
     ],
     triggerRef,
     panelRef,
@@ -461,133 +659,152 @@ function readGap(
 }
 
 /**
+ * Distance to slide a [start, start+size) span so it fits inside
+ * [padStart, extent−padEnd): 0 when it already fits. An inverted range
+ * (span wider than the padded extent) pins to the start edge, matching
+ * computeFloatingPosition's clamp.
+ */
+function shiftInto(
+  start: number,
+  size: number,
+  extent: number,
+  padStart: number,
+  padEnd: number
+): number {
+  const min = padStart;
+  const max = Math.max(min, extent - padEnd - size);
+  return Math.min(Math.max(start, min), max) - start;
+}
+
+/**
  * Place a fixed panel from the trigger's rect (tier 2). Centers compute
- * from the panel's own rect, so this needs layout — fine in real engines,
- * and unreachable in jsdom where the fallback tier renders instead.
+ * from the panel's own rect, so this needs the panel to be laid out —
+ * fine in real engines once shown, and unreachable in jsdom where the
+ * fallback tier renders instead.
  *
- * Viewport awareness: a placement that would push the panel past the
- * viewport edge flips to the opposite side when that side has room for
- * it (bottom↔top, left↔right — the secondary-axis alignment stays as
- * chosen); when neither side fits, the position is clamped into the
- * viewport instead. Exported for direct testing like
- * `supportsNativePopover` above.
+ * Collision handling: a placement that would push the panel past the
+ * (optionally padded) viewport edge flips to the opposite side when that
+ * side has room, slides along the cross axis, and finally clamps into
+ * view when neither side fits — all in computeFloatingPosition. With no
+ * `collision` the output is pixel-identical to the legacy inline math
+ * (the parity cases in collision.test.ts and the tier-2 regression
+ * cases in Popover.test.tsx guard this). Exported for direct testing
+ * like `supportsNativePopover` above.
  */
 export function placeFloatingPanel(
   panel: HTMLElement,
   trigger: HTMLElement,
-  placement: FloatingPlacement
+  placement: FloatingPlacement,
+  collision?: CollisionStrategy
 ): void {
   if (placement === 'point') return;
   const rect = trigger.getBoundingClientRect();
   const box = panel.getBoundingClientRect();
   const viewport = {width: window.innerWidth, height: window.innerHeight};
-  const centerX = rect.left + rect.width / 2 - box.width / 2;
-  const centerY = rect.top + rect.height / 2 - box.height / 2;
   // The gap classes are the only declarative part of this tier — read
   // them back as the clearance between trigger and panel edges.
   const gap = {
     below: readGap(panel, 'marginTop'),
     above: readGap(panel, 'marginBottom'),
-    after: readGap(panel, 'marginLeft'),
     before: readGap(panel, 'marginRight'),
+    after: readGap(panel, 'marginLeft'),
   };
-
-  // Coordinates for a vertical placement (panel over/under the trigger),
-  // keeping the requested horizontal alignment across a vertical flip.
-  const verticalPos = (
-    side: 'top' | 'bottom',
-    align: 'start' | 'center' | 'end'
-  ) => ({
-    top:
-      side === 'bottom'
-        ? rect.bottom + gap.below
-        : rect.top - box.height - gap.above,
-    left:
-      align === 'start'
-        ? rect.left
-        : align === 'end'
-          ? rect.right - box.width
-          : centerX,
+  const {top, left} = computeFloatingPosition({
+    trigger: rect,
+    panel: box,
+    viewport,
+    placement,
+    gap,
+    strategy: {
+      flip: collision?.flip ?? true,
+      shift: collision?.shift ?? true,
+      padding: resolvePadding(collision?.collisionPadding),
+    },
   });
-  // Coordinates for a horizontal placement (panel beside the trigger);
-  // the vertical center is shared by both sides.
-  const horizontalPos = (side: 'left' | 'right') => ({
-    top: centerY,
-    left:
-      side === 'right'
-        ? rect.right + gap.after
-        : rect.left - box.width - gap.before,
-  });
-
-  // The original placement's axes: flips only swap the primary side.
-  const verticals = {
-    bottom: {side: 'bottom', align: 'start'},
-    'bottom-span': {side: 'bottom', align: 'start'},
-    'bottom-center': {side: 'bottom', align: 'center'},
-    'bottom-end': {side: 'bottom', align: 'end'},
-    top: {side: 'top', align: 'center'},
-  } as const;
-
-  let {top, left} =
-    placement === 'left' || placement === 'right'
-      ? horizontalPos(placement)
-      : verticalPos(verticals[placement].side, verticals[placement].align);
-
-  if (placement === 'left' || placement === 'right') {
-    const overflows =
-      placement === 'right'
-        ? left + box.width > viewport.width
-        : left < 0;
-    const fitsFlipped =
-      placement === 'right'
-        ? rect.left - box.width - gap.before >= 0
-        : rect.right + box.width + gap.after <= viewport.width;
-    if (overflows && fitsFlipped) {
-      ({top, left} = horizontalPos(placement === 'right' ? 'left' : 'right'));
-    }
-  } else {
-    const {side, align} = verticals[placement];
-    const overflows =
-      side === 'bottom' ? top + box.height > viewport.height : top < 0;
-    const fitsFlipped =
-      side === 'bottom'
-        ? rect.top - box.height - gap.above >= 0
-        : rect.bottom + box.height + gap.below <= viewport.height;
-    if (overflows && fitsFlipped) {
-      ({top, left} = verticalPos(side === 'bottom' ? 'top' : 'bottom', align));
-    }
-  }
-
-  // Neither side fits (or the panel is taller/wider than the viewport):
-  // clamp the panel fully into view.
-  top = Math.min(Math.max(top, 0), Math.max(0, viewport.height - box.height));
-  left = Math.min(
-    Math.max(left, 0),
-    Math.max(0, viewport.width - box.width)
-  );
   panel.style.top = `${top}px`;
   panel.style.left = `${left}px`;
 }
 
 /**
- * Tier 2 positioning: place the panel under/over/beside the trigger and
- * re-place on scroll/resize while open. No-op on the anchored and
- * fallback tiers.
+ * JS-assisted positioning:
+ *
+ * - Tier 2 (popover API, no anchor positioning): place the panel from
+ *   the trigger's rect and re-place on scroll/resize while shown.
+ * - Tier 1 (anchored): `position-area` + `position-try-fallbacks` handle
+ *   the primary axis declaratively; the cross axis is measured here and
+ *   nudged back into the padded viewport via `translate`, re-measured on
+ *   scroll/resize. Collision padding applies to the cross axis only —
+ *   the primary-axis flip is the browser's and cannot see padding
+ *   (position-try has no padding concept), a documented limitation.
+ *
+ * Both tiers gate on actual visibility (`shown`), not `open`: child
+ * effects run before the behavior effect that calls showPopover(), and a
+ * native popover is `display: none` until then — placing on the `open`
+ * commit would measure a zero-size rect and mis-center/mis-align the
+ * panel on first open in real engines (jsdom's permissive mocks hide
+ * it). The extra render pass after the toggle event is the price for
+ * correct geometry.
  */
 export function useFloatingPosition({
   behavior,
   placement,
+  collision,
 }: {
   behavior: FloatingBehavior;
   placement: FloatingPlacement;
+  /** Collision knobs; defaults to the behavior's own strategy. */
+  collision?: CollisionStrategy;
 }): void {
-  const { native, anchored, open, triggerRef, panelRef } = behavior;
+  const { native, anchored, shown, triggerRef, panelRef } = behavior;
   useEffect(() => {
-    if (!native || anchored || placement === 'point' || !open) return;
+    if (!native || placement === 'point' || !shown) return;
     const panel = panelRef.current;
+    if (!panel) return;
+
+    if (anchored) {
+      const shift = collision?.shift !== false;
+      const pad = resolvePadding(collision?.collisionPadding);
+      const horizontal = placement === 'left' || placement === 'right';
+      const nudge = () => {
+        if (!shift) {
+          panel.style.translate = '';
+          return;
+        }
+        const box = panel.getBoundingClientRect();
+        const dx = horizontal
+          ? 0
+          : shiftInto(
+              box.left,
+              box.width,
+              window.innerWidth,
+              pad.left,
+              pad.right
+            );
+        const dy = horizontal
+          ? shiftInto(
+              box.top,
+              box.height,
+              window.innerHeight,
+              pad.top,
+              pad.bottom
+            )
+          : 0;
+        panel.style.translate =
+          dx === 0 && dy === 0 ? '' : `${dx}px ${dy}px`;
+      };
+      nudge();
+      window.addEventListener('scroll', nudge, true);
+      window.addEventListener('resize', nudge);
+      return () => {
+        window.removeEventListener('scroll', nudge, true);
+        window.removeEventListener('resize', nudge);
+        panel.style.translate = '';
+      };
+    }
+
     const trigger = triggerRef.current;
-    if (!panel || !trigger) return;
-    const place = () => placeFloatingPanel(panel, trigger, placement);
+    if (!trigger) return;
+    const place = () => placeFloatingPanel(panel, trigger, placement, collision);
     place();
     window.addEventListener('scroll', place, true);
     window.addEventListener('resize', place);
@@ -595,7 +812,7 @@ export function useFloatingPosition({
       window.removeEventListener('scroll', place, true);
       window.removeEventListener('resize', place);
     };
-  }, [native, anchored, open, placement, triggerRef, panelRef]);
+  }, [native, anchored, shown, placement, collision, triggerRef, panelRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -610,6 +827,11 @@ type FloatingPanelProps = {
    * consumer positions the panel itself, e.g. ContextMenu at the pointer.
    */
   placement?: FloatingPlacement;
+  /**
+   * Collision strategy for the JS-assisted tiers (tier-2 flip/shift,
+   * tier-1 cross-axis nudge); defaults to the behavior's own strategy.
+   */
+  collision?: CollisionStrategy;
   /** Consumer visual skin: border, background, shadow, padding. */
   visualClass?: string;
   className?: string;
@@ -620,20 +842,26 @@ type FloatingPanelProps = {
 
 /**
  * The panel element of a floating pair: applies the popover attribute,
- * the anchor custom property and the tier/placement classes, and runs the
- * tier-2 position effect. Everything else (id, role, handlers, ref) is
- * passed through to the underlying div.
+ * the anchor custom property and the tier/placement classes, mirrors the
+ * animated lifecycle as `data-state`, and runs the JS-assisted position
+ * effect. Everything else (id, role, handlers, ref) is passed through to
+ * the underlying div.
  */
 export function FloatingPanel({
   behavior,
   placement,
+  collision,
   visualClass,
   className,
   style,
   children,
   ...rest
 }: FloatingPanelProps) {
-  useFloatingPosition({ behavior, placement: placement ?? 'point' });
+  useFloatingPosition({
+    behavior,
+    placement: placement ?? 'point',
+    collision: collision ?? behavior.collision,
+  });
 
   const mergedStyle =
     behavior.panelAttrs.style || style
@@ -642,6 +870,9 @@ export function FloatingPanel({
 
   return (
     <div
+      {...(behavior.dataState !== undefined && {
+        'data-state': behavior.dataState,
+      })}
       {...rest}
       {...behavior.panelAttrs}
       style={mergedStyle}

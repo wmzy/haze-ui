@@ -1,8 +1,12 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ComponentPropsWithoutRef  } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
+import { useId } from 'react';
+
+import { useFocusScope } from '../../utils/focus-scope';
+import { Presence } from '../../utils/presence';
 
 type ConfirmDialogProps = {
   open?: ControlOrValue<boolean>;
@@ -15,7 +19,7 @@ type ConfirmDialogProps = {
   cancelText?: string;
   variant?: 'default' | 'danger';
   className?: string;
-};
+} & Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'title'>;
 
 const overlay = css`
   position: fixed;
@@ -25,6 +29,29 @@ const overlay = css`
   justify-content: center;
   background: rgba(0, 0, 0, 0.4);
   z-index: 100;
+
+  /* Presence 注入的 data-state 驱动 backdrop 与内容各自的进退场 */
+  &[data-state='open'] {
+    animation: haze-confirm-backdrop-in var(--haze-duration-normal)
+      var(--haze-ease);
+  }
+
+  &[data-state='closed'] {
+    animation: haze-confirm-backdrop-out var(--haze-duration-fast)
+      var(--haze-ease);
+  }
+
+  @keyframes haze-confirm-backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes haze-confirm-backdrop-out {
+    to {
+      opacity: 0;
+    }
+  }
 `;
 
 const dialog = css`
@@ -36,6 +63,29 @@ const dialog = css`
   width: 100%;
   font-family: var(--haze-font-sans);
   color: var(--haze-color-text);
+
+  /* 退场时长须不大于 overlay 的退场（overlay 卸载即整树消失） */
+  [data-state='open'] & {
+    animation: haze-confirm-in var(--haze-duration-normal) var(--haze-ease);
+  }
+
+  [data-state='closed'] & {
+    animation: haze-confirm-out var(--haze-duration-fast) var(--haze-ease);
+  }
+
+  @keyframes haze-confirm-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes haze-confirm-out {
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
 `;
 
 const header = css`
@@ -64,7 +114,9 @@ const btn = css`
   font-family: var(--haze-font-sans);
   font-weight: var(--haze-weight-medium);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background var(--haze-duration-fast) var(--haze-ease),
+    border-color var(--haze-duration-fast) var(--haze-ease);
 `;
 
 const cancelBtn = css`
@@ -114,10 +166,12 @@ export default function ConfirmDialog({
   cancelText = 'Cancel',
   variant = 'default',
   className,
+  ...rest
 }: ConfirmDialogProps) {
   const [open, setOpen] = useControl(openControl, false);
-
-  if (!open) return null;
+  const setScope = useFocusScope({ enabled: open, trapped: true });
+  // 标题作为 dialog 的可访问名（aria-dialog-name），与 Dialog 同一模式
+  const titleId = `haze-confirm-title-${useId()}`;
 
   const handleClose = () => {
     setOpen(false);
@@ -135,20 +189,43 @@ export default function ConfirmDialog({
   };
 
   return (
-    <div x-class={[overlay, className]} onClick={handleClose}>
-      <div x-class={[dialog]} onClick={(e) => e.stopPropagation()}>
-        {title && <div x-class={[header]}>{title}</div>}
-        <div x-class={[body]}>{children}</div>
-        <div x-class={[footer]}>
-          <button x-class={[btn, cancelBtn]} type="button" onClick={handleCancel}>
-            {cancelText}
-          </button>
-          <button x-class={[btn, variant === 'danger' ? dangerBtn : confirmBtn]} type="button" onClick={handleConfirm}>
-            {confirmText}
-          </button>
+    <Presence present={open}>
+      <div
+        x-class={[overlay, className]}
+        onClick={() => {
+          // 退场期间（已 setOpen(false)、Presence 尚未卸载）不再重复关闭
+          if (open) handleClose();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && open) handleClose();
+        }}
+      >
+        <div
+          ref={setScope}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title !== undefined ? titleId : undefined}
+          x-class={[dialog]}
+          {...rest}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {title && (
+            <div id={titleId} x-class={[header]}>
+              {title}
+            </div>
+          )}
+          <div x-class={[body]}>{children}</div>
+          <div x-class={[footer]}>
+            <button x-class={[btn, cancelBtn]} type="button" onClick={handleCancel}>
+              {cancelText}
+            </button>
+            <button x-class={[btn, variant === 'danger' ? dangerBtn : confirmBtn]} type="button" onClick={handleConfirm}>
+              {confirmText}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Presence>
   );
 }
 

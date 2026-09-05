@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
+import { useCallback } from 'react';
 
 import { FloatingPanel } from '../../utils/floating';
+import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 
 import { useContextMenuContext } from './ContextMenuContext';
@@ -40,11 +42,36 @@ export default function ContextMenuContent({
 
   useRovingTabindex({ menuRef: contentRef, active: open });
 
-  if (!open) return null;
+  // Declared after useRovingTabindex: its sync effect must have set the
+  // first item as the tab stop before autoFocus looks for a tabbable.
+  // Gated on `shown` (not `open`): this is a child effect — it runs
+  // before the root's showPopover() effect, and focusing a native
+  // popover while it is still display:none is silently dropped
+  // (Chromium). `shown` flips only once the panel is focusable.
+  // On close the scope returns focus to whatever was focused before the
+  // menu opened (the right-click target).
+  const setScope = useFocusScope({
+    enabled: open && floating.shown,
+    autoFocus: true,
+    returnFocus: true,
+  });
+
+  const setPanelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node;
+      setScope(node);
+    },
+    [contentRef, setScope]
+  );
+
+  // Animated exit: the panel stays mounted (fading out via
+  // data-state=closed) until the exit settles — `exited` starts true
+  // before the first open, so a never-opened menu renders nothing.
+  if (!open && floating.exited) return null;
 
   return (
     <FloatingPanel
-      ref={contentRef}
+      ref={setPanelRef}
       behavior={floating}
       role="menu"
       visualClass={content}

@@ -79,6 +79,7 @@ export default function Combobox({
     setOpen,
     triggerRef: inputRef,
     panelRef,
+    animated: true,
   });
 
   const filtered = options.filter((o) =>

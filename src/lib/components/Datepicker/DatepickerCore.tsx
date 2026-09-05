@@ -81,6 +81,7 @@ export default function DatepickerCore({
     setOpen,
     triggerRef: inputRef,
     panelRef,
+    animated: true,
   });
 
   return (

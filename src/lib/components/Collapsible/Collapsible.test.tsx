@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from './index';
@@ -46,7 +46,45 @@ describe('Collapsible', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Toggle' }));
     await user.click(screen.getByRole('button', { name: 'Toggle' }));
-    expect(screen.queryByText('Hidden again')).not.toBeInTheDocument();
+    // Collapse in flight: still mounted (the 0fr transition needs the
+    // subtree alive) with the wrapper flipped to data-state="closed".
+    expect(screen.getByText('Hidden again').closest('[data-state]')).toHaveAttribute(
+      'data-state',
+      'closed'
+    );
+    // Exit settled (jsdom reports no transition duration): unmounted.
+    await waitFor(() =>
+      expect(screen.queryByText('Hidden again')).not.toBeInTheDocument()
+    );
+  });
+
+  it('drops collapsed content from the tab order once the exit settles', async () => {
+    const user = userEvent.setup();
+    render(
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger>Toggle</CollapsibleTrigger>
+        <CollapsibleContent>
+          <button type="button">Inner action</button>
+        </CollapsibleContent>
+      </Collapsible>
+    );
+    expect(
+      screen.getByRole('button', { name: 'Inner action' })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Toggle' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Inner action' })
+      ).not.toBeInTheDocument()
+    );
+
+    // With the content unmounted (and its collapsed state visibility:hidden
+    // in real browsers), Tab never reaches the inner action: from body the
+    // first (and only) tabbable is the trigger.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Toggle' })).toHaveFocus();
   });
 
   it('applies className', () => {

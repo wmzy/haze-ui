@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { placeFloatingPanel } from '../../utils/floating';
@@ -200,8 +200,24 @@ describe('Popover (native popover API)', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
     await user.click(trigger);
-    expect(hidePopoverMock).toHaveBeenCalledTimes(1);
+    // Animated exit: hidePopover is deferred until the exit animation
+    // settles — immediate in jsdom (no CSS durations), but still across
+    // the double rAF of whenExitSettles, hence waitFor.
+    await waitFor(() => expect(hidePopoverMock).toHaveBeenCalledTimes(1));
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('mirrors the animated lifecycle as data-state on the panel', () => {
+    render(<Popover content="Body">Trigger</Popover>);
+    const trigger = screen.getByText('Trigger');
+    const panel = getPanel();
+    expect(panel).toHaveAttribute('data-state', 'closed');
+    fireEvent.click(trigger);
+    expect(panel).toHaveAttribute('data-state', 'open');
+    fireEvent.click(trigger);
+    // 'closed' lands immediately (it drives the fade-out); the hidden
+    // handover is what waits for the exit to settle.
+    expect(panel).toHaveAttribute('data-state', 'closed');
   });
 
   it('syncs a browser-side close (Escape/light dismiss) back to state', () => {
@@ -423,6 +439,25 @@ describe('tier-2 placement: viewport flip (placeFloatingPanel)', () => {
       const panelEl = document.querySelector<HTMLElement>('[popover]')!;
       expect(panelEl.style.top).toBe('500px');
       expect(panelEl.style.left).toBe('100px');
+    } finally {
+      rectSpy.mockRestore();
+      removeNativePopover();
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('shifts with collisionPadding through the Popover component path (tier 2)', () => {
+    installNativePopover();
+    vi.spyOn(CSS, 'supports').mockReturnValue(false);
+    // Trigger at the right edge: bottom-span start alignment overflows,
+    // so the cross axis shifts to the padded viewport edge.
+    const rectSpy = mockRects(panel, {...trigger, left: 950, right: 1030});
+    try {
+      render(<Popover content="Body" collisionPadding={16}>Trigger</Popover>);
+      fireEvent.click(screen.getByText('Trigger'));
+      const panelEl = document.querySelector<HTMLElement>('[popover]')!;
+      // viewport 1024 − padding 16 − panel 150 = 858 (874 unpadded).
+      expect(panelEl.style.left).toBe('858px');
     } finally {
       rectSpy.mockRestore();
       removeNativePopover();

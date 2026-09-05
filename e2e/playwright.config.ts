@@ -38,6 +38,25 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      // Firefox runs only the engine-agnostic collision spec (pinned via
+      // testMatch): it currently resolves the anchored tier like chromium
+      // (anchor positioning shipped in Firefox 141+), and falls to the
+      // JS-positioned tier on older engines — the spec asserts the same
+      // containment contract either way. Every other spec — including
+      // the pixel baselines, which have no firefox snapshots — stays
+      // chromium-only.
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: /floating-collision\.spec\.ts/,
+    },
+    {
+      // WebKit likewise (anchor positioning shipped in WebKit 2.46+);
+      // same single-spec scope as firefox.
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: /floating-collision\.spec\.ts/,
+    },
   ],
   webServer: {
     command: 'npx vite --config e2e/vite.config.mts --port 5199',

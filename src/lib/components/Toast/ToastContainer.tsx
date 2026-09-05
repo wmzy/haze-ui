@@ -5,6 +5,8 @@ import type { ToastItem } from './ToastContext';
 import { css } from '@linaria/core';
 import { useState, useCallback, useRef } from 'react';
 
+import { Presence } from '../../utils/presence';
+
 import Toast from './Toast';
 import { ToastProvider } from './ToastContext';
 
@@ -60,6 +62,9 @@ export default function ToastContainer({
   placement = 'bottom-right',
 }: ToastContainerProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  // Ids whose exit animation is in flight; the toast stays in `toasts`
+  // (and mounted under Presence) until the exit settles.
+  const [exitingIds, setExitingIds] = useState<number[]>([]);
   const counterRef = useRef(0);
 
   const addToast = useCallback(
@@ -74,8 +79,17 @@ export default function ToastContainer({
     [maxCount]
   );
 
+  // Phase 1 of removal: flip the item's Presence to data-state="closed" so
+  // the exit animation plays. The list still holds the toast until phase 2.
   const removeToast = useCallback((id: number) => {
+    setExitingIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }, []);
+
+  // Phase 2: Presence fires onExited once the exit settles — now the toast
+  // is really dropped from the list and unmounted.
+  const unmountToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+    setExitingIds((prev) => prev.filter((exitingId) => exitingId !== id));
   }, []);
 
   return (
@@ -83,14 +97,19 @@ export default function ToastContainer({
       {children}
       <div x-class={[containerBase, toastPlacements[placement]]}>
         {toasts.map((t) => (
-          <Toast
+          <Presence
             key={t.id}
-            variant={t.variant}
-            duration={t.duration}
-            onClose={() => removeToast(t.id)}
+            present={!exitingIds.includes(t.id)}
+            onExited={() => unmountToast(t.id)}
           >
-            {t.content}
-          </Toast>
+            <Toast
+              variant={t.variant}
+              duration={t.duration}
+              onClose={() => removeToast(t.id)}
+            >
+              {t.content}
+            </Toast>
+          </Presence>
         ))}
       </div>
     </ToastProvider>

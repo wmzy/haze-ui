@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { CollisionPadding } from '../../utils/collision';
 
-import { useCallback, useId, useRef } from 'react';
+import { useCallback, useId, useMemo, useRef } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
@@ -12,6 +13,11 @@ import { DropdownMenuProvider } from './DropdownMenuContext';
 type DropdownMenuProps = {
   open?: ControlOrValue<boolean>;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Viewport inset the panel treats as collision space: a number applies
+   * to all four edges, an object per edge.
+   */
+  collisionPadding?: CollisionPadding;
   children: ReactNode;
   className?: string;
 };
@@ -24,6 +30,7 @@ const wrapper = css`
 export default function DropdownMenu({
   open: openControl,
   onOpenChange,
+  collisionPadding,
   children,
   className,
 }: DropdownMenuProps) {
@@ -42,11 +49,20 @@ export default function DropdownMenu({
     [open, setOpen, onOpenChange]
   );
 
+  // Stable identity: useFloatingPosition re-runs its effect on every
+  // change of this object.
+  const collision = useMemo(
+    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    [collisionPadding]
+  );
+
   const floating = useFloating({
     open,
     setOpen: handleSetOpen,
     triggerRef,
     panelRef: contentRef,
+    animated: true,
+    collision,
   });
 
   return (
