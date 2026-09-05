@@ -1,7 +1,7 @@
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useId, useRef, useState, useEffect } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
@@ -70,6 +70,7 @@ export default function Combobox({
   const [query, setQuery] = useState('');
   const [open, setOpen] = useControl(openControl, false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [prevQuery, setPrevQuery] = useState(query);
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -86,9 +87,13 @@ export default function Combobox({
     o.label.toLowerCase().includes(query.toLowerCase())
   );
 
-  useEffect(() => {
+  // Typing a new query invalidates the highlight — adjust during render
+  // (React-endorsed reset) so the first filtered frame already drops any
+  // stale highlight, without an extra effect pass.
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setHighlightIndex(-1);
-  }, [query]);
+  }
 
   const selectOption = (val: string) => {
     setValue(val);

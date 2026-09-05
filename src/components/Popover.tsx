@@ -18,7 +18,7 @@ export default function Popover({
     return () => {
       el.parentElement?.removeChild(el);
     };
-  }, []);
+  }, [el]);
 
   return createPortal(
     <div

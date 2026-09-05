@@ -38,33 +38,37 @@ export default function StreamingText({
   showCursor = true,
   className,
 }: StreamingTextProps) {
+  // `displayed` is the single source of truth (always a prefix of `text`);
+  // completion derives from it instead of a render-read ref.
   const [displayed, setDisplayed] = useState('');
-  const indexRef = useRef(0);
+  // Guards onComplete to fire exactly once per completed stream, even when
+  // the effect re-runs from an unstable `onComplete` identity.
   const doneRef = useRef(false);
 
-  useEffect(() => {
-    indexRef.current = 0;
+  // New text restarts the stream — adjust state during render (the
+  // React-endorsed reset pattern) so no frame shows the stale text.
+  const [prevText, setPrevText] = useState(text);
+  if (text !== prevText) {
+    setPrevText(text);
     setDisplayed('');
-    doneRef.current = false;
-  }, [text]);
+  }
+
+  const isDone = displayed.length >= text.length;
 
   useEffect(() => {
-    if (doneRef.current) return;
-    if (indexRef.current >= text.length) {
-      doneRef.current = true;
-      onComplete?.();
+    if (isDone) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onComplete?.();
+      }
       return;
     }
-
+    doneRef.current = false;
     const timer = setTimeout(() => {
-      indexRef.current += 1;
-      setDisplayed(text.slice(0, indexRef.current));
+      setDisplayed(text.slice(0, displayed.length + 1));
     }, speed);
-
     return () => clearTimeout(timer);
-  }, [displayed, text, speed, onComplete]);
-
-  const isDone = indexRef.current >= text.length;
+  }, [isDone, displayed, text, speed, onComplete]);
 
   return (
     <span x-class={[wrapper, className]}>

@@ -160,6 +160,11 @@ export function Presence({ present, children, onExited }: PresenceProps) {
 
   if (!mounted) return null;
 
+  /* eslint-disable react-hooks/refs, react-hooks/immutability --
+     merging the consumer's ref requires a function ref injected via
+     cloneElement plus a write into the consumer's ref object; both run at
+     commit time (React invokes ref callbacks), never during render — the
+     compiler analyzer cannot prove that and flags conservatively. */
   const child = children as ReactElement<PresenceChildProps>;
   const consumerRef = child.props.ref;
   return cloneElement(child, {

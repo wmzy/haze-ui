@@ -45,9 +45,19 @@ export default function Loading(): ReactPortal | null {
   const loading = useLoading();
   const { key, status } = loading || {};
 
-  useEffect(() => {
+  // Adjust state when the episode flips (React-endorsed render-phase reset,
+  // not setState-in-effect): a new `key` restarts the bar at 0, a resolved
+  // transition fills it to 100.
+  const [prevKey, setPrevKey] = useState(key);
+  const [prevStatus, setPrevStatus] = useState(status);
+  if (key !== prevKey) {
+    setPrevKey(key);
     setPercent(0);
-  }, [key]);
+  }
+  if (status !== prevStatus) {
+    setPrevStatus(status);
+    if (status === 'resolved') setPercent(100);
+  }
 
   useEffect(() => {
     const remove = () => {
@@ -69,14 +79,13 @@ export default function Loading(): ReactPortal | null {
 
       return () => clearInterval(timer);
     } else if (status === 'resolved') {
-      setPercent(100);
       const timer = setTimeout(remove, 500);
       return () => {
         clearTimeout(timer);
         remove();
       };
     }
-  }, [status]);
+  }, [status, el]);
 
   return createPortal(
     <button

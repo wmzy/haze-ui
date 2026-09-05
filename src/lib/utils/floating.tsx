@@ -409,9 +409,13 @@ export function useFloating({
   // reset-on-open, a close right after the first open would see a stale
   // `exited === true` and skip the exit animation entirely.
   const [exited, setExited] = useState(!open);
-  useEffect(() => {
+  // Reset during render on the open flip (React-endorsed adjustment) so
+  // the first open frame already carries `exited === false`.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setExited(false);
-  }, [open]);
+  }
 
   // Mirrors the panel's live popover visibility, maintained from `toggle`
   // events (which cover browser-side closes too, unlike React state).
