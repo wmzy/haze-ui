@@ -336,6 +336,14 @@ const descriptions = {
     'Sticky scroll-spy navigation: an `items` list highlighting the active section, click scrolls with an offset.',
   'app-shell':
     'Application frame with sticky header, collapsible sidebar, content and footer slots; the sidebar becomes an overlay below 768px.',
+  'activity-rail':
+    'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
+  'status-bar':
+    'VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.',
+  'tab-bar':
+    'Mobile bottom navigation (the ActivityRail viewport peer): 56px safe-area strip, icon+label items, badge, `onSelect`/`onReselect` semantics.',
+  workbench:
+    'IDE-style application frame (`100dvh`): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable collapsible regions and a maximizable bottom panel; below 768px sides become overlays and the tabBar takes over.',
   'approval-card':
     'Approval gate with approve / deny actions for agent-initiated operations.',
   'aspect-ratio': 'Boxes children to a fixed width/height ratio.',
@@ -438,6 +446,8 @@ const descriptions = {
     'App sidebar shell with controllable collapsed state: `SidebarGroup`/`SidebarItem`/`SidebarFooter`/`SidebarToggle` parts.',
   skeleton: 'Shimmering loading placeholder (`text`/`circular`/`rectangular`).',
   slider: 'Native range slider with controllable value.',
+  sparkline:
+    'Inline-SVG mini trend chart (line/area variants, tone colors); stateless, recharts-free and RSC-safe.',
   spinner: 'Loading spinner.',
   stat: 'Metric display with title, value and trend indicator (`StatGroup` container).',
   'step-timeline': 'Vertical timeline of agent execution steps with per-step status.',
@@ -508,8 +518,9 @@ const CATEGORY_GROUPS = {
     'ellipsis', 'icon', 'tag', 'tag-group', 'typography',
   ],
   layout: [
-    'aspect-ratio', 'app-shell', 'container', 'flex', 'grid', 'masonry',
-    'resizable', 'scroll-area', 'sidebar',
+    'activity-rail', 'aspect-ratio', 'app-shell', 'container', 'flex',
+    'grid', 'masonry', 'resizable', 'scroll-area', 'sidebar', 'status-bar',
+    'tab-bar', 'workbench',
   ],
   form: [
     'cascader', 'checkbox', 'color-picker', 'combobox', 'datepicker',
@@ -526,7 +537,7 @@ const CATEGORY_GROUPS = {
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
     'code-block', 'data-table', 'descriptions', 'image', 'json-view', 'kbd',
-    'list', 'progress', 'qr-code', 'stat', 'table', 'timeline', 'tree',
+    'list', 'progress', 'qr-code', 'sparkline', 'stat', 'table', 'timeline', 'tree',
     'virtual-list', 'watermark',
   ],
   navigation: [

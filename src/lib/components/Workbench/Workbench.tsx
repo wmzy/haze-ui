@@ -1,0 +1,381 @@
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react';
+import type { ControlOrValue } from 'react-use-control';
+
+import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
+
+import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
+
+type WorkbenchProps = {
+  /** Narrow icon rail column on the leading edge (ActivityRail is the intended content). */
+  activityBar?: ReactNode;
+  /** Docked explorer column beside the editor; becomes a scrim-dismissed overlay under the mobile breakpoint. */
+  sidebar?: ReactNode;
+  /** Docked secondary column on the trailing edge; overlays like the sidebar on mobile. */
+  auxiliaryBar?: ReactNode;
+  /** Bottom tool region inside the main column (terminal/output); hidden on mobile. */
+  panel?: ReactNode;
+  /** Full-width strip under the middle row (StatusBar is the intended content). */
+  statusBar?: ReactNode;
+  /** Bottom navigation slot, rendered only under the mobile breakpoint where the activity bar is hidden. */
+  tabBar?: ReactNode;
+  /** Expanded sidebar width in px; a Control tracks handle drags live. */
+  sidebarWidth?: ControlOrValue<number>;
+  /** Sidebar collapsed state — desktop hides the column, mobile closes the overlay. */
+  sidebarCollapsed?: ControlOrValue<boolean>;
+  /** Expanded auxiliary bar width in px; a Control tracks handle drags live. */
+  auxiliaryBarWidth?: ControlOrValue<number>;
+  /** Auxiliary bar collapsed state — desktop hides the column, mobile closes the overlay. */
+  auxiliaryBarCollapsed?: ControlOrValue<boolean>;
+  /** Expanded bottom panel height in px; a Control tracks handle drags live. */
+  panelHeight?: ControlOrValue<number>;
+  /** Bottom panel collapsed state. */
+  panelCollapsed?: ControlOrValue<boolean>;
+  /** Maximized panel covers the whole main column; reversible through the same Control. */
+  panelMaximized?: ControlOrValue<boolean>;
+  children: ReactNode;
+} & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
+
+/* px clamps forwarded to the Resizable panels. */
+const SIDEBAR_MIN = 160;
+const SIDEBAR_MAX = 480;
+const SIDEBAR_DEFAULT = 300;
+const AUXILIARY_MIN = 180;
+const AUXILIARY_MAX = 480;
+const AUXILIARY_DEFAULT = 300;
+const PANEL_MIN = 120;
+const PANEL_MAX = 720;
+const PANEL_DEFAULT = 240;
+
+/* Breakpoint matches the AppShell mobile query; everything below it is
+ * pure CSS — no JS breakpoint state exists in this component. */
+
+const workbench = css`
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'body'
+    'status'
+    'tabs';
+  /* The shell owns scroll containment: only regions scroll, never the
+   * shell (the height itself is the inline 100dvh below). Absent slots
+   * leave their auto grid track empty, so it collapses to zero. */
+  box-sizing: border-box;
+  overflow: hidden;
+`;
+
+const body = css`
+  grid-area: body;
+`;
+
+/* Fixed narrow column, sized by its content — the ActivityRail track
+ * brings its own 48px width and hairline. */
+const activityBar = css`
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+/* Scroll region shared by the sidebar, auxiliary bar and panel slots. */
+const region = css`
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+`;
+
+/* The main column's editor area: the flexible child of the vertical
+ * group, scrollable on its own. */
+const editor = css`
+  flex: 1 1 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: auto;
+`;
+
+/* The vertical group fills the main panel's stretched box (the group's
+ * own flex properties are inert inside the non-flex panel). */
+const verticalFill = css`
+  height: 100%;
+`;
+
+const statusBarRegion = css`
+  grid-area: status;
+  box-sizing: border-box;
+`;
+
+/* Mobile-only bottom navigation: absent from the desktop grid, shown
+ * under the breakpoint where the activity rail disappears. */
+const tabBarRegion = css`
+  display: none;
+  grid-area: tabs;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+/* Click surface dismissing a mobile overlay. Inert wherever the
+ * overlays are not in fixed mode; the dim layer follows the
+ * ConfirmDialog/BottomSheet scrim precedent. */
+const scrim = css`
+  display: none;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.4);
+  }
+`;
+
+/* ≤768px the docked sidebar column leaves the flex row and overlays the
+ * viewport; the inline flex basis is inert on a fixed box, so the width
+ * comes from the same controlled px. Collapsed keeps the box in place —
+ * visibility is delayed until the slide-out transform finishes. */
+const sidenavOverlay = css`
+  @media (max-width: 768px) {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 100;
+    width: min(var(--haze-workbench-sidebar-width, 300px), 85vw);
+    box-shadow: var(--haze-shadow-lg);
+    transition: transform var(--haze-duration-normal) var(--haze-ease);
+
+    &[data-collapsed] {
+      transform: translateX(-100%);
+      visibility: hidden;
+      transition:
+        transform var(--haze-duration-normal) var(--haze-ease),
+        visibility 0s linear var(--haze-duration-normal);
+    }
+  }
+`;
+
+/* Mirror of sidenavOverlay anchored to the trailing edge. */
+const auxOverlay = css`
+  @media (max-width: 768px) {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 100;
+    width: min(var(--haze-workbench-auxiliary-width, 300px), 85vw);
+    box-shadow: var(--haze-shadow-lg);
+    transition: transform var(--haze-duration-normal) var(--haze-ease);
+
+    &[data-collapsed] {
+      transform: translateX(100%);
+      visibility: hidden;
+      transition:
+        transform var(--haze-duration-normal) var(--haze-ease),
+        visibility 0s linear var(--haze-duration-normal);
+    }
+  }
+`;
+
+/* Docked-only chrome: the bottom panel and every resize handle leave
+ * the layout under the mobile breakpoint (the consumer's view owns the
+ * mobile panel form). */
+const mobileHidden = css`
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+export default function Workbench({
+  activityBar: activityBarSlot,
+  sidebar: sidebarSlot,
+  auxiliaryBar: auxiliaryBarSlot,
+  panel: panelSlot,
+  statusBar: statusBarSlot,
+  tabBar: tabBarSlot,
+  sidebarWidth: sidebarWidthControl,
+  sidebarCollapsed: sidebarCollapsedProp,
+  auxiliaryBarWidth: auxiliaryBarWidthControl,
+  auxiliaryBarCollapsed: auxiliaryBarCollapsedProp,
+  panelHeight: panelHeightControl,
+  panelCollapsed: panelCollapsedProp,
+  panelMaximized: panelMaximizedProp,
+  className,
+  style,
+  children,
+  ...rest
+}: WorkbenchProps) {
+  const [sidebarWidth, setSidebarWidth] = useControl(
+    sidebarWidthControl,
+    SIDEBAR_DEFAULT
+  );
+  const [auxiliaryBarWidth, setAuxiliaryBarWidth] = useControl(
+    auxiliaryBarWidthControl,
+    AUXILIARY_DEFAULT
+  );
+  const [panelHeight, setPanelHeight] = useControl(
+    panelHeightControl,
+    PANEL_DEFAULT
+  );
+  // The panels bind the same Control the scrim writes to, so handle
+  // expanders, scrim clicks and external drivers stay one state source.
+  const [sidebarCollapsed, setSidebarCollapsed, sidebarCollapsedCtrl] =
+    useControl(sidebarCollapsedProp, false);
+  const [
+    auxiliaryBarCollapsed,
+    setAuxiliaryBarCollapsed,
+    auxiliaryBarCollapsedCtrl,
+  ] = useControl(auxiliaryBarCollapsedProp, false);
+  const [, , panelCollapsedCtrl] = useControl(panelCollapsedProp, false);
+  const [panelMaximized] = useControl(panelMaximizedProp, false);
+
+  const commitHorizontal = (sizes: Record<string, number>): void => {
+    // A collapsed neighbour reports 0 in the commit payload — it must
+    // never clobber the remembered width.
+    const nextSidebar = sizes.sidebar;
+    if (nextSidebar !== undefined && nextSidebar > 0) {
+      setSidebarWidth(nextSidebar);
+    }
+    const nextAuxiliary = sizes.auxiliary;
+    if (nextAuxiliary !== undefined && nextAuxiliary > 0) {
+      setAuxiliaryBarWidth(nextAuxiliary);
+    }
+  };
+
+  const commitVertical = (sizes: Record<string, number>): void => {
+    const nextPanel = sizes.panel;
+    if (nextPanel !== undefined && nextPanel > 0) {
+      setPanelHeight(nextPanel);
+    }
+  };
+
+  return (
+    <div
+      data-slot="workbench"
+      data-panel-maximized={panelMaximized || undefined}
+      x-class={[workbench, className]}
+      style={{ height: '100dvh', ...style }}
+      {...rest}
+    >
+      <ResizableGroup
+        direction="horizontal"
+        className={body}
+        onResizeCommit={commitHorizontal}
+      >
+        {activityBarSlot != null && (
+          <div data-slot="workbench-activity-bar" x-class={[activityBar]}>
+            {activityBarSlot}
+          </div>
+        )}
+        {sidebarSlot != null && (
+          <ResizablePanel
+            id="sidebar"
+            defaultSize={sidebarWidth}
+            minSize={SIDEBAR_MIN}
+            maxSize={SIDEBAR_MAX}
+            collapsible
+            collapsed={sidebarCollapsedCtrl}
+            className={sidenavOverlay}
+            style={
+              {
+                '--haze-workbench-sidebar-width': `${sidebarWidth}px`,
+              } as CSSProperties
+            }
+          >
+            <div data-slot="workbench-sidebar" x-class={[region]}>
+              {sidebarSlot}
+            </div>
+          </ResizablePanel>
+        )}
+        {sidebarSlot != null && <ResizableHandle className={mobileHidden} />}
+        <ResizablePanel id="main">
+          <ResizableGroup
+            direction="vertical"
+            className={verticalFill}
+            onResizeCommit={commitVertical}
+          >
+            {!panelMaximized && (
+              <main data-slot="workbench-main" x-class={[editor]}>
+                {children}
+              </main>
+            )}
+            {panelSlot != null && !panelMaximized && (
+              <ResizableHandle className={mobileHidden} />
+            )}
+            {panelSlot != null && (
+              <ResizablePanel
+                id="panel"
+                defaultSize={panelMaximized ? undefined : panelHeight}
+                minSize={PANEL_MIN}
+                maxSize={PANEL_MAX}
+                /* Maximized wins over collapsed (a collapsed maximized
+                 * panel would blank the main column); the collapsed
+                 * control keeps a stable identity across the toggle. */
+                collapsible={!panelMaximized}
+                collapsed={panelCollapsedCtrl}
+                className={mobileHidden}
+              >
+                <div data-slot="workbench-panel" x-class={[region]}>
+                  {panelSlot}
+                </div>
+              </ResizablePanel>
+            )}
+          </ResizableGroup>
+        </ResizablePanel>
+        {auxiliaryBarSlot != null && <ResizableHandle className={mobileHidden} />}
+        {auxiliaryBarSlot != null && (
+          <ResizablePanel
+            id="auxiliary"
+            defaultSize={auxiliaryBarWidth}
+            minSize={AUXILIARY_MIN}
+            maxSize={AUXILIARY_MAX}
+            collapsible
+            collapsed={auxiliaryBarCollapsedCtrl}
+            className={auxOverlay}
+            style={
+              {
+                '--haze-workbench-auxiliary-width': `${auxiliaryBarWidth}px`,
+              } as CSSProperties
+            }
+          >
+            <div data-slot="workbench-auxiliary-bar" x-class={[region]}>
+              {auxiliaryBarSlot}
+            </div>
+          </ResizablePanel>
+        )}
+      </ResizableGroup>
+      {statusBarSlot != null && (
+        <div data-slot="workbench-status-bar" x-class={[statusBarRegion]}>
+          {statusBarSlot}
+        </div>
+      )}
+      {tabBarSlot != null && (
+        <div data-slot="workbench-tab-bar" x-class={[tabBarRegion]}>
+          {tabBarSlot}
+        </div>
+      )}
+      {sidebarSlot != null && !sidebarCollapsed && (
+        <div
+          data-slot="workbench-scrim"
+          aria-hidden="true"
+          x-class={[scrim]}
+          onClick={() => setSidebarCollapsed(true)}
+        />
+      )}
+      {auxiliaryBarSlot != null && !auxiliaryBarCollapsed && (
+        <div
+          data-slot="workbench-scrim"
+          aria-hidden="true"
+          x-class={[scrim]}
+          onClick={() => setAuxiliaryBarCollapsed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
+export type { WorkbenchProps };

@@ -243,6 +243,13 @@ const arSA: HazeStrings = {
   streamingText: {
     generating: 'جارٍ الإنشاء',
   },
+  tabs: {
+    close: 'إغلاق',
+    moreTabs: 'المزيد من علامات التبويب',
+    statusDirty: 'تغييرات غير محفوظة',
+    statusError: 'خطأ',
+    statusSyncing: 'جارٍ المزامنة',
+  },
   tag: {
     remove: 'إزالة',
   },

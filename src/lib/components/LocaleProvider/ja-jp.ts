@@ -234,6 +234,13 @@ const jaJP: HazeStrings = {
   streamingText: {
     generating: '生成中',
   },
+  tabs: {
+    close: '閉じる',
+    moreTabs: 'その他のタブ',
+    statusDirty: '未保存の変更',
+    statusError: 'エラー',
+    statusSyncing: '同期中',
+  },
   tag: {
     remove: '削除',
   },

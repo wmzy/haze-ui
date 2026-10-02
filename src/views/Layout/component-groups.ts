@@ -33,8 +33,9 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
   {
     group: 'Layout',
     items: [
-      { name: 'AspectRatio', route: 'aspect-ratio' },
       { name: 'AppShell', route: 'app-shell' },
+      { name: 'ActivityRail', route: 'activity-rail' },
+      { name: 'AspectRatio', route: 'aspect-ratio' },
       { name: 'Container', route: 'container' },
       { name: 'Flex', route: 'flex' },
       { name: 'Grid', route: 'grid' },
@@ -42,6 +43,9 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'Resizable', route: 'resizable' },
       { name: 'ScrollArea', route: 'scroll-area' },
       { name: 'Sidebar', route: 'sidebar' },
+      { name: 'StatusBar', route: 'status-bar' },
+      { name: 'TabBar', route: 'tab-bar' },
+      { name: 'Workbench', route: 'workbench' },
     ],
   },
   {
@@ -110,6 +114,7 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'List', route: 'list' },
       { name: 'Progress', route: 'progress' },
       { name: 'QRCode', route: 'qr-code' },
+      { name: 'Sparkline', route: 'sparkline' },
       { name: 'Stat', route: 'stat' },
       { name: 'Table', route: 'table' },
       { name: 'Timeline', route: 'timeline' },

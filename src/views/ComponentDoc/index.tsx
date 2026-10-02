@@ -1254,12 +1254,12 @@ function ResizableSection() {
       <h2>Resizable</h2>
       <div style={{ height: 200, border: '1px solid var(--haze-color-border)', borderRadius: 'var(--haze-radius-md)' }}>
         <ResizableGroup>
-          <ResizablePanel defaultSize={50}>
-            <div style={{ padding: 'var(--haze-space-3)', height: '100%' }}>Left Panel</div>
+          <ResizablePanel id='left' defaultSize={300}>
+            <div style={{ padding: 'var(--haze-space-3)', height: '100%' }}>Left Panel — 300px</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50}>
-            <div style={{ padding: 'var(--haze-space-3)', height: '100%' }}>Right Panel</div>
+          <ResizablePanel id='right'>
+            <div style={{ padding: 'var(--haze-space-3)', height: '100%' }}>Right Panel — flexible</div>
           </ResizablePanel>
         </ResizableGroup>
       </div>

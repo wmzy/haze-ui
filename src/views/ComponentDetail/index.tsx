@@ -43,6 +43,10 @@ import ConfigProviderDemo from './demos/ConfigProviderDemo';
 import LocaleProviderDemo from './demos/LocaleProviderDemo';
 import ToggleDemo from './demos/ToggleDemo';
 import AppShellDemo from './demos/AppShellDemo';
+import ActivityRailDemo from './demos/ActivityRailDemo';
+import StatusBarDemo from './demos/StatusBarDemo';
+import TabBarDemo from './demos/TabBarDemo';
+import WorkbenchDemo from './demos/WorkbenchDemo';
 import ChartDemo from './demos/ChartDemo';
 
 import { page } from './styles';
@@ -183,6 +187,7 @@ import TimelineDemo from './demos/TimelineDemo';
 import TypographyDemo from './demos/TypographyDemo';
 import EllipsisDemo from './demos/EllipsisDemo';
 import CountUpDemo from './demos/CountUpDemo';
+import SparklineDemo from './demos/SparklineDemo';
 
 import StatDemo from './demos/StatDemo';
 
@@ -326,6 +331,7 @@ const demos: Record<string, () => ReactNode> = {
   typography: TypographyDemo,
   ellipsis: EllipsisDemo,
   'count-up': CountUpDemo,
+  sparkline: SparklineDemo,
   stat: StatDemo,
   segmented: SegmentedDemo,
   chip: ChipDemo,
@@ -377,6 +383,10 @@ const demos: Record<string, () => ReactNode> = {
   'config-provider': ConfigProviderDemo,
   toggle: ToggleDemo,
   'app-shell': AppShellDemo,
+  'activity-rail': ActivityRailDemo,
+  'status-bar': StatusBarDemo,
+  'tab-bar': TabBarDemo,
+  workbench: WorkbenchDemo,
   chart: ChartDemo,
   form: FormDemo,
 };

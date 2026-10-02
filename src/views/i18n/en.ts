@@ -57,11 +57,19 @@ const COMPONENT_BLURBS = {
   Masonry:
     'Pinboard layout: JS greedy column distribution balances children across columns (order-first, shortest-column-next).',
   Resizable:
-    'Split-pane group with draggable dividers (ResizableGroup, horizontal or vertical); also exported as SplitterGroup/SplitterPanel/SplitterHandle.',
+    'Split-pane group with draggable dividers (ResizableGroup, horizontal or vertical); px defaultSize/minSize/maxSize per panel, collapsible panels and onResizeCommit for persistence; also exported as SplitterGroup/SplitterPanel/SplitterHandle.',
   ScrollArea:
     'Scrollable region with custom-styled thin scrollbars and maxHeight.',
   Sidebar:
     'App sidebar shell with controllable collapsed state (aside + rail width tokens).',
+  ActivityRail:
+    'VSCode-style vertical icon rail (nav): 44px items with icon/label/badge and active indicator, tooltip labels, slot="end" bottom pinning.',
+  StatusBar:
+    'VSCode-style status strip (footer): left/right groups, selectable StatusItems, priority items survive the mobile breakpoint.',
+  TabBar:
+    'Mobile bottom navigation (the ActivityRail viewport peer): 56px safe-area-aware strip, badge, onSelect/onReselect semantics.',
+  Workbench:
+    'IDE-style application frame (100dvh): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable collapsible regions and a maximizable bottom panel; below 768px sides become overlays and the tabBar takes over.',
 
   // Forms
   Cascader:
@@ -142,6 +150,8 @@ const COMPONENT_BLURBS = {
   QRCode:
     'QR code rendered as one crisp SVG path with value/size/level/bordered options and theme-token module/background colors.',
   Stat: 'Metric display with title, value and trend indicator.',
+  Sparkline:
+    'Inline SVG mini trend chart: stateless, recharts-free and RSC-safe; line or filled area variants on semantic tone tokens.',
   Table: 'Styled semantic table (striped, bordered).',
   Timeline: 'Vertical timeline container for TimelineItem children.',
   Tree: 'Hierarchical tree with expand, select and check state, async loadData and searchValue filtering.',
@@ -265,6 +275,7 @@ export const en = {
     darkMode: 'Dark mode',
     density: 'Density (compact)',
     a11y: 'Accessibility',
+    a11yContracts: 'A11y Contracts',
     migration: 'Migrating from AntD / shadcn',
     streamingA11y: 'Streaming a11y',
     motion: 'Motion presets',
@@ -276,6 +287,8 @@ export const en = {
       'The light/dark token classes, the useDarkMode hook and runtime brand themes.',
     density: 'Compact/comfortable spacing scales via density tokens.',
     a11y: 'Keyboard, screen-reader and WCAG practices baked into every component.',
+    a11yContracts:
+      'Per-component keyboard and ARIA contracts, extracted from the test suites.',
     migration: 'Porting recipes from AntD or shadcn/ui to haze-ui.',
     streamingA11y:
       'Accessible streamed AI output: live regions, announcements and reduced motion.',

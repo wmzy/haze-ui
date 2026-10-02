@@ -9,11 +9,12 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 
 import { useFocusScope } from '../../utils/focus-scope';
 import { Presence } from '../../utils/presence';
 import { useViewTransitionFlip } from '../../utils/view-transition';
+import { useVisualViewportInset } from '../../utils/viewport';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -203,37 +204,6 @@ function isAtScrollTop(target: EventTarget | null, root: HTMLElement): boolean {
   return true;
 }
 
-/**
- * 虚拟键盘 inset：以布局视口为参照度量键盘占用的高度
- * （`innerHeight - visualViewport.height - offsetTop`，向下钳 0——
- * 桌面窗口缩放时 innerHeight 与视口同步变化，inset 恒为 0）。
- * `visualViewport` 不存在（SSR/jsdom）时静默保持 0，调用方的 `dvh`
- * 基线继续生效。`active` 关闭（sheet 收起）时不订阅。
- */
-function useKeyboardInset(enabled: boolean, active: boolean): number {
-  const [inset, setInset] = useState(0);
-  useEffect(() => {
-    if (!enabled || !active) return;
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-    const measure = () => {
-      const next = Math.max(
-        0,
-        Math.round(window.innerHeight - viewport.height - viewport.offsetTop)
-      );
-      setInset((prev) => (prev === next ? prev : next));
-    };
-    measure();
-    viewport.addEventListener('resize', measure);
-    viewport.addEventListener('scroll', measure);
-    return () => {
-      viewport.removeEventListener('resize', measure);
-      viewport.removeEventListener('scroll', measure);
-    };
-  }, [enabled, active]);
-  return inset;
-}
-
 export default function BottomSheet({
   open: openControl,
   onClose,
@@ -288,7 +258,7 @@ export default function BottomSheet({
   );
 
   // ── 虚拟键盘避让 ────────────────────────────────────────────────
-  const kbInset = useKeyboardInset(virtualKeyboard, open);
+  const kbInset = useVisualViewportInset(virtualKeyboard && open);
   const keyboardStyle = virtualKeyboard
     ? ({
         // inset 同时以自定义属性暴露给消费方 CSS（Base UI Drawer 的
