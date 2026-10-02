@@ -4,7 +4,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 import { FileCode, FileJson, FileText } from 'lucide-react';
 
-import { Tabs, TabList, Tab, TabPanel } from '@/lib';
+import { Tabs, TabList, Tab, TabPanel, SortableTabList } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
@@ -116,6 +116,43 @@ function DocumentTabs({
 }
 
 // ─── Tabs ──────────────────────────────────────────────────────
+/** Reorders a list by the index permutation SortableTabList reports. */
+function applyOrder<T>(list: T[], order: number[]): T[] {
+  return order.flatMap((index) => {
+    const item = list[index];
+    return item === undefined ? [] : [item];
+  });
+}
+
+/** Sortable docs: the tab order lives in one control; onReorder reports
+ * the new index permutation and we re-render — the owner-driven reorder
+ * contract, mirroring SortableTagGroup's seam. */
+function SortableDocumentTabs() {
+  const [order, setOrder] = useControl(
+    undefined,
+    docTabs.map((_, i) => i)
+  );
+  const [, , activeCtrl] = useControl(undefined, 'app');
+  const ordered = applyOrder(docTabs, order);
+
+  return (
+    <Tabs value={activeCtrl}>
+      <SortableTabList onReorder={setOrder}>
+        {ordered.map((tab) => (
+          <Tab
+            key={tab.value}
+            value={tab.value}
+            icon={tab.icon}
+            status={tab.status}
+          >
+            {tab.label}
+          </Tab>
+        ))}
+      </SortableTabList>
+    </Tabs>
+  );
+}
+
 export default function TabsDemo() {
   const [, , tabCtrl] = useControl(undefined, 'tab1');
 
@@ -218,6 +255,22 @@ export default function TabsDemo() {
       </div>
 
       <div className={section}>
+        <h2>Sortable tabs</h2>
+        <p className={row}>
+          <code>SortableTabList</code> is the dnd-kit variant of{' '}
+          <code>TabList</code>: drag a tab to reorder (8px distance
+          threshold keeps plain clicks selecting), or lift it with{' '}
+          <kbd>Space</kbd>, move with the arrows, drop with{' '}
+          <kbd>Enter</kbd>, cancel with <kbd>Esc</kbd>. Reordering is
+          owner-driven — <code>onReorder</code> reports the new index
+          order and you re-render the <code>&lt;Tab&gt;</code>s. The ⋯
+          overflow menu is not rendered in this variant; the strip
+          scrolls instead.
+        </p>
+        <SortableDocumentTabs />
+      </div>
+
+      <div className={section}>
         <h2>Tabs Props</h2>
         <PropsTable of='TabsProps' />
       </div>
@@ -230,6 +283,16 @@ export default function TabsDemo() {
       <div className={section}>
         <h2>TabPanel Props</h2>
         <PropsTable of='TabPanelProps' />
+      </div>
+
+      <div className={section}>
+        <h2>TabList Props</h2>
+        <PropsTable of='TabListProps' />
+      </div>
+
+      <div className={section}>
+        <h2>SortableTabList Props</h2>
+        <PropsTable of='SortableTabListProps' />
       </div>
 
       <div className={section}>

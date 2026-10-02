@@ -147,6 +147,11 @@ export default function ResizableDemo() {
       </div>
 
       <div className={section}>
+        <h2>ResizableHandle Props</h2>
+        <PropsTable of='ResizableHandleProps' />
+      </div>
+
+      <div className={section}>
         <h2>Accessibility</h2>
         <A11yNote>
           <ul>

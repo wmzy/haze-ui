@@ -98,6 +98,62 @@
       "description": "Alert content"
     }
   ],
+  "ActivityRailItemProps": [
+    {
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "Item icon (rendered centered in the 44px target)"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "description": "Item name — drives the tooltip and the accessible name"
+    },
+    {
+      "name": "badge",
+      "type": "ReactNode",
+      "description": "Overlay badge (usually <Badge/>) — counters like pending reviews"
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "default": "false",
+      "description": "Marks the current view: aria-current + the 2px rail-side indicator"
+    },
+    {
+      "name": "onSelect",
+      "type": "() => void",
+      "description": "Selection callback"
+    },
+    {
+      "name": "slot",
+      "type": "'start' | 'end'",
+      "default": "'start'",
+      "description": "end slots pin to the rail bottom (settings/account entries)"
+    },
+    {
+      "name": "...rest",
+      "type": "button attributes",
+      "description": "Native button props (type=button is built in)"
+    }
+  ],
+  "ActivityRailProps": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "ActivityRailItem elements"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "...rest",
+      "type": "nav attributes",
+      "description": "Renders a nav landmark — pass aria-label via rest"
+    }
+  ],
   "AnchorProps": [
     {
       "name": "items",
@@ -2017,6 +2073,11 @@
       "description": "Layout direction"
     },
     {
+      "name": "onResizeCommit",
+      "type": "(sizes: Record<string, number>) => void",
+      "description": "Fires once when a drag or keyboard resize settles, mapping fixed-panel ids to their committed px sizes — the persistence hook (write it back into a store or Control)"
+    },
+    {
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
@@ -2034,10 +2095,42 @@
   ],
   "ResizablePanelProps": [
     {
+      "name": "id",
+      "type": "string",
+      "description": "Stable panel identity — keys the sizes map reported by onResizeCommit; keep it stable across renders for persistence"
+    },
+    {
       "name": "defaultSize",
       "type": "number",
-      "default": "50",
-      "description": "Default size as percentage"
+      "description": "Initial size in px. Omit to make the panel flexible (it absorbs the remaining space); changing this prop after a resize re-pins the panel outside gestures"
+    },
+    {
+      "name": "minSize",
+      "type": "number",
+      "default": "—",
+      "description": "Clamp in px enforced by both pointer drags and keyboard steps"
+    },
+    {
+      "name": "maxSize",
+      "type": "number",
+      "default": "—",
+      "description": "Clamp in px enforced by both pointer drags and keyboard steps"
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "default": "false",
+      "description": "Enables collapse semantics: the panel collapses to zero width/height and its handle becomes a keyboard-reachable expander"
+    },
+    {
+      "name": "collapsed",
+      "type": "Control<boolean> | boolean",
+      "description": "Controlled/uncontrolled collapsed state — survives breakpoint flips (desktop dock ⇄ mobile overlay) as one source of truth"
+    },
+    {
+      "name": "onCollapsedChange",
+      "type": "(collapsed: boolean) => void",
+      "description": "Notifies on collapse toggles (handle expander, resets crossing the threshold)"
     },
     {
       "name": "className",
@@ -2048,6 +2141,18 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Panel content"
+    }
+  ],
+  "ResizableHandleProps": [
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "...rest",
+      "type": "div attributes",
+      "description": "role=separator with aria-orientation/valuenow is built in; arrow keys resize in 16px steps, Enter or double-click resets the adjacent panel to its defaultSize, and the hit area widens to 44px on coarse pointers"
     }
   ],
   "ScrollAreaProps": [
@@ -2277,6 +2382,51 @@
       "description": "Additional CSS class"
     }
   ],
+  "StatusBarProps": [
+    {
+      "name": "left",
+      "type": "ReactNode",
+      "description": "Left-aligned items (branch, problems, cursor position…)"
+    },
+    {
+      "name": "right",
+      "type": "ReactNode",
+      "description": "Right-aligned items (language, encoding, sync state…)"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "...rest",
+      "type": "footer attributes",
+      "description": "Renders a footer landmark — pass aria-label via rest"
+    }
+  ],
+  "StatusItemProps": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Item content"
+    },
+    {
+      "name": "priority",
+      "type": "boolean",
+      "default": "false",
+      "description": "Priority items survive the ≤768px breakpoint (non-priority items are hidden there)"
+    },
+    {
+      "name": "onSelect",
+      "type": "() => void",
+      "description": "Presence switches the item to a button; omit for plain text"
+    },
+    {
+      "name": "...rest",
+      "type": "span | button attributes",
+      "description": "Native props forwarded to the rendered element"
+    }
+  ],
   "StepperProps": [
     {
       "name": "activeStep",
@@ -2462,6 +2612,95 @@
       "description": "TableHead and TableBody elements"
     }
   ],
+  "TabBarItemProps": [
+    {
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "Item icon (above the label)"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "description": "Item name — rendered under the icon and used as the accessible name"
+    },
+    {
+      "name": "badge",
+      "type": "ReactNode",
+      "description": "Overlay badge (usually <Badge/>)"
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "default": "false",
+      "description": "Marks the current view: aria-current + the 2px top indicator"
+    },
+    {
+      "name": "onSelect",
+      "type": "() => void",
+      "description": "Fires when a non-active item is tapped"
+    },
+    {
+      "name": "onReselect",
+      "type": "() => void",
+      "description": "Fires when the already-active item is tapped again — the 'tap-again-to-dismiss/back-to-root' affordance"
+    },
+    {
+      "name": "...rest",
+      "type": "button attributes",
+      "description": "Native button props (type=button is built in)"
+    }
+  ],
+  "TabBarProps": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "TabBarItem elements (horizontally distributed; safe-area aware)"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "...rest",
+      "type": "nav attributes",
+      "description": "Renders a nav landmark — pass aria-label via rest. Positioning (fixed) is left to the Workbench or the consumer"
+    }
+  ],
+  "TabListProps": [
+    {
+      "name": "overflowLabel",
+      "type": "string",
+      "description": "Overrides the ⋯ overflow button's accessible label (default from the tabs locale pack: More tabs)"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Tab elements; overflowing tabs stay reachable through the ⋯ menu, and the strip scrolls horizontally as the fallback"
+    }
+  ],
+  "SortableTabListProps": [
+    {
+      "name": "onReorder",
+      "type": "(order: number[]) => void",
+      "description": "Reports the new index order when a drag or keyboard sort settles — re-rendering the tabs is the owner's job"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Tab elements (drag reordering via dnd-kit; keyboard lift via Space, drop via Enter, cancel via Escape). Note: the ⋯ overflow menu is not rendered in the sortable variant — keep the strip scrollable instead"
+    }
+  ],
   "TabPanelProps": [
     {
       "name": "value",
@@ -2484,6 +2723,37 @@
       "name": "value",
       "type": "string",
       "description": "Unique value identifying this tab"
+    },
+    {
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "Leading icon slot (aria-hidden — decorative)"
+    },
+    {
+      "name": "status",
+      "type": "'dirty' | 'error' | 'syncing'",
+      "description": "Status dot: dirty=neutral, error=danger, syncing=primary; the SR status word comes from the tabs locale pack unless statusLabel overrides it"
+    },
+    {
+      "name": "statusLabel",
+      "type": "ReactNode",
+      "description": "Overrides the status word appended to the accessible name (the i18n hook for SR users)"
+    },
+    {
+      "name": "closable",
+      "type": "boolean",
+      "default": "false",
+      "description": "Renders a close × (aria-label from the tabs locale pack, overridable via closeLabel); clicking or pressing Delete closes — unmounting the tab is the owner's job via onClose"
+    },
+    {
+      "name": "closeLabel",
+      "type": "string",
+      "description": "Overrides the close button's accessible label"
+    },
+    {
+      "name": "onClose",
+      "type": "(event: MouseEvent | KeyboardEvent) => void",
+      "description": "Close notification — pure notification, the controlled tabs array is the owner's to mutate"
     },
     {
       "name": "className",
@@ -3379,6 +3649,63 @@
       "name": "maxRows",
       "type": "number",
       "description": "Auto-grow cap in rows; the textarea scrolls beyond it"
+    }
+  ],
+  "WorkbenchProps": [
+    {
+      "name": "activityBar",
+      "type": "ReactNode",
+      "description": "Left icon rail slot (usually <ActivityRail/>) — hidden below 768px where the tabBar takes over"
+    },
+    {
+      "name": "sidebar",
+      "type": "ReactNode",
+      "description": "Primary side region (explorer, search…); docked+resizable on desktop, a scrimmed overlay on mobile"
+    },
+    {
+      "name": "auxiliaryBar",
+      "type": "ReactNode",
+      "description": "Secondary side region (inspector) docked right; also overlay below 768px"
+    },
+    {
+      "name": "panel",
+      "type": "ReactNode",
+      "description": "Bottom panel region (terminal/output/problems); docked+resizable on desktop, hidden on mobile — surface it as a view there"
+    },
+    {
+      "name": "statusBar",
+      "type": "ReactNode",
+      "description": "Status strip slot (usually <StatusBar/>)"
+    },
+    {
+      "name": "tabBar",
+      "type": "ReactNode",
+      "description": "Mobile bottom navigation slot (usually <TabBar/>); hidden on desktop"
+    },
+    {
+      "name": "sidebarWidth / auxiliaryBarWidth / panelHeight",
+      "type": "Control<number> | number",
+      "description": "Region sizes in px — plain props double as defaults after a resize (commit via the internal group's onResizeCommit semantics)"
+    },
+    {
+      "name": "sidebarCollapsed / auxiliaryBarCollapsed / panelCollapsed",
+      "type": "Control<boolean> | boolean",
+      "description": "Region visibility — one source of truth across breakpoints: docked collapse on desktop reads as the overlay being closed on mobile"
+    },
+    {
+      "name": "panelMaximized",
+      "type": "Control<boolean> | boolean",
+      "description": "Maximizes the bottom panel over the main area (VSCode ctrl+J style); reversible through the same Control"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Main editor area — compose freely (Tabs + TabPanel, anything)"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
     }
   ]
 }
