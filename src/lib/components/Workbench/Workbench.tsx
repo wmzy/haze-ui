@@ -245,6 +245,12 @@ const sidenavOverlay = css`
     inset-inline-start: 0;
     z-index: 100;
     width: 100%;
+    /* Opaque fill: the docked column rides the shell's
+     * own background, but as an overlay the region is
+     * transparent by default and the scrim's dim would
+     * show through it (visually burying the sidebar
+     * under the dim layer it sits above). */
+    background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-lg);
     transform: translateX(-100%);
     visibility: hidden;
@@ -274,6 +280,7 @@ const auxOverlay = css`
     inset-inline-end: 0;
     z-index: 100;
     width: min(var(--haze-workbench-auxiliary-width, 300px), 85%);
+    background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-lg);
     transition: transform var(--haze-duration-normal) var(--haze-ease);
 
