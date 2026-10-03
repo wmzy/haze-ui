@@ -701,6 +701,80 @@ describe('external size declaration changes (single source of truth)', () => {
   });
 });
 
+describe('Resizable RTL mirroring', () => {
+  function renderRtlPair() {
+    return render(
+      <div dir="rtl">
+        <ResizableGroup>
+          <ResizablePanel id="a" defaultSize={300}>A</ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel id="b" defaultSize={300}>B</ResizablePanel>
+        </ResizableGroup>
+      </div>
+    );
+  }
+
+  it('mirrors pointer drags: rightward motion shrinks the lead panel', () => {
+    // Under rtl flex paints the DOM-lead panel on the divider's RIGHT —
+    // dragging right moves the divider into it.
+    renderRtlPair();
+    drag(handleAt(), 400, 440);
+    expect(basisOf('a')).toBe('260px');
+    expect(basisOf('b')).toBe('340px');
+  });
+
+  it('mirrors arrow keys: ArrowRight shrinks, ArrowLeft grows the lead', () => {
+    renderRtlPair();
+    const handle = handleAt();
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(basisOf('a')).toBe('284px');
+    expect(basisOf('b')).toBe('316px');
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    expect(basisOf('a')).toBe('316px');
+  });
+
+  it('leaves vertical groups direction-invariant', () => {
+    render(
+      <div dir="rtl">
+        <ResizableGroup direction="vertical">
+          <ResizablePanel id="a" defaultSize={200}>A</ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel id="b" defaultSize={300}>B</ResizablePanel>
+        </ResizableGroup>
+      </div>
+    );
+    const handle = handleAt();
+    fireEvent.keyDown(handle, { key: 'ArrowDown' });
+    expect(basisOf('a')).toBe('216px');
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    expect(basisOf('a')).toBe('216px');
+  });
+});
+
+describe('Resizable gesture lifecycle', () => {
+  it('releases gesture ownership when the handle unmounts mid-drag', () => {
+    const tree = (withHandle: boolean, defaultSize = 300) => (
+      <ResizableGroup>
+        <ResizablePanel id="a" defaultSize={defaultSize}>A</ResizablePanel>
+        {withHandle ? <ResizableHandle /> : null}
+        <ResizablePanel id="b" defaultSize={300}>B</ResizablePanel>
+      </ResizableGroup>
+    );
+    const view = render(tree(true));
+    const handle = handleAt();
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 400 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 440 });
+    expect(basisOf('a')).toBe('340px');
+    // The handle unmounts mid-gesture — no pointerup ever reaches it.
+    // The unmount cleanup must end the gesture: the leaked ownership
+    // would freeze the drag's override and swallow the fresh 420px
+    // declaration arriving in the same commit.
+    view.rerender(tree(false, 420));
+    expect(basisOf('a')).toBe('420px');
+  });
+});
+
 describe('Resizable accessibility', () => {
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');

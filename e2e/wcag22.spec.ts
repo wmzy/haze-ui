@@ -113,6 +113,21 @@ test.describe('WCAG 2.4.11 focus appearance', () => {
   });
 
   test('every Tab stop paints a ≥2px outline or a box-shadow ring', async ({ page }) => {
+    // Snapshot the RESTING shadow of every candidate BEFORE the walk:
+    // a persistent decorative/elevation shadow must not satisfy the
+    // check — SC 2.4.11 demands a focus-time CHANGE (an ≥2px outline,
+    // or a box-shadow that differs from the unfocused state's).
+    await page.evaluate((selector) => {
+      for (const el of Array.from(document.querySelectorAll(selector))) {
+        if (!(el instanceof HTMLElement)) continue;
+        el.dataset.restingRing = getComputedStyle(el).boxShadow;
+        const isRange =
+          el instanceof HTMLInputElement && el.type === 'range';
+        el.dataset.restingThumb = isRange
+          ? getComputedStyle(el, '::-webkit-slider-thumb').boxShadow
+          : '';
+      }
+    }, INTERACTIVE_SELECTOR);
     // Walk the page's tab order: press Tab until focus returns to an
     // already-visited element (with a safety cap). Keyboard-driven focus
     // matches :focus-visible, where the library's rings live. Stops are
@@ -149,7 +164,14 @@ test.describe('WCAG 2.4.11 focus appearance', () => {
           async () => {
             const info = await page.evaluate(() => {
               const el = document.activeElement;
-              if (!el) return { outline: 0, ring: 'none', thumb: 'none' };
+              if (!(el instanceof HTMLElement))
+                return {
+                  outline: 0,
+                  ring: 'none',
+                  thumb: 'none',
+                  restingRing: 'none',
+                  restingThumb: '',
+                };
               const cs = getComputedStyle(el);
               // Range inputs paint the ring on the thumb pseudo —
               // the element-level computed style cannot see it.
@@ -162,12 +184,16 @@ test.describe('WCAG 2.4.11 focus appearance', () => {
                 outline: parseFloat(cs.outlineWidth) || 0,
                 ring: cs.boxShadow,
                 thumb: thumb ? thumb.boxShadow : 'none',
+                restingRing: el.dataset.restingRing ?? 'none',
+                restingThumb: el.dataset.restingThumb ?? '',
               };
             });
             return (
               info.outline >= 2 ||
-              info.ring !== 'none' ||
-              info.thumb !== 'none'
+              // A shadow only counts when focus CHANGED it — a resting
+              // decorative shadow must not satisfy the indicator.
+              (info.ring !== 'none' && info.ring !== info.restingRing) ||
+              (info.thumb !== 'none' && info.thumb !== info.restingThumb)
             );
           },
           {

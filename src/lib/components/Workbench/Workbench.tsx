@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 import { useEffect } from 'react';
 import { useControl } from 'react-use-control';
 
+import { useFocusScope } from '../../utils/focus-scope';
 import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
 
 type WorkbenchProps = {
@@ -15,7 +16,9 @@ type WorkbenchProps = {
    *  or bottom (`'bottom'`) — the Cursor-style layout, where the
    *  rail rides the sidebar as one unit. */
   activityBarPosition?: ControlOrValue<'side' | 'top' | 'bottom'>;
-  /** Docked explorer column beside the editor; becomes a scrim-dismissed overlay under the mobile breakpoint. */
+  /** Docked explorer column beside the editor; under the mobile breakpoint
+   *  it becomes a full-screen slide-out overlay dismissed via Escape, with
+   *  focus moved in on open and returned to the opener on close. */
   sidebar?: ReactNode;
   /** Docked secondary column on the trailing edge; overlays like the sidebar on mobile. */
   auxiliaryBar?: ReactNode;
@@ -221,12 +224,13 @@ const tabBarRegion = css`
   }
 `;
 
-/* Click surface dismissing the mobile sidebar overlay. Inert
- * wherever the overlay is not in fixed mode; the dim layer
- * follows the ConfirmDialog/BottomSheet scrim precedent. Under
- * the breakpoint it appears only while the overlay is open
- * (data-open), so it never dims a shell whose sidebar starts
- * hidden. */
+/* Click surface dismissing the mobile auxiliary-bar overlay (the
+ * sidebar overlay is full-screen and would cover any scrim of its
+ * own, so it is Escape-dismissed and renders none). Inert wherever
+ * the overlay is not in fixed mode; the dim layer follows the
+ * ConfirmDialog/BottomSheet scrim precedent. Under the breakpoint
+ * it appears only while the overlay is open (data-open), so it
+ * never dims a shell whose overlay starts hidden. */
 const scrim = css`
   display: none;
   box-sizing: border-box;
@@ -260,9 +264,8 @@ const sidenavOverlay = css`
     width: 100%;
     /* Opaque fill: the docked column rides the shell's
      * own background, but as an overlay the region is
-     * transparent by default and the scrim's dim would
-     * show through it (visually burying the sidebar
-     * under the dim layer it sits above). */
+     * transparent by default and the editor beneath
+     * would show through it. */
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-lg);
     transform: translateX(-100%);
@@ -279,7 +282,11 @@ const sidenavOverlay = css`
         visibility 0s;
     }
 
-    html[dir='rtl'] & {
+    /* Under RTL the hide-slide mirrors to the right (inline-start is
+     * the right edge). Scoped to the hidden state: an un-scoped
+     * html[dir=rtl] rule would outspecify the [data-open] reset and
+     * keep the overlay translated off-canvas forever. */
+    html[dir='rtl'] &:not([data-open]) {
       transform: translateX(100%);
     }
   }
@@ -303,6 +310,12 @@ const auxOverlay = css`
       transition:
         transform var(--haze-duration-normal) var(--haze-ease),
         visibility 0s linear var(--haze-duration-normal);
+    }
+
+    /* inline-end is the LEFT edge under RTL: the hidden state must
+     * slide the box out to the left, not push it over the content. */
+    html[dir='rtl'] &[data-collapsed] {
+      transform: translateX(-100%);
     }
   }
 `;
@@ -358,11 +371,9 @@ export default function Workbench({
   // the consumer's button, not by default.
   const [mobileSidebarOpen, setMobileSidebarOpen, mobileSidebarOpenCtrl] =
     useControl(mobileSidebarOpenControl, false);
-  // Escape dismisses the mobile sidebar overlay. The
-  // full-width slide-out is opaque and edge-to-edge, so
-  // it covers the scrim entirely — the dim layer has no
-  // clickable surface of its own — and the keyboard is
-  // the shell's built-in dismissal path.
+  // The full-width slide-out is opaque and edge-to-edge (z 100), so it
+  // would cover any scrim entirely — no scrim is rendered for it and
+  // the keyboard is the shell's built-in dismissal path.
   useEffect(() => {
     if (!mobileSidebarOpen) {
       return undefined;
@@ -375,6 +386,18 @@ export default function Workbench({
     document.addEventListener('keydown', onKeydown);
     return () => document.removeEventListener('keydown', onKeydown);
   }, [mobileSidebarOpen, setMobileSidebarOpen]);
+  // Focus management for the mobile sidebar overlay: focus moves into
+  // the explorer on open and returns to the opener on close (the
+  // Drawer precedent — trapped stays false, this is a full-screen
+  // slide-out, not a modal dialog; the breakpoint is a container
+  // query, so no JS can gate trapping on the actual viewport form).
+  // The ref rides the inner region div because ResizablePanel does
+  // not forward refs; a docked rail stays outside the scope, which
+  // only matters under trapping anyway.
+  const setSidebarScope = useFocusScope({
+    enabled: mobileSidebarOpen,
+    trapped: false,
+  });
   // Layout choice for the rail: its own column or docked inside
   // the sidebar column.
   const [activityBarPosition] = useControl<
@@ -458,6 +481,7 @@ export default function Workbench({
               </div>
             )}
             <div
+              ref={setSidebarScope}
               data-slot="workbench-sidebar"
               x-class={[region, activityBarPosition !== 'side' && regionFill]}
             >
@@ -532,20 +556,12 @@ export default function Workbench({
           {tabBarSlot}
         </div>
       )}
-      {sidebarSlot != null && (
-        <div
-          data-slot="workbench-scrim"
-          aria-hidden="true"
-          x-class={[scrim]}
-          data-open={mobileSidebarOpen || undefined}
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
       {auxiliaryBarSlot != null && !auxiliaryBarCollapsed && (
         <div
           data-slot="workbench-scrim"
           aria-hidden="true"
           x-class={[scrim]}
+          data-open
           onClick={() => setAuxiliaryBarCollapsed(true)}
         />
       )}

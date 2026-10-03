@@ -136,6 +136,20 @@ describe('LogViewer', () => {
       );
       expect(onLoadMore).toHaveBeenCalledTimes(3);
     });
+
+    it('fires when the handler is attached after mount on short content', () => {
+      const onLoadMore = vi.fn();
+      // Content shorter than the port: already within the threshold.
+      scrollHeightSpy.mockReturnValue(300);
+      const { rerender } = render(<LogViewer logs={logs} />);
+      // Never armed on mount — nothing may fire while no handler exists.
+      expect(onLoadMore).not.toHaveBeenCalled();
+      // Attaching the handler later must re-run the initial at-end
+      // check (an enable flip is a fresh mount for the trigger), or
+      // short content would stay silent until the first scroll.
+      rerender(<LogViewer logs={logs} onLoadMore={onLoadMore} />);
+      expect(onLoadMore).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('has no axe violations', async () => {

@@ -32,3 +32,5 @@ tmp
 /.nyc_output
 
 /dist
+/patches-wave/
+/paseo.json

@@ -50,14 +50,15 @@ import { useTabsContext } from './TabsContext';
  * compressed past their floor. dnd-kit's own autoScroll is
  * bypassed in favor of this explicit loop: the strip's flex
  * compression reflows item rects mid-drag, which the rect-based
- * detector tracks poorly.
+ * detector tracks poorly. The loop arms for pointer drags only —
+ * a keyboard lift never feeds the pointer-position ref, so letting
+ * it run would scroll the strip under a stale clientX.
  *
- * Trade-off: the overflow `⋯` menu does not appear in this variant —
- * the sortable wrappers sit between the tablist and its `<Tab>`
- * children, which the plain TabList's menu collector does not see.
- * The strip still scrolls (hidden scrollbar), so every tab stays
- * reachable; use the plain `<TabList>` when the menu matters more
- * than drag reordering.
+ * The sortable wrappers sit between the tablist and its `<Tab>`
+ * children, which the plain TabList's menu collector cannot see
+ * through — the metas are collected over the unwrapped children
+ * here instead and handed down (`tabMetas`), keeping the ⋯
+ * overflow menu working unchanged.
  */
 type SortableTabListProps = {
   children: ReactNode;
@@ -263,9 +264,20 @@ export default function SortableTabList({
   children,
 }: SortableTabListProps) {
   // The sortable mode needs positional indices over the child list, so
-  // it renders through Children.toArray; ids are the child indices.
+  // it renders through Children.toArray. dnd-kit ids and wrapper keys
+  // ride the wrapped Tab's `value` (contractually unique — Tab renders
+  // `aria-controls={`tabpanel-${value}`}`), with the index as the
+  // fallback for non-Tab children: index-keyed wrappers get reused by
+  // a DIFFERENT tab after the consumer reorders its children, which
+  // made dnd-kit's drop-time focus restoration land on the wrong tab.
   const items = Children.toArray(children);
-  const ids = items.map((_, index) => index);
+  const ids = items.map((child, index) => {
+    if (isValidElement(child)) {
+      const value = (child.props as { value?: string | number }).value;
+      if (value !== undefined) return value;
+    }
+    return index;
+  });
 
   // The sortable wrappers sit between the tablist and its <Tab>
   // children, so TabList's own menu collector cannot see through
@@ -313,8 +325,23 @@ export default function SortableTabList({
         <SortableRegion
           ids={ids}
           strategy={horizontalListSortingStrategy}
-          onMove={(from, to) => onReorder?.(arrayMove(ids, from, to))}
-          onDragStart={() => setDragging(true)}
+          onMove={(from, to) =>
+            // ids are the wrapped tabs' values in CURRENT order; the
+            // consumer's contract is the new sequence of (this render's)
+            // child indices — translate through ids, which is aligned
+            // with `items`.
+            onReorder?.(
+              arrayMove(ids, from, to).map((id) => ids.indexOf(id))
+            )
+          }
+          onDragStart={(event) =>
+            // Only pointer drags arm the edge auto-scroll: its rAF loop
+            // reads the pointer position ref, which a keyboard lift
+            // (Space) never feeds — arming it there would scroll the
+            // strip under a stale (initial 0 / previous-drag) clientX
+            // for the whole keyboard drag.
+            setDragging(event.activatorEvent.type === 'pointerdown')
+          }
           onDragEnd={() => setDragging(false)}
         >
           {/* The region renders no DOM of its own except dnd-kit's
@@ -324,7 +351,7 @@ export default function SortableTabList({
            * aria-required-children). */}
           <TabList className={className} listRef={listRef} tabMetas={tabMetas}>
             {items.map((child, index) => (
-              <SortableTabItem key={index} id={index}>
+              <SortableTabItem key={ids[index] ?? index} id={ids[index] ?? index}>
                 {child}
               </SortableTabItem>
             ))}

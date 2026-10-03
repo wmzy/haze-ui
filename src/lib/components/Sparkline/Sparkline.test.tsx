@@ -125,6 +125,19 @@ describe('Sparkline', () => {
     expect(svg).not.toHaveAttribute('role');
   });
 
+  it('becomes a named image when aria-labelledby is passed', () => {
+    // aria-labelledby is a naming path too — an externally named
+    // sparkline must not be erased by the decorative aria-hidden.
+    render(
+      <>
+        <span id='spark-caption'>Latency trend</span>
+        <Sparkline data={DATA} aria-labelledby='spark-caption' />,
+      </>
+    );
+    const img = screen.getByRole('img', { name: 'Latency trend' });
+    expect(img).not.toHaveAttribute('aria-hidden');
+  });
+
   it('applies className', () => {
     render(<Sparkline data={DATA} className='custom' data-testid='spark' />);
     expect(screen.getByTestId('spark')).toHaveClass('custom');

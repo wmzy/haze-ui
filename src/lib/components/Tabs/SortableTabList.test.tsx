@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { expect } from 'vitest';
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import SortableTabList from './SortableTabList';
@@ -127,6 +127,50 @@ describe('SortableTabList', () => {
     screen.getByRole('tab', { name: 'Tab 1' }).focus();
     await user.keyboard(' {ArrowRight}{Escape}');
     expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('restores focus to the dragged tab after a keyboard reorder', async () => {
+    const user = userEvent.setup();
+    render(<SortableTabsFixture tabs={plainTabs} />);
+    giveTabsDistinctRects();
+    screen.getByRole('tab', { name: 'Tab 2' }).focus();
+    // Lift 'Tab 2', walk it left over 'Tab 1', drop — the consumer
+    // reorders its children. Value-keyed wrappers keep the dragged
+    // tab's own DOM node across the reorder, so dnd-kit's focus
+    // restoration lands back on 'Tab 2', not on whatever tab now
+    // fills its old slot.
+    await user.keyboard(' {ArrowLeft} ');
+    const dragged = screen.getByRole('tab', { name: 'Tab 2' });
+    await waitFor(() => expect(dragged).toHaveFocus());
+  });
+
+  it('never arms the edge auto-scroll during a keyboard drag', async () => {
+    const user = userEvent.setup();
+    render(<SortableTabsFixture tabs={plainTabs} />);
+    giveTabsDistinctRects();
+    const strip = document.querySelector<HTMLElement>(
+      "[data-slot='tab-list']"
+    );
+    if (strip === null) throw new Error('tab-list not found');
+    // A keyboard lift (Space) dispatches no pointer event, so the
+    // scroll loop's pointerX ref stays stale — the loop must stay
+    // disarmed or it scrolls the strip away under the airborne tab.
+    const writes: number[] = [];
+    const descriptor = Object.getOwnPropertyDescriptor(
+      Element.prototype,
+      'scrollLeft'
+    );
+    vi.spyOn(Element.prototype, 'scrollLeft', 'set').mockImplementation(
+      function (this: Element, next: number) {
+        writes.push(next);
+        descriptor?.set?.call(this, next);
+      }
+    );
+    screen.getByRole('tab', { name: 'Tab 1' }).focus();
+    await user.keyboard(' {ArrowRight}');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(writes).toEqual([]);
+    await user.keyboard('{Escape}');
   });
 
   it('keeps the selection on its tab (not its index) through a completed drag', async () => {

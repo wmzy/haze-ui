@@ -76,10 +76,28 @@ const USER_EVENT_RECEIVERS = /^(user|userEvent)$/;
  */
 function registersTest(call) {
   let callee = call.expression;
+  /** Property names that namespace rather than register — `test.describe`
+   * (suite, not test) and the lifecycle hooks share the `test.`/`it.`
+   * receiver and a string first argument, so without this guard they
+   * inflate the count. Valid chain members (each/skip/only/fixme) are
+   * allowed through. */
+  const NON_REGISTERING = new Set([
+    'describe',
+    'beforeEach',
+    'afterEach',
+    'beforeAll',
+    'afterAll',
+  ]);
   while (
     ts.isCallExpression(callee) ||
     ts.isPropertyAccessExpression(callee)
   ) {
+    if (
+      ts.isPropertyAccessExpression(callee) &&
+      NON_REGISTERING.has(callee.name.text)
+    ) {
+      return false;
+    }
     callee = callee.expression;
   }
   if (!ts.isIdentifier(callee) || !/^(f?it|test)$/.test(callee.text)) {

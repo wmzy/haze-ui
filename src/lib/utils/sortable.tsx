@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { SortingStrategy } from '@dnd-kit/sortable';
 
 import { css } from '@linaria/core';
@@ -26,8 +26,10 @@ type SortableRegionProps = {
    * lands back on the origin item. */
   onMove: (from: number, to: number) => void;
   /** Drag lifecycle passthrough — SortableTabList uses the pair to
-   * run its edge auto-scroll loop while a tab is airborne. */
-  onDragStart?: () => void;
+   * run its edge auto-scroll loop while a tab is airborne. The start
+   * callback receives the dnd-kit event so consumers can tell pointer
+   * lifts from keyboard lifts (`event.activatorEvent`). */
+  onDragStart?: (event: DragStartEvent) => void;
   onDragEnd?: () => void;
   children: ReactNode;
 };

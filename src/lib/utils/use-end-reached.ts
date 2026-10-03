@@ -105,14 +105,21 @@ export function useEndReached({
   }, [ref, axis, fromStart, extentFallback, threshold]);
 
   // Mount check (short content fires immediately) + growth re-arm.
+  const prevEnabledRef = useRef(false);
   useEffect(() => {
     const prev = prevUnitsRef.current;
+    const wasEnabled = prevEnabledRef.current;
     prevUnitsRef.current = contentUnits;
+    prevEnabledRef.current = enabled;
     if (!enabled) return;
-    if (prev !== null && contentUnits <= prev) return;
+    // An enable flip is a fresh mount for the trigger: a handler wired
+    // after mount (`onLoadMore={hasMore ? load : undefined}`) must still
+    // get the initial at-end check, or short content stays silent until
+    // the user scrolls.
+    if (wasEnabled && prev !== null && contentUnits <= prev) return;
     // fromStart: the initial position is provisional until the consumer
-    // anchors it — skip the mount check (growth checks still run).
-    if (prev === null && fromStart) return;
+    // anchors it — skip the first armed check (growth checks still run).
+    if (fromStart && (prev === null || !wasEnabled)) return;
     armedRef.current = true;
     check();
   }, [contentUnits, check, enabled, fromStart]);

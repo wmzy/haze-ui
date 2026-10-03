@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T07:56:38.143Z",
+  "generatedAt": "2026-10-03T21:03:30.852Z",
   "components": [
     {
       "component": "Accordion",
@@ -800,7 +800,7 @@
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 11
+      "testCount": 12
     },
     {
       "component": "MarkdownRenderer",
@@ -1045,7 +1045,7 @@
         "Enter",
         "Home"
       ],
-      "testCount": 38
+      "testCount": 42
     },
     {
       "component": "Result",
@@ -1185,7 +1185,7 @@
         "aria-hidden"
       ],
       "keys": [],
-      "testCount": 15
+      "testCount": 16
     },
     {
       "component": "Spinner",
@@ -1314,7 +1314,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 40
+      "testCount": 42
     },
     {
       "component": "Tag",
@@ -1621,9 +1621,10 @@
       ],
       "aria": [],
       "keys": [
-        "Enter"
+        "Enter",
+        "Escape"
       ],
-      "testCount": 20
+      "testCount": 21
     }
   ]
 }

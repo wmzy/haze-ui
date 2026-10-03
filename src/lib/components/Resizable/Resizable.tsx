@@ -19,6 +19,8 @@ import {
 } from 'react';
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
+import { getDirection } from '../../utils/direction';
+
 /**
  * px size overrides per panel id. A panel without an entry falls back to
  * its `defaultSize`; "explicitly sized" panels (those declaring
@@ -595,6 +597,33 @@ export function ResizableHandle({
   const dragRef = useRef<DragState | null>(null);
   const dragChangedRef = useRef(false);
 
+  // Gesture ownership survives re-renders but not unmount: if the
+  // handle disappears mid-drag (Workbench's panelMaximized toggling the
+  // vertical handle, a consumer conditionally removing a slot …), the
+  // ending pointer event never arrives here and endGesture would never
+  // run — permanently pinning isGesturePanel for the involved panels,
+  // whose declaration effects then swallow every external size change.
+  // Release ownership on unmount; a completed drag leaves dragRef null
+  // and the cleanup a no-op.
+  useEffect(
+    () => () => {
+      if (dragRef.current !== null) {
+        dragRef.current = null;
+        endGesture();
+      }
+    },
+    [endGesture]
+  );
+
+  /** RTL mirror: in a horizontal group flex paints the DOM-lead panel
+   * on the RIGHT under rtl, so a rightward pointer delta / ArrowRight
+   * moves the divider INTO it and must shrink it — read the direction
+   * at event time (the src/lib/utils/direction convention; DataTable's
+   * column-resize separator does the same). Vertical groups are
+   * direction-invariant. */
+  const mirrored = (): boolean =>
+    direction === 'horizontal' && getDirection(handleRef.current) === 'rtl';
+
   // The separator's value mirrors the rendered basis of the leading
   // fixed panel (trailing as fallback). Sibling styles are committed
   // before effects run, so the DOM read is always in sync; the guarded
@@ -703,11 +732,12 @@ export function ResizableHandle({
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     if (drag?.pointerId !== event.pointerId) return;
+    const rawDelta = axisOf(event) - drag.origin;
     const patch = resizePatch(
       drag.lead,
       drag.trail,
       drag.pairSum,
-      axisOf(event) - drag.origin
+      mirrored() ? -rawDelta : rawDelta
     );
     if (applySizes(patch)) dragChangedRef.current = true;
   };
@@ -766,11 +796,19 @@ export function ResizableHandle({
     event.preventDefault();
     const pairSum =
       lead !== null && trail !== null ? lead.start + trail.start : null;
+    // Under RTL the horizontal grow/shrink keys swap: ArrowRight keeps
+    // its screen-space meaning (move the divider right), but that
+    // shrinks the lead panel painted on the divider's right.
+    const rtl = mirrored();
     const delta =
       key === growKey
-        ? KEYBOARD_STEP
-        : key === shrinkKey
+        ? rtl
           ? -KEYBOARD_STEP
+          : KEYBOARD_STEP
+        : key === shrinkKey
+          ? rtl
+            ? KEYBOARD_STEP
+            : -KEYBOARD_STEP
           : key === 'Home'
             ? -PARK_DELTA
             : PARK_DELTA;

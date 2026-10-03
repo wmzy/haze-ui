@@ -15,11 +15,11 @@ import { base, toneFills, toneStrokes } from './sparkline-styles';
  * that non-uniform stretch.
  *
  * Accessibility contract: a sparkline is decorative by default — it
- * renders `aria-hidden="true"` and no role. Passing `aria-label` switches
- * it to `role="img"` carrying that label (a name makes the image
- * addressable; no name keeps it out of the tree entirely, which axe
- * requires of every meaningful image). Every other native `<svg>`
- * attribute is forwarded via `...rest`.
+ * renders `aria-hidden="true"` and no role. Naming it (`aria-label` or
+ * `aria-labelledby`) switches it to `role="img"` carrying that name (a
+ * name makes the image addressable; no name keeps it out of the tree
+ * entirely, which axe requires of every meaningful image). Every other
+ * native `<svg>` attribute is forwarded via `...rest`.
  */
 type SparklineProps = {
   /** Y values to plot, in series order; at least two points draw a path. */
@@ -80,8 +80,14 @@ export default function Sparkline({
   className,
   ...rest
 }: SparklineProps) {
+  // A sparkline is "named" via aria-label or aria-labelledby — either
+  // makes it a meaningful image; otherwise it stays decorative and
+  // aria-hidden erases it from the accessibility tree.
   const label = rest['aria-label'];
-  const labeled = typeof label === 'string' && label.length > 0;
+  const labelledBy = rest['aria-labelledby'];
+  const labeled =
+    (typeof label === 'string' && label.length > 0) ||
+    (typeof labelledBy === 'string' && labelledBy.length > 0);
   const hasPlot = data.length >= MIN_POINTS;
   const linePath = hasPlot ? buildLinePath(data) : '';
 

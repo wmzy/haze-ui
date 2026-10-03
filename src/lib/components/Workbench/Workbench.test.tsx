@@ -268,13 +268,16 @@ describe('Workbench', () => {
     expect(panelEl('sidebar')).not.toHaveAttribute('data-collapsed');
   });
 
-  it('drives the mobile overlay through the scrim and an external control', async () => {
+  it('opens the mobile overlay from an external control and manages its focus', async () => {
     const user = userEvent.setup();
     function MobileFixture() {
       const [open, setOpen, openCtrl] = useControl(undefined, false);
       return (
         <>
-          <Workbench sidebar={<p>Files</p>} mobileSidebarOpen={openCtrl}>
+          <Workbench
+            sidebar={<button type="button">Explorer action</button>}
+            mobileSidebarOpen={openCtrl}
+          >
             <h1>Editor</h1>
           </Workbench>
           <output data-testid="open">{String(open)}</output>
@@ -285,21 +288,24 @@ describe('Workbench', () => {
       );
     }
     render(<MobileFixture />);
-    // Starts hidden: no data-open on the panel, no dim layer.
+    // Starts hidden: no data-open on the panel. The sidebar overlay
+    // renders no scrim — the full-screen slide-out sits at z 100 and
+    // would cover its own scrim (z 90) entirely.
     expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
-    expect(slot('workbench-scrim')).not.toHaveAttribute('data-open');
+    expect(querySlot('workbench-scrim')).toBeNull();
 
-    // External driver opens the overlay; the scrim follows the
-    // same control.
-    await user.click(screen.getByRole('button', { name: 'External open' }));
+    // External driver opens the overlay; focus moves into it.
+    const opener = screen.getByRole('button', { name: 'External open' });
+    await user.click(opener);
     expect(screen.getByTestId('open').textContent).toBe('true');
     expect(panelEl('sidebar')).toHaveAttribute('data-open');
-    expect(slot('workbench-scrim')).toHaveAttribute('data-open');
+    expect(screen.getByRole('button', { name: 'Explorer action' })).toHaveFocus();
 
-    // Scrim click (the mobile dismissal path) writes the shared control.
-    fireEvent.click(slot('workbench-scrim'));
+    // Escape dismisses; focus returns to the opener.
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.getByTestId('open').textContent).toBe('false');
     expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+    expect(opener).toHaveFocus();
   });
 
   it('dismisses the mobile sidebar with the Escape key', async () => {
@@ -323,9 +329,8 @@ describe('Workbench', () => {
     expect(panelEl('sidebar')).toHaveAttribute('data-open');
 
     // Escape is the shell's built-in dismissal path: the
-    // full-width slide-out is opaque and edge-to-edge, so
-    // it covers the scrim entirely — the dim layer has no
-    // clickable surface — and the keyboard carries the
+    // full-width slide-out is opaque and edge-to-edge, so no
+    // scrim of its own is rendered — the keyboard carries the
     // dismissal instead.
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.getByTestId('open').textContent).toBe('false');
@@ -393,11 +398,15 @@ describe('Workbench', () => {
     );
   });
 
-  it('renders one scrim per open overlay region and dismisses the auxiliary bar', () => {
+  it('renders a scrim only for the auxiliary bar and dismisses it', () => {
     render(<FullFixture />);
     const scrims = document.querySelectorAll("[data-slot='workbench-scrim']");
-    expect(scrims.length).toBe(2);
-    fireEvent.click(scrims[1]!);
+    // FullFixture supplies both overlay regions, yet only the aux
+    // overlay gets a dim layer — the sidebar's full-screen slide-out
+    // would cover its own scrim, so it renders none.
+    expect(scrims.length).toBe(1);
+    expect(scrims[0]).toHaveAttribute('data-open');
+    fireEvent.click(scrims[0]!);
     expect(panelEl('auxiliary')).toHaveAttribute('data-collapsed');
   });
 
