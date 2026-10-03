@@ -63,16 +63,28 @@ const PANEL_MAX = 720;
 const PANEL_DEFAULT = 240;
 
 /* Breakpoint matches the AppShell mobile query; everything below it is
- * pure CSS — no JS breakpoint state exists in this component. */
-
+ * pure CSS — no JS breakpoint state exists in this component.
+ *
+ * The breakpoint is evaluated against THIS element (a named
+ * inline-size container), not the viewport: a host may render the
+ * shell inside a width-constrained preview (the docs' device
+ * presets cap the demo at 375px while the browser window stays
+ * wide), and the mobile form must engage there too. Container
+ * queries also make the fixed overlays' containing block this
+ * element, so an open sidebar covers exactly the shell — the full
+ * viewport on a real phone, the preview box on the docs page. */
 const workbench = css`
+  position: relative;
   display: grid;
+  width: 100%;
   grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'body'
     'status'
     'tabs';
+  container-type: inline-size;
+  container-name: workbench;
   /* The shell owns scroll containment: only regions scroll, never the
    * shell (the height itself is the inline 100dvh below). Absent slots
    * leave their auto grid track empty, so it collapses to zero. */
@@ -90,7 +102,7 @@ const body = css`
    * panels are position:fixed overlays below the
    * breakpoint, so they leave the flow and the main
    * panel is the only in-flow item left to fill. */
-  @media (max-width: 768px) {
+  @container workbench (max-width: 768px) {
     flex-direction: column;
 
     & > [data-panel-id='main'] {
@@ -191,7 +203,7 @@ const tabBarRegion = css`
   grid-area: tabs;
   box-sizing: border-box;
 
-  @media (max-width: 768px) {
+  @container workbench (max-width: 768px) {
     display: block;
   }
 `;
@@ -206,9 +218,9 @@ const scrim = css`
   display: none;
   box-sizing: border-box;
 
-  @media (max-width: 768px) {
+  @container workbench (max-width: 768px) {
     display: none;
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 90;
     background: rgba(0, 0, 0, 0.4);
@@ -227,12 +239,12 @@ const scrim = css`
  * consumer's button opens it. The docked data-collapsed semantics
  * are desktop-only; they no longer drive this overlay. */
 const sidenavOverlay = css`
-  @media (max-width: 768px) {
-    position: fixed;
+  @container workbench (max-width: 768px) {
+    position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
     z-index: 100;
-    width: 100vw;
+    width: 100%;
     box-shadow: var(--haze-shadow-lg);
     transform: translateX(-100%);
     visibility: hidden;
@@ -256,12 +268,12 @@ const sidenavOverlay = css`
 
 /* Mirror of sidenavOverlay anchored to the trailing edge. */
 const auxOverlay = css`
-  @media (max-width: 768px) {
-    position: fixed;
+  @container workbench (max-width: 768px) {
+    position: absolute;
     inset-block: 0;
     inset-inline-end: 0;
     z-index: 100;
-    width: min(var(--haze-workbench-auxiliary-width, 300px), 85vw);
+    width: min(var(--haze-workbench-auxiliary-width, 300px), 85%);
     box-shadow: var(--haze-shadow-lg);
     transition: transform var(--haze-duration-normal) var(--haze-ease);
 
@@ -279,7 +291,7 @@ const auxOverlay = css`
  * the layout under the mobile breakpoint (the consumer's view owns the
  * mobile panel form). */
 const mobileHidden = css`
-  @media (max-width: 768px) {
+  @container workbench (max-width: 768px) {
     display: none;
   }
 `;
