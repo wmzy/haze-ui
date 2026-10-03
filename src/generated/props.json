@@ -90,6 +90,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "orientation",
+            "type": "'vertical' | 'horizontal'",
+            "required": false
           }
         ]
       },
@@ -971,7 +976,7 @@
           },
           {
             "name": "layout",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -2806,7 +2811,7 @@
         "DividerProps": [
           {
             "name": "orientation",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -5245,7 +5250,7 @@
         "ResizableGroupProps": [
           {
             "name": "direction",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -6677,6 +6682,11 @@
             "required": false
           },
           {
+            "name": "listRef",
+            "type": "RefObject<HTMLDivElement | null>",
+            "required": false
+          },
+          {
             "name": "overflowLabel",
             "type": "string",
             "required": false
@@ -6685,6 +6695,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "tabMetas",
+            "type": "TabMeta[]",
+            "required": false
           }
         ],
         "TabPanelProps": [
@@ -7585,7 +7600,7 @@
         "ToolbarProps": [
           {
             "name": "orientation",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -8758,6 +8773,11 @@
             "required": false
           },
           {
+            "name": "activityBarPosition",
+            "type": "ControlOrValue<'top' | 'bottom' | 'side'>",
+            "required": false
+          },
+          {
             "name": "sidebar",
             "type": "ReactNode",
             "required": false
@@ -8789,6 +8809,11 @@
           },
           {
             "name": "sidebarCollapsed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "mobileSidebarOpen",
             "type": "ControlOrValue<boolean>",
             "required": false
           },

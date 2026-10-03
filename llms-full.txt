@@ -90,6 +90,7 @@ import { ActivityRail, ActivityRailItem } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | — | ActivityRailItem elements |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `...rest` | `nav attributes` | — | Renders a nav landmark — pass aria-label via rest |
 
@@ -455,7 +456,7 @@ import { Chart } from 'haze-ui';
 | `xKey` | `keyof T & string` | — |  |
 | `height` | `number` | — |  |
 | `innerRadius` | `string \| number` | — |  |
-| `layout` | `'horizontal' \| 'vertical'` | — |  |
+| `layout` | `'vertical' \| 'horizontal'` | — |  |
 | `renderTooltip` | `(payload: ChartTooltipPayload<T>) => ReactNode` | — |  |
 | `showLegend` | `boolean` | — |  |
 | `showGrid` | `boolean` | — |  |
@@ -1128,7 +1129,7 @@ import { Divider } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Direction of the divider |
+| `orientation` | `'vertical' \| 'horizontal'` | `'horizontal'` | Direction of the divider |
 | `className` | `string` | — | Additional CSS class |
 
 ## Drawer
@@ -2095,7 +2096,7 @@ import { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, Splitte
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction |
+| `direction` | `'vertical' \| 'horizontal'` | `'horizontal'` | Layout direction |
 | `children` | `ReactNode` | — | ResizablePanel and ResizableHandle elements |
 | `className` | `string` | — | Additional CSS class |
 | `style` | `CSSProperties` | — |  |
@@ -2679,8 +2680,10 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `className` | `string` | — | Additional CSS class |
+| `listRef` | `RefObject<HTMLDivElement \| null>` | — |  |
 | `overflowLabel` | `string` | — | Overrides the ⋯ overflow button's accessible label (default from the tabs locale pack: More tabs) |
 | `children` | `ReactNode` | — | Tab elements; overflowing tabs stay reachable through the ⋯ menu, and the strip scrolls horizontally as the fallback |
+| `tabMetas` | `TabMeta[]` | — |  |
 
 ### TabPanelProps
 
@@ -3030,7 +3033,7 @@ import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `'horizontal' \| 'vertical'` | — |  |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
 
@@ -3400,6 +3403,7 @@ import { Workbench } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `activityBar` | `ReactNode` | — | Left icon rail slot (usually <ActivityRail/>) — hidden below 768px where the tabBar takes over |
+| `activityBarPosition` | `ControlOrValue<'top' \| 'bottom' \| 'side'>` | — |  |
 | `sidebar` | `ReactNode` | — | Primary side region (explorer, search…); docked+resizable on desktop, a scrimmed overlay on mobile |
 | `auxiliaryBar` | `ReactNode` | — | Secondary side region (inspector) docked right; also overlay below 768px |
 | `panel` | `ReactNode` | — | Bottom panel region (terminal/output/problems); docked+resizable on desktop, hidden on mobile — surface it as a view there |
@@ -3407,6 +3411,7 @@ import { Workbench } from 'haze-ui';
 | `tabBar` | `ReactNode` | — | Mobile bottom navigation slot (usually <TabBar/>); hidden on desktop |
 | `sidebarWidth` | `ControlOrValue<number>` | — |  |
 | `sidebarCollapsed` | `ControlOrValue<boolean>` | — |  |
+| `mobileSidebarOpen` | `ControlOrValue<boolean>` | — |  |
 | `auxiliaryBarWidth` | `ControlOrValue<number>` | — |  |
 | `auxiliaryBarCollapsed` | `ControlOrValue<boolean>` | — |  |
 | `panelHeight` | `ControlOrValue<number>` | — |  |

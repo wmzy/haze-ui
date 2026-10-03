@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T03:30:39.341Z",
+  "generatedAt": "2026-10-03T07:57:41.689Z",
   "distAvailable": true,
   "families": [
     {
@@ -14,8 +14,8 @@
     },
     {
       "family": "activity-rail",
-      "cssBytes": 2001,
-      "cssGzipBytes": 602
+      "cssBytes": 2613,
+      "cssGzipBytes": 732
     },
     {
       "family": "affix",
@@ -519,8 +519,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 4011,
-      "cssGzipBytes": 1083
+      "cssBytes": 4552,
+      "cssGzipBytes": 1174
     },
     {
       "family": "tag-group",
@@ -629,13 +629,13 @@
     },
     {
       "family": "workbench",
-      "cssBytes": 2450,
-      "cssGzipBytes": 642
+      "cssBytes": 3220,
+      "cssGzipBytes": 826
     }
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 326008,
-    "cssGzipBytes": 33568
+    "cssBytes": 327931,
+    "cssGzipBytes": 33929
   }
 }

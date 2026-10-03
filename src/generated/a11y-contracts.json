@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T15:19:26.199Z",
+  "generatedAt": "2026-10-03T07:56:38.143Z",
   "components": [
     {
       "component": "Accordion",
@@ -1314,7 +1314,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 37
+      "testCount": 40
     },
     {
       "component": "Tag",
@@ -1623,7 +1623,7 @@
       "keys": [
         "Enter"
       ],
-      "testCount": 18
+      "testCount": 20
     }
   ]
 }
