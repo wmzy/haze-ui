@@ -195,6 +195,12 @@ const verticalFill = css`
 const statusBarRegion = css`
   grid-area: status;
   box-sizing: border-box;
+  /* Above the mobile overlays so the status strip
+     stays visible while the sidebar slide-out is
+     open. Grid items layer by z-index without a
+     position declaration; harmless on desktop, where
+     nothing overlaps this row. */
+  z-index: 110;
 `;
 
 /* Mobile-only bottom navigation: absent from the desktop grid, shown
@@ -206,6 +212,12 @@ const tabBarRegion = css`
 
   @container workbench (max-width: 768px) {
     display: block;
+    /* Above the mobile overlays: the bottom nav stays
+     * visible and tappable while the slide-out is open —
+     * its Sidebar item is the overlay's own toggle, so
+     * burying it under the panel would remove the
+     * reselect-to-close path. */
+    z-index: 110;
   }
 `;
 
