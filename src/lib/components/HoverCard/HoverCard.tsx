@@ -62,6 +62,10 @@ const container = css`
 
 /** Visual skin applied on every rendering tier of the panel. */
 const panelVisuals = css`
+  /* min/max-width pairs with padding + border: border-box keeps both
+   * bounds covering the padding too (panel-family box-sizing
+   * contract). */
+  box-sizing: border-box;
   min-width: 240px;
   max-width: 320px;
   padding: var(--haze-space-4);

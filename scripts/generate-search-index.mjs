@@ -84,6 +84,21 @@ const PAGES = [
     zh: '无障碍',
   },
   {
+    label: 'A11y Contracts',
+    sublabel: 'Guide',
+    route: '/guides/a11y-contracts',
+    keywords: [
+      'a11y',
+      'aria',
+      'roles',
+      'keyboard',
+      'keys',
+      'screen reader',
+      'contracts',
+    ],
+    zh: '无障碍契约',
+  },
+  {
     label: 'Migrating from AntD / shadcn',
     sublabel: 'Guide',
     route: '/guides/migration',

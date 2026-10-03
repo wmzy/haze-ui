@@ -30,6 +30,17 @@ describe('OTPInput', () => {
     expect(inputs[3]).toHaveValue('');
   });
 
+  it('marks every cell as a one-time-code field for autofill', () => {
+    // autoComplete="one-time-code" is what browsers and password managers
+    // key SMS/email OTP autofill off — the segmented inputs must carry it.
+    const { container } = render(<OTPInput length={4} />);
+    const inputs = container.querySelectorAll('input');
+    expect(inputs.length).toBeGreaterThan(0);
+    for (const input of inputs) {
+      expect(input).toHaveAttribute('autocomplete', 'one-time-code');
+    }
+  });
+
   it('calls onChange on input', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

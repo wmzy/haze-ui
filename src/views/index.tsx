@@ -39,6 +39,10 @@ export default function App() {
             component: () => import('./Guides/A11y'),
           },
           {
+            path: '/guides/a11y-contracts',
+            component: () => import('./Guides/A11yContracts'),
+          },
+          {
             path: '/guides/migration',
             component: () => import('./Guides/Migration'),
           },

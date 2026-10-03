@@ -14,6 +14,9 @@ type MenuSubContentProps = {
 // the trigger's inline end (mirrored under dir='rtl' by the floating
 // placement layer).
 const panel = css`
+  /* min-width pairs with padding + border (panel-family box-sizing
+   * contract — same as the Menu panel). */
+  box-sizing: border-box;
   min-width: 160px;
   padding: var(--haze-space-1) 0;
   border: 1px solid var(--haze-color-border);

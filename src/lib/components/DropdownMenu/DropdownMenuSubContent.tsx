@@ -14,6 +14,9 @@ type DropdownMenuSubContentProps = {
 // at the trigger's inline end (mirrored under dir='rtl' by the floating
 // placement layer).
 const content = css`
+  /* min-width pairs with padding + border (panel-family box-sizing
+   * contract — same as DropdownMenuContent). */
+  box-sizing: border-box;
   min-width: 10rem;
   padding: var(--haze-space-1);
   background: var(--haze-color-bg);

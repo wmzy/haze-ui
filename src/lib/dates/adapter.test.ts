@@ -2,17 +2,32 @@ import type { HazeCalendarIdentifier, HazeDateAdapter } from './adapter';
 
 import { gregoryAdapter } from './gregory';
 import { islamicUmalquraAdapter } from './islamic';
+import { persianAdapter } from './persian';
+import { hebrewAdapter } from './hebrew';
+import { japaneseAdapter } from './japanese';
+import { buddhistAdapter } from './buddhist';
+import { ethiopicAdapter } from './ethiopic';
 import { getAdapter } from './registry';
 
 const ADAPTERS: readonly HazeDateAdapter[] = [
   gregoryAdapter,
   islamicUmalquraAdapter,
+  persianAdapter,
+  hebrewAdapter,
+  japaneseAdapter,
+  buddhistAdapter,
+  ethiopicAdapter,
 ];
 
 describe('getAdapter', () => {
   it('resolves each identifier to its shared singleton', () => {
     expect(getAdapter('gregory')).toBe(gregoryAdapter);
     expect(getAdapter('islamic-umalqura')).toBe(islamicUmalquraAdapter);
+    expect(getAdapter('persian')).toBe(persianAdapter);
+    expect(getAdapter('hebrew')).toBe(hebrewAdapter);
+    expect(getAdapter('japanese')).toBe(japaneseAdapter);
+    expect(getAdapter('buddhist')).toBe(buddhistAdapter);
+    expect(getAdapter('ethiopic')).toBe(ethiopicAdapter);
   });
 
   it('returns adapters whose identifier matches the lookup key', () => {
@@ -22,8 +37,9 @@ describe('getAdapter', () => {
   });
 
   it('throws RangeError for identifiers without a built-in adapter', () => {
-    // Runtime callers are not bound by the compile-time union.
-    const unknownCalendar = 'hebrew' as unknown as HazeCalendarIdentifier;
+    // Runtime callers are not bound by the compile-time union; `chinese`
+    // is a real Intl calendar with no adapter here.
+    const unknownCalendar = 'chinese' as unknown as HazeCalendarIdentifier;
     expect(() => getAdapter(unknownCalendar)).toThrow(RangeError);
   });
 });
@@ -84,10 +100,15 @@ describe('adapter contract (shared invariants)', () => {
     }
   });
 
-  it('exposes twelve month names and an era label in every adapter', () => {
+  it('exposes month names and an era label in every adapter', () => {
     for (const adapter of ADAPTERS) {
-      expect(adapter.monthNames('en')).toHaveLength(12);
-      expect(adapter.era?.(1447)).toMatch(/./);
+      // Twelve names per cycle; ethiopic's cycle ends in the permanent
+      // thirteenth month Pagume.
+      expect(adapter.monthNames('en')).toHaveLength(
+        adapter.identifier === 'ethiopic' ? 13 : 12
+      );
+      const { year } = adapter.fromGregorian(new Date(2026, 0, 1));
+      expect(adapter.era?.(year)).toMatch(/./);
     }
   });
 });

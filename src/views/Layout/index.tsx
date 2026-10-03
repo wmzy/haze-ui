@@ -371,6 +371,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
             <ListItem>
               <Link
                 className={navLink}
+                to='/guides/a11y-contracts'
+                onClick={onNavigate}
+              >
+                {t.guides.a11yContracts}
+              </Link>
+              {guideSummary(t.guideSummaries.a11yContracts)}
+            </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
                 to='/guides/migration'
                 onClick={onNavigate}
               >

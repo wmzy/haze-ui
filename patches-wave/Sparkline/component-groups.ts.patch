@@ -1,0 +1,10 @@
+--- a/src/views/Layout/component-groups.ts
++++ b/src/views/Layout/component-groups.ts
+@@ -110,6 +110,7 @@
+       { name: 'List', route: 'list' },
+       { name: 'Progress', route: 'progress' },
+       { name: 'QRCode', route: 'qr-code' },
++      { name: 'Sparkline', route: 'sparkline' },
+       { name: 'Stat', route: 'stat' },
+       { name: 'Table', route: 'table' },
+       { name: 'Timeline', route: 'timeline' },

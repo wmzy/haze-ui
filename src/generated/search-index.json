@@ -66,6 +66,22 @@
   },
   {
     "type": "page",
+    "label": "A11y Contracts",
+    "sublabel": "Guide",
+    "route": "/guides/a11y-contracts",
+    "keywords": [
+      "a11y",
+      "aria",
+      "roles",
+      "keyboard",
+      "keys",
+      "screen reader",
+      "contracts",
+      "无障碍契约"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Migrating from AntD / shadcn",
     "sublabel": "Guide",
     "route": "/guides/migration",
@@ -240,14 +256,20 @@
   },
   {
     "type": "component",
-    "label": "AspectRatio",
-    "route": "/components/aspect-ratio",
+    "label": "AppShell",
+    "route": "/components/app-shell",
     "keywords": []
   },
   {
     "type": "component",
-    "label": "AppShell",
-    "route": "/components/app-shell",
+    "label": "ActivityRail",
+    "route": "/components/activity-rail",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "AspectRatio",
+    "route": "/components/aspect-ratio",
     "keywords": []
   },
   {
@@ -293,6 +315,24 @@
     "type": "component",
     "label": "Sidebar",
     "route": "/components/sidebar",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "StatusBar",
+    "route": "/components/status-bar",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "TabBar",
+    "route": "/components/tab-bar",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Workbench",
+    "route": "/components/workbench",
     "keywords": []
   },
   {
@@ -645,6 +685,12 @@
     "type": "component",
     "label": "QRCode",
     "route": "/components/qr-code",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Sparkline",
+    "route": "/components/sparkline",
     "keywords": []
   },
   {
@@ -1209,6 +1255,24 @@
   },
   {
     "type": "section",
+    "label": "Document tabs — icon, status, closable",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "Overflow",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "Sortable tabs",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
     "label": "Tabs Props",
     "sublabel": "Tabs",
     "route": "/components/tabs"
@@ -1222,6 +1286,18 @@
   {
     "type": "section",
     "label": "TabPanel Props",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "TabList Props",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "SortableTabList Props",
     "sublabel": "Tabs",
     "route": "/components/tabs"
   },
@@ -1971,7 +2047,19 @@
   },
   {
     "type": "section",
-    "label": "Horizontal",
+    "label": "Horizontal — fixed px + flexible",
+    "sublabel": "Resizable",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "section",
+    "label": "Vertical",
+    "sublabel": "Resizable",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "section",
+    "label": "Collapsible panel",
     "sublabel": "Resizable",
     "route": "/components/resizable"
   },
@@ -1984,6 +2072,12 @@
   {
     "type": "section",
     "label": "ResizablePanel Props",
+    "sublabel": "Resizable",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "section",
+    "label": "ResizableHandle Props",
     "sublabel": "Resizable",
     "route": "/components/resizable"
   },
@@ -2184,6 +2278,42 @@
     "label": "CountUp Props",
     "sublabel": "CountUp",
     "route": "/components/count-up"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
+  },
+  {
+    "type": "section",
+    "label": "Area variant",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
+  },
+  {
+    "type": "section",
+    "label": "Tones",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
+  },
+  {
+    "type": "section",
+    "label": "Sizes",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
+  },
+  {
+    "type": "section",
+    "label": "In metric cards",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
+  },
+  {
+    "type": "section",
+    "label": "Sparkline Props",
+    "sublabel": "Sparkline",
+    "route": "/components/sparkline"
   },
   {
     "type": "section",
@@ -3015,6 +3145,54 @@
   },
   {
     "type": "section",
+    "label": "ActivityRail Props",
+    "sublabel": "ActivityRail",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "section",
+    "label": "ActivityRailItem Props",
+    "sublabel": "ActivityRail",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "section",
+    "label": "StatusBar Props",
+    "sublabel": "StatusBar",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "section",
+    "label": "StatusItem Props",
+    "sublabel": "StatusBar",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "section",
+    "label": "TabBar Props",
+    "sublabel": "TabBar",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "section",
+    "label": "TabBarItem Props",
+    "sublabel": "TabBar",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "section",
+    "label": "Complete workbench",
+    "sublabel": "Workbench",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "section",
+    "label": "Workbench Props",
+    "sublabel": "Workbench",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "section",
     "label": "Line chart",
     "sublabel": "Chart",
     "route": "/components/chart"
@@ -3300,6 +3478,60 @@
     "label": "children",
     "sublabel": "Accordion — AccordionItem elements",
     "route": "/components/accordion"
+  },
+  {
+    "type": "prop",
+    "label": "icon",
+    "sublabel": "ActivityRailItem — Item icon (rendered centered in the 44px target)",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "label",
+    "sublabel": "ActivityRailItem — Item name — drives the tooltip and the accessible name",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "badge",
+    "sublabel": "ActivityRailItem — Overlay badge (usually <Badge/>) — counters like pending reviews",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "active",
+    "sublabel": "ActivityRailItem — Marks the current view: aria-current + the 2px rail-side indicator",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "onSelect",
+    "sublabel": "ActivityRailItem — Selection callback",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "slot",
+    "sublabel": "ActivityRailItem — end slots pin to the rail bottom (settings/account entries)",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "ActivityRailItem — Native button props (type=button is built in)",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "ActivityRail — ActivityRailItem elements",
+    "route": "/components/activity-rail"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "ActivityRail — Renders a nav landmark — pass aria-label via rest",
+    "route": "/components/activity-rail"
   },
   {
     "type": "prop",
@@ -5073,6 +5305,12 @@
   },
   {
     "type": "prop",
+    "label": "onResizeCommit",
+    "sublabel": "ResizableGroup — Fires once when a drag or keyboard resize settles, mapping fixed-panel ids to their committed px sizes — the persistence hook (write it back into a store or Control)",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
     "label": "children",
     "sublabel": "ResizableGroup — ResizablePanel and ResizableHandle elements",
     "route": "/components/resizable"
@@ -5085,8 +5323,50 @@
   },
   {
     "type": "prop",
+    "label": "...rest",
+    "sublabel": "ResizableHandle — role=separator with aria-orientation/valuenow is built in; arrow keys resize in 16px steps, Enter or double-click resets the adjacent panel to its defaultSize, and the hit area widens to 44px on coarse pointers",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "id",
+    "sublabel": "ResizablePanel — Stable panel identity — keys the sizes map reported by onResizeCommit; keep it stable across renders for persistence",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
     "label": "defaultSize",
-    "sublabel": "ResizablePanel — Default size as percentage",
+    "sublabel": "ResizablePanel — Initial size in px. Omit to make the panel flexible (it absorbs the remaining space); changing this prop after a resize re-pins the panel outside gestures",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "minSize",
+    "sublabel": "ResizablePanel — Clamp in px enforced by both pointer drags and keyboard steps",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "maxSize",
+    "sublabel": "ResizablePanel — Clamp in px enforced by both pointer drags and keyboard steps",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "collapsible",
+    "sublabel": "ResizablePanel — Enables collapse semantics: the panel collapses to zero width/height and its handle becomes a keyboard-reachable expander",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "collapsed",
+    "sublabel": "ResizablePanel — Controlled/uncontrolled collapsed state — survives breakpoint flips (desktop dock ⇄ mobile overlay) as one source of truth",
+    "route": "/components/resizable"
+  },
+  {
+    "type": "prop",
+    "label": "onCollapsedChange",
+    "sublabel": "ResizablePanel — Notifies on collapse toggles (handle expander, resets crossing the threshold)",
     "route": "/components/resizable"
   },
   {
@@ -5289,6 +5569,48 @@
   },
   {
     "type": "prop",
+    "label": "left",
+    "sublabel": "StatusBar — Left-aligned items (branch, problems, cursor position…)",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "right",
+    "sublabel": "StatusBar — Right-aligned items (language, encoding, sync state…)",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "StatusBar — Renders a footer landmark — pass aria-label via rest",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "StatusItem — Item content",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "priority",
+    "sublabel": "StatusItem — Priority items survive the ≤768px breakpoint (non-priority items are hidden there)",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "onSelect",
+    "sublabel": "StatusItem — Presence switches the item to a button; omit for plain text",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "StatusItem — Native props forwarded to the rendered element",
+    "route": "/components/status-bar"
+  },
+  {
+    "type": "prop",
     "label": "label",
     "sublabel": "StepTimelineItem — Step label text",
     "route": "/components/step-timeline"
@@ -5415,6 +5737,60 @@
   },
   {
     "type": "prop",
+    "label": "icon",
+    "sublabel": "TabBarItem — Item icon (above the label)",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "label",
+    "sublabel": "TabBarItem — Item name — rendered under the icon and used as the accessible name",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "badge",
+    "sublabel": "TabBarItem — Overlay badge (usually <Badge/>)",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "active",
+    "sublabel": "TabBarItem — Marks the current view: aria-current + the 2px top indicator",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "onSelect",
+    "sublabel": "TabBarItem — Fires when a non-active item is tapped",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "onReselect",
+    "sublabel": "TabBarItem — Fires when the already-active item is tapped again — the 'tap-again-to-dismiss/back-to-root' affordance",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "TabBarItem — Native button props (type=button is built in)",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "TabBar — TabBarItem elements (horizontally distributed; safe-area aware)",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "TabBar — Renders a nav landmark — pass aria-label via rest. Positioning (fixed) is left to the Workbench or the consumer",
+    "route": "/components/tab-bar"
+  },
+  {
+    "type": "prop",
     "label": "striped",
     "sublabel": "Table — Alternate row backgrounds",
     "route": "/components/table"
@@ -5433,6 +5809,30 @@
   },
   {
     "type": "prop",
+    "label": "onReorder",
+    "sublabel": "SortableTabList — Reports the new index order when a drag or keyboard sort settles — re-rendering the tabs is the owner's job",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "SortableTabList — Tab elements (drag reordering via dnd-kit; keyboard lift via Space, drop via Enter, cancel via Escape). Note: the ⋯ overflow menu is not rendered in the sortable variant — keep the strip scrollable instead",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "overflowLabel",
+    "sublabel": "TabList — Overrides the ⋯ overflow button's accessible label (default from the tabs locale pack: More tabs)",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "TabList — Tab elements; overflowing tabs stay reachable through the ⋯ menu, and the strip scrolls horizontally as the fallback",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
     "label": "value",
     "sublabel": "TabPanel — Matches the corresponding Tab value",
     "route": "/components/tabs"
@@ -5447,6 +5847,42 @@
     "type": "prop",
     "label": "value",
     "sublabel": "Tab — Unique value identifying this tab",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "icon",
+    "sublabel": "Tab — Leading icon slot (aria-hidden — decorative)",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "status",
+    "sublabel": "Tab — Status dot: dirty=neutral, error=danger, syncing=primary; the SR status word comes from the tabs locale pack unless statusLabel overrides it",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "statusLabel",
+    "sublabel": "Tab — Overrides the status word appended to the accessible name (the i18n hook for SR users)",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "closable",
+    "sublabel": "Tab — Renders a close × (aria-label from the tabs locale pack, overridable via closeLabel); clicking or pressing Delete closes — unmounting the tab is the owner's job via onClose",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "closeLabel",
+    "sublabel": "Tab — Overrides the close button's accessible label",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "prop",
+    "label": "onClose",
+    "sublabel": "Tab — Close notification — pure notification, the controlled tabs array is the owner's to mutate",
     "route": "/components/tabs"
   },
   {
@@ -6144,5 +6580,65 @@
     "label": "children",
     "sublabel": "Watermark — Content to watermark; with children the component acts as their container",
     "route": "/components/watermark"
+  },
+  {
+    "type": "prop",
+    "label": "activityBar",
+    "sublabel": "Workbench — Left icon rail slot (usually <ActivityRail/>) — hidden below 768px where the tabBar takes over",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "sidebar",
+    "sublabel": "Workbench — Primary side region (explorer, search…); docked+resizable on desktop, a scrimmed overlay on mobile",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "auxiliaryBar",
+    "sublabel": "Workbench — Secondary side region (inspector) docked right; also overlay below 768px",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "panel",
+    "sublabel": "Workbench — Bottom panel region (terminal/output/problems); docked+resizable on desktop, hidden on mobile — surface it as a view there",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "statusBar",
+    "sublabel": "Workbench — Status strip slot (usually <StatusBar/>)",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "tabBar",
+    "sublabel": "Workbench — Mobile bottom navigation slot (usually <TabBar/>); hidden on desktop",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "sidebarWidth / auxiliaryBarWidth / panelHeight",
+    "sublabel": "Workbench — Region sizes in px — plain props double as defaults after a resize (commit via the internal group's onResizeCommit semantics)",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "sidebarCollapsed / auxiliaryBarCollapsed / panelCollapsed",
+    "sublabel": "Workbench — Region visibility — one source of truth across breakpoints: docked collapse on desktop reads as the overlay being closed on mobile",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "panelMaximized",
+    "sublabel": "Workbench — Maximizes the bottom panel over the main area (VSCode ctrl+J style); reversible through the same Control",
+    "route": "/components/workbench"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "Workbench — Main editor area — compose freely (Tabs + TabPanel, anything)",
+    "route": "/components/workbench"
   }
 ]

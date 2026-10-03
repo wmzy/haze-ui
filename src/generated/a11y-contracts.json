@@ -1,0 +1,1629 @@
+{
+  "generatedAt": "2026-10-02T15:19:26.199Z",
+  "components": [
+    {
+      "component": "Accordion",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "ActivityRail",
+      "roles": [
+        "button",
+        "navigation",
+        "tooltip"
+      ],
+      "aria": [
+        "aria-current",
+        "aria-describedby",
+        "aria-hidden"
+      ],
+      "keys": [
+        "Enter",
+        "Tab"
+      ],
+      "testCount": 12
+    },
+    {
+      "component": "Affix",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "Alert",
+      "roles": [
+        "alert",
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "Anchor",
+      "roles": [
+        "link",
+        "navigation"
+      ],
+      "aria": [
+        "aria-current"
+      ],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "ApprovalCard",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "AppShell",
+      "roles": [
+        "banner",
+        "button",
+        "complementary",
+        "contentinfo",
+        "heading",
+        "link",
+        "main"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "AspectRatio",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "AsyncSection",
+      "roles": [
+        "alert",
+        "button",
+        "status"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "Avatar",
+      "roles": [
+        "img"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "AvatarGroup",
+      "roles": [],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "BackToTop",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Badge",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "Banner",
+      "roles": [
+        "alert",
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "BottomSheet",
+      "roles": [
+        "dialog"
+      ],
+      "aria": [
+        "aria-modal"
+      ],
+      "keys": [
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 34
+    },
+    {
+      "component": "Breadcrumb",
+      "roles": [
+        "link",
+        "listitem",
+        "navigation"
+      ],
+      "aria": [
+        "aria-current"
+      ],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "Button",
+      "roles": [
+        "button",
+        "link"
+      ],
+      "aria": [
+        "aria-disabled",
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 18
+    },
+    {
+      "component": "Calendar",
+      "roles": [
+        "button",
+        "columnheader",
+        "grid",
+        "gridcell",
+        "row"
+      ],
+      "aria": [
+        "aria-expanded",
+        "aria-selected"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Enter",
+        "Escape",
+        "Home",
+        "PageDown",
+        "PageUp"
+      ],
+      "testCount": 126
+    },
+    {
+      "component": "Card",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 4
+    },
+    {
+      "component": "Carousel",
+      "roles": [
+        "button",
+        "group",
+        "region"
+      ],
+      "aria": [],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight",
+        "End",
+        "Home"
+      ],
+      "testCount": 34
+    },
+    {
+      "component": "Cascader",
+      "roles": [
+        "button",
+        "img",
+        "menu",
+        "menuitem",
+        "status",
+        "textbox"
+      ],
+      "aria": [
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-posinset",
+        "aria-setsize"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "End",
+        "Enter",
+        "Escape",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 24
+    },
+    {
+      "component": "Chart",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 38
+    },
+    {
+      "component": "ChatContainer",
+      "roles": [
+        "button",
+        "generic"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "ChatInput",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 14
+    },
+    {
+      "component": "ChatMessage",
+      "roles": [
+        "button",
+        "status"
+      ],
+      "aria": [
+        "aria-busy"
+      ],
+      "keys": [],
+      "testCount": 22
+    },
+    {
+      "component": "Checkbox",
+      "roles": [
+        "checkbox"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 12
+    },
+    {
+      "component": "Chip",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "CodeBlock",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 14
+    },
+    {
+      "component": "Collapsible",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [
+        "Tab"
+      ],
+      "testCount": 11
+    },
+    {
+      "component": "ColorPicker",
+      "roles": [
+        "button",
+        "dialog",
+        "slider",
+        "textbox"
+      ],
+      "aria": [
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [
+        "ArrowRight",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 51
+    },
+    {
+      "component": "Combobox",
+      "roles": [
+        "button",
+        "combobox",
+        "group",
+        "listbox",
+        "option",
+        "status"
+      ],
+      "aria": [
+        "aria-activedescendant",
+        "aria-busy",
+        "aria-disabled",
+        "aria-expanded",
+        "aria-multiselectable",
+        "aria-posinset",
+        "aria-selected",
+        "aria-setsize"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowUp",
+        "Backspace",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 77
+    },
+    {
+      "component": "Command",
+      "roles": [
+        "dialog"
+      ],
+      "aria": [],
+      "keys": [
+        "ArrowDown",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 27
+    },
+    {
+      "component": "ConfigProvider",
+      "roles": [
+        "button",
+        "link",
+        "status"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 27
+    },
+    {
+      "component": "ConfirmDialog",
+      "roles": [
+        "dialog"
+      ],
+      "aria": [
+        "aria-modal"
+      ],
+      "keys": [
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 15
+    },
+    {
+      "component": "Container",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "ContextMenu",
+      "roles": [
+        "menu",
+        "menuitem"
+      ],
+      "aria": [],
+      "keys": [
+        "ArrowDown",
+        "Escape"
+      ],
+      "testCount": 16
+    },
+    {
+      "component": "ConversationList",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "CountUp",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "DataTable",
+      "roles": [
+        "button",
+        "cell",
+        "checkbox",
+        "columnheader",
+        "menuitemcheckbox",
+        "row",
+        "separator",
+        "spinbutton",
+        "table",
+        "textbox"
+      ],
+      "aria": [
+        "aria-checked",
+        "aria-controls",
+        "aria-current",
+        "aria-expanded",
+        "aria-label",
+        "aria-orientation",
+        "aria-sort"
+      ],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight",
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 97
+    },
+    {
+      "component": "Datepicker",
+      "roles": [
+        "button",
+        "columnheader",
+        "grid",
+        "row"
+      ],
+      "aria": [
+        "aria-selected"
+      ],
+      "keys": [
+        "ArrowRight",
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 55
+    },
+    {
+      "component": "DateRangePicker",
+      "roles": [
+        "button",
+        "grid"
+      ],
+      "aria": [
+        "aria-selected"
+      ],
+      "keys": [],
+      "testCount": 24
+    },
+    {
+      "component": "Descriptions",
+      "roles": [],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 14
+    },
+    {
+      "component": "Dialog",
+      "roles": [
+        "dialog",
+        "heading"
+      ],
+      "aria": [
+        "aria-labelledby"
+      ],
+      "keys": [],
+      "testCount": 27
+    },
+    {
+      "component": "DiffViewer",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "Disclosure",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "Divider",
+      "roles": [
+        "separator"
+      ],
+      "aria": [
+        "aria-orientation"
+      ],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Drawer",
+      "roles": [
+        "dialog"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 22
+    },
+    {
+      "component": "DropdownMenu",
+      "roles": [
+        "button",
+        "group",
+        "menu",
+        "menuitem",
+        "menuitemcheckbox",
+        "menuitemradio",
+        "separator"
+      ],
+      "aria": [
+        "aria-checked",
+        "aria-controls",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-owns"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Enter",
+        "Escape",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 74
+    },
+    {
+      "component": "Ellipsis",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [
+        "Enter",
+        "Tab"
+      ],
+      "testCount": 10
+    },
+    {
+      "component": "Empty",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "FileInput",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "FilePreview",
+      "roles": [
+        "button",
+        "img",
+        "progressbar"
+      ],
+      "aria": [
+        "aria-valuenow"
+      ],
+      "keys": [],
+      "testCount": 28
+    },
+    {
+      "component": "Flex",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "FloatButton",
+      "roles": [
+        "button",
+        "link"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded"
+      ],
+      "keys": [
+        "Escape"
+      ],
+      "testCount": 17
+    },
+    {
+      "component": "Fullscreen",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "Grid",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 17
+    },
+    {
+      "component": "HoverCard",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-describedby"
+      ],
+      "keys": [
+        "Escape"
+      ],
+      "testCount": 19
+    },
+    {
+      "component": "Icon",
+      "roles": [],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "Image",
+      "roles": [
+        "button",
+        "dialog",
+        "img"
+      ],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 28
+    },
+    {
+      "component": "InlineCompletion",
+      "roles": [
+        "textbox"
+      ],
+      "aria": [
+        "aria-describedby"
+      ],
+      "keys": [
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 17
+    },
+    {
+      "component": "InlineEdit",
+      "roles": [],
+      "aria": [],
+      "keys": [
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 10
+    },
+    {
+      "component": "Input",
+      "roles": [
+        "textbox"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "JsonView",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded",
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 30
+    },
+    {
+      "component": "Kbd",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "List",
+      "roles": [
+        "list",
+        "listitem"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "LocaleProvider",
+      "roles": [
+        "button",
+        "navigation"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 38
+    },
+    {
+      "component": "LogViewer",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "MarkdownRenderer",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 15
+    },
+    {
+      "component": "Masonry",
+      "roles": [],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 13
+    },
+    {
+      "component": "Mentions",
+      "roles": [
+        "combobox",
+        "option",
+        "textbox"
+      ],
+      "aria": [
+        "aria-activedescendant",
+        "aria-controls",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-selected"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowUp",
+        "Backspace",
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 20
+    },
+    {
+      "component": "Menu",
+      "roles": [
+        "group",
+        "menu",
+        "menuitem",
+        "menuitemcheckbox",
+        "menuitemradio",
+        "separator"
+      ],
+      "aria": [
+        "aria-checked",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-owns"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "End",
+        "Enter",
+        "Escape",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 53
+    },
+    {
+      "component": "ModelPicker",
+      "roles": [
+        "combobox"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "NavigationBar",
+      "roles": [],
+      "aria": [
+        "aria-current"
+      ],
+      "keys": [],
+      "testCount": 13
+    },
+    {
+      "component": "NumberInput",
+      "roles": [
+        "button",
+        "spinbutton"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 17
+    },
+    {
+      "component": "OTPInput",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "Pagination",
+      "roles": [
+        "button",
+        "combobox",
+        "navigation",
+        "option",
+        "textbox"
+      ],
+      "aria": [
+        "aria-current"
+      ],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 28
+    },
+    {
+      "component": "PasswordInput",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 12
+    },
+    {
+      "component": "Popover",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-expanded",
+        "aria-haspopup"
+      ],
+      "keys": [
+        " ",
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 36
+    },
+    {
+      "component": "Progress",
+      "roles": [
+        "progressbar"
+      ],
+      "aria": [
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "PromptInput",
+      "roles": [
+        "button",
+        "combobox",
+        "list",
+        "listbox",
+        "listitem",
+        "option",
+        "textbox"
+      ],
+      "aria": [
+        "aria-activedescendant",
+        "aria-autocomplete",
+        "aria-controls",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-selected"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowUp",
+        "Backspace",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 34
+    },
+    {
+      "component": "QRCode",
+      "roles": [
+        "img"
+      ],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "Radio",
+      "roles": [
+        "group",
+        "radio"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "Rating",
+      "roles": [
+        "radio"
+      ],
+      "aria": [
+        "aria-checked"
+      ],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight"
+      ],
+      "testCount": 14
+    },
+    {
+      "component": "Resizable",
+      "roles": [
+        "separator"
+      ],
+      "aria": [
+        "aria-label",
+        "aria-orientation",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Enter",
+        "Home"
+      ],
+      "testCount": 38
+    },
+    {
+      "component": "Result",
+      "roles": [
+        "button",
+        "region"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "ScrollArea",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Segmented",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "Select",
+      "roles": [
+        "combobox",
+        "group",
+        "listbox",
+        "option",
+        "status",
+        "textbox"
+      ],
+      "aria": [
+        "aria-activedescendant",
+        "aria-busy",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-multiselectable",
+        "aria-posinset",
+        "aria-selected",
+        "aria-setsize"
+      ],
+      "keys": [
+        " ",
+        "ArrowDown",
+        "ArrowUp",
+        "Backspace",
+        "End",
+        "Enter",
+        "Escape",
+        "Home"
+      ],
+      "testCount": 66
+    },
+    {
+      "component": "Sidebar",
+      "roles": [
+        "button",
+        "complementary",
+        "link",
+        "navigation",
+        "tooltip"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-current",
+        "aria-describedby",
+        "aria-expanded"
+      ],
+      "keys": [
+        "Tab"
+      ],
+      "testCount": 19
+    },
+    {
+      "component": "Signature",
+      "roles": [
+        "button",
+        "status"
+      ],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 18
+    },
+    {
+      "component": "Skeleton",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Slider",
+      "roles": [
+        "slider"
+      ],
+      "aria": [
+        "aria-hidden",
+        "aria-valuetext"
+      ],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight"
+      ],
+      "testCount": 55
+    },
+    {
+      "component": "Sources",
+      "roles": [
+        "button",
+        "link",
+        "list",
+        "listitem",
+        "navigation"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded",
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 17
+    },
+    {
+      "component": "Sparkline",
+      "roles": [
+        "img"
+      ],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [],
+      "testCount": 15
+    },
+    {
+      "component": "Spinner",
+      "roles": [
+        "status"
+      ],
+      "aria": [
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Stat",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "StatusBar",
+      "roles": [
+        "button",
+        "contentinfo"
+      ],
+      "aria": [],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 9
+    },
+    {
+      "component": "Stepper",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "StepTimeline",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 8
+    },
+    {
+      "component": "StreamingText",
+      "roles": [
+        "status"
+      ],
+      "aria": [
+        "aria-busy"
+      ],
+      "keys": [],
+      "testCount": 14
+    },
+    {
+      "component": "SwipeAction",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "Switch",
+      "roles": [
+        "switch"
+      ],
+      "aria": [
+        "aria-checked"
+      ],
+      "keys": [],
+      "testCount": 14
+    },
+    {
+      "component": "TabBar",
+      "roles": [
+        "button",
+        "navigation"
+      ],
+      "aria": [
+        "aria-current",
+        "aria-hidden"
+      ],
+      "keys": [
+        "Enter",
+        "Tab"
+      ],
+      "testCount": 11
+    },
+    {
+      "component": "Table",
+      "roles": [
+        "cell",
+        "columnheader",
+        "row",
+        "rowgroup",
+        "table"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
+      "component": "Tabs",
+      "roles": [
+        "button",
+        "menu",
+        "menuitemradio",
+        "tab",
+        "tablist",
+        "tabpanel"
+      ],
+      "aria": [
+        "aria-checked",
+        "aria-hidden",
+        "aria-selected"
+      ],
+      "keys": [
+        " ",
+        "ArrowLeft",
+        "ArrowRight",
+        "Delete",
+        "End",
+        "Enter",
+        "Escape",
+        "Home"
+      ],
+      "testCount": 37
+    },
+    {
+      "component": "Tag",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
+      "component": "TagGroup",
+      "roles": [
+        "button",
+        "group"
+      ],
+      "aria": [
+        "aria-roledescription"
+      ],
+      "keys": [
+        " ",
+        "ArrowLeft",
+        "ArrowRight",
+        "Escape"
+      ],
+      "testCount": 14
+    },
+    {
+      "component": "TagInput",
+      "roles": [
+        "button",
+        "list",
+        "listitem",
+        "textbox"
+      ],
+      "aria": [
+        "aria-describedby",
+        "aria-invalid",
+        "aria-label",
+        "aria-roledescription"
+      ],
+      "keys": [
+        " ",
+        "ArrowLeft",
+        "ArrowRight",
+        "Backspace",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 26
+    },
+    {
+      "component": "Textarea",
+      "roles": [
+        "textbox"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "ThinkingIndicator",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Timeline",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "TimePicker",
+      "roles": [
+        "button",
+        "combobox",
+        "listbox",
+        "option"
+      ],
+      "aria": [
+        "aria-disabled",
+        "aria-expanded",
+        "aria-label",
+        "aria-selected"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowUp",
+        "Enter",
+        "Escape"
+      ],
+      "testCount": 48
+    },
+    {
+      "component": "Toast",
+      "roles": [
+        "alert",
+        "button",
+        "status"
+      ],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [
+        "Enter",
+        "Tab"
+      ],
+      "testCount": 65
+    },
+    {
+      "component": "Toggle",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-pressed"
+      ],
+      "keys": [],
+      "testCount": 14
+    },
+    {
+      "component": "TokenCounter",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
+    },
+    {
+      "component": "Toolbar",
+      "roles": [
+        "button",
+        "separator",
+        "toolbar"
+      ],
+      "aria": [
+        "aria-label",
+        "aria-orientation",
+        "aria-pressed"
+      ],
+      "keys": [
+        " ",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Home"
+      ],
+      "testCount": 18
+    },
+    {
+      "component": "ToolCallCard",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 10
+    },
+    {
+      "component": "Tooltip",
+      "roles": [
+        "tooltip"
+      ],
+      "aria": [
+        "aria-describedby"
+      ],
+      "keys": [
+        "Escape"
+      ],
+      "testCount": 13
+    },
+    {
+      "component": "Tour",
+      "roles": [
+        "button",
+        "dialog",
+        "textbox"
+      ],
+      "aria": [
+        "aria-modal"
+      ],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight",
+        "Escape"
+      ],
+      "testCount": 19
+    },
+    {
+      "component": "Transfer",
+      "roles": [
+        "button",
+        "checkbox"
+      ],
+      "aria": [
+        "aria-describedby",
+        "aria-invalid"
+      ],
+      "keys": [],
+      "testCount": 16
+    },
+    {
+      "component": "Tree",
+      "roles": [
+        "button",
+        "checkbox",
+        "tree",
+        "treeitem"
+      ],
+      "aria": [
+        "aria-busy",
+        "aria-checked",
+        "aria-expanded",
+        "aria-level",
+        "aria-selected"
+      ],
+      "keys": [
+        " ",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Enter",
+        "Escape",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 126
+    },
+    {
+      "component": "TreeSelect",
+      "roles": [
+        "button",
+        "checkbox",
+        "combobox",
+        "textbox",
+        "tree",
+        "treeitem"
+      ],
+      "aria": [
+        "aria-checked",
+        "aria-expanded",
+        "aria-haspopup"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowRight",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 23
+    },
+    {
+      "component": "Typography",
+      "roles": [
+        "heading"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 20
+    },
+    {
+      "component": "Upload",
+      "roles": [
+        "button",
+        "progressbar"
+      ],
+      "aria": [
+        "aria-describedby",
+        "aria-invalid",
+        "aria-label",
+        "aria-valuenow"
+      ],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 80
+    },
+    {
+      "component": "VirtualList",
+      "roles": [
+        "generic"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 52
+    },
+    {
+      "component": "Watermark",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 9
+    },
+    {
+      "component": "Workbench",
+      "roles": [
+        "button",
+        "main",
+        "navigation"
+      ],
+      "aria": [],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 18
+    }
+  ]
+}

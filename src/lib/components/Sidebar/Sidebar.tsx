@@ -46,7 +46,10 @@ const sidebar = css`
   display: flex;
   flex-direction: column;
   /* Two-step width, token-ized: consumers theme the rail by overriding
-   * these custom properties on the root (or a theme class). */
+   * these custom properties on the root (or a theme class). The sized
+   * box is border-box so the inline-end boundary stays inside the
+   * declared width (panel-family box-sizing contract). */
+  box-sizing: border-box;
   width: var(--haze-sidebar-width, 16rem);
   height: 100%;
   background: var(--haze-color-bg);

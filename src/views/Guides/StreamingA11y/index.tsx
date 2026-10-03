@@ -15,7 +15,10 @@ import { intro, page, section } from '@/views/ComponentDetail/styles';
  * rendering is silent without a live region, the announcement pattern
  * StreamingText and ChatMessage ship (cue + throttled snapshots +
  * final text, aria-busy on the content area), and how to reuse the
- * pattern in custom streaming UIs.
+ * pattern in custom streaming UIs. The same live-region semantics
+ * govern every transient state, so the guide also collects the
+ * interruption tiers (Toast's liveRoles), async option loading
+ * (Select / Combobox / Cascader) and lazy tree node aria-busy.
  */
 
 const paragraph = css`
@@ -212,7 +215,10 @@ export default function StreamingA11yGuide() {
         To a screen reader it is <strong>silence</strong> — and this guide is
         about why, and about the announcement pattern haze-ui ships in{' '}
         <code className={inlineCode}>StreamingText</code> and{' '}
-        <code className={inlineCode}>ChatMessage</code> to fix it.
+        <code className={inlineCode}>ChatMessage</code> to fix it. The
+        same live-region semantics govern every transient state —
+        toasts, async-loaded option lists, lazily expanding tree nodes —
+        and the later sections collect those patterns too.
       </p>
 
       <div className={section}>
@@ -417,6 +423,137 @@ export default function StreamingA11yGuide() {
           announces the raw text while streaming and swaps in formatting
           silently at the end.
         </p>
+      </div>
+
+      <div className={section}>
+        <h2>Interruption tiers: status vs alert (Toast)</h2>
+        <p className={paragraph}>
+          Streaming prose is never urgent — but not every transient
+          message is so polite, and an error toast may legitimately need
+          to interrupt. The distinction is mechanical, not a matter of
+          taste: <code className={inlineCode}>role=&quot;status&quot;</code>{' '}
+          is implicitly <code className={inlineCode}>aria-live=&quot;polite&quot;</code>{' '}
+          (it queues behind whatever is being said), while{' '}
+          <code className={inlineCode}>role=&quot;alert&quot;</code> is
+          implicitly assertive (it barges in). haze-ui draws that line
+          at exactly one variant: <code className={inlineCode}>Toast</code>{' '}
+          maps every variant to <code>status</code> except{' '}
+          <code>danger</code>, which becomes <code>alert</code> — the
+          only tier allowed to interrupt the reader.
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`const liveRoles = {
+  info: 'status',
+  success: 'status',
+  warning: 'status',
+  danger: 'alert',   // the only assertive tier
+  loading: 'status',
+} as const;
+
+// the toast root carries the role — each toast is its own live region
+<div role={liveRoles[variant]} data-slot="toast">…</div>`}
+        </CodeBlock>
+        <p className={paragraph}>
+          Two structural rules keep announcements single. First, each
+          toast element is its own live region, so the fixed stack{' '}
+          <code className={inlineCode}>ToastContainer</code> renders
+          must not add <code className={inlineCode}>aria-live</code> or
+          a live role of its own — a region wrapping a region announces
+          the same toast twice, once per mutation. Second, the{' '}
+          <code>loading</code> variant&rsquo;s spinner glyph is{' '}
+          <code className={inlineCode}>aria-hidden</code> art: the toast
+          root already speaks, so a nested{' '}
+          <code className={inlineCode}>role=&quot;status&quot;</code>{' '}
+          glyph would add a second voice saying &ldquo;loading&rdquo; on
+          top of the message. The Accessibility guide&rsquo;s ARIA
+          pattern table summarizes this family as its Alert / Status
+          row.
+        </p>
+      </div>
+
+      <div className={section}>
+        <h2>
+          Async option loading: busy, never a lie (Select, Combobox,
+          Cascader)
+        </h2>
+        <p className={paragraph}>
+          Remote option lists put a picker panel in the same transient
+          state a stream does: the data is not there yet and what is on
+          screen is stale. The contract haze-ui applies across the three
+          remote-capable pickers: the mutating surface carries{' '}
+          <code className={inlineCode}>aria-busy</code>, a{' '}
+          <code className={inlineCode}>Spinner</code> (itself{' '}
+          <code className={inlineCode}>role=&quot;status&quot;</code>)
+          stands in for the list, and local filtering is{' '}
+          <em>suspended</em> while loading — filtering the stale options
+          against the just-typed query and showing &ldquo;no
+          results&rdquo; would be a lie. The honest answer is
+          &ldquo;not here yet&rdquo;.
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`<Select loading={isSearching} onSearch={(q) => search(q)}>
+  {remoteOptions.map((o) => (
+    <Option key={o.value} value={o.value}>{o.label}</Option>
+  ))}
+</Select>
+
+// while loading: panel is busy, the spinner replaces the list, and the
+// list's semantic role is suppressed — a Spinner block inside a
+// role="listbox" would be an aria-required-children violation
+<FloatingPanel aria-busy={loading || undefined}>
+  {hasVisibleOptions ? optionsList : <Spinner size="sm" />}
+</FloatingPanel>`}
+        </CodeBlock>
+        <p className={paragraph}>
+          Where <code className={inlineCode}>aria-busy</code> lands is
+          per-component honesty:{' '}
+          <code className={inlineCode}>Combobox</code> puts it on the
+          combobox input itself (the input&rsquo;s list is what is
+          pending); <code className={inlineCode}>Select</code> and{' '}
+          <code className={inlineCode}>Cascader</code> put it on the
+          floating panel, and while it is set the list&rsquo;s semantic
+          role is suppressed so the panel says &ldquo;busy&rdquo;, not
+          &ldquo;here is a list of one spinner&rdquo;. Keyboard
+          navigation stays inert until loading clears — there is nothing
+          to navigate yet, and arrow keys waking a half-populated list
+          read as a bug, not progress.
+        </p>
+      </div>
+
+      <div className={section}>
+        <h2>Lazy tree nodes: busy at the node (Tree)</h2>
+        <p className={paragraph}>
+          A lazily loaded tree node is the same pattern at its smallest
+          unit. When <code className={inlineCode}>loadData</code> is
+          fetching a node&rsquo;s children, the{' '}
+          <code className={inlineCode}>aria-busy</code> flag goes on that
+          node&rsquo;s <code>treeitem</code> — not on the tree — so the
+          rest of the tree stays readable and navigable while the one
+          expanding node waits.{' '}
+          <code className={inlineCode}>aria-expanded</code> already
+          reports the requested state; <code>aria-busy</code> adds
+          &ldquo;and the children are not there yet&rdquo;.
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`<Tree
+  loadData={(node) => fetchChildren(node.key)}
+  treeData={lazyRoot}
+/>
+
+// the expanding treeitem while its children are in flight
+<div
+  role="treeitem"
+  aria-expanded={expanded}
+  aria-busy={loading || undefined}
+/>`}
+        </CodeBlock>
+        <div className={note}>
+          <strong>Busy marks the smallest mutating scope.</strong> That
+          is the shared shape of all five patterns: aria-busy on the
+          thing that is actually changing (the content area, the toast,
+          the panel, the node), never on a container large enough to
+          silence siblings that are already fine.
+        </div>
       </div>
 
       <div className={section}>

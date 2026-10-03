@@ -10,6 +10,7 @@ import react from '@vitejs/plugin-react';
 import wyw from '@wyw-in-js/vite';
 
 import { writeProps } from './scripts/generate-props.mjs';
+import { writeA11yContracts } from './scripts/generate-a11y-contracts.mjs';
 import { writeLlmsFull } from './scripts/generate-llms-full.mjs';
 import { writeSearchIndex } from './scripts/generate-search-index.mjs';
 import { writeSizeReport } from './scripts/generate-size-report.mjs';
@@ -78,6 +79,12 @@ function propsDocgenPlugin(): Plugin {
       if (changed) {
         console.log(
           `props-docgen: regenerated src/generated/props.json (${componentCount} components)`
+        );
+      }
+      const a11y = writeA11yContracts(__dirname);
+      if (a11y.changed) {
+        console.log(
+          `props-docgen: regenerated a11y-contracts.json (${a11y.componentCount} components)`
         );
       }
       const llms = writeLlmsFull(__dirname);

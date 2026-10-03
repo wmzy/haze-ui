@@ -30,6 +30,10 @@ const shell = css`
     'header'
     'content'
     'footer';
+  /* The shell is a sized layout box (min-height) consumers pad; its
+   * sidebar column declares a width — both are border-box
+   * (panel-family box-sizing contract). */
+  box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
 `;
@@ -67,6 +71,7 @@ const header = css`
 
 const sidebar = css`
   grid-area: sidebar;
+  box-sizing: border-box;
   width: var(--haze-appshell-sidebar-width, calc(var(--haze-space-16) * 4));
   min-height: 0;
   overflow: hidden;

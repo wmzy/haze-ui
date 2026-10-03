@@ -16,13 +16,16 @@ type CheckboxCoreProps = {
 
 const base = css`
   appearance: none;
-  width: 1.125rem;
-  height: 1.125rem;
+  /* 24px box (WCAG 2.5.8 target-size floor — the bare checkbox has no
+     label to lean on for hit area); the optical footprint stays 32px
+     via the space-1 margin, matching the old 18px+14px pairing. */
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-sm);
   background: var(--haze-color-bg);
   cursor: pointer;
-  margin: 0.4375rem;
+  margin: var(--haze-space-1);
   transition:
     background var(--haze-duration-fast),
     border-color var(--haze-duration-fast),
@@ -47,10 +50,10 @@ const base = css`
   &:checked::after {
     content: '';
     position: absolute;
-    top: 2px;
+    top: 5px;
     /* physical: the checkmark is drawn from physical borders + rotate(45)
        and stays unmirrored under RTL by industry convention. */
-    left: 5px;
+    left: 8px;
     width: 5px;
     height: 9px;
     border: solid var(--haze-color-text-inverse);

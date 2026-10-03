@@ -31,7 +31,7 @@ English | [简体中文](./README-zh_CN.md)
 
 **`haze-ui/css-manifest.json` is machine-readable data.** The authoritative export → CSS-file mapping (family absorption included) is regenerated on every build, so bundler plugins and codemods read one source of truth instead of re-deriving kebab-case file names. A directory of pasted components has no equivalent — the mapping exists only in your head or your fork, and it drifts.
 
-**The `ControlOrValue<T>` protocol needs a real runtime.** One prop — `checked?: Control<T> | T` — covers controlled *and* uncontrolled usage because `react-use-control` carries the wiring; a published package is the contract that keeps that behavior identical across every component and version. None of this is hostile to the shadcn / Base UI ecosystem: haze-ui tokens are plain CSS custom properties, so they interoperate with a Tailwind v4 `@theme` block, and haze components compose alongside copy-pasted primitives wherever each fits.
+**The `ControlOrValue<T>` protocol needs a real runtime.** One prop — `checked?: Control<T> | T` — covers controlled *and* uncontrolled usage because `react-use-control` carries the wiring; a published package is the contract that keeps that behavior identical across every component and version. None of this is hostile to the shadcn / Base UI ecosystem: haze-ui tokens are plain CSS custom properties, and haze components compose alongside copy-pasted primitives wherever each fits.
 
 ## Getting Started
 
@@ -194,10 +194,42 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/button.css';
 import { Button } from 'haze-ui';
 
+// …or zero CSS imports at all — the official Vite plugin injects the
+// right per-component CSS for you (see "Automatic CSS with haze-ui-vite"):
+// vite.config.ts → hazeCss() from 'haze-ui-vite'
+import { Button } from 'haze-ui';
+
 export default function MyComponent() {
   return <Button>Start</Button>;
 }
 ```
+
+#### Automatic CSS with haze-ui-vite
+
+[`haze-ui-vite`](https://www.npmjs.com/package/haze-ui-vite) is the
+official companion Vite plugin: it scans each module's named imports from
+`haze-ui` (`import { Button, Select } from 'haze-ui'`), maps them through
+`haze-ui/css-manifest.json`, and prepends the matching
+`haze-ui/css/*.css` side-effect imports — `tokens.css` always first. CSS
+enters the module graph exactly where it's consumed, so code-split views
+carry only their own component CSS and HMR works through Vite's native
+pipeline.
+
+```ts
+// vite.config.ts
+import hazeCss from 'haze-ui-vite';
+
+export default {
+  plugins: [react(), hazeCss()],
+};
+```
+
+It reads the manifest shipped by your installed haze-ui version (no
+hardcoded name mapping), validates every injected file exists in the
+actual package, and warns on namespace imports it cannot collect. Works
+with Vite 5–8, zero runtime dependencies. Not on Vite? Keep the explicit
+imports above, or read `haze-ui/css-manifest.json` from your own bundler
+tooling — it's the same data the plugin uses.
 
 Component CSS files are kebab-case versions of the component name
 (`OTPInput` → `haze-ui/css/otp-input.css`). Per-component files only
@@ -222,6 +254,8 @@ authoritative export → css-file mapping ships as data:
 included); `noCss` lists pure-logic exports with no css of their own.
 Bundler plugins and codemods should read this manifest instead of
 re-deriving file names — the mapping changes in lockstep with the build.
+The official [`haze-ui-vite`](https://www.npmjs.com/package/haze-ui-vite)
+plugin (above) is the reference consumer of this data.
 
 ### Server Components (Next.js App Router)
 

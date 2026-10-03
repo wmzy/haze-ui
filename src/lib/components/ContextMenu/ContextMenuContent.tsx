@@ -20,6 +20,9 @@ type ContextMenuContentProps = {
  */
 const content = css`
   position: fixed;
+  /* min-width pairs with padding + border: border-box keeps the floor
+   * covering the padding too (panel-family box-sizing contract). */
+  box-sizing: border-box;
   min-width: 10rem;
   padding: var(--haze-space-1);
   background: var(--haze-color-bg);

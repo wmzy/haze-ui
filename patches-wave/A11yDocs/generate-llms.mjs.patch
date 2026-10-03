@@ -1,0 +1,19 @@
+--- a/scripts/generate-llms.mjs
++++ b/scripts/generate-llms.mjs
+@@ -467,6 +467,16 @@
+ To install the agent components via the shadcn CLI instead, see README ›
+ Install via shadcn CLI.
+ 
++## Accessibility references
++
++Two docs-site references cover the accessibility surface: the per-component
++keyboard & ARIA contract tables (<https://wmzy.github.io/haze-ui/guides/a11y-contracts>
++— roles, \`aria-*\` attributes and handled keys per component, extracted from each
++component's test suite by \`scripts/generate-a11y-contracts.mjs\`) and the streaming
++a11y guide (<https://wmzy.github.io/haze-ui/guides/streaming-a11y> — live-region
++patterns for transient UI: aria-busy placement, throttled announcements,
++interruption tiers, async option loading and lazy trees).
++
+ ## Links
+ 
+ - Docs & demos: <https://wmzy.github.io/haze-ui/>

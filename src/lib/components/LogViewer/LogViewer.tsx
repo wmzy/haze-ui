@@ -1,10 +1,11 @@
 import type { ControlOrValue } from 'react-use-control';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { useEndReached } from '../../utils/use-end-reached';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -17,6 +18,15 @@ type LogEntry = {
 type LogViewerProps = {
   logs: LogEntry[];
   filter?: ControlOrValue<LogLevel | null>;
+  /**
+   * Infinite-scroll trigger on the log body's scrollport: fired when the
+   * scroll position comes within 200px of the end. Entering the zone
+   * fires once; staying inside does not re-fire; scrolling back out
+   * re-arms, and growth of the rendered (filtered) entries re-arms too,
+   * so a still-short list chains straight into the next page. Typical
+   * use: append the next page of `logs`. Ignored when not provided.
+   */
+  onLoadMore?: () => void;
   className?: string;
 };
 
@@ -104,14 +114,25 @@ const levelClassMap: Record<LogLevel, string> = {
 
 const ALL_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
-export default function LogViewer({ logs, filter: filterControl, className }: LogViewerProps) {
+export default function LogViewer({ logs, filter: filterControl, onLoadMore, className }: LogViewerProps) {
   const [filter, setFilter] = useControl(filterControl, null);
   const strings = useStrings('logViewer');
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(
     () => (filter ? logs.filter((l) => l.level === filter) : logs),
     [logs, filter],
   );
+
+  // The body is a plain scroll container (not virtualized), so the
+  // end-reached trigger rides its own scrollport; `contentUnits` tracks
+  // the rendered entries so filtering counts, not just `logs` growth.
+  useEndReached({
+    ref: bodyRef,
+    onEndReached: onLoadMore,
+    threshold: 200,
+    contentUnits: filtered.length,
+  });
 
   return (
     <div data-slot="log-viewer" x-class={[wrapper, className]}>
@@ -136,7 +157,7 @@ export default function LogViewer({ logs, filter: filterControl, className }: Lo
           </button>
         ))}
       </div>
-      <div data-slot="body" x-class={[body]}>
+      <div ref={bodyRef} data-slot="body" x-class={[body]}>
         {filtered.map((log, i) => (
           <div key={i} data-slot="entry" x-class={[entry]}>
             {log.timestamp && <span data-slot="time" x-class={[timestamp]}>{log.timestamp}</span>}

@@ -1,0 +1,15 @@
+--- a/package.json
++++ b/package.json
+@@ -228,6 +228,12 @@
+       "gzip": true
+     },
+     {
++      "name": "CSS family ratchet: sparkline",
++      "path": "dist/css/sparkline.css",
++      "limit": "0.3 KB",
++      "gzip": true
++    },
++    {
+       "name": "CSS family ratchet: result",
+       "path": "dist/css/result.css",
+       "limit": "0.5 KB",

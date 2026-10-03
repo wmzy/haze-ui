@@ -1,0 +1,12 @@
+--- a/scripts/rsc-safe.mjs
++++ b/scripts/rsc-safe.mjs
+@@ -71,6 +71,9 @@
+   'components/Kbd/index.ts',
+   'components/Skeleton/Skeleton.tsx',
+   'components/Skeleton/index.ts',
++  'components/Sparkline/Sparkline.tsx',
++  'components/Sparkline/index.ts',
++  'components/Sparkline/sparkline-styles.ts',
+   'components/Stat/Stat.tsx',
+   'components/Stat/index.ts',
+   'components/Typography/Typography.tsx',

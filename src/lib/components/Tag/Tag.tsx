@@ -65,12 +65,17 @@ const closeBtn = css`
   color: inherit;
   cursor: pointer;
   padding: 0;
+  /* The × glyph alone is far under the WCAG 2.5.8 target-size floor —
+     the button box itself carries the 24px minimum target. */
+  min-width: var(--haze-space-6);
+  min-height: var(--haze-space-6);
   font-size: inherit;
   line-height: 1;
   opacity: 0.6;
   transition: opacity var(--haze-duration-fast);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 
   &:hover {
     opacity: 1;

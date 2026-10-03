@@ -155,6 +155,14 @@ const inputStyle = css`
   font-family: var(--haze-font-sans);
   outline: none;
 
+  /* WCAG 2.4.11 focus-appearance: the palette input is the component's
+     tab stop yet previously showed nothing on focus — the Input family
+     ring (border tint + focus-ring halo) applies here too. */
+  &:focus {
+    border-bottom-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+
   &::placeholder {
     color: var(--haze-color-text-muted);
   }

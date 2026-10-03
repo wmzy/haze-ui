@@ -65,6 +65,38 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
 
+  # Real VoiceOver screen reader smoke (macOS only, via guidepup): the
+  # AT layer axe cannot see — that dialogs, menus, and toasts are
+  # actually *announced* by a real screen reader, not just statically
+  # conformant. Runs headed on a macos runner (screen readers cannot
+  # drive headless browsers; macOS needs no xvfb) with VoiceOver
+  # automation prepared by @guidepup/setup. On every other platform —
+  # including the Linux e2e job above, which collects the same spec as
+  # part of the full suite — the file skips cleanly.
+  # Local reproduction (macOS only):
+  #   1. grant your terminal/IDE Accessibility permission
+  #      (System Settings → Privacy & Security → Accessibility)
+  #   2. npx @guidepup/setup setup && npx @guidepup/setup install
+  #   3. pnpm exec playwright test screen-reader --config e2e/playwright.config.ts
+  screen-reader:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - name: Prepare VoiceOver automation
+        run: npx -y @guidepup/setup setup --ci
+      - name: Install guidepup screen reader assets
+        run: npx -y @guidepup/setup install
+      - run: npx playwright install chromium
+      - run: PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1 pnpm exec playwright test screen-reader --config e2e/playwright.config.ts
+
   # Unit-test coverage gate (v8 provider; 70% thresholds configured in
   # vite.config.mts). A separate job so it never adds time to the
   # build/e2e critical path — it re-runs the same unit suite as the
