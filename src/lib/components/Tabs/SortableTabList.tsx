@@ -1,6 +1,6 @@
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEventHandler, ReactNode } from 'react';
 
-import { Children, useEffect, useRef } from 'react';
+import { Children, useEffect, useRef, useState } from 'react';
 
 import { arrayMove, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { css } from '@linaria/core';
@@ -8,6 +8,7 @@ import { css } from '@linaria/core';
 import { SortableRegion } from '../../utils/sortable';
 import { sortableItemStyle } from '../../utils/sortable-shared';
 
+import { edgeScrollDelta } from './edge-scroll';
 import TabList from './TabList';
 import { useTabsContext } from './TabsContext';
 
@@ -27,12 +28,20 @@ import { useTabsContext } from './TabsContext';
  * active: the selection is captured at lift and restored at drop, so
  * reordering cannot move the selection with an index.
  *
+ * While a tab is airborne, holding the pointer within
+ * `AUTO_SCROLL_EDGE` of either strip end auto-scrolls the hidden
+ * viewport — the Chrome-tabs gesture for reaching tabs that
+ * compressed past their floor. dnd-kit's own autoScroll is
+ * bypassed in favor of this explicit loop: the strip's flex
+ * compression reflows item rects mid-drag, which the rect-based
+ * detector tracks poorly.
+ *
  * Trade-off: the overflow `⋯` menu does not appear in this variant —
  * the sortable wrappers sit between the tablist and its `<Tab>`
- * children, which the plain TabList's menu collector does not see. The
- * strip still scrolls (`overflow-x: auto`), so every tab stays
- * reachable; use the plain `<TabList>` when the menu matters more than
- * drag reordering.
+ * children, which the plain TabList's menu collector does not see.
+ * The strip still scrolls (hidden scrollbar), so every tab stays
+ * reachable; use the plain `<TabList>` when the menu matters more
+ * than drag reordering.
  */
 type SortableTabListProps = {
   children: ReactNode;
@@ -51,6 +60,12 @@ type SortableTabListProps = {
 const sortableTab = css`
   display: flex;
   position: relative;
+  /* Flex items default to min-width:auto — the content's
+   * own floor — which would pin every tab at its full label
+   * width and defeat the strip's compression. 0 lets the
+   * wrapper shrink so the Tab's own min-width (64px, 120px
+   * active) becomes the real floor. */
+  min-width: 0;
   /* Whole-tab drag affordance: PointerSensor's 8px distance constraint
    * keeps plain clicks (selection) from ever starting a drag. */
   cursor: grab;
@@ -139,25 +154,61 @@ export default function SortableTabList({
   const items = Children.toArray(children);
   const ids = items.map((_, index) => index);
 
+  // Edge auto-scroll wiring: the root ref locates the hidden scroll
+  // viewport ([data-slot="tab-list"]) once a drag lifts, the pointer
+  // position is tracked in a ref (no re-render per move), and a rAF
+  // loop applies the scroll while the drag is airborne.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const pointerX = useRef(0);
+  const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    if (!dragging) return;
+    let frame = 0;
+    const tick = () => {
+      const strip = rootRef.current?.querySelector<HTMLElement>(
+        '[data-slot="tab-list"]'
+      );
+      if (strip) {
+        const rect = strip.getBoundingClientRect();
+        strip.scrollLeft += edgeScrollDelta(rect, pointerX.current);
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    const track = (event: PointerEvent) => {
+      pointerX.current = event.clientX;
+    };
+    window.addEventListener('pointermove', track);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pointermove', track);
+    };
+  }, [dragging]);
+
   return (
-    <SortableRegion
-      ids={ids}
-      strategy={horizontalListSortingStrategy}
-      onMove={(from, to) => onReorder?.(arrayMove(ids, from, to))}
-    >
-      {/* The region renders no DOM of its own except dnd-kit's
-       * screen-reader live regions — keeping it around (not inside) the
-       * TabList keeps those role="status" nodes out of the tablist,
-       * whose owned children must be nothing but tabs (axe
-       * aria-required-children). */}
-      <TabList className={className}>
-        {items.map((child, index) => (
-          <SortableTabItem key={index} id={index}>
-            {child}
-          </SortableTabItem>
-        ))}
-      </TabList>
-    </SortableRegion>
+    <div ref={rootRef}>
+      <SortableRegion
+        ids={ids}
+        strategy={horizontalListSortingStrategy}
+        onMove={(from, to) => onReorder?.(arrayMove(ids, from, to))}
+        onDragStart={() => setDragging(true)}
+        onDragEnd={() => setDragging(false)}
+      >
+        {/* The region renders no DOM of its own except dnd-kit's
+         * screen-reader live regions — keeping it around (not inside)
+         * the TabList keeps those role="status" nodes out of the
+         * tablist, whose owned children must be nothing but tabs (axe
+         * aria-required-children). */}
+        <TabList className={className}>
+          {items.map((child, index) => (
+            <SortableTabItem key={index} id={index}>
+              {child}
+            </SortableTabItem>
+          ))}
+        </TabList>
+      </SortableRegion>
+    </div>
   );
 }
 

@@ -25,16 +25,28 @@ type SortableRegionProps = {
   /** Index move resolved from a completed drag; never called when the drop
    * lands back on the origin item. */
   onMove: (from: number, to: number) => void;
+  /** Drag lifecycle passthrough — SortableTabList uses the pair to
+   * run its edge auto-scroll loop while a tab is airborne. */
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
   children: ReactNode;
 };
 
 /** DndContext + SortableContext wiring with the shared sensors and
  * closest-center collision. Renders no DOM of its own, so it can wrap a
  * ul or a chip row without changing layout or semantics. */
-export function SortableRegion({ ids, strategy, onMove, children }: SortableRegionProps) {
+export function SortableRegion({
+  ids,
+  strategy,
+  onMove,
+  onDragStart,
+  onDragEnd,
+  children,
+}: SortableRegionProps) {
   const sensors = useSortableSensors();
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    onDragEnd?.();
     if (!over || active.id === over.id) return;
     onMove(ids.indexOf(active.id), ids.indexOf(over.id));
   };
@@ -43,6 +55,7 @@ export function SortableRegion({ ids, strategy, onMove, children }: SortableRegi
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={onDragStart}
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={ids} strategy={strategy}>

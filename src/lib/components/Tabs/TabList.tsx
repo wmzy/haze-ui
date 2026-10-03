@@ -33,6 +33,16 @@ const base = css`
    * computes to auto) and swallows that sliver — otherwise a
    * phantom vertical scrollbar flickers in next to the strip. */
   overflow-y: hidden;
+  /* Chrome-style strip: the scrollbar never shows. Compression
+   * (Tab min-widths) is the first resort; this hidden viewport
+   * only carries tabs that compressed past their floor, and
+   * SortableTabList auto-scrolls it while a tab drags near the
+   * ends. */
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 /* Inside the bar the strip takes every leftover inline slot; the ⋯

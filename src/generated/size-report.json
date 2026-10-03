@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T03:02:03.413Z",
+  "generatedAt": "2026-10-03T03:30:39.341Z",
   "distAvailable": true,
   "families": [
     {
@@ -519,8 +519,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 3757,
-      "cssGzipBytes": 1016
+      "cssBytes": 4011,
+      "cssGzipBytes": 1083
     },
     {
       "family": "tag-group",
@@ -635,7 +635,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 325754,
-    "cssGzipBytes": 33510
+    "cssBytes": 326008,
+    "cssGzipBytes": 33568
   }
 }

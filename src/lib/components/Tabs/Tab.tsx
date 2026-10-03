@@ -80,6 +80,20 @@ const base = css`
     color var(--haze-duration-fast),
     border-color var(--haze-duration-fast);
 
+  /* Chrome-style strip sizing: tabs size to their content and
+   * COMPRESS when the strip runs short (flex-shrink) instead of
+   * scrolling — down to a minimum that keeps icon plus a word.
+   * The active tab raises that floor so the selected tab stays
+   * comfortably wide while its siblings compress. max-width
+   * keeps one tab from hogging the strip; overflow hidden
+   * contains a compressed label inside its box (the ellipsis
+   * itself rides on the consumer's label span). */
+  flex: 0 1 auto;
+  min-width: calc(var(--haze-space-8) * 2);
+  max-width: calc(var(--haze-space-16) * 4);
+  overflow: hidden;
+  white-space: nowrap;
+
   &:hover {
     color: var(--haze-color-text);
   }
@@ -108,10 +122,15 @@ const active = css`
   color: var(--haze-color-primary);
   border-bottom-color: var(--haze-color-primary);
 
+  /* The selected tab's compression floor: roughly 1.5× the
+   * sibling minimum, so the active tab keeps a readable label
+   * while the strip squeezes everything else first. */
+  min-width: calc(var(--haze-space-10) * 3);
+
   /* Forced-colors: the primary underline and text flatten onto
-     CanvasText — the selected tab would be indistinguishable. The
-     Windows-native selection renders instead: a Highlight chip with
-     HighlightText content. */
+     CanvasText — the selected tab would be indistinguishable.
+     The Windows-native selection renders instead: a Highlight
+     chip with HighlightText content. */
   @media (forced-colors: active) {
     background: Highlight;
     color: HighlightText;

@@ -6,6 +6,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import SortableTabList from './SortableTabList';
+import { edgeScrollDelta } from './edge-scroll';
 import Tab from './Tab';
 import TabPanel from './TabPanel';
 import Tabs from './Tabs';
@@ -240,5 +241,25 @@ describe('SortableTabList', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+
+  describe('edge auto-scroll', () => {
+    const strip = { left: 0, right: 400 };
+
+    it('scrolls right while the pointer hovers the right edge', () => {
+      expect(edgeScrollDelta(strip, 400)).toBe(10);
+      expect(edgeScrollDelta(strip, 360)).toBe(10);
+    });
+
+    it('scrolls left while the pointer hovers the left edge', () => {
+      expect(edgeScrollDelta(strip, 0)).toBe(-10);
+      expect(edgeScrollDelta(strip, 48)).toBe(-10);
+    });
+
+    it('holds still mid-strip', () => {
+      expect(edgeScrollDelta(strip, 200)).toBe(0);
+      expect(edgeScrollDelta(strip, 50)).toBe(0);
+      expect(edgeScrollDelta(strip, 350)).toBe(0);
+    });
   });
 });

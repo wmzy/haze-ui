@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { TreeNodeData } from '@/lib/components/Tree';
 
+import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 import {
   Files,
@@ -19,7 +20,7 @@ import { ActivityRail, ActivityRailItem } from '@/lib/components/ActivityRail';
 import { Button } from '@/lib/components/Button';
 import { StatusBar, StatusItem } from '@/lib/components/StatusBar';
 import { TabBar, TabBarItem } from '@/lib/components/TabBar';
-import { Tabs, TabList, Tab, TabPanel } from '@/lib/components/Tabs';
+import { Tabs, Tab, TabPanel, SortableTabList } from '@/lib/components/Tabs';
 import { Tree } from '@/lib/components/Tree';
 import { Workbench } from '@/lib/components/Workbench';
 
@@ -111,8 +112,23 @@ function SidebarTree() {
   );
 }
 
-/** Document tabs on the Tabs doc layer: closable + icon + status, one
- * controlled value, close re-homes the selection to the next neighbor. */
+/** Document tabs on the Tabs doc layer: closable + icon + status, drag
+ * reordering via SortableTabList, one controlled value, close re-homes
+ * the selection to the next neighbor. */
+function applyOrder<T>(list: T[], order: number[]): T[] {
+  return order.flatMap((index) => {
+    const item = list[index];
+    return item === undefined ? [] : [item];
+  });
+}
+
+/** Compressed-tab label: the strip shrinks tabs to a floor
+ * (Chrome-style), so long names ellipsize inside their box. */
+const ellipsis = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 function EditorTabs() {
   const [docs, setDocs] = useControl(undefined, initialDocs);
   const [active, setActive, activeCtrl] = useControl(undefined, 'app');
@@ -130,7 +146,7 @@ function EditorTabs() {
 
   return (
     <Tabs value={activeCtrl}>
-      <TabList overflowLabel='More files'>
+      <SortableTabList onReorder={(order) => setDocs(applyOrder(docs, order))}>
         {docs.map((doc) => (
           <Tab
             key={doc.value}
@@ -140,10 +156,10 @@ function EditorTabs() {
             closable
             onClose={() => closeDoc(doc.value)}
           >
-            {doc.label}
+            <span x-class={ellipsis}>{doc.label}</span>
           </Tab>
         ))}
-      </TabList>
+      </SortableTabList>
       {docs.map((doc) => (
         <TabPanel key={doc.value} value={doc.value}>
           <pre

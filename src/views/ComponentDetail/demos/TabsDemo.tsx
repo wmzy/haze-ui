@@ -63,6 +63,13 @@ const docTabs: DocTab[] = [
   },
 ];
 
+/** Compressed-tab label: the strip shrinks tabs to a floor
+ * (Chrome-style), so long names ellipsize inside their box. */
+const ellipsis = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 /** The document-tabs fixture: one controlled value, an array of open
  * docs, and a close handler that re-homes the selection to a neighbor —
  * the whole "editor strip" shape on the Tabs doc layer. */
@@ -99,7 +106,7 @@ function DocumentTabs({
             closable={tab.closable}
             onClose={() => close(tab.value)}
           >
-            {tab.label}
+            <span x-class={ellipsis}>{tab.label}</span>
           </Tab>
         ))}
       </TabList>
