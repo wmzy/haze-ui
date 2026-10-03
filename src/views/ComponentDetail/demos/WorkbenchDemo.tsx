@@ -210,13 +210,15 @@ export default function WorkbenchDemo() {
       <p className={intro}>
         The VSCode-type work surface: a fixed activity rail, docked and
         resizable sidebar / auxiliary columns, an editor column with a
-        bottom panel, a full-width status bar — and below 768px the rail
-        gives way to a bottom TabBar while the sidebar becomes a
-        full-screen slide-out that starts hidden and opens from the
-        TabBar's Sidebar item. The rail can also dock inside the sidebar
-        column (top or bottom, Cursor-style). Every width and collapsed
-        flag is a <code>ControlOrValue</code> prop, so drags can be
-        persisted and toggles driven from outside.
+        bottom panel, a full-width status bar. Below 768px the layout
+        changes shape rather than just shrinking: the rail becomes a
+        full-width horizontal bar above the editor, and the sidebar
+        turns into a separate full-screen layer that starts hidden and
+        opens from the TabBar's Sidebar item — no side-by-side columns
+        on small screens. The rail can also dock inside the sidebar
+        column (top or bottom, Cursor-style) on wide screens. Every
+        width and collapsed flag is a <code>ControlOrValue</code> prop,
+        so drags can be persisted and toggles driven from outside.
       </p>
 
       <div className={section}>
@@ -368,15 +370,19 @@ export default function WorkbenchDemo() {
         </div>
         <p className={row}>
           Drag a handle (or focus it and use the arrow keys) — the sidebar
-          and panel resize in px. Below 768px the activity rail disappears
-          and the bottom TabBar takes over; the sidebar starts hidden and
-          the TabBar's Sidebar item slides it in as a full-screen overlay
-          (scrim-dismissed), driven by the <code>mobileSidebarOpen</code>{' '}
+          and panel resize in px. Below 768px the workbench changes
+          shape: the activity rail leaves the flex row for a full-width
+          horizontal bar above the editor (the{' '}
+          <code>activityBarPosition</code> no longer applies there), and
+          the sidebar becomes a separate full-screen layer — closed by
+          default, opened from the TabBar's Sidebar item and dismissed by
+          the scrim, all through the <code>mobileSidebarOpen</code>{' '}
           control — while <code>sidebarCollapsed</code> keeps owning the
-          docked column above the breakpoint. Switch the rail's dock with
-          the Rail buttons: <code>top</code> or <code>bottom</code> rides
-          it inside the sidebar column, Cursor-style. Close editor tabs
-          with the × or the Delete key on a focused tab.
+          docked column above the breakpoint. On wide screens, switch the
+          rail's dock with the Rail buttons: <code>top</code> or{' '}
+          <code>bottom</code> rides it inside the sidebar column,
+          Cursor-style. Close editor tabs with the × or the Delete key on
+          a focused tab.
         </p>
         <pre className={codeBlock}>
           {`<Workbench

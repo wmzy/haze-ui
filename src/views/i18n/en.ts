@@ -69,7 +69,7 @@ const COMPONENT_BLURBS = {
   TabBar:
     'Mobile bottom navigation (the ActivityRail viewport peer): 56px safe-area-aware strip, badge, onSelect/onReselect semantics.',
   Workbench:
-    'IDE-style application frame (100dvh): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable collapsible regions and a maximizable bottom panel; the rail docks beside the sidebar or inside it (top/bottom, Cursor-style); below 768px sides become overlays, the mobile sidebar is a full-screen slide-out that starts hidden and opens from the tabBar, and the tabBar takes over.',
+    'IDE-style application frame (100dvh): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable collapsible regions and a maximizable bottom panel; the rail docks beside the sidebar or inside it (top/bottom, Cursor-style); below 768px the frame changes shape — the rail becomes a full-width horizontal bar above the editor and the sidebar a separate full-screen layer (closed by default, opened from the tabBar).',
 
   // Forms
   Cascader:

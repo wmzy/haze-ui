@@ -119,6 +119,23 @@ function drag(
 }
 
 describe('Workbench', () => {
+  function PositionFixture({ position }: { position: 'side' | 'top' | 'bottom' }) {
+    return (
+      <Workbench
+        activityBar={
+          <ActivityRail>
+            <ActivityRailItem icon={<span>◉</span>} label='One' />
+            <ActivityRailItem icon={<span>◉</span>} label='Two' />
+          </ActivityRail>
+        }
+        sidebar={<p>Files</p>}
+        activityBarPosition={position}
+      >
+        <h1>Editor</h1>
+      </Workbench>
+    );
+  }
+
   it('renders every region under its data-slot with the slot content', () => {
     render(<FullFixture />);
     for (const name of [
@@ -296,22 +313,6 @@ describe('Workbench', () => {
   });
 
   it('docks the activity rail inside the sidebar column on demand', () => {
-    function PositionFixture({ position }: { position: 'side' | 'top' | 'bottom' }) {
-      return (
-        <Workbench
-          activityBar={
-            <ActivityRail>
-              <ActivityRailItem icon={<span>◉</span>} label='One' />
-              <ActivityRailItem icon={<span>◉</span>} label='Two' />
-            </ActivityRail>
-          }
-          sidebar={<p>Files</p>}
-          activityBarPosition={position}
-        >
-          <h1>Editor</h1>
-        </Workbench>
-      );
-    }
     // Default: the rail is its own column, a sibling of the
     // sidebar panel inside the resizable body, and stays
     // vertical.
@@ -350,6 +351,51 @@ describe('Workbench', () => {
       'data-orientation',
       'horizontal'
     );
+  });
+
+  it('lays the rail out as a top bar and the sidebar as a separate layer on mobile', () => {
+    // jsdom has no matchMedia — stub the one query
+    // Workbench subscribes to, matching true (mobile).
+    const entries = new Map<string, boolean>([
+      ['(max-width: 768px)', true],
+    ]);
+    window.matchMedia = (query: string) => ({
+      matches: entries.get(query) ?? false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    });
+    try {
+      // position="side" is overridden: the mobile form
+      // pins the rail to the top grid row regardless.
+      render(<PositionFixture position="side" />);
+      const rail = slot('workbench-activity-bar');
+      // Own layer above the editor: parented to the
+      // workbench root, not the resizable body or the
+      // sidebar panel.
+      expect(rail.parentElement).toBe(rootEl());
+      expect(rail.nextElementSibling).toBe(
+        document.querySelector("[data-slot='resizable-group']")
+      );
+      // Horizontal strip, and no rail inside the sidebar
+      // overlay (the sidebar is its own layer).
+      expect(querySlot('activity-rail')).toHaveAttribute(
+        'data-orientation',
+        'horizontal'
+      );
+      expect(
+        panelEl('sidebar').querySelector("[data-slot='workbench-activity-bar']")
+      ).toBeNull();
+      // The sidebar overlay is closed by default (a
+      // separate layer, not a side-by-side column).
+      expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+    } finally {
+      Reflect.deleteProperty(window, 'matchMedia');
+    }
   });
 
   it('renders one scrim per open overlay region and dismisses the auxiliary bar', () => {

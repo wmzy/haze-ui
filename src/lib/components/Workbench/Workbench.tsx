@@ -9,6 +9,7 @@ import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
 // rail reads to lay out horizontally when it rides inside
 // the sidebar column.
 import { ActivityRailDockContext } from '../ActivityRail/rail-dock-context';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 type WorkbenchProps = {
   /** Narrow icon rail column on the leading edge (ActivityRail is the intended content). */
@@ -77,11 +78,36 @@ const workbench = css`
     'body'
     'status'
     'tabs';
+
+  /* Mobile form: the activity rail leaves the flex row and
+   * becomes its own full-width bar ABOVE the editor — the
+   * sidebar is a separate layer (a full-screen slide-out
+   * that starts hidden), not a side-by-side column. */
+  @media (max-width: 768px) {
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'activity'
+      'body'
+      'status'
+      'tabs';
+  }
   /* The shell owns scroll containment: only regions scroll, never the
    * shell (the height itself is the inline 100dvh below). Absent slots
    * leave their auto grid track empty, so it collapses to zero. */
   box-sizing: border-box;
   overflow: hidden;
+`;
+
+/* The mobile activity bar: a full-width horizontal strip
+ * pinned to the top grid row (see the workbench grid's
+ * 'activity' area). The rail inside lays out horizontally
+ * through the dock context. */
+const activityBarMobile = css`
+  grid-area: activity;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-block-end: 1px solid var(--haze-color-border);
 `;
 
 const body = css`
@@ -310,6 +336,13 @@ export default function Workbench({
   const [activityBarPosition] = useControl<
     'side' | 'top' | 'bottom'
   >(activityBarPositionControl, 'side');
+  // The mobile form is a distinct layout, not a CSS tweak:
+  // the rail becomes a full-width bar above the editor and
+  // the sidebar a separate (hidden-by-default) layer, so
+  // the dock position no longer applies below the
+  // breakpoint. useMediaQuery is SSR-safe (false until
+  // hydration, one extra render to converge).
+  const mobile = useMediaQuery('(max-width: 768px)');
   const [
     auxiliaryBarCollapsed,
     setAuxiliaryBarCollapsed,
@@ -346,12 +379,26 @@ export default function Workbench({
       style={{ height: '100dvh', ...style }}
       {...rest}
     >
+      {/* Mobile: the rail is its own full-width bar
+          above the editor (the 'activity' grid row). It
+          always lays out horizontally; the dock position
+          does not apply below the breakpoint. */}
+      {mobile && activityBarSlot != null && (
+        <ActivityRailDockContext.Provider value='horizontal'>
+          <div
+            data-slot="workbench-activity-bar"
+            x-class={[activityBarMobile]}
+          >
+            {activityBarSlot}
+          </div>
+        </ActivityRailDockContext.Provider>
+      )}
       <ResizableGroup
         direction="horizontal"
         className={body}
         onResizeCommit={commitHorizontal}
       >
-        {activityBarSlot != null && activityBarPosition === 'side' && (
+        {!mobile && activityBarSlot != null && activityBarPosition === 'side' && (
           <div data-slot="workbench-activity-bar" x-class={[activityBar]}>
             {activityBarSlot}
           </div>
@@ -376,19 +423,21 @@ export default function Workbench({
               } as CSSProperties
             }
           >
-            {activityBarSlot != null && activityBarPosition !== 'side' && (
-              <ActivityRailDockContext.Provider value='horizontal'>
-                <div
-                  data-slot="workbench-activity-bar"
-                  x-class={[
-                    activityBarDocked,
-                    activityBarPosition === 'bottom' && activityBarDockedEnd,
-                  ]}
-                >
-                  {activityBarSlot}
-                </div>
-              </ActivityRailDockContext.Provider>
-            )}
+            {!mobile &&
+              activityBarSlot != null &&
+              activityBarPosition !== 'side' && (
+                <ActivityRailDockContext.Provider value='horizontal'>
+                  <div
+                    data-slot="workbench-activity-bar"
+                    x-class={[
+                      activityBarDocked,
+                      activityBarPosition === 'bottom' && activityBarDockedEnd,
+                    ]}
+                  >
+                    {activityBarSlot}
+                  </div>
+                </ActivityRailDockContext.Provider>
+              )}
             <div
               data-slot="workbench-sidebar"
               x-class={[region, activityBarPosition !== 'side' && regionFill]}
