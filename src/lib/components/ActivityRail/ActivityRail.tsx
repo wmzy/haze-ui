@@ -1,16 +1,11 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
-import { Children, isValidElement, useContext } from 'react';
+import { Children, isValidElement } from 'react';
 
 import { css } from '@linaria/core';
 
 import { Badge } from '../Badge';
 import { Tooltip } from '../Tooltip';
-
-// Internal seam (not on the barrel): the orientation
-// context Workbench injects when the rail is docked
-// inside the sidebar column.
-import { ActivityRailDockContext } from './rail-dock-context';
 
 // ---------------------------------------------------------------------------
 // ActivityRail (root)
@@ -21,23 +16,13 @@ type ActivityRailProps = {
    *  bottom (vertical) or trailing edge (horizontal). */
   children: ReactNode;
   /** Track orientation: a vertical side rail (default) or a
-   *  horizontal strip. Workbench also injects the docked
-   *  context when the rail rides inside the sidebar column
-   *  (activityBarPosition top/bottom), so a plain
-   *  `<ActivityRail>` lays out horizontally there without the
-   *  consumer repeating the prop. */
+   *  horizontal strip. Also resolved automatically by
+   *  container width — any host that wraps the rail in a
+   *  container wider than the 48px vertical track (Workbench
+   *  names it rail-track) gets the horizontal layout as pure
+   *  CSS, no prop needed. */
   orientation?: 'vertical' | 'horizontal';
 } & Omit<ComponentPropsWithoutRef<'nav'>, 'children'>;
-
-/**
- * The rail's resolved orientation comes from the
- * surrounding ActivityRailDockContext (see
- * rail-dock-context.ts); Workbench injects
- * 'horizontal' when the rail is docked inside the
- * sidebar column, so a plain `<ActivityRail>` lays
- * out as a strip there without the consumer
- * repeating a prop.
- */
 
 /* 48px track = --haze-space-12; hairline separation from the adjacent
  * sidebar column follows the AppShell area convention. */
@@ -56,25 +41,31 @@ const rail = css`
   border-inline-end: 1px solid var(--haze-color-border);
 `;
 
-/* Horizontal strip: a 48px-tall toolbar along the sidebar
- * column's top or bottom edge. The hairline moves to the
- * block end (the edge facing the sidebar body), and the
- * active indicator flips to a top-edge bar (see the
- * descendant rule below). */
+/* Horizontal strip: a 48px-tall bar along the sidebar
+ * column's top or bottom edge, or the full-width mobile
+ * bar. Triggered by the QUERY CONTAINER the host wraps
+ * the rail in (Workbench names it rail-track): the
+ * vertical side column is exactly 48px wide, so any
+ * wider container — a docked strip, the mobile bar —
+ * switches the layout. The rules live inside @container
+ * so the class is always applied and the geometry is
+ * pure CSS, no breakpoint state in JavaScript. */
 const railHorizontal = css`
-  flex-direction: row;
-  width: 100%;
-  height: var(--haze-space-12);
-  padding-inline: var(--haze-space-1);
-  border-inline-end: none;
-  border-block-end: 1px solid var(--haze-color-border);
+  @container rail-track (min-width: 96px) {
+    flex-direction: row;
+    width: 100%;
+    height: var(--haze-space-12);
+    padding-inline: var(--haze-space-1);
+    border-inline-end: none;
+    border-block-end: 1px solid var(--haze-color-border);
 
-  & [data-slot='activity-rail-item-indicator'] {
-    inset-block: auto;
-    inset-block-start: calc(var(--haze-space-1) / -2);
-    inset-inline: 0;
-    width: auto;
-    height: calc(var(--haze-space-1) / 2);
+    & [data-slot='activity-rail-item-indicator'] {
+      inset-block: auto;
+      inset-block-start: calc(var(--haze-space-1) / -2);
+      inset-inline: 0;
+      width: auto;
+      height: calc(var(--haze-space-1) / 2);
+    }
   }
 `;
 
@@ -88,11 +79,14 @@ const endGroup = css`
   margin-block-start: auto;
 `;
 
-/* Trailing-edge end group for the horizontal strip. */
+/* Trailing-edge end group for the horizontal strip (same
+ * rail-track query container as railHorizontal). */
 const endGroupHorizontal = css`
-  flex-direction: row;
-  margin-block-start: 0;
-  margin-inline-start: auto;
+  @container rail-track (min-width: 96px) {
+    flex-direction: row;
+    margin-block-start: 0;
+    margin-inline-start: auto;
+  }
 `;
 
 export default function ActivityRail({
@@ -101,10 +95,6 @@ export default function ActivityRail({
   className,
   ...rest
 }: ActivityRailProps) {
-  // An explicit prop wins; otherwise the surrounding
-  // context (Workbench's dock) decides.
-  const contextOrientation = useContext(ActivityRailDockContext);
-  const resolvedOrientation = orientation ?? contextOrientation;
   const startItems: ReactNode[] = [];
   const endItems: ReactNode[] = [];
   Children.forEach(children, (child) => {
@@ -116,31 +106,22 @@ export default function ActivityRail({
   });
 
   return (
-    <ActivityRailDockContext.Provider value={resolvedOrientation}>
-      <nav
-        data-slot='activity-rail'
-        data-orientation={resolvedOrientation}
-        x-class={[
-          rail,
-          resolvedOrientation === 'horizontal' && railHorizontal,
-          className,
-        ]}
-        {...rest}
-      >
-        {startItems}
-        {endItems.length > 0 && (
-          <div
-            data-slot='activity-rail-end'
-            x-class={[
-              endGroup,
-              resolvedOrientation === 'horizontal' && endGroupHorizontal,
-            ]}
-          >
-            {endItems}
-          </div>
-        )}
-      </nav>
-    </ActivityRailDockContext.Provider>
+    <nav
+      data-slot='activity-rail'
+      data-orientation={orientation}
+      x-class={[rail, railHorizontal, className]}
+      {...rest}
+    >
+      {startItems}
+      {endItems.length > 0 && (
+        <div
+          data-slot='activity-rail-end'
+          x-class={[endGroup, endGroupHorizontal]}
+        >
+          {endItems}
+        </div>
+      )}
+    </nav>
   );
 }
 
@@ -243,9 +224,6 @@ export function ActivityRailItem({
   onClick,
   ...rest
 }: ActivityRailItemProps) {
-  // Tooltips open away from the strip: beside a vertical
-  // rail, below a horizontal one.
-  const railOrientation = useContext(ActivityRailDockContext);
   const button = (
     <button
       type='button'
@@ -280,10 +258,7 @@ export function ActivityRailItem({
   /* Physical placement follows the repo floating convention (Sidebar's
    * collapsed items use the same side; RTL apps mirror the rail). */
   return (
-    <Tooltip
-      content={label}
-      position={railOrientation === 'horizontal' ? 'bottom' : 'right'}
-    >
+    <Tooltip content={label} position='right'>
       {button}
     </Tooltip>
   );

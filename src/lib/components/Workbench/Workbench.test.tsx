@@ -314,28 +314,34 @@ describe('Workbench', () => {
 
   it('docks the activity rail inside the sidebar column on demand', () => {
     // Default: the rail is its own column, a sibling of the
-    // sidebar panel inside the resizable body, and stays
-    // vertical.
+    // sidebar panel inside the resizable body. The track is
+    // exactly 48px wide, so the rail-track container query
+    // keeps the vertical layout.
     const { unmount } = render(<PositionFixture position="side" />);
     const sideBar = slot('workbench-activity-bar');
     expect(sideBar.parentElement).not.toBe(panelEl('sidebar'));
     expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
-    expect(querySlot('activity-rail')).toHaveAttribute(
-      'data-orientation',
-      'vertical'
+    // No explicit orientation prop: no data-orientation
+    // (the horizontal form is a container query, invisible
+    // to jsdom's non-layout engine).
+    expect(querySlot('activity-rail')).not.toHaveAttribute(
+      'data-orientation'
     );
     unmount();
 
     // Top: the rail rides INSIDE the sidebar panel, before the
-    // scroll region — and lays out as a horizontal strip.
+    // scroll region. The docked container is the sidebar's full
+    // width, which satisfies the rail-track container query and
+    // lays the rail out as a horizontal strip (the
+    // railHorizontal rules are always applied; the @container
+    // gate is what jsdom cannot see).
     render(<PositionFixture position="top" />);
     const topBar = slot('workbench-activity-bar');
     expect(topBar.parentElement).toBe(panelEl('sidebar'));
     expect(topBar.nextElementSibling).toBe(slot('workbench-sidebar'));
     expect(slot('workbench-sidebar')).toHaveTextContent('Files');
-    expect(querySlot('activity-rail')).toHaveAttribute(
-      'data-orientation',
-      'horizontal'
+    expect(querySlot('activity-rail')?.className).toContain(
+      'railHorizontal'
     );
     cleanup();
 
@@ -347,55 +353,9 @@ describe('Workbench', () => {
     expect(bottomBar.parentElement).toBe(panelEl('sidebar'));
     expect(bottomBar.nextElementSibling).toBe(slot('workbench-sidebar'));
     expect(bottomBar.className).toContain('activityBarDockedEnd');
-    expect(querySlot('activity-rail')).toHaveAttribute(
-      'data-orientation',
-      'horizontal'
+    expect(querySlot('activity-rail')?.className).toContain(
+      'railHorizontal'
     );
-  });
-
-  it('lays the rail out as a top bar and the sidebar as a separate layer on mobile', () => {
-    // jsdom has no matchMedia — stub the one query
-    // Workbench subscribes to, matching true (mobile).
-    const entries = new Map<string, boolean>([
-      ['(max-width: 768px)', true],
-    ]);
-    window.matchMedia = (query: string) => ({
-      matches: entries.get(query) ?? false,
-      media: query,
-      onchange: null,
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-      addListener: () => undefined,
-      removeListener: () => undefined,
-      dispatchEvent: () => false,
-    });
-    try {
-      // position="side" is overridden: the mobile form
-      // pins the rail to the top grid row regardless.
-      render(<PositionFixture position="side" />);
-      const rail = slot('workbench-activity-bar');
-      // Own layer above the editor: parented to the
-      // workbench root, not the resizable body or the
-      // sidebar panel.
-      expect(rail.parentElement).toBe(rootEl());
-      expect(rail.nextElementSibling).toBe(
-        document.querySelector("[data-slot='resizable-group']")
-      );
-      // Horizontal strip, and no rail inside the sidebar
-      // overlay (the sidebar is its own layer).
-      expect(querySlot('activity-rail')).toHaveAttribute(
-        'data-orientation',
-        'horizontal'
-      );
-      expect(
-        panelEl('sidebar').querySelector("[data-slot='workbench-activity-bar']")
-      ).toBeNull();
-      // The sidebar overlay is closed by default (a
-      // separate layer, not a side-by-side column).
-      expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
-    } finally {
-      Reflect.deleteProperty(window, 'matchMedia');
-    }
   });
 
   it('renders one scrim per open overlay region and dismisses the auxiliary bar', () => {

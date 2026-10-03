@@ -5,11 +5,6 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
-// Internal seam (not on the barrel): the dock context the
-// rail reads to lay out horizontally when it rides inside
-// the sidebar column.
-import { ActivityRailDockContext } from '../ActivityRail/rail-dock-context';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 type WorkbenchProps = {
   /** Narrow icon rail column on the leading edge (ActivityRail is the intended content). */
@@ -78,19 +73,6 @@ const workbench = css`
     'body'
     'status'
     'tabs';
-
-  /* Mobile form: the activity rail leaves the flex row and
-   * becomes its own full-width bar ABOVE the editor — the
-   * sidebar is a separate layer (a full-screen slide-out
-   * that starts hidden), not a side-by-side column. */
-  @media (max-width: 768px) {
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
-    grid-template-areas:
-      'activity'
-      'body'
-      'status'
-      'tabs';
-  }
   /* The shell owns scroll containment: only regions scroll, never the
    * shell (the height itself is the inline 100dvh below). Absent slots
    * leave their auto grid track empty, so it collapses to zero. */
@@ -98,45 +80,58 @@ const workbench = css`
   overflow: hidden;
 `;
 
-/* The mobile activity bar: a full-width horizontal strip
- * pinned to the top grid row (see the workbench grid's
- * 'activity' area). The rail inside lays out horizontally
- * through the dock context. */
-const activityBarMobile = css`
-  grid-area: activity;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  border-block-end: 1px solid var(--haze-color-border);
-`;
-
 const body = css`
   grid-area: body;
+
+  /* Mobile form: the row becomes a column, so the
+   * activity bar (the side column's own DOM, kept in
+   * place — see activityBar) stretches to a full-width
+   * strip above the editor. The sidebar and auxiliary
+   * panels are position:fixed overlays below the
+   * breakpoint, so they leave the flow and the main
+   * panel is the only in-flow item left to fill. */
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    & > [data-panel-id='main'] {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+  }
 `;
 
-/* Fixed narrow column, sized by its content — the ActivityRail track
- * brings its own 48px width and hairline. */
+/* Fixed narrow column, sized by its content — the ActivityRail
+ * track brings its own 48px width and hairline. It doubles as
+ * the rail-track QUERY CONTAINER: ActivityRail lays itself out
+ * horizontally once the track is wider than the vertical
+ * column (see ActivityRail's @container rules), which is what
+ * turns this column into a full-width bar under the mobile
+ * breakpoint (the body becomes a column — see body). The
+ * explicit flex-basis keeps inline-size containment from
+ * collapsing the track to zero. */
 const activityBar = css`
-  flex: 0 0 auto;
+  flex: 0 0 var(--haze-space-12);
   box-sizing: border-box;
   overflow: hidden;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
+  container-type: inline-size;
+  container-name: rail-track;
 `;
 
 /* The rail docked INSIDE the sidebar column (activityBarPosition
  * top/bottom): a flex item of the sidebar panel's column, riding
- * the sidebar as one unit. Unlike the side column it must NOT
- * hide under the mobile breakpoint — it travels with the sidebar
- * overlay. Its height is content-driven: the flex basis is auto,
- * so the rail's own height:100% resolves to auto inside this
- * auto-height box and the track sizes to its items. */
+ * the sidebar as one unit. Its width is the sidebar's full
+ * content box, which makes it a rail-track query container wide
+ * enough for ActivityRail's horizontal layout. Its height is
+ * content-driven: the flex basis is auto, so the rail's own
+ * height:100% resolves to auto inside this auto-height box and
+ * the track sizes to its items. */
 const activityBarDocked = css`
   flex: 0 0 auto;
   box-sizing: border-box;
   overflow: hidden;
+  width: 100%;
+  container-type: inline-size;
+  container-name: rail-track;
 `;
 
 /* Bottom-docked rail: pushed after the scroll region in the
@@ -336,13 +331,6 @@ export default function Workbench({
   const [activityBarPosition] = useControl<
     'side' | 'top' | 'bottom'
   >(activityBarPositionControl, 'side');
-  // The mobile form is a distinct layout, not a CSS tweak:
-  // the rail becomes a full-width bar above the editor and
-  // the sidebar a separate (hidden-by-default) layer, so
-  // the dock position no longer applies below the
-  // breakpoint. useMediaQuery is SSR-safe (false until
-  // hydration, one extra render to converge).
-  const mobile = useMediaQuery('(max-width: 768px)');
   const [
     auxiliaryBarCollapsed,
     setAuxiliaryBarCollapsed,
@@ -379,26 +367,12 @@ export default function Workbench({
       style={{ height: '100dvh', ...style }}
       {...rest}
     >
-      {/* Mobile: the rail is its own full-width bar
-          above the editor (the 'activity' grid row). It
-          always lays out horizontally; the dock position
-          does not apply below the breakpoint. */}
-      {mobile && activityBarSlot != null && (
-        <ActivityRailDockContext.Provider value='horizontal'>
-          <div
-            data-slot="workbench-activity-bar"
-            x-class={[activityBarMobile]}
-          >
-            {activityBarSlot}
-          </div>
-        </ActivityRailDockContext.Provider>
-      )}
       <ResizableGroup
         direction="horizontal"
         className={body}
         onResizeCommit={commitHorizontal}
       >
-        {!mobile && activityBarSlot != null && activityBarPosition === 'side' && (
+        {activityBarSlot != null && activityBarPosition === 'side' && (
           <div data-slot="workbench-activity-bar" x-class={[activityBar]}>
             {activityBarSlot}
           </div>
@@ -423,21 +397,17 @@ export default function Workbench({
               } as CSSProperties
             }
           >
-            {!mobile &&
-              activityBarSlot != null &&
-              activityBarPosition !== 'side' && (
-                <ActivityRailDockContext.Provider value='horizontal'>
-                  <div
-                    data-slot="workbench-activity-bar"
-                    x-class={[
-                      activityBarDocked,
-                      activityBarPosition === 'bottom' && activityBarDockedEnd,
-                    ]}
-                  >
-                    {activityBarSlot}
-                  </div>
-                </ActivityRailDockContext.Provider>
-              )}
+            {activityBarSlot != null && activityBarPosition !== 'side' && (
+              <div
+                data-slot="workbench-activity-bar"
+                x-class={[
+                  activityBarDocked,
+                  activityBarPosition === 'bottom' && activityBarDockedEnd,
+                ]}
+              >
+                {activityBarSlot}
+              </div>
+            )}
             <div
               data-slot="workbench-sidebar"
               x-class={[region, activityBarPosition !== 'side' && regionFill]}
