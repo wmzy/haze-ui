@@ -99,7 +99,7 @@ export const zh: DeepPartial<SiteStrings> = {
     ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',
     Sidebar: '应用侧栏外壳，折叠状态可控（aside 与轨道宽度令牌）。',
     ActivityRail:
-      'VSCode 式竖向图标轨道（nav）：44px 图标项带 label/badge/激活指示条，悬停提示，slot="end" 沉底。',
+      'VSCode 式竖向图标轨道（nav）：44px 图标项带 label/badge/激活指示条，悬停提示，slot="end" 沉底。orientation="horizontal" 布局为横向条——rail 叠入侧栏顶部/底部时 Workbench 自动切换。',
     StatusBar:
       'VSCode 式状态条（footer）：left/right 分组、可点 StatusItem，priority 项在移动断点保留。',
     TabBar:

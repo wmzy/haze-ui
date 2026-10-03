@@ -1,20 +1,43 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
-import { Children, isValidElement } from 'react';
+import { Children, isValidElement, useContext } from 'react';
 
 import { css } from '@linaria/core';
 
 import { Badge } from '../Badge';
 import { Tooltip } from '../Tooltip';
 
+// Internal seam (not on the barrel): the orientation
+// context Workbench injects when the rail is docked
+// inside the sidebar column.
+import { ActivityRailDockContext } from './rail-dock-context';
+
 // ---------------------------------------------------------------------------
 // ActivityRail (root)
 // ---------------------------------------------------------------------------
 
 type ActivityRailProps = {
-  /** ActivityRailItem list; items with `slot="end"` sink to the rail bottom. */
+  /** ActivityRailItem list; items with `slot="end"` sink to the rail
+   *  bottom (vertical) or trailing edge (horizontal). */
   children: ReactNode;
+  /** Track orientation: a vertical side rail (default) or a
+   *  horizontal strip. Workbench also injects the docked
+   *  context when the rail rides inside the sidebar column
+   *  (activityBarPosition top/bottom), so a plain
+   *  `<ActivityRail>` lays out horizontally there without the
+   *  consumer repeating the prop. */
+  orientation?: 'vertical' | 'horizontal';
 } & Omit<ComponentPropsWithoutRef<'nav'>, 'children'>;
+
+/**
+ * The rail's resolved orientation comes from the
+ * surrounding ActivityRailDockContext (see
+ * rail-dock-context.ts); Workbench injects
+ * 'horizontal' when the rail is docked inside the
+ * sidebar column, so a plain `<ActivityRail>` lays
+ * out as a strip there without the consumer
+ * repeating a prop.
+ */
 
 /* 48px track = --haze-space-12; hairline separation from the adjacent
  * sidebar column follows the AppShell area convention. */
@@ -33,6 +56,28 @@ const rail = css`
   border-inline-end: 1px solid var(--haze-color-border);
 `;
 
+/* Horizontal strip: a 48px-tall toolbar along the sidebar
+ * column's top or bottom edge. The hairline moves to the
+ * block end (the edge facing the sidebar body), and the
+ * active indicator flips to a top-edge bar (see the
+ * descendant rule below). */
+const railHorizontal = css`
+  flex-direction: row;
+  width: 100%;
+  height: var(--haze-space-12);
+  padding-inline: var(--haze-space-1);
+  border-inline-end: none;
+  border-block-end: 1px solid var(--haze-color-border);
+
+  & [data-slot='activity-rail-item-indicator'] {
+    inset-block: auto;
+    inset-block-start: calc(var(--haze-space-1) / -2);
+    inset-inline: 0;
+    width: auto;
+    height: calc(var(--haze-space-1) / 2);
+  }
+`;
+
 /* Bottom-aligned end group: absorbs all free track height above itself. */
 const endGroup = css`
   box-sizing: border-box;
@@ -43,11 +88,23 @@ const endGroup = css`
   margin-block-start: auto;
 `;
 
+/* Trailing-edge end group for the horizontal strip. */
+const endGroupHorizontal = css`
+  flex-direction: row;
+  margin-block-start: 0;
+  margin-inline-start: auto;
+`;
+
 export default function ActivityRail({
+  orientation,
   children,
   className,
   ...rest
 }: ActivityRailProps) {
+  // An explicit prop wins; otherwise the surrounding
+  // context (Workbench's dock) decides.
+  const contextOrientation = useContext(ActivityRailDockContext);
+  const resolvedOrientation = orientation ?? contextOrientation;
   const startItems: ReactNode[] = [];
   const endItems: ReactNode[] = [];
   Children.forEach(children, (child) => {
@@ -59,14 +116,31 @@ export default function ActivityRail({
   });
 
   return (
-    <nav data-slot='activity-rail' x-class={[rail, className]} {...rest}>
-      {startItems}
-      {endItems.length > 0 && (
-        <div data-slot='activity-rail-end' x-class={endGroup}>
-          {endItems}
-        </div>
-      )}
-    </nav>
+    <ActivityRailDockContext.Provider value={resolvedOrientation}>
+      <nav
+        data-slot='activity-rail'
+        data-orientation={resolvedOrientation}
+        x-class={[
+          rail,
+          resolvedOrientation === 'horizontal' && railHorizontal,
+          className,
+        ]}
+        {...rest}
+      >
+        {startItems}
+        {endItems.length > 0 && (
+          <div
+            data-slot='activity-rail-end'
+            x-class={[
+              endGroup,
+              resolvedOrientation === 'horizontal' && endGroupHorizontal,
+            ]}
+          >
+            {endItems}
+          </div>
+        )}
+      </nav>
+    </ActivityRailDockContext.Provider>
   );
 }
 
@@ -169,6 +243,9 @@ export function ActivityRailItem({
   onClick,
   ...rest
 }: ActivityRailItemProps) {
+  // Tooltips open away from the strip: beside a vertical
+  // rail, below a horizontal one.
+  const railOrientation = useContext(ActivityRailDockContext);
   const button = (
     <button
       type='button'
@@ -203,7 +280,10 @@ export function ActivityRailItem({
   /* Physical placement follows the repo floating convention (Sidebar's
    * collapsed items use the same side; RTL apps mirror the rail). */
   return (
-    <Tooltip content={label} position='right'>
+    <Tooltip
+      content={label}
+      position={railOrientation === 'horizontal' ? 'bottom' : 'right'}
+    >
       {button}
     </Tooltip>
   );

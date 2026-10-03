@@ -63,7 +63,7 @@ const COMPONENT_BLURBS = {
   Sidebar:
     'App sidebar shell with controllable collapsed state (aside + rail width tokens).',
   ActivityRail:
-    'VSCode-style vertical icon rail (nav): 44px items with icon/label/badge and active indicator, tooltip labels, slot="end" bottom pinning.',
+    'VSCode-style vertical icon rail (nav): 44px items with icon/label/badge and active indicator, tooltip labels, slot="end" bottom pinning. orientation="horizontal" lays it out as a strip — Workbench does this automatically when the rail is docked inside the sidebar column.',
   StatusBar:
     'VSCode-style status strip (footer): left/right groups, selectable StatusItems, priority items survive the mobile breakpoint.',
   TabBar:

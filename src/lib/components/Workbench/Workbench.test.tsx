@@ -4,6 +4,8 @@ import { fireEvent, render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import { ActivityRail, ActivityRailItem } from '../ActivityRail';
+
 import { Workbench } from './index';
 
 function FullFixture() {
@@ -297,7 +299,12 @@ describe('Workbench', () => {
     function PositionFixture({ position }: { position: 'side' | 'top' | 'bottom' }) {
       return (
         <Workbench
-          activityBar={<span>Rail</span>}
+          activityBar={
+            <ActivityRail>
+              <ActivityRailItem icon={<span>◉</span>} label='One' />
+              <ActivityRailItem icon={<span>◉</span>} label='Two' />
+            </ActivityRail>
+          }
           sidebar={<p>Files</p>}
           activityBarPosition={position}
         >
@@ -306,20 +313,29 @@ describe('Workbench', () => {
       );
     }
     // Default: the rail is its own column, a sibling of the
-    // sidebar panel inside the resizable body.
+    // sidebar panel inside the resizable body, and stays
+    // vertical.
     const { unmount } = render(<PositionFixture position="side" />);
     const sideBar = slot('workbench-activity-bar');
     expect(sideBar.parentElement).not.toBe(panelEl('sidebar'));
     expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+    expect(querySlot('activity-rail')).toHaveAttribute(
+      'data-orientation',
+      'vertical'
+    );
     unmount();
 
     // Top: the rail rides INSIDE the sidebar panel, before the
-    // scroll region.
+    // scroll region — and lays out as a horizontal strip.
     render(<PositionFixture position="top" />);
     const topBar = slot('workbench-activity-bar');
     expect(topBar.parentElement).toBe(panelEl('sidebar'));
     expect(topBar.nextElementSibling).toBe(slot('workbench-sidebar'));
     expect(slot('workbench-sidebar')).toHaveTextContent('Files');
+    expect(querySlot('activity-rail')).toHaveAttribute(
+      'data-orientation',
+      'horizontal'
+    );
     cleanup();
 
     // Bottom: the rail rides inside the sidebar panel too; its
@@ -330,6 +346,10 @@ describe('Workbench', () => {
     expect(bottomBar.parentElement).toBe(panelEl('sidebar'));
     expect(bottomBar.nextElementSibling).toBe(slot('workbench-sidebar'));
     expect(bottomBar.className).toContain('activityBarDockedEnd');
+    expect(querySlot('activity-rail')).toHaveAttribute(
+      'data-orientation',
+      'horizontal'
+    );
   });
 
   it('renders one scrim per open overlay region and dismisses the auxiliary bar', () => {

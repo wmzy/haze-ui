@@ -5,6 +5,10 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
+// Internal seam (not on the barrel): the dock context the
+// rail reads to lay out horizontally when it rides inside
+// the sidebar column.
+import { ActivityRailDockContext } from '../ActivityRail/rail-dock-context';
 
 type WorkbenchProps = {
   /** Narrow icon rail column on the leading edge (ActivityRail is the intended content). */
@@ -373,15 +377,17 @@ export default function Workbench({
             }
           >
             {activityBarSlot != null && activityBarPosition !== 'side' && (
-              <div
-                data-slot="workbench-activity-bar"
-                x-class={[
-                  activityBarDocked,
-                  activityBarPosition === 'bottom' && activityBarDockedEnd,
-                ]}
-              >
-                {activityBarSlot}
-              </div>
+              <ActivityRailDockContext.Provider value='horizontal'>
+                <div
+                  data-slot="workbench-activity-bar"
+                  x-class={[
+                    activityBarDocked,
+                    activityBarPosition === 'bottom' && activityBarDockedEnd,
+                  ]}
+                >
+                  {activityBarSlot}
+                </div>
+              </ActivityRailDockContext.Provider>
             )}
             <div
               data-slot="workbench-sidebar"
