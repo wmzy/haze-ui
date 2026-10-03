@@ -302,6 +302,41 @@ describe('Workbench', () => {
     expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
   });
 
+  it('dismisses the mobile sidebar with the Escape key', async () => {
+    const user = userEvent.setup();
+    function EscapeFixture() {
+      const [open, setOpen, openCtrl] = useControl(undefined, false);
+      return (
+        <>
+          <Workbench sidebar={<p>Files</p>} mobileSidebarOpen={openCtrl}>
+            <h1>Editor</h1>
+          </Workbench>
+          <output data-testid="open">{String(open)}</output>
+          <button type="button" onClick={() => setOpen(true)}>
+            External open
+          </button>
+        </>
+      );
+    }
+    render(<EscapeFixture />);
+    await user.click(screen.getByRole('button', { name: 'External open' }));
+    expect(panelEl('sidebar')).toHaveAttribute('data-open');
+
+    // Escape is the shell's built-in dismissal path: the
+    // full-width slide-out is opaque and edge-to-edge, so
+    // it covers the scrim entirely — the dim layer has no
+    // clickable surface — and the keyboard carries the
+    // dismissal instead.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByTestId('open').textContent).toBe('false');
+    expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+
+    // While closed the listener is unmounted; Escape is
+    // a no-op, not an error.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByTestId('open').textContent).toBe('false');
+  });
+
   it('dismisses the auxiliary bar through its scrim in uncontrolled mode', () => {
     render(
       <Workbench auxiliaryBar={<p>Outline</p>}>

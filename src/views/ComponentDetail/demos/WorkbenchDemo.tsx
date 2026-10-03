@@ -332,6 +332,7 @@ export default function WorkbenchDemo() {
                   label='Sidebar'
                   active={mobileSidebarOpen}
                   onSelect={() => setMobileSidebarOpen((v) => !v)}
+                  onReselect={() => setMobileSidebarOpen((v) => !v)}
                 />
                 <TabBarItem
                   icon={<Files size={22} />}

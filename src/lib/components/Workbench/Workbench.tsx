@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
+import { useEffect } from 'react';
 import { useControl } from 'react-use-control';
 
 import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
@@ -345,6 +346,23 @@ export default function Workbench({
   // the consumer's button, not by default.
   const [mobileSidebarOpen, setMobileSidebarOpen, mobileSidebarOpenCtrl] =
     useControl(mobileSidebarOpenControl, false);
+  // Escape dismisses the mobile sidebar overlay. The
+  // full-width slide-out is opaque and edge-to-edge, so
+  // it covers the scrim entirely — the dim layer has no
+  // clickable surface of its own — and the keyboard is
+  // the shell's built-in dismissal path.
+  useEffect(() => {
+    if (!mobileSidebarOpen) {
+      return undefined;
+    }
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileSidebarOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeydown);
+    return () => document.removeEventListener('keydown', onKeydown);
+  }, [mobileSidebarOpen, setMobileSidebarOpen]);
   // Layout choice for the rail: its own column or docked inside
   // the sidebar column.
   const [activityBarPosition] = useControl<
