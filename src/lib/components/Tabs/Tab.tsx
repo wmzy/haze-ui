@@ -63,6 +63,7 @@ type TabProps = {
 };
 
 const base = css`
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: var(--haze-space-2);
@@ -87,7 +88,12 @@ const base = css`
    * comfortably wide while its siblings compress. max-width
    * keeps one tab from hogging the strip; overflow hidden
    * contains a compressed label inside its box (the ellipsis
-   * itself rides on the consumer's label span). */
+   * itself rides on the consumer's label span).
+   *
+   * border-box is load-bearing here: the min-width floors
+   * (120/64px) must bound the BOX, or a content-box tab's
+   * floor becomes min + padding and the tab overflows a
+   * wrapper compressed below that — overlapping its neighbor. */
   flex: 0 1 auto;
   min-width: calc(var(--haze-space-8) * 2);
   max-width: calc(var(--haze-space-16) * 4);

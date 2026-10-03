@@ -1,6 +1,21 @@
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEventHandler, ReactNode } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEventHandler,
+  ReactNode,
+  RefObject,
+} from 'react';
 
-import { Children, useEffect, useRef, useState } from 'react';
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { arrayMove, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { css } from '@linaria/core';
@@ -9,6 +24,7 @@ import { SortableRegion } from '../../utils/sortable';
 import { sortableItemStyle } from '../../utils/sortable-shared';
 
 import { edgeScrollDelta } from './edge-scroll';
+import { collectTabMetas } from './tab-metas';
 import TabList from './TabList';
 import { useTabsContext } from './TabsContext';
 
@@ -56,16 +72,21 @@ type SortableTabListProps = {
 };
 
 /** The sortable node around one tab — the element that carries
- * useSortable's ref, transform and pointer activator. */
+ * useSortable's ref, transform and pointer activator.
+ *
+ * min-width mirrors the Tab's own compression floor (64px,
+ * 120px for the active tab — see SortableTabItem below, which
+ * knows the wrapped tab's value): a wrapper that could shrink
+ * below its tab's floor would let the strip squeeze the WRAPPER
+ * while the tab inside keeps its floor and spills out, overlapping
+ * the neighbor. Matching floors on both layers keep compression
+ * synchronized — the wrapper and its tab stop at the same width. */
 const sortableTab = css`
   display: flex;
   position: relative;
-  /* Flex items default to min-width:auto — the content's
-   * own floor — which would pin every tab at its full label
-   * width and defeat the strip's compression. 0 lets the
-   * wrapper shrink so the Tab's own min-width (64px, 120px
-   * active) becomes the real floor. */
-  min-width: 0;
+  flex: 0 1 auto;
+  min-width: calc(var(--haze-space-8) * 2);
+  max-width: calc(var(--haze-space-16) * 4);
   /* Whole-tab drag affordance: PointerSensor's 8px distance constraint
    * keeps plain clicks (selection) from ever starting a drag. */
   cursor: grab;
@@ -76,10 +97,70 @@ const sortableTab = css`
   }
 `;
 
+/* The active tab's raised floor — applied by SortableTabItem,
+ * which reads the wrapped tab's value from the Tabs context. */
+const sortableTabActive = css`
+  min-width: calc(var(--haze-space-10) * 3);
+`;
+
 /** The dragged tab stacks above its siblings while it flies. */
 const sortableTabDragging = css`
   z-index: 1;
 `;
+
+/** Handle to the strip's hidden scroll viewport, shared with the
+ * sortable wrappers so a drag can be clamped to the content. */
+const TabStripRefContext = createContext<
+  RefObject<HTMLDivElement | null> | null
+>(null);
+
+/**
+ * Clamp a drag transform to the strip: horizontal only, and the
+ * tab may not leave the scrollable content — not past its left
+ * edge, not past the right end (including the hidden overflow
+ * the edge auto-scroll reveals).
+ *
+ * The clamp lives in CONTENT coordinates: the wrapper's
+ * offsetLeft/offsetWidth (against the strip, which carries
+ * position:relative) are immune to the live transform —
+ * getBoundingClientRect would be, because at render time the
+ * rect still carries the PREVIOUS frame's transform, polluting
+ * the rest-position math; and strip.scrollWidth cannot bound
+ * the travel either, because the drag's own transform inflates
+ * it mid-flight (a feedback loop that let the tab fly). The
+ * content end is therefore recovered from the wrappers'
+ * offsets, which no transform can touch. Content coordinates
+ * also make the constraint independent of scrollLeft: edge
+ * auto-scroll may reveal the hidden end mid-drag, and the
+ * tab's allowed travel simply extends to the content's end.
+ * Skipped when the strip has no measurable layout (jsdom),
+ * leaving the transform untouched.
+ *
+ * The strip must be the wrapper's offsetParent — hence
+ * position:relative on the tab-list (TabList's base).
+ */
+function clampToStrip(
+  transform: { x?: number; y?: number },
+  strip: HTMLDivElement,
+  node: HTMLElement
+): { x: number; y: number; scaleX: number; scaleY: number } | null {
+  if (node.offsetParent !== strip) return null;
+  let contentEnd = 0;
+  for (const child of Array.from(strip.children)) {
+    const box = child as HTMLElement;
+    contentEnd = Math.max(contentEnd, box.offsetLeft + box.offsetWidth);
+  }
+  if (contentEnd <= 0) return null;
+  const restLeft = node.offsetLeft;
+  const minX = -restLeft;
+  const maxX = contentEnd - node.offsetWidth - restLeft;
+  return {
+    x: Math.max(minX, Math.min(transform.x ?? 0, maxX)),
+    y: 0,
+    scaleX: 1,
+    scaleY: 1,
+  };
+}
 
 type SortableTabItemProps = {
   id: string | number;
@@ -96,6 +177,34 @@ function SortableTabItem({ id, children }: SortableTabItemProps) {
   const { value, setValue } = useTabsContext();
   const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const selectionAtLift = useRef<string | null>(null);
+  const stripRef = useContext(TabStripRefContext);
+  // Own element ref, merged with dnd-kit's node ref so the
+  // drag clamp can measure the wrapper against the strip.
+  const selfRef = useRef<HTMLSpanElement>(null);
+  const setRefs = useCallback(
+    (node: HTMLSpanElement | null) => {
+      selfRef.current = node;
+      setNodeRef(node);
+    },
+    [setNodeRef]
+  );
+  // The wrapped tab's value decides this wrapper's compression
+  // floor (the active tab's is raised — see sortableTabActive).
+  const wrappedValue = isValidElement<{ value?: string }>(children)
+    ? children.props.value
+    : undefined;
+  const isActive = wrappedValue !== undefined && value === wrappedValue;
+
+  // Horizontal-only drag, clamped to the scrollable content:
+  // the tab stops at the strip's left edge and at the right
+  // end of the content (hidden overflow included — the edge
+  // auto-scroll reveals it, the clamp follows it).
+  const clampedTransform = useMemo(() => {
+    const strip = stripRef?.current;
+    const node = selfRef.current;
+    if (!transform || !strip || !node) return transform;
+    return clampToStrip(transform, strip, node) ?? transform;
+  }, [transform, stripRef]);
 
   useEffect(() => {
     if (isDragging) {
@@ -132,12 +241,16 @@ function SortableTabItem({ id, children }: SortableTabItemProps) {
 
   return (
     <span
-      ref={setNodeRef}
+      ref={setRefs}
       data-slot='sortable-tab'
-      style={sortableItemStyle(transform, transition)}
+      style={sortableItemStyle(clampedTransform, transition)}
       onPointerDown={onPointerDown}
       onKeyDownCapture={handleKeyDownCapture}
-      x-class={[sortableTab, isDragging && sortableTabDragging]}
+      x-class={[
+        sortableTab,
+        isActive && sortableTabActive,
+        isDragging && sortableTabDragging,
+      ]}
     >
       {children}
     </span>
@@ -154,11 +267,21 @@ export default function SortableTabList({
   const items = Children.toArray(children);
   const ids = items.map((_, index) => index);
 
+  // The sortable wrappers sit between the tablist and its <Tab>
+  // children, so TabList's own menu collector cannot see through
+  // them — gather the metas here (over the unwrapped items) and
+  // hand them down, restoring the ⋯ overflow menu this variant
+  // would otherwise lose.
+  const tabMetas = useMemo(() => collectTabMetas(items), [items]);
+
   // Edge auto-scroll wiring: the root ref locates the hidden scroll
   // viewport ([data-slot="tab-list"]) once a drag lifts, the pointer
   // position is tracked in a ref (no re-render per move), and a rAF
-  // loop applies the scroll while the drag is airborne.
-  const rootRef = useRef<HTMLDivElement>(null);
+  // loop applies the scroll while the drag is airborne. The same
+  // ref backs the drag clamp (TabStripRefContext): the strip's
+  // scroll viewport itself, not the outer wrapper — the wrappers
+  // report the viewport as their offsetParent.
+  const listRef = useRef<HTMLDivElement>(null);
   const pointerX = useRef(0);
   const [dragging, setDragging] = useState(false);
 
@@ -166,9 +289,7 @@ export default function SortableTabList({
     if (!dragging) return;
     let frame = 0;
     const tick = () => {
-      const strip = rootRef.current?.querySelector<HTMLElement>(
-        '[data-slot="tab-list"]'
-      );
+      const strip = listRef.current;
       if (strip) {
         const rect = strip.getBoundingClientRect();
         strip.scrollLeft += edgeScrollDelta(rect, pointerX.current);
@@ -187,27 +308,29 @@ export default function SortableTabList({
   }, [dragging]);
 
   return (
-    <div ref={rootRef}>
-      <SortableRegion
-        ids={ids}
-        strategy={horizontalListSortingStrategy}
-        onMove={(from, to) => onReorder?.(arrayMove(ids, from, to))}
-        onDragStart={() => setDragging(true)}
-        onDragEnd={() => setDragging(false)}
-      >
-        {/* The region renders no DOM of its own except dnd-kit's
-         * screen-reader live regions — keeping it around (not inside)
-         * the TabList keeps those role="status" nodes out of the
-         * tablist, whose owned children must be nothing but tabs (axe
-         * aria-required-children). */}
-        <TabList className={className}>
-          {items.map((child, index) => (
-            <SortableTabItem key={index} id={index}>
-              {child}
-            </SortableTabItem>
-          ))}
-        </TabList>
-      </SortableRegion>
+    <div>
+      <TabStripRefContext.Provider value={listRef}>
+        <SortableRegion
+          ids={ids}
+          strategy={horizontalListSortingStrategy}
+          onMove={(from, to) => onReorder?.(arrayMove(ids, from, to))}
+          onDragStart={() => setDragging(true)}
+          onDragEnd={() => setDragging(false)}
+        >
+          {/* The region renders no DOM of its own except dnd-kit's
+           * screen-reader live regions — keeping it around (not inside)
+           * the TabList keeps those role="status" nodes out of the
+           * tablist, whose owned children must be nothing but tabs (axe
+           * aria-required-children). */}
+          <TabList className={className} listRef={listRef} tabMetas={tabMetas}>
+            {items.map((child, index) => (
+              <SortableTabItem key={index} id={index}>
+                {child}
+              </SortableTabItem>
+            ))}
+          </TabList>
+        </SortableRegion>
+      </TabStripRefContext.Provider>
     </div>
   );
 }

@@ -1,9 +1,14 @@
-import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  RefObject,
+  ReactNode,
+} from 'react';
 import type { MenuDataItem } from '../Menu';
-import type { TabProps, TabStatus } from './Tab';
+
+import type { TabMeta } from './tab-metas';
 
 import { css } from '@linaria/core';
-import { Children, Fragment, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { getDirection } from '../../utils/direction';
@@ -11,18 +16,33 @@ import { getDirection } from '../../utils/direction';
 import { Menu } from '../Menu';
 import { useStrings } from '../LocaleProvider';
 
+
+import { collectTabMetas } from './tab-metas';
 import Tab, { TabStatusDot } from './Tab';
 
 import { useTabsContext } from './TabsContext';
 
 type TabListProps = {
   className?: string;
+  /** External handle on the strip's scroll viewport. SortableTabList
+   *  passes its own ref so the drag clamp can measure the exact
+   *  element the wrappers report as offsetParent. */
+  listRef?: RefObject<HTMLDivElement | null>;
   /** Overrides the ⋯ overflow trigger's aria-label (i18n hook). */
   overflowLabel?: string;
   children: ReactNode;
+  /**
+   * Pre-collected tab metadata for the overflow menu — the
+   * SortableTabList passes its own collection because its
+   * `<Tab>` children sit inside sortable wrappers the
+   * internal collector cannot see through. Omit to collect
+   * from `children` (the plain-strip path).
+   */
+  tabMetas?: TabMeta[];
 };
 
 const base = css`
+  position: relative;
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--haze-color-border);
@@ -37,7 +57,9 @@ const base = css`
    * (Tab min-widths) is the first resort; this hidden viewport
    * only carries tabs that compressed past their floor, and
    * SortableTabList auto-scrolls it while a tab drags near the
-   * ends. */
+   * ends. position:relative makes the strip the offsetParent
+   * of its sortable wrappers, so the drag clamp can measure
+   * content coordinates via offsetLeft/offsetWidth. */
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -114,37 +136,6 @@ const menuTabLabel = css`
 /** Enabled tabs in DOM order (roving tabindex keeps exactly one stop). */
 const TAB_SELECTOR = '[role="tab"]:not([disabled])';
 
-type TabMeta = {
-  value: string;
-  label: ReactNode;
-  icon?: ReactNode;
-  status?: TabStatus;
-};
-
-/**
- * `<Tab>` children in DOM order for the overflow menu: arrays and
- * Fragments flatten. Anything else between the tabs is left alone —
- * it stays reachable through the strip's scroll, it just is not
- * listed in the menu.
- */
-function collectTabMetas(children: ReactNode): TabMeta[] {
-  const metas: TabMeta[] = [];
-  const walk = (nodes: ReactNode) => {
-    Children.forEach(nodes, (node) => {
-      if (!isValidElement(node)) return;
-      if (node.type === Tab) {
-        const { value, icon, status, children: label } = node.props as TabProps;
-        metas.push({ value, icon, status, label });
-      } else if (node.type === Fragment) {
-        // React 19's isValidElement narrows to ReactElement<unknown>.
-        walk((node.props as { children?: ReactNode }).children);
-      }
-    });
-  };
-  walk(children);
-  return metas;
-}
-
 /**
  * The tab strip: a roving-tabindex list per the WAI-ARIA tabs pattern —
  * ←/→ move between tabs with wrapping and automatic activation
@@ -163,21 +154,27 @@ function collectTabMetas(children: ReactNode): TabMeta[] {
  */
 export default function TabList({
   className,
+  listRef: listRefProp,
   overflowLabel,
   children,
+  tabMetas,
 }: TabListProps) {
   const { value, setValue, classNames } = useTabsContext();
   const strings = useStrings('tabs');
-  const listRef = useRef<HTMLDivElement>(null);
+  const internalListRef = useRef<HTMLDivElement>(null);
+  const listRef = listRefProp ?? internalListRef;
   const [overflowing, setOverflowing] = useState(false);
 
   // Controlled handle on the ⋯ menu so a radio pick can close it.
   const [, setMenuOpen, menuOpenControl] = useControl(undefined, false);
 
-  const tabMetas = useMemo(() => collectTabMetas(children), [children]);
+  const tabMetasResolved = useMemo(
+    () => tabMetas ?? collectTabMetas(children),
+    [tabMetas, children]
+  );
 
   const overflowItems = useMemo<MenuDataItem[]>(() => {
-    if (tabMetas.length === 0) return [];
+    if (tabMetasResolved.length === 0) return [];
     return [
       {
         type: 'group',
@@ -190,7 +187,7 @@ export default function TabList({
           setValue(next);
           setMenuOpen(false);
         },
-        children: tabMetas.map((meta) => ({
+        children: tabMetasResolved.map((meta) => ({
           type: 'radio' as const,
           key: meta.value,
           value: meta.value,
@@ -206,7 +203,7 @@ export default function TabList({
         })),
       },
     ];
-  }, [tabMetas, value, setValue, setMenuOpen]);
+  }, [tabMetasResolved, value, setValue, setMenuOpen]);
 
   const measure = useCallback(() => {
     const el = listRef.current;
@@ -286,7 +283,7 @@ export default function TabList({
       >
         {children}
       </div>
-      {overflowing && tabMetas.length > 0 && (
+      {overflowing && tabMetasResolved.length > 0 && (
         <div data-slot='tab-overflow' x-class={overflowArea}>
           <Menu
             open={menuOpenControl}
