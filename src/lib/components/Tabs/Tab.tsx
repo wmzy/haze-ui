@@ -68,6 +68,8 @@ const base = css`
   align-items: center;
   gap: var(--haze-space-2);
   padding: var(--haze-space-2) var(--haze-space-4);
+  /* Anchors the closable tab's absolutely-positioned ×. */
+  position: relative;
   border: none;
   background: transparent;
   color: var(--haze-color-text-muted);
@@ -206,10 +208,27 @@ const labelContent = css`
   display: inline-flex;
   align-items: center;
   gap: var(--haze-space-2);
+  /* Compression priority: the label yields first. Without
+   * min-width: 0 the nowrap text's intrinsic width pins
+   * this flex item and the tab's overflow:hidden clips
+   * the right edge instead — hiding the × (and on a
+   * closable tab the × must never hide). */
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const closeGlyph = css`
   box-sizing: border-box;
+  /* Out of the flex flow, pinned to the tab's right edge:
+   * compression squeezes the label (and, at the floor, the
+   * icon) but the × keeps its full 24px — it is the one
+   * control a squeezed tab must never lose. The closable
+   * tab's right padding (closablePad) reserves room for it
+   * so it never overlaps the label. */
+  position: absolute;
+  top: 50%;
+  inset-inline-end: var(--haze-space-4);
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -227,6 +246,21 @@ const closeGlyph = css`
     background: var(--haze-color-bg-muted);
     color: var(--haze-color-text);
   }
+`;
+
+/**
+ * Right-padding reserve for a closable tab: the × rides
+ * outside the flex flow (see closeGlyph), so the tab's box
+ * must keep room for it even when the label and icon have
+ * compressed to nothing. At the 64px sibling floor the
+ * reserve consumes the whole content box — that is the
+ * intended end state: a squeezed tab shows its × and
+ * nothing else, Chrome-style.
+ */
+const closablePad = css`
+  padding-inline-end: calc(
+    var(--haze-space-4) + var(--haze-space-6) + var(--haze-space-2)
+  );
 `;
 
 /** Status word keys — resolved per status from the `tabs` locale pack. */
@@ -343,7 +377,7 @@ export default function Tab({
       aria-controls={`tabpanel-${value}`}
       tabIndex={isActive ? 0 : -1}
       data-haze-tab-value={value}
-      x-class={[base, isActive && active, className, classNames?.tab]}
+      x-class={[base, isActive && active, closablePad, className, classNames?.tab]}
       onKeyDown={handleTabKeyDown}
       // The × stops its own propagation, so everything else on the tab
       // (label, chrome padding) selects.
