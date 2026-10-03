@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T20:13:08.227Z",
+  "generatedAt": "2026-10-03T03:02:03.413Z",
   "distAvailable": true,
   "families": [
     {
@@ -14,8 +14,8 @@
     },
     {
       "family": "activity-rail",
-      "cssBytes": 1989,
-      "cssGzipBytes": 599
+      "cssBytes": 2001,
+      "cssGzipBytes": 602
     },
     {
       "family": "affix",
@@ -414,8 +414,8 @@
     },
     {
       "family": "resizable",
-      "cssBytes": 1585,
-      "cssGzipBytes": 592
+      "cssBytes": 2210,
+      "cssGzipBytes": 691
     },
     {
       "family": "result",
@@ -519,8 +519,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 3752,
-      "cssGzipBytes": 1015
+      "cssBytes": 3757,
+      "cssGzipBytes": 1016
     },
     {
       "family": "tag-group",
@@ -635,7 +635,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 325112,
-    "cssGzipBytes": 33419
+    "cssBytes": 325754,
+    "cssGzipBytes": 33510
   }
 }

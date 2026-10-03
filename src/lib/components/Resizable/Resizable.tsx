@@ -442,9 +442,13 @@ type ResizableHandleProps = {
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'className'>;
 
-/* 24px hit strip (WCAG 2.5.8) carrying a 4px visual bar: the bar paints
-   only the content box (background-clip) while the padded element keeps
-   the minimum target. Coarse pointers get 44px (WCAG 2.5.5). */
+/* 24px hit strip (WCAG 2.5.8) carrying a 2px hairline: the
+   bar paints only the content box (background-clip) while the
+   padded element keeps the minimum target; hover and focus
+   flood the whole strip with a subtle wash and center a
+   primary hairline, so the drag affordance reads clearly
+   without widening the grip. Coarse pointers get 44px
+   (WCAG 2.5.5). */
 const handleBase = css`
   flex: 0 0 auto;
   background: var(--haze-color-border);
@@ -452,8 +456,17 @@ const handleBase = css`
   transition: background var(--haze-duration-fast);
   touch-action: none;
 
-  &:hover {
-    background: var(--haze-color-primary);
+  &:hover,
+  &:focus-visible {
+    background:
+      linear-gradient(
+          to right,
+          transparent 0,
+          var(--haze-color-primary) 50%,
+          transparent 100%
+        )
+        center / 2px 100% no-repeat,
+      var(--haze-color-bg-subtle);
   }
 
   &:focus-visible {
@@ -469,6 +482,13 @@ const handleBase = css`
 
   @media (forced-colors: active) {
     background: CanvasText;
+    background-clip: content-box;
+
+    &:hover,
+    &:focus-visible {
+      background: Highlight;
+      background-clip: content-box;
+    }
 
     &:focus-visible {
       outline: 2px solid Highlight;
@@ -478,24 +498,39 @@ const handleBase = css`
 `;
 
 const handleHorizontal = css`
-  width: 4px;
+  width: 2px;
   height: 100%;
-  padding-inline: calc((var(--haze-space-6) - 4px) / 2);
+  padding-inline: calc((var(--haze-space-6) - 2px) / 2);
   cursor: col-resize;
 
   @media (pointer: coarse) {
-    padding-inline: calc((44px - 4px) / 2);
+    padding-inline: calc((44px - 2px) / 2);
   }
 `;
 
 const handleVertical = css`
-  height: 4px;
+  height: 2px;
   width: 100%;
-  padding-block: calc((var(--haze-space-6) - 4px) / 2);
+  padding-block: calc((var(--haze-space-6) - 2px) / 2);
   cursor: row-resize;
 
+  /* Horizontal grip: the centered hairline runs along the
+   * inline axis, so the gradient is vertical. */
+  &:hover,
+  &:focus-visible {
+    background:
+      linear-gradient(
+          to bottom,
+          transparent 0,
+          var(--haze-color-primary) 50%,
+          transparent 100%
+        )
+        center / 100% 2px no-repeat,
+      var(--haze-color-bg-subtle);
+  }
+
   @media (pointer: coarse) {
-    padding-block: calc((44px - 4px) / 2);
+    padding-block: calc((44px - 2px) / 2);
   }
 `;
 

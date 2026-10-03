@@ -26,6 +26,10 @@ const rail = css`
   gap: var(--haze-space-1);
   padding-block: var(--haze-space-1);
   width: var(--haze-space-12);
+  /* Stretched hosts (Workbench's activity-bar column) size the
+   * track to the full region height; in an auto-height parent
+   * 100% resolves to auto, so standalone use is unaffected. */
+  height: 100%;
   border-inline-end: 1px solid var(--haze-color-border);
 `;
 

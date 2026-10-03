@@ -213,12 +213,13 @@ export default function WorkbenchDemo() {
         <div
           className={row}
           style={{
-            height: 520,
             border: '1px solid var(--haze-color-border)',
             borderRadius: 'var(--haze-radius-lg)',
+            overflow: 'hidden',
           }}
         >
           <Workbench
+            style={{ height: 520 }}
             activityBar={
               <ActivityRail aria-label='Views'>
                 <ActivityRailItem

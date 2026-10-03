@@ -27,6 +27,12 @@ const base = css`
   gap: 0;
   border-bottom: 1px solid var(--haze-color-border);
   overflow-x: auto;
+  /* Tab boxes measure 1px taller than the border-adjusted
+   * content box (border-bottom: 1px). overflow-y: hidden is a
+   * legal pairing with overflow-x: auto (unlike visible, which
+   * computes to auto) and swallows that sliver — otherwise a
+   * phantom vertical scrollbar flickers in next to the strip. */
+  overflow-y: hidden;
 `;
 
 /* Inside the bar the strip takes every leftover inline slot; the ⋯
