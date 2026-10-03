@@ -225,24 +225,22 @@ describe('Workbench', () => {
     expect(basisOf('sidebar')).toBe('480px');
   });
 
-  it('supports two-way controlled sidebarCollapsed including the scrim', async () => {
+  it('supports two-way controlled sidebarCollapsed', async () => {
     const user = userEvent.setup();
     render(<SidebarControlledFixture />);
     expect(screen.getByTestId('collapsed').textContent).toBe('false');
     expect(panelEl('sidebar')).not.toHaveAttribute('data-collapsed');
 
-    // Scrim click (the mobile dismissal path) writes the shared control.
-    fireEvent.click(slot('workbench-scrim'));
+    // External driver flips it back; the panel follows the same control.
+    await user.click(screen.getByRole('button', { name: 'External flip' }));
     expect(screen.getByTestId('collapsed').textContent).toBe('true');
     expect(panelEl('sidebar')).toHaveAttribute('data-collapsed');
-
-    // External driver flips it back; the panel follows the same control.
     await user.click(screen.getByRole('button', { name: 'External flip' }));
     expect(screen.getByTestId('collapsed').textContent).toBe('false');
     expect(panelEl('sidebar')).not.toHaveAttribute('data-collapsed');
 
     // The handle's expander (Enter on a collapsed neighbour) also lands in
-    // the shared control — one state source, three drivers.
+    // the shared control — one state source, two drivers.
     await user.click(screen.getByRole('button', { name: 'External flip' }));
     expect(screen.getByTestId('collapsed').textContent).toBe('true');
     expect(panelEl('sidebar')).toHaveAttribute('data-collapsed');
@@ -251,15 +249,87 @@ describe('Workbench', () => {
     expect(panelEl('sidebar')).not.toHaveAttribute('data-collapsed');
   });
 
-  it('dismisses the sidebar through the scrim in uncontrolled mode', () => {
+  it('drives the mobile overlay through the scrim and an external control', async () => {
+    const user = userEvent.setup();
+    function MobileFixture() {
+      const [open, setOpen, openCtrl] = useControl(undefined, false);
+      return (
+        <>
+          <Workbench sidebar={<p>Files</p>} mobileSidebarOpen={openCtrl}>
+            <h1>Editor</h1>
+          </Workbench>
+          <output data-testid="open">{String(open)}</output>
+          <button type="button" onClick={() => setOpen(true)}>
+            External open
+          </button>
+        </>
+      );
+    }
+    render(<MobileFixture />);
+    // Starts hidden: no data-open on the panel, no dim layer.
+    expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+    expect(slot('workbench-scrim')).not.toHaveAttribute('data-open');
+
+    // External driver opens the overlay; the scrim follows the
+    // same control.
+    await user.click(screen.getByRole('button', { name: 'External open' }));
+    expect(screen.getByTestId('open').textContent).toBe('true');
+    expect(panelEl('sidebar')).toHaveAttribute('data-open');
+    expect(slot('workbench-scrim')).toHaveAttribute('data-open');
+
+    // Scrim click (the mobile dismissal path) writes the shared control.
+    fireEvent.click(slot('workbench-scrim'));
+    expect(screen.getByTestId('open').textContent).toBe('false');
+    expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+  });
+
+  it('dismisses the auxiliary bar through its scrim in uncontrolled mode', () => {
     render(
-      <Workbench sidebar={<p>Files</p>}>
+      <Workbench auxiliaryBar={<p>Outline</p>}>
         <h1>Editor</h1>
       </Workbench>
     );
     fireEvent.click(slot('workbench-scrim'));
-    expect(panelEl('sidebar')).toHaveAttribute('data-collapsed');
-    expect(querySlot('workbench-scrim')).toBeNull();
+    expect(panelEl('auxiliary')).toHaveAttribute('data-collapsed');
+  });
+
+  it('docks the activity rail inside the sidebar column on demand', () => {
+    function PositionFixture({ position }: { position: 'side' | 'top' | 'bottom' }) {
+      return (
+        <Workbench
+          activityBar={<span>Rail</span>}
+          sidebar={<p>Files</p>}
+          activityBarPosition={position}
+        >
+          <h1>Editor</h1>
+        </Workbench>
+      );
+    }
+    // Default: the rail is its own column, a sibling of the
+    // sidebar panel inside the resizable body.
+    const { unmount } = render(<PositionFixture position="side" />);
+    const sideBar = slot('workbench-activity-bar');
+    expect(sideBar.parentElement).not.toBe(panelEl('sidebar'));
+    expect(panelEl('sidebar')).not.toHaveAttribute('data-open');
+    unmount();
+
+    // Top: the rail rides INSIDE the sidebar panel, before the
+    // scroll region.
+    render(<PositionFixture position="top" />);
+    const topBar = slot('workbench-activity-bar');
+    expect(topBar.parentElement).toBe(panelEl('sidebar'));
+    expect(topBar.nextElementSibling).toBe(slot('workbench-sidebar'));
+    expect(slot('workbench-sidebar')).toHaveTextContent('Files');
+    cleanup();
+
+    // Bottom: the rail rides inside the sidebar panel too; its
+    // docked-end class raises its order so the scroll region
+    // renders above it (the DOM order is unchanged).
+    render(<PositionFixture position="bottom" />);
+    const bottomBar = slot('workbench-activity-bar');
+    expect(bottomBar.parentElement).toBe(panelEl('sidebar'));
+    expect(bottomBar.nextElementSibling).toBe(slot('workbench-sidebar'));
+    expect(bottomBar.className).toContain('activityBarDockedEnd');
   });
 
   it('renders one scrim per open overlay region and dismisses the auxiliary bar', () => {

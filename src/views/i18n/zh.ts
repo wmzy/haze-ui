@@ -105,7 +105,7 @@ export const zh: DeepPartial<SiteStrings> = {
     TabBar:
       '移动端底部导航（ActivityRail 的视口对位件）：56px 安全区感知轨道、badge、onSelect/onReselect 语义。',
     Workbench:
-      'IDE 式应用框架（100dvh）：activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar 插槽，区域 px 可调可折叠（ControlOrValue），底部面板可最大化；768px 以下侧区转浮层、tabBar 接管。',
+      'IDE 式应用框架（100dvh）：activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar 插槽，区域 px 可调可折叠（ControlOrValue），底部面板可最大化；rail 可独立于侧栏或叠入其顶部/底部（Cursor 式）；768px 以下侧区转浮层，移动端 sidebar 是默认隐藏、点 tabBar 的 Sidebar 项全屏展开的弹层，tabBar 接管导航。',
 
     // Forms
     Cascader:

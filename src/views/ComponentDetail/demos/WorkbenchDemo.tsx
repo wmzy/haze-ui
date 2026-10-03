@@ -14,6 +14,7 @@ import {
   FileCode,
   FileJson,
   FileText,
+  PanelLeft,
 } from 'lucide-react';
 
 import { ActivityRail, ActivityRailItem } from '@/lib/components/ActivityRail';
@@ -194,6 +195,14 @@ export default function WorkbenchDemo() {
     undefined,
     false
   );
+  // Mobile-only sidebar overlay: starts hidden; the TabBar's
+  // "Sidebar" item opens it as a full-screen slide-out.
+  const [mobileSidebarOpen, setMobileSidebarOpen, mobileSidebarOpenCtrl] =
+    useControl(undefined, false);
+  // Where the activity rail docks: its own column (side) or
+  // inside the sidebar column (top/bottom — Cursor-style).
+  const [activityBarPosition, setActivityBarPosition, positionCtrl] =
+    useControl<'side' | 'top' | 'bottom'>(undefined, 'side');
 
   return (
     <>
@@ -202,10 +211,12 @@ export default function WorkbenchDemo() {
         The VSCode-type work surface: a fixed activity rail, docked and
         resizable sidebar / auxiliary columns, an editor column with a
         bottom panel, a full-width status bar — and below 768px the rail
-        gives way to a bottom TabBar while the sidebar and auxiliary bar
-        become scrim-dismissed overlays. Every width and collapsed flag
-        is a <code>ControlOrValue</code> prop, so drags can be persisted
-        and toggles driven from outside.
+        gives way to a bottom TabBar while the sidebar becomes a
+        full-screen slide-out that starts hidden and opens from the
+        TabBar's Sidebar item. The rail can also dock inside the sidebar
+        column (top or bottom, Cursor-style). Every width and collapsed
+        flag is a <code>ControlOrValue</code> prop, so drags can be
+        persisted and toggles driven from outside.
       </p>
 
       <div className={section}>
@@ -225,6 +236,16 @@ export default function WorkbenchDemo() {
           >
             {panelCollapsed ? 'Show panel' : 'Hide panel'}
           </Button>
+          {(['side', 'top', 'bottom'] as const).map((pos) => (
+            <Button
+              key={pos}
+              size='sm'
+              variant={activityBarPosition === pos ? 'solid' : 'outline'}
+              onClick={() => setActivityBarPosition(pos)}
+            >
+              Rail: {pos}
+            </Button>
+          ))}
         </p>
         <div
           className={row}
@@ -305,6 +326,12 @@ export default function WorkbenchDemo() {
             tabBar={
               <TabBar aria-label='Primary'>
                 <TabBarItem
+                  icon={<PanelLeft size={22} />}
+                  label='Sidebar'
+                  active={mobileSidebarOpen}
+                  onSelect={() => setMobileSidebarOpen((v) => !v)}
+                />
+                <TabBarItem
                   icon={<Files size={22} />}
                   label='Files'
                   active={railView === 'files'}
@@ -333,6 +360,8 @@ export default function WorkbenchDemo() {
             }
             sidebarCollapsed={sidebarCtrl}
             panelCollapsed={panelCtrl}
+            activityBarPosition={positionCtrl}
+            mobileSidebarOpen={mobileSidebarOpenCtrl}
           >
             <EditorTabs />
           </Workbench>
@@ -340,18 +369,24 @@ export default function WorkbenchDemo() {
         <p className={row}>
           Drag a handle (or focus it and use the arrow keys) — the sidebar
           and panel resize in px. Below 768px the activity rail disappears
-          and the bottom TabBar takes over; the sidebar becomes a
-          scrim-dismissed overlay driven by the same{' '}
-          <code>sidebarCollapsed</code> control. Close editor tabs with the
-          × or the Delete key on a focused tab.
+          and the bottom TabBar takes over; the sidebar starts hidden and
+          the TabBar's Sidebar item slides it in as a full-screen overlay
+          (scrim-dismissed), driven by the <code>mobileSidebarOpen</code>{' '}
+          control — while <code>sidebarCollapsed</code> keeps owning the
+          docked column above the breakpoint. Switch the rail's dock with
+          the Rail buttons: <code>top</code> or <code>bottom</code> rides
+          it inside the sidebar column, Cursor-style. Close editor tabs
+          with the × or the Delete key on a focused tab.
         </p>
         <pre className={codeBlock}>
           {`<Workbench
   activityBar={<ActivityRail>…</ActivityRail>}
+  activityBarPosition={positionCtrl}   // 'side' | 'top' | 'bottom'
   sidebar={<Tree treeData={files} />}
+  mobileSidebarOpen={mobileSidebarOpenCtrl}  // mobile overlay, default closed
   panel={<Terminal />}
   statusBar={<StatusBar left={…} right={…} />}
-  tabBar={<TabBar>…</TabBar>}
+  tabBar={<TabBar>…<TabBarItem label="Sidebar" …/>…</TabBar>}
   sidebarCollapsed={sidebarCtrl}
 >
   <Tabs value={activeCtrl}>…closable document tabs…</Tabs>

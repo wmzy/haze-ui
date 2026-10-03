@@ -9,6 +9,11 @@ import { ResizableGroup, ResizableHandle, ResizablePanel } from '../Resizable';
 type WorkbenchProps = {
   /** Narrow icon rail column on the leading edge (ActivityRail is the intended content). */
   activityBar?: ReactNode;
+  /** Where the activity rail docks: its own column (`'side'`, the
+   *  default) or inside the sidebar column at its top (`'top'`)
+   *  or bottom (`'bottom'`) — the Cursor-style layout, where the
+   *  rail rides the sidebar as one unit. */
+  activityBarPosition?: ControlOrValue<'side' | 'top' | 'bottom'>;
   /** Docked explorer column beside the editor; becomes a scrim-dismissed overlay under the mobile breakpoint. */
   sidebar?: ReactNode;
   /** Docked secondary column on the trailing edge; overlays like the sidebar on mobile. */
@@ -23,6 +28,16 @@ type WorkbenchProps = {
   sidebarWidth?: ControlOrValue<number>;
   /** Sidebar collapsed state — desktop hides the column, mobile closes the overlay. */
   sidebarCollapsed?: ControlOrValue<boolean>;
+  /**
+   * Mobile sidebar overlay, in full-viewport form. Under the
+   * mobile breakpoint this control owns the slide-out (the
+   * docked `sidebarCollapsed` semantics are desktop-only
+   * there); above the breakpoint it is inert. Defaults to
+   * false — the mobile sidebar starts hidden and a consumer's
+   * button (typically in `tabBar`, which only exists on
+   * mobile) opens it.
+   */
+  mobileSidebarOpen?: ControlOrValue<boolean>;
   /** Expanded auxiliary bar width in px; a Control tracks handle drags live. */
   auxiliaryBarWidth?: ControlOrValue<number>;
   /** Auxiliary bar collapsed state — desktop hides the column, mobile closes the overlay. */
@@ -81,6 +96,42 @@ const activityBar = css`
   }
 `;
 
+/* The rail docked INSIDE the sidebar column (activityBarPosition
+ * top/bottom): a flex item of the sidebar panel's column, riding
+ * the sidebar as one unit. Unlike the side column it must NOT
+ * hide under the mobile breakpoint — it travels with the sidebar
+ * overlay. Its height is content-driven: the flex basis is auto,
+ * so the rail's own height:100% resolves to auto inside this
+ * auto-height box and the track sizes to its items. */
+const activityBarDocked = css`
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
+`;
+
+/* Bottom-docked rail: pushed after the scroll region in the
+ * sidebar panel's column. */
+const activityBarDockedEnd = css`
+  order: 1;
+`;
+
+/* Sidebar panel as the column container for a docked rail. */
+const sidebarColumn = css`
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
+`;
+
+/* The scroll region when it shares the sidebar panel with a
+ * docked rail: it takes the remaining track instead of its
+ * standalone height:100% (which would overflow the column). */
+const regionFill = css`
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+`;
+
 /* Scroll region shared by the sidebar, auxiliary bar and panel slots. */
 const region = css`
   height: 100%;
@@ -120,42 +171,60 @@ const tabBarRegion = css`
   }
 `;
 
-/* Click surface dismissing a mobile overlay. Inert wherever the
- * overlays are not in fixed mode; the dim layer follows the
- * ConfirmDialog/BottomSheet scrim precedent. */
+/* Click surface dismissing the mobile sidebar overlay. Inert
+ * wherever the overlay is not in fixed mode; the dim layer
+ * follows the ConfirmDialog/BottomSheet scrim precedent. Under
+ * the breakpoint it appears only while the overlay is open
+ * (data-open), so it never dims a shell whose sidebar starts
+ * hidden. */
 const scrim = css`
   display: none;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    display: block;
+    display: none;
     position: fixed;
     inset: 0;
     z-index: 90;
     background: rgba(0, 0, 0, 0.4);
+
+    &[data-open] {
+      display: block;
+    }
   }
 `;
 
-/* ≤768px the docked sidebar column leaves the flex row and overlays the
- * viewport; the inline flex basis is inert on a fixed box, so the width
- * comes from the same controlled px. Collapsed keeps the box in place —
- * visibility is delayed until the slide-out transform finishes. */
+/* ≤768px the docked sidebar column leaves the flex row and overlays
+ * the viewport as a FULL-SCREEN slide-out. The inline flex basis is
+ * inert on a fixed box. Visibility rides the data-open attribute
+ * (the mobileSidebarOpen control): the overlay starts hidden — a
+ * mobile shell shows its tab bar, not the sidebar, until the
+ * consumer's button opens it. The docked data-collapsed semantics
+ * are desktop-only; they no longer drive this overlay. */
 const sidenavOverlay = css`
   @media (max-width: 768px) {
     position: fixed;
     inset-block: 0;
     inset-inline-start: 0;
     z-index: 100;
-    width: min(var(--haze-workbench-sidebar-width, 300px), 85vw);
+    width: 100vw;
     box-shadow: var(--haze-shadow-lg);
-    transition: transform var(--haze-duration-normal) var(--haze-ease);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform var(--haze-duration-normal) var(--haze-ease),
+      visibility 0s linear var(--haze-duration-normal);
 
-    &[data-collapsed] {
-      transform: translateX(-100%);
-      visibility: hidden;
+    &[data-open] {
+      transform: none;
+      visibility: visible;
       transition:
         transform var(--haze-duration-normal) var(--haze-ease),
-        visibility 0s linear var(--haze-duration-normal);
+        visibility 0s;
+    }
+
+    html[dir='rtl'] & {
+      transform: translateX(100%);
     }
   }
 `;
@@ -192,6 +261,7 @@ const mobileHidden = css`
 
 export default function Workbench({
   activityBar: activityBarSlot,
+  activityBarPosition: activityBarPositionControl,
   sidebar: sidebarSlot,
   auxiliaryBar: auxiliaryBarSlot,
   panel: panelSlot,
@@ -199,6 +269,7 @@ export default function Workbench({
   tabBar: tabBarSlot,
   sidebarWidth: sidebarWidthControl,
   sidebarCollapsed: sidebarCollapsedProp,
+  mobileSidebarOpen: mobileSidebarOpenControl,
   auxiliaryBarWidth: auxiliaryBarWidthControl,
   auxiliaryBarCollapsed: auxiliaryBarCollapsedProp,
   panelHeight: panelHeightControl,
@@ -225,6 +296,16 @@ export default function Workbench({
   // expanders, scrim clicks and external drivers stay one state source.
   const [sidebarCollapsed, setSidebarCollapsed, sidebarCollapsedCtrl] =
     useControl(sidebarCollapsedProp, false);
+  // Mobile-only overlay state: the under-breakpoint sidebar form.
+  // Starts closed — the mobile shell reveals the sidebar through
+  // the consumer's button, not by default.
+  const [mobileSidebarOpen, setMobileSidebarOpen, mobileSidebarOpenCtrl] =
+    useControl(mobileSidebarOpenControl, false);
+  // Layout choice for the rail: its own column or docked inside
+  // the sidebar column.
+  const [activityBarPosition] = useControl<
+    'side' | 'top' | 'bottom'
+  >(activityBarPositionControl, 'side');
   const [
     auxiliaryBarCollapsed,
     setAuxiliaryBarCollapsed,
@@ -266,7 +347,7 @@ export default function Workbench({
         className={body}
         onResizeCommit={commitHorizontal}
       >
-        {activityBarSlot != null && (
+        {activityBarSlot != null && activityBarPosition === 'side' && (
           <div data-slot="workbench-activity-bar" x-class={[activityBar]}>
             {activityBarSlot}
           </div>
@@ -279,14 +360,33 @@ export default function Workbench({
             maxSize={SIDEBAR_MAX}
             collapsible
             collapsed={sidebarCollapsedCtrl}
-            className={sidenavOverlay}
+            className={
+              activityBarPosition === 'side'
+                ? sidenavOverlay
+                : `${sidenavOverlay} ${sidebarColumn}`
+            }
+            data-open={mobileSidebarOpen || undefined}
             style={
               {
                 '--haze-workbench-sidebar-width': `${sidebarWidth}px`,
               } as CSSProperties
             }
           >
-            <div data-slot="workbench-sidebar" x-class={[region]}>
+            {activityBarSlot != null && activityBarPosition !== 'side' && (
+              <div
+                data-slot="workbench-activity-bar"
+                x-class={[
+                  activityBarDocked,
+                  activityBarPosition === 'bottom' && activityBarDockedEnd,
+                ]}
+              >
+                {activityBarSlot}
+              </div>
+            )}
+            <div
+              data-slot="workbench-sidebar"
+              x-class={[region, activityBarPosition !== 'side' && regionFill]}
+            >
               {sidebarSlot}
             </div>
           </ResizablePanel>
@@ -358,12 +458,13 @@ export default function Workbench({
           {tabBarSlot}
         </div>
       )}
-      {sidebarSlot != null && !sidebarCollapsed && (
+      {sidebarSlot != null && (
         <div
           data-slot="workbench-scrim"
           aria-hidden="true"
           x-class={[scrim]}
-          onClick={() => setSidebarCollapsed(true)}
+          data-open={mobileSidebarOpen || undefined}
+          onClick={() => setMobileSidebarOpen(false)}
         />
       )}
       {auxiliaryBarSlot != null && !auxiliaryBarCollapsed && (
