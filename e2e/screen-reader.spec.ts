@@ -148,7 +148,16 @@ test.describe('VoiceOver smoke', () => {
     page,
     voiceOver,
   }) => {
-    await page.locator('#dialog-opener').click();
+    // The beforeEach dance leaves the VoiceOver cursor on the
+    // page's first element — the opener (its phrase is the
+    // last one in the log). Activate it through VoiceOver
+    // itself (Control-Option-Space): a real AT gesture.
+    // Three CI runs showed that announcements triggered by
+    // CDP-dispatched clicks never reach the spoken-phrase log
+    // in this environment (the log stalled at the beforeEach
+    // phrase even though the dialog opened and focus moved),
+    // while VO's own command channel announces reliably.
+    await voiceOver.act();
     const dialog = page.locator('dialog');
     await expect(dialog).toBeVisible();
 
@@ -172,17 +181,23 @@ test.describe('VoiceOver smoke', () => {
     page,
     voiceOver,
   }) => {
-    // Clicking opens the menu with focus left on the trigger — the
-    // menu items are focused only by the ArrowDown roving.
-    await page.getByRole('button', { name: 'Actions' }).click();
+    // Move the VoiceOver cursor from the opener onto the
+    // "Actions" trigger (the closed dialog is not in the
+    // AX tree, so next() lands on the trigger), then open
+    // the menu with a real AT gesture. The trigger keeps
+    // focus — the menu items are focused only by the
+    // ArrowDown roving.
+    await voiceOver.next();
+    await voiceOver.act();
     await expect(page.getByRole('menu')).toBeVisible();
     await voiceOver.clearSpokenPhraseLog();
 
-    // Page-level keystroke (Playwright keyboard): the trigger's
-    // keydown handler hands focus to the first item; VoiceOver echoes
-    // the AX focus event — the contract under test is "focus moves
+    // A real ArrowDown key (through the active app, not a
+    // CDP dispatch): the trigger's keydown handler hands
+    // focus to the first item; VoiceOver echoes the AX
+    // focus event — the contract under test is "focus moves
     // into the menu are announced".
-    await page.keyboard.press('ArrowDown');
+    await voiceOver.press('ArrowDown');
     await expect
       .poll(() =>
         page.evaluate(
@@ -198,8 +213,14 @@ test.describe('VoiceOver smoke', () => {
     page,
     voiceOver,
   }) => {
+    // Walk the VoiceOver cursor to the "Show toast" opener
+    // (past the dialog opener and the menu trigger — the
+    // closed dialog is not in the AX tree) and fire it
+    // with a real AT gesture.
+    await voiceOver.next();
+    await voiceOver.next();
     await voiceOver.clearSpokenPhraseLog();
-    await page.locator('#toast-opener').click();
+    await voiceOver.act();
     await expect(page.getByText('Saved successfully')).toBeVisible();
 
     // role="status" is aria-live="polite": the announcement queues
