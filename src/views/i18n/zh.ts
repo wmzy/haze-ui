@@ -44,14 +44,16 @@ export const zh: DeepPartial<SiteStrings> = {
     darkMode: '深色模式',
     density: '密度（紧凑）',
     a11y: '无障碍',
+    a11yContracts: '无障碍契约',
     migration: '从 AntD / shadcn 迁移',
     streamingA11y: '流式无障碍',
     motion: '动效预设',
   },
   guideSummaries: {
     darkMode: '明暗两套 token 类、useDarkMode 钩子与运行时品牌主题。',
-    density: '通过密度 token 在紧凑与宽松间距之间整体切换。',
+    density: '通过密度 token 在紧凑和宽松间距之间整体切换。',
     a11y: '键盘、读屏与 WCAG 实践内建于每个组件。',
+    a11yContracts: '从测试套件同源提取的每组件键盘与 ARIA 契约。',
     migration: '从 AntD / shadcn/ui 迁移到 haze-ui 的对照与步骤。',
     streamingA11y: '流式 AI 输出的无障碍：实时区域、播报与减少动效。',
     motion: '基于 data-state 的进出场动画预设，挂在动效 token 之上。',
@@ -93,9 +95,17 @@ export const zh: DeepPartial<SiteStrings> = {
     Grid: 'CSS Grid 布局原语。',
     Masonry: '瀑布流布局：JS 贪心分配，先按顺序入列、再入最短列以保持平衡。',
     Resizable:
-      '可拖拽分隔条的面板分组（ResizableGroup，支持水平/垂直）；另以 SplitterGroup/SplitterPanel/SplitterHandle 别名导出。',
+      '可拖拽分隔条的面板分组（ResizableGroup，支持水平/垂直）：面板级 px defaultSize/minSize/maxSize、可折叠面板与 onResizeCommit 持久化钩子；另以 SplitterGroup/SplitterPanel/SplitterHandle 别名导出。',
     ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',
     Sidebar: '应用侧栏外壳，折叠状态可控（aside 与轨道宽度令牌）。',
+    ActivityRail:
+      'VSCode 式竖向图标轨道（nav）：44px 图标项带 label/badge/激活指示条，悬停提示，slot="end" 沉底。orientation="horizontal" 布局为横向条——rail 叠入侧栏顶部/底部时 Workbench 自动切换。',
+    StatusBar:
+      'VSCode 式状态条（footer）：left/right 分组、可点 StatusItem，priority 项在移动断点保留。',
+    TabBar:
+      '移动端底部导航（ActivityRail 的视口对位件）：56px 安全区感知轨道、badge、onSelect/onReselect 语义。',
+    Workbench:
+      'IDE 式应用框架（100dvh）：activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar 插槽，区域 px 可调可折叠（ControlOrValue），底部面板可最大化；rail 可独立于侧栏或叠入其顶部/底部（Cursor 式）；768px 以下框架换形——rail 变为编辑器上方的全宽横向工具栏，sidebar 转为独立的全屏层（默认隐藏，点 tabBar 的 Sidebar 项展开）。',
 
     // Forms
     Cascader:
@@ -170,6 +180,8 @@ export const zh: DeepPartial<SiteStrings> = {
     QRCode:
       '二维码：以单条清晰 SVG 路径渲染，value/size/level/bordered 可配，模块与背景色走主题令牌。',
     Stat: '指标展示：标题、数值与趋势指示。',
+    Sparkline:
+      '内联 SVG 迷你趋势图：无状态、不依赖 recharts、RSC 安全；支持折线/面积变体与语义色调令牌。',
     Table: '语义化表格（striped、bordered）。',
     Timeline: '垂直时间线容器，承载 TimelineItem 子项。',
     Tree: '层级树：展开/选中/勾选状态，异步 loadData 与 searchValue 过滤。',

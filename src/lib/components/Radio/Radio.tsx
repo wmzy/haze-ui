@@ -16,13 +16,16 @@ type RadioProps = {
 
 const radioInput = css`
   appearance: none;
-  width: 1.125rem;
-  height: 1.125rem;
+  /* 24px box (WCAG 2.5.8 target-size floor); the optical footprint
+     stays 32px via the space-1 margin, matching the old 18px+14px
+     pairing (Checkbox's convention). */
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-bg);
   cursor: pointer;
-  margin: 0.4375rem;
+  margin: var(--haze-space-1);
   transition:
     background var(--haze-duration-fast),
     border-color var(--haze-duration-fast),
@@ -46,10 +49,10 @@ const radioInput = css`
   &:checked::after {
     content: '';
     position: absolute;
-    top: 3px;
-    inset-inline-start: 3px;
-    width: 10px;
-    height: 10px;
+    top: 5px;
+    inset-inline-start: 5px;
+    width: 12px;
+    height: 12px;
     border-radius: var(--haze-radius-full);
     background: var(--haze-color-primary);
   }

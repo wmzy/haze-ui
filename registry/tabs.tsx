@@ -16,10 +16,11 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Tabs, TabList, Tab, TabPanel } from 'haze-ui';
+import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tabs.css';
+import 'haze-ui/css/menu.css';
 
-export { Tabs, TabList, Tab, TabPanel };
-export type { TabsProps, TabsClassNames, TabListProps, TabProps, TabPanelProps } from 'haze-ui';
+export { Tabs, TabList, Tab, TabPanel, SortableTabList };
+export type { TabsProps, TabsClassNames, TabListProps, TabProps, TabPanelProps, TabStatus, SortableTabListProps } from 'haze-ui';

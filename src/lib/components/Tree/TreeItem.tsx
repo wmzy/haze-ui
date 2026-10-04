@@ -119,8 +119,10 @@ const checkbox = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
+  /* WCAG 2.5.8 target-size floor — the row's checkbox affordance is a
+     pointer target of its own (stopPropagation isolates its hit). */
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   flex-shrink: 0;
   margin-inline-end: var(--haze-space-2);
   border: 1px solid var(--haze-color-border);

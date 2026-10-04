@@ -236,6 +236,13 @@ const esES: HazeStrings = {
   streamingText: {
     generating: 'Generando',
   },
+  tabs: {
+    close: 'Cerrar',
+    moreTabs: 'Más pestañas',
+    statusDirty: 'Cambios sin guardar',
+    statusError: 'Error',
+    statusSyncing: 'Sincronizando',
+  },
   tag: {
     remove: 'Quitar',
   },

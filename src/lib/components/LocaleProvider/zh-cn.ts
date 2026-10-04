@@ -234,6 +234,13 @@ const zhCN: HazeStrings = {
   streamingText: {
     generating: '生成中',
   },
+  tabs: {
+    close: '关闭',
+    moreTabs: '更多标签页',
+    statusDirty: '未保存',
+    statusError: '错误',
+    statusSyncing: '同步中',
+  },
   tag: {
     remove: '移除',
   },

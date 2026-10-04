@@ -90,14 +90,17 @@ const thumb = css`
   box-shadow: var(--haze-shadow-sm);
 `;
 
+/* Track heights sit at the --haze-space-6 (24px) floor for every size —
+   WCAG 2.5.8 target size: the track is the switch's only pointer
+   target, so the sm/md variants must not dip below it. */
 const trackSm = css`
   width: 2.25rem;
-  height: 1.25rem;
+  height: var(--haze-space-6);
 `;
 
 const trackMd = css`
   width: 40px;
-  height: 22px;
+  height: var(--haze-space-6);
 `;
 
 const trackLg = css`

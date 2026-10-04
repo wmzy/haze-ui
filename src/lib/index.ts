@@ -13,7 +13,18 @@ export { TOKEN_REGISTRY, COMPONENT_TOKENS } from './tokens/registry';
 export type { TokenDef } from './tokens/registry';
 
 // dates (multi-calendar adapter layer over Calendar/date.ts + Intl)
-export { gregoryAdapter, islamicUmalquraAdapter, getAdapter, formatInTimeZone, getZonedParts } from './dates';
+export {
+  gregoryAdapter,
+  islamicUmalquraAdapter,
+  persianAdapter,
+  hebrewAdapter,
+  japaneseAdapter,
+  buddhistAdapter,
+  ethiopicAdapter,
+  getAdapter,
+  formatInTimeZone,
+  getZonedParts,
+} from './dates';
 export type {
   HazeDateAdapter,
   CivilDateParts,
@@ -51,13 +62,15 @@ export { Textarea, TextareaCore } from './components/Textarea';
 export type { TextareaProps, TextareaCoreProps } from './components/Textarea';
 export { Slider, SliderCore } from './components/Slider';
 export type { SliderProps, SliderCoreProps } from './components/Slider';
-export { Tabs, TabList, Tab, TabPanel } from './components/Tabs';
+export { Tabs, TabList, Tab, TabPanel, SortableTabList } from './components/Tabs';
 export type {
   TabsProps,
   TabsClassNames,
   TabListProps,
   TabProps,
   TabPanelProps,
+  TabStatus,
+  SortableTabListProps,
 } from './components/Tabs';
 export { Accordion, AccordionItem } from './components/Accordion';
 export type {
@@ -173,6 +186,8 @@ export { Ellipsis } from './components/Ellipsis';
 export type { EllipsisProps } from './components/Ellipsis';
 export { CountUp } from './components/CountUp';
 export type { CountUpProps } from './components/CountUp';
+export { Sparkline, sparklineToneStrokes, sparklineToneFills } from './components/Sparkline';
+export type { SparklineProps } from './components/Sparkline';
 export type { StatProps, StatGroupProps } from './components/Stat';
 export { Segmented, SegmentedCore } from './components/Segmented';
 export type { SegmentedProps, SegmentedCoreProps } from './components/Segmented';
@@ -274,6 +289,14 @@ export { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from './compo
 export type { ToolbarProps, ToolbarButtonProps, ToolbarSeparatorProps, ToolbarToggleProps } from './components/Toolbar';
 export { AppShell } from './components/AppShell';
 export type { AppShellProps } from './components/AppShell';
+export { ActivityRail, ActivityRailItem } from './components/ActivityRail';
+export type { ActivityRailProps, ActivityRailItemProps } from './components/ActivityRail';
+export { StatusBar, StatusItem } from './components/StatusBar';
+export type { StatusBarProps, StatusItemProps } from './components/StatusBar';
+export { TabBar, TabBarItem } from './components/TabBar';
+export type { TabBarProps, TabBarItemProps } from './components/TabBar';
+export { Workbench } from './components/Workbench';
+export type { WorkbenchProps } from './components/Workbench';
 export { Cascader } from './components/Cascader';
 export type { CascaderProps, CascaderOption } from './components/Cascader';
 export { Sidebar, SidebarGroup, SidebarItem, SidebarFooter, SidebarToggle } from './components/Sidebar';

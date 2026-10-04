@@ -95,9 +95,13 @@ type SliderCoreProps = {
 const base = css`
   appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
+  /* 24px hit strip (WCAG 2.5.8 target-size floor): the native input is
+     the slider's only pointer target, so it must carry the minimum box
+     itself. The rail stays a 6px bar — painted as a centered background
+     stripe inside the strip (the range-mode stacked inputs keep their
+     transparent override on top of it). */
+  height: var(--haze-space-6);
+  background: var(--haze-color-bg-muted) center / 100% 6px no-repeat;
   outline: none;
   cursor: pointer;
   transition: background var(--haze-duration-fast);
@@ -150,7 +154,7 @@ const base = css`
      dropped by the UA, so focus moves to an input-level Highlight
      outline. */
   @media (forced-colors: active) {
-    background: CanvasText;
+    background: CanvasText center / 100% 6px no-repeat;
 
     &::-webkit-slider-thumb {
       background: Highlight;
@@ -200,35 +204,37 @@ const singleWrapper = css`
 `;
 
 /** The shared track — the range-mode inputs paint no track of their
- * own (see rangeInput), so the rail lives under them. */
+ * own (see rangeInput), so the rail lives under them. Same 24px strip
+ * geometry as the single-mode input's own rail (base): a centered 6px
+ * stripe, so the stacked 24px inputs' thumb centers align with the
+ * rail. */
 const rangeRail = css`
   display: block;
-  height: 6px;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
+  height: var(--haze-space-6);
+  background: var(--haze-color-bg-muted) center / 100% 6px no-repeat;
 
-  /* Forced-colors: the muted rail flattens onto Canvas — restated as
-     a CanvasText track line (rangeInput's transparent background
+  /* Forced-colors: the muted rail flattens onto Canvas — restated as a
+     CanvasText track line (rangeInput's transparent background
      keeps the stacked inputs from double-painting it). */
   @media (forced-colors: active) {
-    background: CanvasText;
+    background: CanvasText center / 100% 6px no-repeat;
   }
 `;
 
 /** Progress between the thumbs; positioned with logical properties so
- * RTL mirrors it for free (the fill grows from the inline start). */
+ * RTL mirrors it for free (the fill grows from the inline start). Same
+ * 24px strip + centered 6px stripe as the rail (see rangeRail). */
 const rangeFill = css`
   position: absolute;
   inset-block-start: 0;
-  height: 6px;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-primary);
+  height: var(--haze-space-6);
+  background: var(--haze-color-primary) center / 100% 6px no-repeat;
 
   /* Forced-colors: the primary fill flattens onto Canvas — restated
      as Highlight so the selected range stays visible over the
      CanvasText rail. */
   @media (forced-colors: active) {
-    background: Highlight;
+    background: Highlight center / 100% 6px no-repeat;
   }
 `;
 
@@ -280,17 +286,34 @@ const verticalWrapper = css`
 const verticalInput = css`
   writing-mode: vertical-lr;
   direction: rtl;
-  width: 6px;
+  /* 24px hit strip like the horizontal base — the rail stripe turns
+     with the orientation (6px wide, full track length). */
+  width: var(--haze-space-6);
   height: var(--haze-slider-track);
+  background-size: 6px 100%;
+
+  @media (forced-colors: active) {
+    background: CanvasText center / 6px 100% no-repeat;
+  }
 `;
 
 const verticalRail = css`
-  width: 6px;
+  width: var(--haze-space-6);
   height: var(--haze-slider-track);
+  background: var(--haze-color-bg-muted) center / 6px 100% no-repeat;
+
+  @media (forced-colors: active) {
+    background: CanvasText center / 6px 100% no-repeat;
+  }
 `;
 
 const verticalFill = css`
-  width: 6px;
+  width: var(--haze-space-6);
+  background: var(--haze-color-primary) center / 6px 100% no-repeat;
+
+  @media (forced-colors: active) {
+    background: Highlight center / 6px 100% no-repeat;
+  }
 `;
 
 /** Room below the horizontal rail for the mark labels. */
@@ -313,7 +336,9 @@ const markBase = css`
 `;
 
 const markHorizontal = css`
-  inset-block-start: 0;
+  /* The rail is a 6px stripe centered inside the 24px strip — the tick
+     row starts at the stripe's block offset. */
+  inset-block-start: calc((var(--haze-space-6) - 6px) / 2);
   flex-direction: column;
   transform: translateX(-50%);
 
@@ -324,7 +349,8 @@ const markHorizontal = css`
 `;
 
 const markVertical = css`
-  inset-inline-start: 0;
+  /* Same stripe offset on the inline axis (see markHorizontal). */
+  inset-inline-start: calc((var(--haze-space-6) - 6px) / 2);
   gap: var(--haze-space-2);
   transform: translateY(50%);
 `;
@@ -358,7 +384,11 @@ const markLabel = css`
  */
 const tooltipBubble = css`
   position: absolute;
-  inset-block-start: calc(-1 * var(--haze-space-1));
+  /* Above the rail stripe (not the strip edge): the stripe's block
+   * offset minus the original 4px breathing room. */
+  inset-block-start: calc(
+    (var(--haze-space-6) - 6px) / 2 - var(--haze-space-1)
+  );
   transform: translate(-50%, -100%);
   padding: var(--haze-space-1) var(--haze-space-2);
   border-radius: var(--haze-radius-md);
@@ -393,7 +423,11 @@ const tooltipBubble = css`
 /** Vertical sliders carry the bubble beside the thumb instead. */
 const tooltipBubbleVertical = css`
   inset-block-start: auto;
-  inset-inline-start: calc(100% + var(--haze-space-2));
+  /* Past the rail stripe's inline edge (not the strip edge): stripe
+   * half-width plus the original 8px breathing room. */
+  inset-inline-start: calc(
+    (var(--haze-space-6) + 6px) / 2 + var(--haze-space-2)
+  );
   transform: translateY(-50%);
 `;
 

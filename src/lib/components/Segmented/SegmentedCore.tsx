@@ -46,6 +46,9 @@ const btn = css`
   cursor: pointer;
   font-family: var(--haze-font-sans);
   font-weight: var(--haze-weight-medium);
+  /* WCAG 2.5.8 target-size floor: sm padding (0 vertical) would let the
+     text box shrink under 24px. */
+  min-height: var(--haze-space-6);
   transition: background var(--haze-duration-fast), color var(--haze-duration-fast);
   white-space: nowrap;
 

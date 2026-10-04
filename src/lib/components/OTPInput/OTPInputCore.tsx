@@ -104,6 +104,7 @@ export default function OTPInputCore({
           x-class={[cell]}
           type="text"
           inputMode="numeric"
+          autoComplete="one-time-code"
           maxLength={1}
           aria-label={formatString(strings.digitLabel, { index: i + 1, total: length })}
           value={value[i] ?? ''}

@@ -19,7 +19,8 @@
 
 /** Civil date parts in a specific calendar. `month` is 0-based — the
  * same `Date#getMonth` convention every date.ts function uses (0 = the
- * calendar's first month, 11 = its last) — while `day` is 1-based. */
+ * calendar's first month; 11 in 12-month calendars, 12 in hebrew leap
+ * years and ethiopic's Pagume-ending years) — while `day` is 1-based. */
 export type CivilDateParts = {
   year: number;
   month: number;
@@ -30,8 +31,19 @@ export type CivilDateParts = {
  * Umm al-Qura tabulation Node and browsers ship in full ICU; valid there
  * roughly 1300–1600 AH (Gregorian ~1882–2174), beyond which ICU falls
  * back to computed approximations (still self-consistent through this
- * adapter, which routes every conversion through Intl). */
-export type HazeCalendarIdentifier = 'gregory' | 'islamic-umalqura';
+ * adapter, which routes every conversion through Intl). The five
+ * algorithmic calendars (`persian`, `hebrew`, `japanese`, `buddhist`,
+ * `ethiopic`) are integer-arithmetic implementations whose outputs are
+ * cross-verified against Intl in their tests — see each adapter module
+ * for its supported range. */
+export type HazeCalendarIdentifier =
+  | 'gregory'
+  | 'islamic-umalqura'
+  | 'persian'
+  | 'hebrew'
+  | 'japanese'
+  | 'buddhist'
+  | 'ethiopic';
 
 /** Month-name width, mirroring Intl's `month` option values. */
 export type MonthNameStyle = 'long' | 'short' | 'narrow';
@@ -66,9 +78,12 @@ export type HazeDateAdapter = {
    * month index — no Date rollover hazards. */
   addMonths(parts: CivilDateParts, delta: number): CivilDateParts;
 
-  /** Twelve month names, index 0 = first month of the calendar year.
-   * `locale` defaults to the adapter's base presentation locale ('en'
-   * for the built-ins, matching Intl's calendar-extended locales). */
+  /** Month names for one full cycle of the calendar year, index 0 =
+   * first month of the calendar year. Twelve entries for 12-month
+   * calendars; thirteen where the calendar always has a thirteenth
+   * month (ethiopic's Pagume). `locale` defaults to the adapter's base
+   * presentation locale ('en' for the built-ins, matching Intl's
+   * calendar-extended locales). */
   monthNames(locale?: string, style?: MonthNameStyle): string[];
 
   /** Era abbreviation for a year ("AH" for Hijri, "AD"/"BC" for
@@ -96,4 +111,39 @@ export function eraOfDate(
     if (part.type === 'era') return part.value;
   }
   return '';
+}
+
+/**
+ * UTC-civil milliseconds of a proleptic (year, month, day) triple. The
+ * `setUTCFullYear` route sidesteps the constructor's two-digit-year →
+ * 19xx remap, which the algorithmic adapters need for far-past eras
+ * (ethiopic year 1 maps to 8 CE; buddhist year 608 to 65 CE). Shared
+ * implementation behind the algorithmic adapters' conversions (internal
+ * helper; not part of the public dates surface).
+ */
+export function utcCivilMs(year: number, month: number, day: number): number {
+  const date = new Date(0);
+  date.setUTCFullYear(year, month, day);
+  return date.getTime();
+}
+
+/**
+ * Local-midnight Date materializing a UTC civil instant — the date.ts
+ * civil semantics every adapter's `toGregorian` must produce. The
+ * constructor already builds exact local midnights; only its
+ * two-digit-year → 19xx remap needs dodging (ethiopic year 1 maps to
+ * 8 CE), which `setFullYear` — unlike the constructor — does while
+ * preserving the midnight time-of-day. Internal helper; not part of
+ * the public dates surface.
+ */
+export function localMidnightOf(ms: number): Date {
+  const utc = new Date(ms);
+  const year = utc.getUTCFullYear();
+  const month = utc.getUTCMonth();
+  const day = utc.getUTCDate();
+  const date = new Date(year, month, day);
+  if (year >= 0 && year <= 99) {
+    date.setFullYear(year, month, day);
+  }
+  return date;
 }

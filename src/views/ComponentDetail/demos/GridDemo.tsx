@@ -61,7 +61,7 @@ export default function GridDemo() {
         </p>
         <div style={{ height: 280, border: '1px solid var(--haze-color-border)', borderRadius: 'var(--haze-radius-md)' }}>
           <ResizableGroup>
-            <ResizablePanel defaultSize={55}>
+            <ResizablePanel id='grid-demo' defaultSize={420} minSize={200}>
               <Grid responsive columns={12} gap={3}>
                 {[1, 2, 3, 4].map((n) => (
                   <GridItem key={n} span={12} sm={6} md={4} lg={3}>
@@ -73,7 +73,7 @@ export default function GridDemo() {
               </Grid>
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={45}>
+            <ResizablePanel id='grid-hint'>
               <div style={{ padding: 'var(--haze-space-3)', height: '100%', fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-muted)' }}>
                 Drag the separator ←→ to change the grid container's width. The
                 layout is driven by container queries, so the same Grid responds

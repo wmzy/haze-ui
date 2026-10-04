@@ -236,6 +236,13 @@ const itIT: HazeStrings = {
   streamingText: {
     generating: 'Generazione in corso',
   },
+  tabs: {
+    close: 'Chiudi',
+    moreTabs: 'Più schede',
+    statusDirty: 'Modifiche non salvate',
+    statusError: 'Errore',
+    statusSyncing: 'Sincronizzazione',
+  },
   tag: {
     remove: 'Rimuovi',
   },

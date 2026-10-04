@@ -121,6 +121,8 @@
     "@babel/preset-env": "^8.0.2",
     "@babel/preset-typescript": "^8.0.1",
     "@for-fun/event-emitter": "^1.1.0",
+    "@guidepup/guidepup": "^0.34.0",
+    "@guidepup/playwright": "^0.19.1",
     "@linaria/core": "^8.2.0",
     "@native-router/core": "^1.17.0",
     "@native-router/react": "^1.16.1",
@@ -197,16 +199,16 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "17.5 KB"
+      "limit": "18 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "23.75 KB"
+      "limit": "25.25 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "30.25 KB",
+      "limit": "32.25 KB",
       "gzip": true
     },
     {
@@ -224,6 +226,12 @@
     {
       "name": "CSS family ratchet: count-up",
       "path": "dist/css/count-up.css",
+      "limit": "0.3 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: sparkline",
+      "path": "dist/css/sparkline.css",
       "limit": "0.3 KB",
       "gzip": true
     },

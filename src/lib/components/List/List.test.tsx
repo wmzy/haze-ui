@@ -51,10 +51,35 @@ describe('List', () => {
     expect(screen.getByRole('listitem')).toHaveClass('item-custom');
   });
 
+  it('renders the loadMore slot as the final list item', () => {
+    render(
+      <List loadMore={<button type="button">Load more</button>}>
+        <ListItem>Item 1</ListItem>
+        <ListItem>Item 2</ListItem>
+      </List>,
+    );
+    const slot = screen.getByText('Load more').closest('li');
+    expect(slot).not.toBeNull();
+    expect(slot!).toHaveAttribute('data-slot', 'load-more');
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(3);
+    expect(items[items.length - 1]).toBe(slot);
+  });
+
+  it('omits the loadMore slot when not provided', () => {
+    const { container } = render(
+      <List>
+        <ListItem>Item 1</ListItem>
+      </List>,
+    );
+    expect(container.querySelector("[data-slot='load-more']")).toBeNull();
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(
-      <List>
+      <List loadMore={<button type="button">Load more</button>}>
         <ListItem>Plain item</ListItem>
         <ListItem>
           <a href="#details">Item with a link</a>

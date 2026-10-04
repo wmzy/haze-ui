@@ -71,6 +71,9 @@ const container = css`
 
 /** Visual skin applied on every rendering tier of the panel. */
 const panelVisuals = css`
+  /* min-width pairs with padding + border: border-box keeps the floor
+   * covering the padding too (panel-family box-sizing contract). */
+  box-sizing: border-box;
   padding: var(--haze-space-3);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);

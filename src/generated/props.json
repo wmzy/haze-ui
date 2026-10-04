@@ -45,6 +45,61 @@
       },
       "otherTypes": {}
     },
+    "ActivityRail": {
+      "routeKey": "activity-rail",
+      "cssFamily": "activity-rail",
+      "imports": [
+        "ActivityRail",
+        "ActivityRailItem"
+      ],
+      "propsTypes": {
+        "ActivityRailItemProps": [
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "badge",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onSelect",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "slot",
+            "type": "'start' | 'end'",
+            "required": false
+          }
+        ],
+        "ActivityRailProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "orientation",
+            "type": "'vertical' | 'horizontal'",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Affix": {
       "routeKey": "affix",
       "cssFamily": "affix",
@@ -921,7 +976,7 @@
           },
           {
             "name": "layout",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -1421,7 +1476,7 @@
           },
           {
             "name": "ref",
-            "type": "Ref<HTMLDivElement | HTMLButtonElement>",
+            "type": "Ref<HTMLButtonElement | HTMLDivElement>",
             "required": false
           }
         ]
@@ -2021,6 +2076,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "onLoadMore",
+            "type": "() => void",
+            "required": false
           },
           {
             "name": "className",
@@ -2751,7 +2811,7 @@
         "DividerProps": [
           {
             "name": "orientation",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -3923,6 +3983,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "loadMore",
+            "type": "ReactNode",
+            "required": false
           }
         ]
       },
@@ -3990,6 +4055,11 @@
           {
             "name": "filter",
             "type": "ControlOrValue<LogLevel | null>",
+            "required": false
+          },
+          {
+            "name": "onLoadMore",
+            "type": "() => void",
             "required": false
           },
           {
@@ -5180,7 +5250,7 @@
         "ResizableGroupProps": [
           {
             "name": "direction",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -5191,6 +5261,16 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "style",
+            "type": "CSSProperties",
+            "required": false
+          },
+          {
+            "name": "onResizeCommit",
+            "type": "(sizes: Record<string, number>) => void",
             "required": false
           }
         ],
@@ -5203,8 +5283,38 @@
         ],
         "ResizablePanelProps": [
           {
+            "name": "id",
+            "type": "string",
+            "required": true
+          },
+          {
             "name": "defaultSize",
             "type": "number",
+            "required": false
+          },
+          {
+            "name": "minSize",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "maxSize",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "collapsible",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "collapsed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "onCollapsedChange",
+            "type": "(collapsed: boolean) => void",
             "required": false
           },
           {
@@ -5983,6 +6093,50 @@
       },
       "otherTypes": {}
     },
+    "Sparkline": {
+      "routeKey": "sparkline",
+      "cssFamily": "sparkline",
+      "imports": [
+        "Sparkline",
+        "sparklineToneStrokes",
+        "sparklineToneFills"
+      ],
+      "propsTypes": {
+        "SparklineProps": [
+          {
+            "name": "data",
+            "type": "readonly number[]",
+            "required": true
+          },
+          {
+            "name": "width",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "height",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "variant",
+            "type": "'area' | 'line'",
+            "required": false
+          },
+          {
+            "name": "tone",
+            "type": "'info' | 'success' | 'warning' | 'danger' | 'primary'",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Spinner": {
       "routeKey": "spinner",
       "cssFamily": "spinner",
@@ -6064,6 +6218,46 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "StatusBar": {
+      "routeKey": "status-bar",
+      "cssFamily": "status-bar",
+      "imports": [
+        "StatusBar",
+        "StatusItem"
+      ],
+      "propsTypes": {
+        "StatusBarProps": [
+          {
+            "name": "left",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "right",
+            "type": "ReactNode",
+            "required": false
+          }
+        ],
+        "StatusItemProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onSelect",
+            "type": "() => void",
             "required": false
           }
         ]
@@ -6314,6 +6508,56 @@
       },
       "otherTypes": {}
     },
+    "TabBar": {
+      "routeKey": "tab-bar",
+      "cssFamily": "tab-bar",
+      "imports": [
+        "TabBar",
+        "TabBarItem"
+      ],
+      "propsTypes": {
+        "TabBarItemProps": [
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "label",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "badge",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onSelect",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "onReselect",
+            "type": "() => void",
+            "required": false
+          }
+        ],
+        "TabBarProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Table": {
       "routeKey": "table",
       "cssFamily": "table",
@@ -6410,9 +6654,27 @@
         "Tabs",
         "TabList",
         "Tab",
-        "TabPanel"
+        "TabPanel",
+        "SortableTabList"
       ],
       "propsTypes": {
+        "SortableTabListProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onReorder",
+            "type": "(nextOrder: number[]) => void",
+            "required": false
+          }
+        ],
         "TabListProps": [
           {
             "name": "className",
@@ -6420,9 +6682,24 @@
             "required": false
           },
           {
+            "name": "listRef",
+            "type": "RefObject<HTMLDivElement | null>",
+            "required": false
+          },
+          {
+            "name": "overflowLabel",
+            "type": "string",
+            "required": false
+          },
+          {
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "tabMetas",
+            "type": "TabMeta[]",
+            "required": false
           }
         ],
         "TabPanelProps": [
@@ -6447,6 +6724,36 @@
             "name": "value",
             "type": "string",
             "required": true
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "status",
+            "type": "TabStatus",
+            "required": false
+          },
+          {
+            "name": "statusLabel",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "closable",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "closeLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onClose",
+            "type": "(event: MouseEvent<HTMLSpanElement, MouseEvent> | KeyboardEvent<HTMLDivElement>) => void",
+            "required": false
           },
           {
             "name": "className",
@@ -7293,7 +7600,7 @@
         "ToolbarProps": [
           {
             "name": "orientation",
-            "type": "'horizontal' | 'vertical'",
+            "type": "'vertical' | 'horizontal'",
             "required": false
           },
           {
@@ -8367,6 +8674,16 @@
             "required": false
           },
           {
+            "name": "onEndReached",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "endReachedThreshold",
+            "type": "number",
+            "required": false
+          },
+          {
             "name": "reverse",
             "type": "boolean",
             "required": false
@@ -8437,6 +8754,98 @@
             "name": "className",
             "type": "string",
             "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "Workbench": {
+      "routeKey": "workbench",
+      "cssFamily": "workbench",
+      "imports": [
+        "Workbench"
+      ],
+      "propsTypes": {
+        "WorkbenchProps": [
+          {
+            "name": "activityBar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "activityBarPosition",
+            "type": "ControlOrValue<'top' | 'bottom' | 'side'>",
+            "required": false
+          },
+          {
+            "name": "sidebar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "auxiliaryBar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "panel",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "statusBar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "tabBar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "sidebarWidth",
+            "type": "ControlOrValue<number>",
+            "required": false
+          },
+          {
+            "name": "sidebarCollapsed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "mobileSidebarOpen",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "auxiliaryBarWidth",
+            "type": "ControlOrValue<number>",
+            "required": false
+          },
+          {
+            "name": "auxiliaryBarCollapsed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "panelHeight",
+            "type": "ControlOrValue<number>",
+            "required": false
+          },
+          {
+            "name": "panelCollapsed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "panelMaximized",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
           }
         ]
       },

@@ -77,11 +77,19 @@ const DESCRIPTIONS = {
   Masonry:
     'pinboard layout: JS greedy column distribution balances children across `columns` (order-first, shortest-column-next).',
   Resizable:
-    'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); also exported as `SplitterGroup`/`SplitterPanel`/`SplitterHandle` (AntD-style naming).',
+    'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence; also exported as `SplitterGroup`/`SplitterPanel`/`SplitterHandle`.',
   ScrollArea:
     'scrollable region with custom-styled thin scrollbars and `maxHeight`.',
   Sidebar:
     'app sidebar shell with controllable collapsed state (`aside` + rail width tokens).',
+  ActivityRail:
+    'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
+  StatusBar:
+    'VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.',
+  TabBar:
+    'mobile bottom navigation (the ActivityRail viewport peer): 56px strip with safe-area inset, icon+label items, badge, `onSelect`/`onReselect` (tap-active-again) semantics.',
+  Workbench:
+    'IDE-style application frame (`100dvh`): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable, collapsible regions (`ControlOrValue`), maximizable bottom panel; below 768px side regions become overlays and the tabBar takes over.',
 
   // Forms
   Cascader:
@@ -165,6 +173,8 @@ const DESCRIPTIONS = {
   Progress: 'progress bar or circle driven by a percentage `value`.',
   QRCode:
     'QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.',
+  Sparkline:
+    'inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.',
   Stat: 'metric display with title, value and trend indicator.',
   Table: 'styled semantic table (`striped`, `bordered`).',
   Timeline: 'vertical timeline container for `TimelineItem` children.',
@@ -188,7 +198,8 @@ const DESCRIPTIONS = {
   NavigationBar: 'top nav bar with `brand` and `end` slots.',
   Pagination: 'page navigation with controllable `page` and ellipsis windows.',
   Stepper: 'step indicator driven by `activeStep` (`Step` children).',
-  Tabs: 'tab panel switcher with controllable active tab.',
+  Tabs:
+    'tab panel switcher with controllable active tab; document affordances on `Tab` (`icon`, `status` dot, `closable` ×/Delete) and `TabList` overflow ⋯ menu; `SortableTabList` adds dnd-kit drag reordering.',
   Toolbar:
     'button group with toolbar a11y (roving tabindex; `ToolbarButton`, `ToolbarSeparator`).',
   Tour:
@@ -464,6 +475,16 @@ A self-contained, machine-executable setup protocol — every step is copy-paste
 
 To install the agent components via the shadcn CLI instead, see README ›
 Install via shadcn CLI.
+
+## Accessibility references
+
+Two docs-site references cover the accessibility surface: the per-component
+keyboard & ARIA contract tables (<https://wmzy.github.io/haze-ui/guides/a11y-contracts>
+— roles, \`aria-*\` attributes and handled keys per component, extracted from each
+component's test suite by \`scripts/generate-a11y-contracts.mjs\`) and the streaming
+a11y guide (<https://wmzy.github.io/haze-ui/guides/streaming-a11y> — live-region
+patterns for transient UI: aria-busy placement, throttled announcements,
+interruption tiers, async option loading and lazy trees).
 
 ## Links
 

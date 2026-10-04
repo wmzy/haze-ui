@@ -5,14 +5,14 @@ import type {
   ToastPromiseOptions,
   ToastUpdateOptions,
   ToastVariantOptions,
-} from './toast';
+} from './toast-channel';
 
 import {useMemo} from 'react';
 
 import {useConfigDefaults} from '../ConfigProvider/useConfigDefaults';
 
 import {useToastContext} from './ToastContext';
-import {driveToastPromise} from './toast';
+import {driveToastPromise} from './toast-channel';
 
 /**
  * The `useToast()` return value: the toast trigger itself (returns the id,

@@ -236,6 +236,13 @@ const deDE: HazeStrings = {
   streamingText: {
     generating: 'Wird generiert',
   },
+  tabs: {
+    close: 'Schließen',
+    moreTabs: 'Weitere Tabs',
+    statusDirty: 'Ungespeicherte Änderungen',
+    statusError: 'Fehler',
+    statusSyncing: 'Synchronisiert',
+  },
   tag: {
     remove: 'Entfernen',
   },

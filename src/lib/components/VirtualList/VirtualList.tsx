@@ -15,6 +15,7 @@ import {
 import { css } from '@linaria/core';
 
 import { getDirection } from '../../utils/direction';
+import { useEndReached } from '../../utils/use-end-reached';
 
 /** Orientation of the scroll axis. */
 type VirtualListOrientation = 'vertical' | 'horizontal';
@@ -130,6 +131,25 @@ type VirtualListProps<T> = {
    * rows along the scroll axis, and columns in grid mode.
    */
   overscan?: number;
+  /**
+   * Fired when the scroll offset comes within `endReachedThreshold` px of
+   * the content's end along the scroll axis — the infinite-scroll "load
+   * the next page" trigger. Entering the zone fires once; staying inside
+   * it does not re-fire; scrolling back out re-arms, and content growth
+   * (a longer `items` array) re-arms too, so a list that is still short
+   * after a page load chains straight into the next one. Content shorter
+   * than the scrollport on mount fires immediately. In `reverse` mode the
+   * end edge mirrors to the scroll start (index 0 anchors to the end
+   * edge): the trigger fires as the *oldest* edge approaches. When the
+   * prop is omitted the check costs nothing.
+   */
+  onEndReached?: () => void;
+  /**
+   * Distance in px from the content end that arms `onEndReached`.
+   * Defaults to `200`. Measured along the scroll axis from the far edge
+   * of the scroll range (in `reverse` mode, from the scroll start).
+   */
+  endReachedThreshold?: number;
   /**
    * Chat orientation (opt-in): units anchor to the scrollport's end edge
    * (vertical: bottom; horizontal: inline-end) with index 0 at that edge
@@ -279,6 +299,8 @@ export default function VirtualList<T>({
   groups,
   renderItem,
   overscan = 5,
+  onEndReached,
+  endReachedThreshold,
   reverse = false,
   className,
   style,
@@ -328,6 +350,23 @@ export default function VirtualList<T>({
   const observerRef = useRef<ResizeObserver | null>(null);
   const prefixCacheRef = useRef<PrefixCache | null>(null);
 
+  // Infinite-scroll trigger (see useEndReached for the arm/fire
+  // semantics). `attach: false`: the check rides the scroll handler below
+  // instead of a second listener. `fromStart: reverse` mirrors the end
+  // edge; the reverse glue effect below re-checks after re-parking (the
+  // hook skips its own mount check in that mode — position is provisional
+  // until the glue anchors it).
+  const checkEndReached = useEndReached({
+    ref: containerRef,
+    onEndReached,
+    threshold: endReachedThreshold ?? 200,
+    contentUnits: items.length,
+    axis: horizontal ? 'x' : 'y',
+    fromStart: reverse,
+    extentFallback: horizontal ? width : height,
+    attach: false,
+  });
+
   const handleScroll = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -343,7 +382,8 @@ export default function VirtualList<T>({
       }
     }
     if (isGrid) setScrollCross(readScrollOffset(el, 'x'));
-  }, [horizontal, reverse, height, width, isGrid]);
+    checkEndReached();
+  }, [horizontal, reverse, height, width, isGrid, checkEndReached]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -371,7 +411,9 @@ export default function VirtualList<T>({
     // Programmatic scrolling does not fire a synchronous scroll event —
     // sync the internal offset directly.
     setScrollMain(readScrollOffset(el, horizontal ? 'x' : 'y'));
-  }, [reverse, horizontal, width, items, measureVersion, height]);
+    // The re-park may cross into (or out of) the end zone — re-check.
+    checkEndReached();
+  }, [reverse, horizontal, width, items, measureVersion, height, checkEndReached]);
 
   // Horizontal and grid modes window along the x axis, whose extent is the
   // rendered clientWidth (vertical/grid ports have no width prop). Tracked

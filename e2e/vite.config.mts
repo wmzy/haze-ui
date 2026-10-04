@@ -63,6 +63,8 @@ export default defineConfig({
         path.resolve(repoRoot, 'e2e/app/components/rtl-floating.html'),
         path.resolve(repoRoot, 'e2e/app/components/keyboard-critical.html'),
         path.resolve(repoRoot, 'e2e/app/components/mobile.html'),
+        path.resolve(repoRoot, 'e2e/app/components/screen-reader.html'),
+        path.resolve(repoRoot, 'e2e/app/components/wcag22.html'),
       ],
     },
   },

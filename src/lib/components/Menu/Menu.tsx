@@ -41,6 +41,9 @@ const container = css`
 `;
 
 const panel = css`
+  /* min-width pairs with padding + border: border-box keeps the floor
+   * covering the padding too (panel-family box-sizing contract). */
+  box-sizing: border-box;
   min-width: 160px;
   padding: var(--haze-space-1) 0;
   border: 1px solid var(--haze-color-border);

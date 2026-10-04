@@ -1283,6 +1283,226 @@ describe('VirtualList', () => {
     });
   });
 
+  describe('end reached (onEndReached)', () => {
+    // The mount-time check reads the scroll metrics during the initial
+    // effect, before the element is reachable from the test — so both are
+    // mocked on the prototype (same pattern as the reverse suite's
+    // scrollHeight spy). clientHeight keeps its jsdom 0: the hook falls
+    // back to the `height` prop as the port extent.
+    let scrollHeightSpy: MockInstance;
+    let scrollWidthSpy: MockInstance;
+
+    beforeEach(() => {
+      scrollHeightSpy = vi
+        .spyOn(Element.prototype, 'scrollHeight', 'get')
+        .mockReturnValue(4000);
+      scrollWidthSpy = vi
+        .spyOn(Element.prototype, 'scrollWidth', 'get')
+        .mockReturnValue(4000);
+    });
+
+    afterEach(() => {
+      scrollHeightSpy.mockRestore();
+      scrollWidthSpy.mockRestore();
+    });
+
+    it('fires once when scrolled into the threshold zone (boundary-exact)', () => {
+      const onEndReached = vi.fn();
+      const { container } = render(
+        <VirtualList
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      const port = getScrollport(container);
+      // 4000 total − 400 port − 200 (default) threshold: offset 3399 is
+      // 1px short of the zone, 3400 lands exactly on its boundary.
+      scrollToList(port, 3399);
+      expect(onEndReached).not.toHaveBeenCalled();
+      scrollToList(port, 3400);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      // Staying inside the zone — deeper, then back — does not re-fire.
+      scrollToList(port, 3500);
+      scrollToList(port, 3450);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-arms after scrolling back out of the zone', () => {
+      const onEndReached = vi.fn();
+      const { container } = render(
+        <VirtualList
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      const port = getScrollport(container);
+      scrollToList(port, 3400);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      scrollToList(port, 0);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      scrollToList(port, 3400);
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('honors a custom endReachedThreshold', () => {
+      const onEndReached = vi.fn();
+      const { container } = render(
+        <VirtualList
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+          endReachedThreshold={600}
+        />,
+      );
+      const port = getScrollport(container);
+      // Zone starts at 4000 − 400 − 600 = 3000.
+      scrollToList(port, 2999);
+      expect(onEndReached).not.toHaveBeenCalled();
+      scrollToList(port, 3000);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+    });
+
+    it('fires on mount for short content and chains when growth stays in-zone', () => {
+      scrollHeightSpy.mockReturnValue(300);
+      const onEndReached = vi.fn();
+      const { rerender } = render(
+        <VirtualList
+          items={items.slice(0, 5)}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      // 300 total against a 400px port: the content does not fill the
+      // port, so the mount check fires immediately.
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      // A page lands (list grows) but the content still does not clear
+      // the zone — the growth re-arm fires the next page right away.
+      scrollHeightSpy.mockReturnValue(500);
+      rerender(
+        <VirtualList
+          items={items.slice(0, 10)}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not re-fire on growth that leaves the zone until scrolled again', () => {
+      const onEndReached = vi.fn();
+      const { container, rerender } = render(
+        <VirtualList
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      const port = getScrollport(container);
+      scrollToList(port, 3400);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      // Content grows well past the zone; the reader is now far from the
+      // end, so the growth re-arm stays silent.
+      scrollHeightSpy.mockReturnValue(5000);
+      rerender(
+        <VirtualList
+          items={[...items, 'Extra 1', 'Extra 2']}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      // The zone is now 5000 − 400 − 200 → offset 4400.
+      scrollToList(port, 4400);
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('works along the horizontal axis', () => {
+      const onEndReached = vi.fn();
+      const { container } = render(
+        <VirtualList
+          orientation="horizontal"
+          items={items}
+          height={200}
+          width={400}
+          itemHeight={80}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      const port = getScrollport(container);
+      // Same math on the x axis: 4000 − 400 (width prop fallback) − 200.
+      scrollAlong(port, 3399);
+      expect(onEndReached).not.toHaveBeenCalled();
+      scrollAlong(port, 3400);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+    });
+
+    it('mirrors the end edge to the scroll start in reverse mode', () => {
+      const onEndReached = vi.fn();
+      const { container } = render(
+        <VirtualList
+          reverse
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+          onEndReached={onEndReached}
+        />,
+      );
+      const port = getScrollport(container);
+      // The glue parks the port at the end edge (scrollTop 3600) — the
+      // logical *start* of a reverse list; no fire at mount.
+      expect(port.scrollTop).toBe(3600);
+      expect(onEndReached).not.toHaveBeenCalled();
+      // Scrolling toward the oldest content approaches the physical
+      // start edge, which is the mirrored "end".
+      scrollToList(port, 200);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      scrollToList(port, 150);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      // Back to the newest edge re-arms; approaching the start refires.
+      scrollToList(port, 3600);
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+      scrollToList(port, 100);
+      expect(onEndReached).toHaveBeenCalledTimes(2);
+    });
+
+    it('is silent without a handler', () => {
+      const { container } = render(
+        <VirtualList
+          items={items}
+          height={400}
+          itemHeight={40}
+          renderItem={renderItem}
+        />,
+      );
+      const port = getScrollport(container);
+      scrollToList(port, 3400);
+      // The window still tracks the scroll position.
+      expect(screen.getByText('Item 85')).toBeInTheDocument();
+      expect(() => {
+        scrollToList(port, 0);
+        scrollToList(port, 3400);
+      }).not.toThrow();
+    });
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(

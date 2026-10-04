@@ -12,7 +12,7 @@ import {useStrings} from '../LocaleProvider';
 
 import Toast from './Toast';
 import {ToastProvider,applyToastPatch, deferredCopyKey} from './ToastContext';
-import {nextToastId, subscribeToastChannel} from './toast';
+import {nextToastId, subscribeToastChannel} from './toast-channel';
 
 type ToastPlacement =
   | 'top-left'

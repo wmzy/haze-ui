@@ -233,6 +233,13 @@ const defaultStrings = {
   streamingText: {
     generating: 'Generating',
   },
+  tabs: {
+    close: 'Close',
+    moreTabs: 'More tabs',
+    statusDirty: 'Unsaved changes',
+    statusError: 'Error',
+    statusSyncing: 'Syncing',
+  },
   tag: {
     remove: 'Remove',
   },

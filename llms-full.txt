@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 122 Haze UI components in one
-> file (226 type tables), generated from the library source. Do not
+> Complete props reference for all 127 Haze UI components in one
+> file (235 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -66,6 +66,33 @@ import { Accordion, AccordionItem } from 'haze-ui';
 | `exclusive` | `boolean` | `false` | Only one item open at a time (uses name attribute) |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | AccordionItem elements |
+
+## ActivityRail
+
+```jsx
+import { ActivityRail, ActivityRailItem } from 'haze-ui';
+```
+
+### ActivityRailItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `icon` | `ReactNode` | — | Item icon (rendered centered in the 44px target) |
+| `label` | `string` | — | Item name — drives the tooltip and the accessible name |
+| `badge` | `ReactNode` | — | Overlay badge (usually <Badge/>) — counters like pending reviews |
+| `active` | `boolean` | `false` | Marks the current view: aria-current + the 2px rail-side indicator |
+| `onSelect` | `() => void` | — | Selection callback |
+| `slot` | `'start' \| 'end'` | `'start'` | end slots pin to the rail bottom (settings/account entries) |
+| `...rest` | `button attributes` | — | Native button props (type=button is built in) |
+
+### ActivityRailProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | ActivityRailItem elements |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
+| `className` | `string` | — | Additional CSS class |
+| `...rest` | `nav attributes` | — | Renders a nav landmark — pass aria-label via rest |
 
 ## Affix
 
@@ -429,7 +456,7 @@ import { Chart } from 'haze-ui';
 | `xKey` | `keyof T & string` | — |  |
 | `height` | `number` | — |  |
 | `innerRadius` | `string \| number` | — |  |
-| `layout` | `'horizontal' \| 'vertical'` | — |  |
+| `layout` | `'vertical' \| 'horizontal'` | — |  |
 | `renderTooltip` | `(payload: ChartTooltipPayload<T>) => ReactNode` | — |  |
 | `showLegend` | `boolean` | — |  |
 | `showGrid` | `boolean` | — |  |
@@ -623,7 +650,7 @@ import { ColorPicker, ColorPickerCore } from 'haze-ui';
 | `recent` | `boolean` | — | Tracks recently used colors (last 10, newest first) as internal state |
 | `className` | `string` | — | Additional CSS class (the panel card) |
 | `aria-label` | `string` | — | Accessible name of the trigger and the panel; defaults to the locale's "Pick color". Set it when more than one picker is on a page |
-| `ref` | `Ref<HTMLDivElement \| HTMLButtonElement>` | — |  |
+| `ref` | `Ref<HTMLButtonElement \| HTMLDivElement>` | — |  |
 
 ## Combobox
 
@@ -861,6 +888,7 @@ import { ConversationList, ConversationItem } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | — | ConversationItem elements |
+| `onLoadMore` | `() => void` | — |  |
 | `className` | `string` | — | Additional CSS class |
 
 ## CountUp
@@ -1101,7 +1129,7 @@ import { Divider } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Direction of the divider |
+| `orientation` | `'vertical' \| 'horizontal'` | `'horizontal'` | Direction of the divider |
 | `className` | `string` | — | Additional CSS class |
 
 ## Drawer
@@ -1577,6 +1605,7 @@ import { List, ListItem } from 'haze-ui';
 | `variant` | `'none' \| 'unordered' \| 'ordered'` | `'unordered'` | List style |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | ListItem elements |
+| `loadMore` | `ReactNode` | — |  |
 
 ## LocaleProvider
 
@@ -1605,6 +1634,7 @@ import { LogViewer } from 'haze-ui';
 | --- | --- | --- | --- |
 | `logs` | `LogEntry[]` | — | Array of { level, message, timestamp? } |
 | `filter` | `ControlOrValue<LogLevel \| null>` | — | Active level filter (controllable) |
+| `onLoadMore` | `() => void` | — |  |
 | `className` | `string` | — | Additional CSS class |
 
 ### LogEntry
@@ -2066,22 +2096,31 @@ import { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, Splitte
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout direction |
+| `direction` | `'vertical' \| 'horizontal'` | `'horizontal'` | Layout direction |
 | `children` | `ReactNode` | — | ResizablePanel and ResizableHandle elements |
 | `className` | `string` | — | Additional CSS class |
+| `style` | `CSSProperties` | — |  |
+| `onResizeCommit` | `(sizes: Record<string, number>) => void` | — | Fires once when a drag or keyboard resize settles, mapping fixed-panel ids to their committed px sizes — the persistence hook (write it back into a store or Control) |
 | `SplitterGroup · SplitterPanel · SplitterHandle` | `aliases` | — | AntD migration entry: `import { SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui'` maps 1:1 onto ResizableGroup / ResizablePanel / ResizableHandle (same props) |
 
 ### ResizableHandleProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `className` | `string` | — |  |
+| `className` | `string` | — | Additional CSS class |
+| `...rest` | `div attributes` | — | role=separator with aria-orientation/valuenow is built in; arrow keys resize in 16px steps, Enter or double-click resets the adjacent panel to its defaultSize, and the hit area widens to 44px on coarse pointers |
 
 ### ResizablePanelProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `defaultSize` | `number` | `50` | Default size as percentage |
+| `id` | `string` | — | Stable panel identity — keys the sizes map reported by onResizeCommit; keep it stable across renders for persistence |
+| `defaultSize` | `number` | — | Initial size in px. Omit to make the panel flexible (it absorbs the remaining space); changing this prop after a resize re-pins the panel outside gestures |
+| `minSize` | `number` | `—` | Clamp in px enforced by both pointer drags and keyboard steps |
+| `maxSize` | `number` | `—` | Clamp in px enforced by both pointer drags and keyboard steps |
+| `collapsible` | `boolean` | `false` | Enables collapse semantics: the panel collapses to zero width/height and its handle becomes a keyboard-reachable expander |
+| `collapsed` | `ControlOrValue<boolean>` | — | Controlled/uncontrolled collapsed state — survives breakpoint flips (desktop dock ⇄ mobile overlay) as one source of truth |
+| `onCollapsedChange` | `(collapsed: boolean) => void` | — | Notifies on collapse toggles (handle expander, resets crossing the threshold) |
 | `children` | `ReactNode` | — | Panel content |
 | `className` | `string` | — | Additional CSS class |
 
@@ -2365,6 +2404,23 @@ import { Sources } from 'haze-ui';
 | `collapseLabel` | `string` | — |  |
 | `className` | `string` | — |  |
 
+## Sparkline
+
+```jsx
+import { Sparkline, sparklineToneStrokes, sparklineToneFills } from 'haze-ui';
+```
+
+### SparklineProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `data` | `readonly number[]` | — |  |
+| `width` | `number` | — |  |
+| `height` | `number` | — |  |
+| `variant` | `'area' \| 'line'` | — |  |
+| `tone` | `'info' \| 'success' \| 'warning' \| 'danger' \| 'primary'` | — |  |
+| `className` | `string` | — |  |
+
 ## Spinner
 
 ```jsx
@@ -2403,6 +2459,30 @@ import { Stat, StatGroup } from 'haze-ui';
 | `prefix` | `ReactNode` | — | Content before value |
 | `suffix` | `ReactNode` | — | Content after value |
 | `className` | `string` | — | Additional CSS class |
+
+## StatusBar
+
+```jsx
+import { StatusBar, StatusItem } from 'haze-ui';
+```
+
+### StatusBarProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `left` | `ReactNode` | — | Left-aligned items (branch, problems, cursor position…) |
+| `right` | `ReactNode` | — | Right-aligned items (language, encoding, sync state…) |
+| `className` | `string` | — | Additional CSS class |
+| `...rest` | `footer attributes` | — | Renders a footer landmark — pass aria-label via rest |
+
+### StatusItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Item content |
+| `priority` | `boolean` | `false` | Priority items survive the ≤768px breakpoint (non-priority items are hidden there) |
+| `onSelect` | `() => void` | — | Presence switches the item to a button; omit for plain text |
+| `...rest` | `span \| button attributes` | — | Native props forwarded to the rendered element |
 
 ## StepTimeline
 
@@ -2511,6 +2591,32 @@ import { Switch, SwitchCore } from 'haze-ui';
 | `disabled` | `boolean` | `false` | Disable the switch |
 | `className` | `string` | — | Additional CSS class |
 
+## TabBar
+
+```jsx
+import { TabBar, TabBarItem } from 'haze-ui';
+```
+
+### TabBarItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `icon` | `ReactNode` | — | Item icon (above the label) |
+| `label` | `string` | — | Item name — rendered under the icon and used as the accessible name |
+| `badge` | `ReactNode` | — | Overlay badge (usually <Badge/>) |
+| `active` | `boolean` | `false` | Marks the current view: aria-current + the 2px top indicator |
+| `onSelect` | `() => void` | — | Fires when a non-active item is tapped |
+| `onReselect` | `() => void` | — | Fires when the already-active item is tapped again — the 'tap-again-to-dismiss/back-to-root' affordance |
+| `...rest` | `button attributes` | — | Native button props (type=button is built in) |
+
+### TabBarProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | TabBarItem elements (horizontally distributed; safe-area aware) |
+| `className` | `string` | — | Additional CSS class |
+| `...rest` | `nav attributes` | — | Renders a nav landmark — pass aria-label via rest. Positioning (fixed) is left to the Workbench or the consumer |
+
 ## Table
 
 ```jsx
@@ -2558,15 +2664,26 @@ import { Table, TableHead, TableBody, TableRow, TableCell } from 'haze-ui';
 ## Tabs
 
 ```jsx
-import { Tabs, TabList, Tab, TabPanel } from 'haze-ui';
+import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 ```
+
+### SortableTabListProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Tab elements (drag reordering via dnd-kit; keyboard lift via Space, drop via Enter, cancel via Escape). Note: the ⋯ overflow menu is not rendered in the sortable variant — keep the strip scrollable instead |
+| `className` | `string` | — | Additional CSS class |
+| `onReorder` | `(nextOrder: number[]) => void` | — | Reports the new index order when a drag or keyboard sort settles — re-rendering the tabs is the owner's job |
 
 ### TabListProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `className` | `string` | — |  |
-| `children` | `ReactNode` | — |  |
+| `className` | `string` | — | Additional CSS class |
+| `listRef` | `RefObject<HTMLDivElement \| null>` | — |  |
+| `overflowLabel` | `string` | — | Overrides the ⋯ overflow button's accessible label (default from the tabs locale pack: More tabs) |
+| `children` | `ReactNode` | — | Tab elements; overflowing tabs stay reachable through the ⋯ menu, and the strip scrolls horizontally as the fallback |
+| `tabMetas` | `TabMeta[]` | — |  |
 
 ### TabPanelProps
 
@@ -2581,6 +2698,12 @@ import { Tabs, TabList, Tab, TabPanel } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `string` | — | Unique value identifying this tab |
+| `icon` | `ReactNode` | — | Leading icon slot (aria-hidden — decorative) |
+| `status` | `TabStatus` | — | Status dot: dirty=neutral, error=danger, syncing=primary; the SR status word comes from the tabs locale pack unless statusLabel overrides it |
+| `statusLabel` | `ReactNode` | — | Overrides the status word appended to the accessible name (the i18n hook for SR users) |
+| `closable` | `boolean` | `false` | Renders a close × (aria-label from the tabs locale pack, overridable via closeLabel); clicking or pressing Delete closes — unmounting the tab is the owner's job via onClose |
+| `closeLabel` | `string` | — | Overrides the close button's accessible label |
+| `onClose` | `(event: MouseEvent<HTMLSpanElement, MouseEvent> \| KeyboardEvent<HTMLDivElement>) => void` | — | Close notification — pure notification, the controlled tabs array is the owner's to mutate |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Tab label |
 
@@ -2910,7 +3033,7 @@ import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `'horizontal' \| 'vertical'` | — |  |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
 
@@ -3243,6 +3366,8 @@ import { VirtualList } from 'haze-ui';
 | `groups` | `VirtualListGroup[]` | — |  |
 | `renderItem` | `(item: T, index: number) => ReactNode` | — | Item renderer |
 | `overscan` | `number` | `5` | Extra items to render outside viewport |
+| `onEndReached` | `() => void` | — |  |
+| `endReachedThreshold` | `number` | — |  |
 | `reverse` | `boolean` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `ref` | `Ref<VirtualListHandle>` | — |  |
@@ -3265,4 +3390,34 @@ import { Watermark } from 'haze-ui';
 | `zIndex` | `number` | `9` | Overlay stacking order |
 | `fullscreen` | `boolean` | `false` | Cover the whole viewport (fixed layer) instead of the container |
 | `children` | `ReactNode` | — | Content to watermark; with children the component acts as their container |
+| `className` | `string` | — | Additional CSS class |
+
+## Workbench
+
+```jsx
+import { Workbench } from 'haze-ui';
+```
+
+### WorkbenchProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `activityBar` | `ReactNode` | — | Left icon rail slot (usually <ActivityRail/>) — hidden below 768px where the tabBar takes over |
+| `activityBarPosition` | `ControlOrValue<'top' \| 'bottom' \| 'side'>` | — |  |
+| `sidebar` | `ReactNode` | — | Primary side region (explorer, search…); docked+resizable on desktop, a scrimmed overlay on mobile |
+| `auxiliaryBar` | `ReactNode` | — | Secondary side region (inspector) docked right; also overlay below 768px |
+| `panel` | `ReactNode` | — | Bottom panel region (terminal/output/problems); docked+resizable on desktop, hidden on mobile — surface it as a view there |
+| `statusBar` | `ReactNode` | — | Status strip slot (usually <StatusBar/>) |
+| `tabBar` | `ReactNode` | — | Mobile bottom navigation slot (usually <TabBar/>); hidden on desktop |
+| `sidebarWidth` | `ControlOrValue<number>` | — |  |
+| `sidebarCollapsed` | `ControlOrValue<boolean>` | — |  |
+| `mobileSidebarOpen` | `ControlOrValue<boolean>` | — |  |
+| `auxiliaryBarWidth` | `ControlOrValue<number>` | — |  |
+| `auxiliaryBarCollapsed` | `ControlOrValue<boolean>` | — |  |
+| `panelHeight` | `ControlOrValue<number>` | — |  |
+| `panelCollapsed` | `ControlOrValue<boolean>` | — |  |
+| `panelMaximized` | `ControlOrValue<boolean>` | — | Maximizes the bottom panel over the main area (VSCode ctrl+J style); reversible through the same Control |
+| `children` | `ReactNode` | — | Main editor area — compose freely (Tabs + TabPanel, anything) |
+| `sidebarWidth / auxiliaryBarWidth / panelHeight` | `Control<number> \| number` | — | Region sizes in px — plain props double as defaults after a resize (commit via the internal group's onResizeCommit semantics) |
+| `sidebarCollapsed / auxiliaryBarCollapsed / panelCollapsed` | `Control<boolean> \| boolean` | — | Region visibility — one source of truth across breakpoints: docked collapse on desktop reads as the overlay being closed on mobile |
 | `className` | `string` | — | Additional CSS class |

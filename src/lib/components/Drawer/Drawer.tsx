@@ -50,6 +50,11 @@ type DrawerProps = {
 
 const overlay = css`
   border: none;
+  /* The placement classes size this box (width/height + max-width);
+   * border-box keeps consumer padding and the forced-colors boundary
+   * inside the declared size (the mobile-overflow contract, Dialog's
+   * precedent). */
+  box-sizing: border-box;
   padding: 0;
   background: var(--haze-color-bg);
   color: var(--haze-color-text);

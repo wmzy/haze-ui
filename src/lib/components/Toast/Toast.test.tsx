@@ -8,7 +8,7 @@ import Toast from './Toast';
 import ToastContainer, { toastPlacements } from './ToastContainer';
 import { useToastContext } from './ToastContext';
 import useToast from './useToast';
-import { toast } from './toast';
+import { toast } from './toast-channel';
 
 /** Renders the live toast list length inside the container. */
 function ToastCount() {

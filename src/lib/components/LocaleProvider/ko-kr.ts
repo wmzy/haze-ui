@@ -236,6 +236,13 @@ const koKR: HazeStrings = {
   streamingText: {
     generating: '생성 중',
   },
+  tabs: {
+    close: '닫기',
+    moreTabs: '탭 더 보기',
+    statusDirty: '저장되지 않은 변경 사항',
+    statusError: '오류',
+    statusSyncing: '동기화 중',
+  },
   tag: {
     remove: '제거',
   },

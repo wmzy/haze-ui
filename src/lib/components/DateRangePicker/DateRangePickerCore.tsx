@@ -64,6 +64,9 @@ const inputsRow = css`
 
 const panel = css`
   margin-block-start: var(--haze-space-2);
+  /* max-width pairs with the border: border-box keeps the boundary
+   * inside the 100% bound (panel-family box-sizing contract). */
+  box-sizing: border-box;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);
   background: var(--haze-color-bg);

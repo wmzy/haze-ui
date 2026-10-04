@@ -9,6 +9,11 @@ type BreadcrumbItemProps = {
 };
 
 const link = css`
+  display: inline-flex;
+  align-items: center;
+  /* WCAG 2.5.8 target-size floor: a bare inline link's box collapses
+     to the text line height (~19px). */
+  min-height: var(--haze-space-6);
   color: var(--haze-color-primary);
   text-decoration: none;
   transition: color var(--haze-duration-fast);

@@ -236,6 +236,13 @@ const frFR: HazeStrings = {
   streamingText: {
     generating: 'Génération en cours',
   },
+  tabs: {
+    close: 'Fermer',
+    moreTabs: "Plus d'onglets",
+    statusDirty: 'Modifications non enregistrées',
+    statusError: 'Erreur',
+    statusSyncing: 'Synchronisation',
+  },
   tag: {
     remove: 'Retirer',
   },

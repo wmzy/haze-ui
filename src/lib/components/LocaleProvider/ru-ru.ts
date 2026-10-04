@@ -236,6 +236,13 @@ const ruRU: HazeStrings = {
   streamingText: {
     generating: 'Генерация',
   },
+  tabs: {
+    close: 'Закрыть',
+    moreTabs: 'Ещё вкладки',
+    statusDirty: 'Несохранённые изменения',
+    statusError: 'Ошибка',
+    statusSyncing: 'Синхронизация',
+  },
   tag: {
     remove: 'Удалить',
   },

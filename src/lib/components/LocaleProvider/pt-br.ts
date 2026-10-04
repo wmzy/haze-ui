@@ -237,6 +237,13 @@ const ptBR: HazeStrings = {
   streamingText: {
     generating: 'Gerando',
   },
+  tabs: {
+    close: 'Fechar',
+    moreTabs: 'Mais abas',
+    statusDirty: 'Alterações não salvas',
+    statusError: 'Erro',
+    statusSyncing: 'Sincronizando',
+  },
   tag: {
     remove: 'Remover',
   },
