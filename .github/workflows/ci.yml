@@ -78,17 +78,20 @@ jobs:
   #      (System Settings → Privacy & Security → Accessibility)
   #   2. npx @guidepup/setup setup && npx @guidepup/setup install
   #   3. pnpm exec playwright test screen-reader --config e2e/playwright.config.ts
-  # Non-blocking until calibrated on a real macOS runner: the first
-  # execution (run 37125418177) hangs in beforeEach before any VoiceOver
-  # step (page never paints under the guidepup-driven headed Chromium),
-  # so the contracts have never been green. continue-on-error keeps the
-  # announcement gate observable without pinning every PR red; flip it
-  # off once a green run exists. Failure artifacts (trace.zip /
+  # Announcement capture notes (calibrated on the CI runner, run
+  # 37173802176 green): the spec drives VoiceOver through its own
+  # command channel (act/next/press) — CDP-dispatched clicks and
+  # keystrokes never reached the spoken-phrase log in the CI VM —
+  # and guidepup's voiceOverStartOptions must be { capture: true },
+  # since the default "initial" records only the first page of
+  # output. The dialog/toast assertions check the AT-layer
+  # exposure (cursor lands → name/message announced): this VM's
+  # Chromium does not route automatic dialog-open or live-region
+  # announcements to VoiceOver. Failure artifacts (trace.zip /
   # error-context.md) are uploaded so the macOS environment is
   # diagnosable remotely.
   screen-reader:
     runs-on: macos-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
