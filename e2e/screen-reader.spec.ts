@@ -88,13 +88,50 @@ async function expectAnnounced(
 }
 
 test.describe('VoiceOver smoke', () => {
-  test.beforeEach(async ({ page, voiceOver }) => {
+  test.beforeEach(async ({ page, voiceOver }, testInfo) => {
     // VoiceOver startup (per-test fixture) plus the item-chooser
-    // navigation dance comfortably exceed the default 30s budget, and
-    // per-test fixture setup counts against it.
+    // navigation dance comfortably exceed the default 30s budget,
+    // and per-test fixture setup counts against it.
     test.setTimeout(180_000);
+    // The macOS runner is a black box: capture every console and
+    // page error so a module-graph crash surfaces in the job log
+    // instead of a blank-root timeout.
+    const consoleErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      consoleErrors.push(`pageerror: ${error.message}`);
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        consoleErrors.push(`console: ${message.text()}`);
+      }
+    });
     await page.goto('/components/screen-reader');
-    await page.locator('#dialog-opener').waitFor();
+    // Cold-start guard: this job is the ONLY consumer of the harness
+    // (the Linux e2e run never loads it), so its first navigation is
+    // the dev server's first real module-graph request — a load can
+    // race vite's graph warm-up and deliver a blank root. Give the
+    // warm graph one reload before declaring failure.
+    if ((await page.locator('#dialog-opener').count()) === 0) {
+      await page.reload();
+    }
+    // Fail fast: a local dev server renders in well under 30s, so a
+    // miss is a real failure — dump the DOM and captured errors for
+    // remote diagnosis rather than burning the full 180s budget.
+    try {
+      await page
+        .locator('#dialog-opener')
+        .waitFor({ state: 'attached', timeout: 30_000 });
+    } catch (error) {
+      const html = await page.content();
+      throw new Error(
+        `screen-reader harness never rendered (blank root?). ` +
+          `console: ${consoleErrors.join(' | ') || 'none'}\n` +
+          `html: ${html.slice(0, 2000)}\n` +
+          `${testInfo.title}: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+      );
+    }
     // Move the VoiceOver cursor from the browser chrome into the page
     // content (guidepup's item-chooser dance); also brings the browser
     // window to front.
