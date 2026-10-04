@@ -65,6 +65,13 @@ test.use({
   // Chromium instance never exposes its AX tree to VoiceOver. macOS
   // runners support headed browsers natively (no xvfb needed).
   headless: false,
+  // guidepup's default capture: "initial" records only the first
+  // "page" of VoiceOver output — the announcements these tests
+  // assert (dialog open, menu focus, toast) are produced AFTER the
+  // initial navigation, so they were silently dropped from
+  // spokenPhraseLog() and every assertion failed with the stale
+  // "Open dialog button" phrase. Full capture fixes that.
+  voiceOverStartOptions: { capture: true },
 });
 
 // VoiceOver is a per-machine singleton: never run these tests in
@@ -106,11 +113,10 @@ test.describe('VoiceOver smoke', () => {
       }
     });
     await page.goto('/components/screen-reader');
-    // Cold-start guard: this job is the ONLY consumer of the harness
-    // (the Linux e2e run never loads it), so its first navigation is
-    // the dev server's first real module-graph request — a load can
-    // race vite's graph warm-up and deliver a blank root. Give the
-    // warm graph one reload before declaring failure.
+    // Resilience guard: if the harness somehow fails to
+    // render (e.g. a module-graph hiccup on the first
+    // navigation of a fresh dev server), give the warm
+    // graph one reload before declaring failure.
     if ((await page.locator('#dialog-opener').count()) === 0) {
       await page.reload();
     }
