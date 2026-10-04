@@ -17,7 +17,7 @@ import LocaleProvider from '../LocaleProvider/LocaleProvider';
 import Pagination from '../Pagination/Pagination';
 import ToastContainer, { toastPlacements } from '../Toast/ToastContainer';
 import useToast from '../Toast/useToast';
-import { toast } from '../Toast/toast';
+import { toast } from '../Toast/toast-channel';
 import Tooltip from '../Tooltip/Tooltip';
 
 import ConfigProvider from './ConfigProvider';
