@@ -683,6 +683,33 @@
             "name": "square",
             "type": "boolean",
             "required": false
+          },
+          {
+            "name": "loading",
+            "type": "boolean | { icon?: ReactNode; text?: ReactNode; }",
+            "required": false
+          }
+        ],
+        "ButtonOwnProps": [
+          {
+            "name": "variant",
+            "type": "'solid' | 'outline' | 'ghost'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "square",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "loading",
+            "type": "boolean | { icon?: ReactNode; text?: ReactNode; }",
+            "required": false
           }
         ],
         "ButtonProps": [
@@ -699,6 +726,16 @@
           {
             "name": "square",
             "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "loading",
+            "type": "boolean | { icon?: ReactNode; text?: ReactNode; }",
+            "required": false
+          },
+          {
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]
@@ -1643,6 +1680,11 @@
             "required": false
           },
           {
+            "name": "classNames",
+            "type": "ComboboxClassNames",
+            "required": false
+          },
+          {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
             "required": false
@@ -1857,7 +1899,8 @@
       "routeKey": "confirm-dialog",
       "cssFamily": "confirm-dialog",
       "imports": [
-        "ConfirmDialog"
+        "ConfirmDialog",
+        "confirm"
       ],
       "propsTypes": {
         "ConfirmDialogProps": [
@@ -1889,7 +1932,7 @@
           {
             "name": "children",
             "type": "ReactNode",
-            "required": true
+            "required": false
           },
           {
             "name": "confirmText",
@@ -2468,6 +2511,83 @@
       },
       "otherTypes": {}
     },
+    "DateTimePicker": {
+      "routeKey": "date-time-picker",
+      "cssFamily": "date-time-picker",
+      "imports": [
+        "DateTimePicker"
+      ],
+      "propsTypes": {
+        "DateTimePickerProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "min",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "max",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "disabledDate",
+            "type": "(date: Date) => boolean",
+            "required": false
+          },
+          {
+            "name": "presets",
+            "type": "DatepickerPreset[]",
+            "required": false
+          },
+          {
+            "name": "showSeconds",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "weekStartsOn",
+            "type": "0 | 1",
+            "required": false
+          },
+          {
+            "name": "cellRender",
+            "type": "CalendarCellRender",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Datepicker": {
       "routeKey": "datepicker",
       "cssFamily": "datepicker",
@@ -2854,6 +2974,11 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "DrawerClassNames",
             "required": false
           },
           {
@@ -3254,6 +3379,28 @@
       },
       "otherTypes": {}
     },
+    "Fieldset": {
+      "routeKey": "fieldset",
+      "cssFamily": "fieldset",
+      "imports": [
+        "Fieldset"
+      ],
+      "propsTypes": {
+        "FieldsetProps": [
+          {
+            "name": "legend",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "FileInput": {
       "routeKey": "file-input",
       "cssFamily": "file-input",
@@ -3572,6 +3719,38 @@
       },
       "otherTypes": {}
     },
+    "Highlight": {
+      "routeKey": "highlight",
+      "cssFamily": "highlight",
+      "imports": [
+        "Highlight"
+      ],
+      "propsTypes": {
+        "HighlightProps": [
+          {
+            "name": "children",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "highlight",
+            "type": "string | string[]",
+            "required": true
+          },
+          {
+            "name": "caseSensitive",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "color",
+            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "HoverCard": {
       "routeKey": "hover-card",
       "cssFamily": "hover-card",
@@ -3725,6 +3904,43 @@
       },
       "otherTypes": {}
     },
+    "Indicator": {
+      "routeKey": "indicator",
+      "cssFamily": "indicator",
+      "imports": [
+        "Indicator"
+      ],
+      "propsTypes": {
+        "IndicatorProps": [
+          {
+            "name": "label",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "showZero",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "color",
+            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "required": false
+          },
+          {
+            "name": "position",
+            "type": "'bottom-end' | 'top-start' | 'top-end' | 'bottom-start'",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "InlineCompletion": {
       "routeKey": "inline-completion",
       "cssFamily": "inline-completion",
@@ -3869,6 +4085,16 @@
             "required": false
           },
           {
+            "name": "leftSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "rightSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
             "required": false
@@ -3883,6 +4109,16 @@
           {
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "leftSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "rightSection",
+            "type": "ReactNode",
             "required": false
           },
           {
@@ -3993,6 +4229,43 @@
       },
       "otherTypes": {}
     },
+    "LoadingOverlay": {
+      "routeKey": "loading-overlay",
+      "cssFamily": "loading-overlay",
+      "imports": [
+        "LoadingOverlay"
+      ],
+      "propsTypes": {
+        "LoadingOverlayProps": [
+          {
+            "name": "visible",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "label",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "loader",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "spinnerSize",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "LocaleProvider": {
       "routeKey": "locale-provider",
       "cssFamily": "locale-provider",
@@ -4088,6 +4361,23 @@
           }
         ]
       }
+    },
+    "Mark": {
+      "routeKey": "mark",
+      "cssFamily": "mark",
+      "imports": [
+        "Mark"
+      ],
+      "propsTypes": {
+        "MarkProps": [
+          {
+            "name": "color",
+            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
     },
     "MarkdownRenderer": {
       "routeKey": "markdown-renderer",
@@ -4298,6 +4588,43 @@
             "required": true
           }
         ],
+        "MenuItemOwnProps": [
+          {
+            "name": "onSelect",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "danger",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "kbdLabel",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ],
         "MenuItemProps": [
           {
             "name": "onSelect",
@@ -4333,6 +4660,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "as",
+            "type": "T",
+            "required": false
           }
         ],
         "MenuProps": [
@@ -4570,6 +4902,43 @@
           },
           {
             "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "NumberFormatter": {
+      "routeKey": "number-formatter",
+      "cssFamily": "number-formatter",
+      "imports": [
+        "NumberFormatter"
+      ],
+      "propsTypes": {
+        "NumberFormatterProps": [
+          {
+            "name": "value",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "formatOptions",
+            "type": "NumberFormatOptions",
+            "required": false
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "prefix",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "suffix",
             "type": "string",
             "required": false
           }
@@ -5576,6 +5945,11 @@
             "required": false
           },
           {
+            "name": "classNames",
+            "type": "SelectClassNames",
+            "required": false
+          },
+          {
             "name": "ref",
             "type": "Ref<HTMLButtonElement | HTMLSelectElement>",
             "required": false
@@ -5610,6 +5984,11 @@
           {
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "SelectClassNames",
             "required": false
           },
           {
@@ -5707,6 +6086,11 @@
           {
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "SelectClassNames",
             "required": false
           },
           {
@@ -6149,6 +6533,48 @@
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
             "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "Spoiler": {
+      "routeKey": "spoiler",
+      "cssFamily": "spoiler",
+      "imports": [
+        "Spoiler"
+      ],
+      "propsTypes": {
+        "SpoilerProps": [
+          {
+            "name": "expanded",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "maxHeight",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "showLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "hideLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
           },
           {
             "name": "className",
@@ -6854,6 +7280,11 @@
             "required": false
           },
           {
+            "name": "classNames",
+            "type": "TagGroupClassNames",
+            "required": false
+          },
+          {
             "name": "onReorder",
             "type": "(nextOrder: number[]) => void",
             "required": false
@@ -6885,6 +7316,11 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "TagGroupClassNames",
             "required": false
           }
         ]
@@ -8699,6 +9135,17 @@
             "required": false
           }
         ]
+      },
+      "otherTypes": {}
+    },
+    "VisuallyHidden": {
+      "routeKey": "visually-hidden",
+      "cssFamily": "visually-hidden",
+      "imports": [
+        "VisuallyHidden"
+      ],
+      "propsTypes": {
+        "VisuallyHiddenProps": []
       },
       "otherTypes": {}
     },

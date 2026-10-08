@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
 
+import { useContext } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
+
+import { TagGroupItemClassNamesContext } from './TagGroup';
 
 type TagGroupItemProps = {
   children: ReactNode;
@@ -43,6 +46,9 @@ const closeBtn = css`
 
 export default function TagGroupItem({ children, onClose, className }: TagGroupItemProps) {
   const strings = useStrings('tagGroup');
+  // Group-level classNames inherited from the enclosing TagGroup
+  // (props on the item itself win: item's own className applies after).
+  const slotClasses = useContext(TagGroupItemClassNamesContext);
   // Inside a sortable TagGroup the label becomes the drag handle (Space
   // lifts, arrows move, Space drops). Keeping the handle on the label — a
   // sibling of the close button — avoids nesting interactive roles (axe
@@ -63,10 +69,10 @@ export default function TagGroupItem({ children, onClose, className }: TagGroupI
   );
 
   return (
-    <span data-slot="tag-group-item" x-class={[tag, className]}>
+    <span data-slot="tag-group-item" x-class={[tag, slotClasses?.item, className]}>
       {label}
       {onClose && (
-        <button data-slot="remove-button" x-class={[closeBtn]} type="button" onClick={onClose} aria-label={strings.remove}>
+        <button data-slot="remove-button" x-class={[closeBtn, slotClasses?.removeButton]} type="button" onClick={onClose} aria-label={strings.remove}>
           x
         </button>
       )}

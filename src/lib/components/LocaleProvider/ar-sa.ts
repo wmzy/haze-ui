@@ -56,6 +56,10 @@ const arSA: HazeStrings = {
     create: 'إنشاء "{query}"',
     noResults: 'لا توجد نتائج',
   },
+  spoiler: {
+    showMore: 'عرض المزيد',
+    showLess: 'عرض أقل',
+  },
   command: {
     noResults: 'لا توجد نتائج',
   },

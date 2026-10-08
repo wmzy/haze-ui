@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/drawer.css';
 
 export { Drawer };
-export type { DrawerProps, DrawerHandle } from 'haze-ui';
+export type { DrawerProps, DrawerClassNames, DrawerHandle } from 'haze-ui';

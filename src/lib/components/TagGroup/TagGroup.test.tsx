@@ -61,6 +61,30 @@ describe('TagGroup', () => {
     ).toHaveLength(0);
   });
 
+  it('applies classNames: root on the group, item/removeButton inherited by items', () => {
+    const onClose = vi.fn();
+    render(
+      <TagGroup classNames={{ root: 'g-root', item: 'g-item', removeButton: 'g-rm' }}>
+        <TagGroupItem onClose={onClose}>React</TagGroupItem>
+      </TagGroup>,
+    );
+    expect(screen.getByRole('group')).toHaveClass('g-root');
+    expect(screen.getByText('React').closest("[data-slot='tag-group-item']")).toHaveClass('g-item');
+    expect(screen.getByRole('button', { name: 'Remove' })).toHaveClass('g-rm');
+  });
+
+  it('an item className applies after the inherited group className', () => {
+    render(
+      <TagGroup classNames={{ item: 'g-item' }}>
+        <TagGroupItem className="i-own">Tag</TagGroupItem>
+      </TagGroup>,
+    );
+    const item = screen.getByText('Tag');
+    expect(item).toHaveClass('g-item');
+    // item's own className lands last in the class list
+    expect(item.className.endsWith('i-own')).toBe(true);
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(

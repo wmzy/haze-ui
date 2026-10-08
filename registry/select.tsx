@@ -25,4 +25,4 @@ import 'haze-ui/css/spinner.css';
 import 'haze-ui/css/virtual-list.css';
 
 export { Select, Option, SelectCore, OptionGroup };
-export type { SelectProps, OptionProps, SelectCoreProps, OptionGroupProps } from 'haze-ui';
+export type { SelectProps, SelectClassNames, OptionProps, SelectCoreProps, OptionGroupProps } from 'haze-ui';

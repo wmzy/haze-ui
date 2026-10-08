@@ -15,7 +15,7 @@ type ConfirmDialogProps = {
   onConfirm?: () => void;
   onCancel?: () => void;
   title?: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: 'default' | 'danger';

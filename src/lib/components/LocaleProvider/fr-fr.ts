@@ -49,6 +49,10 @@ const frFR: HazeStrings = {
     create: 'Créer « {query} »',
     noResults: 'Aucun résultat',
   },
+  spoiler: {
+    showMore: 'Afficher plus',
+    showLess: 'Afficher moins',
+  },
   command: {
     noResults: 'Aucun résultat',
   },

@@ -46,6 +46,10 @@ const defaultStrings = {
     create: 'Create "{query}"',
     noResults: 'No results',
   },
+  spoiler: {
+    showMore: 'Show more',
+    showLess: 'Show less',
+  },
   command: {
     noResults: 'No results',
   },

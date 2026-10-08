@@ -116,7 +116,7 @@ export default function DemoPreview({ children }: { children: ReactNode }) {
               {preset.label}
             </Button>
           ))}
-          <span className={widthTag} aria-live='polite'>
+          <span className={widthTag} data-slot='width-tag' aria-live='polite'>
             {viewport.width === null ? 'Auto' : `${viewport.width}px`}
           </span>
         </div>

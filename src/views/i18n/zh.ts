@@ -115,8 +115,11 @@ export const zh: DeepPartial<SiteStrings> = {
     Combobox: '自动补全输入框：可筛选的选项列表，onSearch 可将筛选交由宿主。',
     Datepicker:
       '日期输入：弹出日历（YYYY-MM-DD 取值），showTime 附加时刻选择。',
+    DateTimePicker:
+      '日期+时刻选择：Datepicker 上默认开启 showTime；showSeconds 可选；取值序列化为 YYYY-MM-DD HH:mm[:ss]。',
     DateRangePicker:
       '起止日期区间选择，内置或自定义快捷预设（今天、最近 7 天……）。',
+    Fieldset: '语义化 fieldset+legend 表单分组；disabled 一次性禁用整组控件。',
     FileInput: '触发器元素，打开隐藏的原生文件输入。',
     Form: 'react-f0rm 字段包装：为受控内核补齐 label、错误与 aria 接线。',
     InlineEdit: '点击即原地编辑的文本值。',
@@ -172,6 +175,10 @@ export const zh: DeepPartial<SiteStrings> = {
     Descriptions:
       '描述列表组（CSS Grid 上的 dl/dt/dd）：items 键值对、columns、bordered、size。',
     Image: '图片：加载回退，aspectRatio/objectFit 可控。',
+    Indicator: '角标：附着于宿主元素，圆点或计数徽标，色调与角落位置可配，showZero 控制零值显示。',
+    Mark: '文本级高亮（语义 mark 元素），status 色调。',
+    Highlight: '搜索命中高亮：对任意文本打子串高亮；多 needle、已转义（无 innerHTML）。',
+    NumberFormatter: '展示型数字格式化（Intl）：locale、formatOptions（货币/单位/百分比）、前后缀。',
     JsonView:
       '可折叠 JSON 树：按类型着色、按深度默认展开、截断提示与可选复制按钮。',
     Kbd: '快捷键键帽样式。',
@@ -215,6 +222,9 @@ export const zh: DeepPartial<SiteStrings> = {
       '结果反馈页：状态插画（success/error/info/warning/403/404/500）、title、subTitle 与 extra 操作区；icon 可替换默认插画。',
     Skeleton: '闪烁加载占位（text/circular/rectangular）。',
     Spinner: '加载转圈。',
+    LoadingOverlay: '容器级加载态：内容变暗、居中显示 spinner（或自定义 loader），aria-busy 同步状态。',
+    Spoiler: '展开/收起长内容的闸门（显示更多/收起）：截断预览带渐隐边缘，expanded 可控。',
+    VisuallyHidden: '屏幕阅读器专属内容：视觉裁掉、a11y 树保留。',
     Toast: '轻提示：useToast + ToastContainer（含命令式 toast() 辅助）。',
 
     // AI & Chat

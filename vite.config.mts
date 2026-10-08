@@ -120,6 +120,7 @@ const buildConfig = (() => {
         external: [
           'react',
           'react-dom',
+          'react-dom/client',
           'react/jsx-runtime',
           '@linaria/core',
           'react-use-control',
