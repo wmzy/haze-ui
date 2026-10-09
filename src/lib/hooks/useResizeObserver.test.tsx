@@ -104,6 +104,62 @@ describe('useResizeObserver', () => {
     expect(screen.getByTestId('target')).toHaveTextContent('no-entry');
   });
 
+  it('keeps a stable ref callback identity across rerenders', () => {
+    // 回归钉：React 19 对身份变化的 ref 会 null-detach + re-attach。若 ref
+    // 每次渲染都是新函数，则每渲染 disconnect+重建 observe，而 RO 每次
+    // observe 后回调新 entry 实例 → setEntry 恒触发重渲 → 无限循环
+    // （jsdom 无 RO 只在消费方浏览器暴露）。useCallback([box, enabled])
+    // 保证同参渲染间 ref 引用相等。
+    setupMockObserver();
+    const captured: unknown[] = [];
+    function Probe({ tick }: { tick: number }) {
+      const [ref] = useResizeObserver<HTMLDivElement>();
+      captured.push(ref);
+      return <div ref={ref}>{tick}</div>;
+    }
+    const { rerender } = render(<Probe tick={0} />);
+    rerender(<Probe tick={1} />);
+    rerender(<Probe tick={2} />);
+    expect(captured.length).toBeGreaterThanOrEqual(3);
+    for (const ref of captured) {
+      expect(ref).toBe(captured[0]);
+    }
+  });
+
+  it('freezes the last entry when disabled and re-observes when re-enabled', () => {
+    const { observers, callbacks } = setupMockObserver();
+    function Probe({ enabled }: { enabled: boolean }) {
+      const [ref, entry] = useResizeObserver<HTMLDivElement>({ enabled });
+      return (
+        <div ref={ref} data-testid="toggle">
+          {entry ? `${entry.contentRect.width}` : 'no-entry'}
+        </div>
+      );
+    }
+    const { rerender } = render(<Probe enabled />);
+    const target = screen.getByTestId('toggle');
+    const first = observers[0];
+    const firstCb = callbacks[0];
+    if (!first || !firstCb) throw new Error('observer/callback missing');
+    act(() => {
+      firstCb([makeEntry(target, new DOMRect(0, 0, 300, 100))], first);
+    });
+    expect(target).toHaveTextContent('300');
+
+    // 禁用：ref 身份变化 → detach(null) 断开；entry 冻结为最后值
+    rerender(<Probe enabled={false} />);
+    expect(first.disconnected).toBe(true);
+    expect(target).toHaveTextContent('300');
+
+    // 复启：新 ref re-attach(node) → 全新观察器重新挂上同一节点
+    rerender(<Probe enabled />);
+    expect(observers.length).toBeGreaterThanOrEqual(2);
+    const second = observers[observers.length - 1];
+    if (!second) throw new Error('second observer missing');
+    expect(second).not.toBe(first);
+    expect(second.observed[0]).toBe(target);
+  });
+
   it('respects enabled=false (no observation)', () => {
     const { observers } = setupMockObserver();
     function Disabled() {

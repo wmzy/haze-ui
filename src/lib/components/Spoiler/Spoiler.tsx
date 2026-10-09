@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
@@ -21,7 +21,7 @@ type SpoilerProps = {
   hideLabel?: string;
   children: ReactNode;
   className?: string;
-};
+} & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
 
 const root = css`
   display: block;
@@ -38,9 +38,10 @@ const clip = css`
     inset-inline: 0;
     bottom: 0;
     height: var(--haze-space-8);
-    /* the fade goes from the surface color to transparent, so content
-     * "dissolves" into the background */
-    background: linear-gradient(transparent, var(--haze-color-bg));
+    /* Fade dissolves toward the host surface color. Defaults to the page
+     * background; override --haze-spoiler-fade-bg when the spoiler sits on
+     * a tinted surface (bg-subtle / bg-muted) or the dissolve mismatches. */
+    background: linear-gradient(transparent, var(--haze-spoiler-fade-bg, var(--haze-color-bg)));
     pointer-events: none;
 
     @media (forced-colors: active) {
@@ -74,6 +75,7 @@ export default function Spoiler({
   hideLabel,
   className,
   children,
+  ...rest
 }: SpoilerProps) {
   const strings = useStrings('spoiler');
   const [expanded, setExpanded] = useControl(expandedControl, false);
@@ -82,7 +84,7 @@ export default function Spoiler({
     : (showLabel ?? strings.showMore);
 
   return (
-    <div data-slot='spoiler' x-class={[root, className]}>
+    <div data-slot='spoiler' x-class={[root, className]} {...rest}>
       <div
         data-slot='content'
         data-expanded={expanded || undefined}

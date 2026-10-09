@@ -46,6 +46,13 @@ export function useMutationObserver(
 
   const [records, setRecords] = useState<MutationRecord[]>(EMPTY);
   const observerRef = useRef<MutationObserver | null>(null);
+  // callback 进 useMemo deps 会让 ref 回调身份每渲染变动 → React 19
+  // null-detach/re-attach → 观察者全套重建。latest-ref 让 observer
+  // 内部始终读最新的 callback。
+  const callbackRef = useRef(callback);
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const ref: RefCallback<Element> = useMemo(
     () => (node) => {
@@ -58,7 +65,7 @@ export function useMutationObserver(
 
       const observer = new globalThis.MutationObserver((recordList, obs) => {
         setRecords(recordList);
-        callback?.(recordList, obs);
+        callbackRef.current?.(recordList, obs);
       });
       observer.observe(node, observerInit);
       observerRef.current = observer;
@@ -67,7 +74,6 @@ export function useMutationObserver(
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 这些是 MutationObserverInit 的全部字段
     [
       enabled,
-      callback,
       observerInit.subtree,
       observerInit.childList,
       observerInit.attributes,

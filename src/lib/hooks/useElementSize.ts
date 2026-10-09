@@ -31,6 +31,9 @@ const ZERO: ElementSize = { width: 0, height: 0 };
  *
  * - 底层 ResizeObserver；仅在 size 实际变化时 setState，避免子像素
  *   抖动引发反复重渲。
+ * - `enabled=false` / 卸载时 size 清零（与 useResizeObserver 的冻结
+ *   语义相反：size 是原始数据，禁用后无订阅的冻结值是陈旧数据；
+ *   entry 是结构化快照，那边反而选择冻结——详见其文档）。
  * - ref 回调身份稳定（useCallback）：React 19 对每个新 ref 函数会
  *   null-detach + re-attach，这里的 ref 只在 box/enabled 变化时才新建。
  * - SSR：size 恒 `{0,0}`，无 hydration mismatch；无 ResizeObserver

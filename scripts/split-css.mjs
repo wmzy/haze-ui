@@ -253,9 +253,108 @@ if (unreachable.length > 0) {
   fail(`css groups without any barrel export: ${unreachable.join(', ')} — export them or drop the css`);
 }
 
+// ---- cross-family css dependencies --------------------------------------
+// An export's family css file only covers rules emitted by its own
+// directory. Yet components render other components: <Button loading>
+// mounts a Spinner, DateTimePicker is pure sugar over Datepicker, scores
+// of Toggle/Toolbar items import Button/styles. The per-family files
+// intentionally do NOT embed those rules (each rule ships once), so
+// on-demand injection keyed only on the export's own family yields
+// unstyled descendants. Derive the additional css files from the very
+// artifact being split: DFS each export's root module over dist JS
+// import edges, map every reachable module back to its css group, and
+// publish the flattened closure as `dependencies` keyed by export name.
+// No hand-maintained table — a new cross-component import in src is
+// picked up on the next build.
+
+/** Recursively collect dist JS modules as paths relative to dist/. */
+function collectJsModules(dir = distDir, prefix = '') {
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      files.push(...collectJsModules(path.join(dir, entry.name), rel));
+    } else if (entry.name.endsWith('.js')) {
+      files.push(rel);
+    }
+  }
+  return files;
+}
+const jsModules = new Set(collectJsModules());
+
+/**
+ * Map a dist-relative module path (no extension) to its css group name,
+ * or null when the module emits no css of its own. Mirrors the family
+ * slicing of the export loop above; utils/* shared layers and
+ * hooks/tokens carry no per-component css (shared layers are already
+ * inlined into consumer groups by sharedLayers).
+ */
+function cssGroupOfModulePath(rel) {
+  const segments = rel.split('/');
+  const family =
+    segments[0] === 'components'
+      ? segments.slice(0, 2).join('/')
+      : segments[0] === 'form'
+        ? 'form'
+        : null;
+  if (!family) return null;
+  const css = moduleCssFiles.find(
+    (rel) => rel === `${family}.wyw-in-js.css` || rel.startsWith(`${family}/`)
+  );
+  return css ? groupOfModule(css) : null;
+}
+
+// Over-approximate edge extractor: every side-effect import, from-import
+// and re-export literal. Dynamic imports would match too — dist has none,
+// and an over-wide edge only ever adds a real css file, never a ghost.
+const edgePattern = /(?:\bfrom\s*|import\s*)['"]([^'"]+)['"]/g;
+
+// cache: dist-relative js path -> array of resolved dist-relative js paths
+const edgeCache = new Map();
+function edgesOf(rel) {
+  let edges = edgeCache.get(rel);
+  if (edges) return edges;
+  edges = [];
+  const code = readFileSync(path.join(distDir, rel), 'utf8');
+  const dir = path.posix.dirname(rel);
+  for (const m of code.matchAll(edgePattern)) {
+    const spec = m[1];
+    if (!spec.startsWith('.') || !spec.endsWith('.js')) continue;
+    const resolved = path.posix.normalize(path.posix.join(dir, spec));
+    if (jsModules.has(resolved)) edges.push(resolved);
+  }
+  edgeCache.set(rel, edges);
+  return edges;
+}
+
+// Full closure per export: own family is implicit (families map / noCss),
+// so dependencies lists only *additional* css files. `tokens` is excluded —
+// on-demand tooling injects tokens.css unconditionally.
+const dependencies = {};
+for (const [name, spec] of exported) {
+  if (!spec.startsWith('./')) continue; // external re-export: no graph here
+  const root = spec.slice(2);
+  const own = families[name] ?? null;
+  const found = new Set();
+  const stack = [root];
+  const seen = new Set();
+  while (stack.length > 0) {
+    const rel = stack.pop();
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+    const group = cssGroupOfModulePath(rel.replace(/\.js$/, ''));
+    if (group && group !== 'tokens' && group !== own) found.add(group);
+    stack.push(...edgesOf(rel));
+  }
+  if (found.size > 0) dependencies[name] = [...found].sort();
+}
+
 const manifest = {
   families: Object.fromEntries(Object.keys(families).sort().map((k) => [k, families[k]])),
   noCss: [...noCss].sort(),
+  dependencies: Object.fromEntries(
+    Object.keys(dependencies).sort().map((k) => [k, dependencies[k]])
+  ),
 };
 writeFileSync(path.join(distDir, 'css-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 
@@ -303,5 +402,5 @@ console.log(
   `split-css: ${perComponent} component files + tokens.css + haze-ui.css (${union.size} classes) written to dist/css`
 );
 console.log(
-  `split-css: css-manifest.json written (${Object.keys(families).length} families, ${noCss.length} noCss)`
+  `split-css: css-manifest.json written (${Object.keys(families).length} families, ${noCss.length} noCss, ${Object.keys(dependencies).length} with dependencies)`
 );

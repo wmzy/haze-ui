@@ -38,7 +38,10 @@ const veil = css`
   justify-content: center;
   gap: var(--haze-space-2);
   background: color-mix(in oklab, var(--haze-color-bg) 70%, transparent);
-  z-index: 1;
+  /* Host children that build their own stacking context can surface
+   * above a bare z-index:1 — component variable keeps the veil
+   * overridable without new tokens. */
+  z-index: var(--haze-overlay-z, 1);
 
   @media (forced-colors: active) {
     background: Canvas;
@@ -57,10 +60,10 @@ const dimmed = css`
    * transient region state, not a dialog). */
   pointer-events: none;
   user-select: none;
-  opacity: 0.45;
+  opacity: var(--haze-overlay-dim-opacity, 0.45);
 
   @media (forced-colors: active) {
-    opacity: 0.6;
+    opacity: var(--haze-overlay-dim-opacity, 0.6);
   }
 `;
 

@@ -77,4 +77,36 @@ describe('useIdle', () => {
     fireEvent.click(document.body);
     expect(screen.getByTestId('x')).toHaveTextContent('false');
   });
+
+  it('default events listen for resize on window (document never gets it)', () => {
+    function Probe() {
+      useIdle({ timeout: 10_000 });
+      return null;
+    }
+    const winAdd = vi.spyOn(window, 'addEventListener');
+    const docAdd = vi.spyOn(document, 'addEventListener');
+    render(<Probe />);
+    // resize 只在 window 派发——挂在 document 上是死监听（修前形态）
+    expect(winAdd.mock.calls.some(([t]) => t === 'resize')).toBe(true);
+    expect(docAdd.mock.calls.some(([t]) => t === 'resize')).toBe(false);
+    winAdd.mockRestore();
+    docAdd.mockRestore();
+  });
+
+  it('inline events arrays with equal content do not re-subscribe', () => {
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+    function Probe({ tick }: { tick: number }) {
+      useIdle({ timeout: 10_000, events: ['click'] });
+      return <div data-testid="x">{tick}</div>;
+    }
+    const { rerender } = render(<Probe tick={1} />);
+    vi.clearAllMocks();
+    // 每次渲染都是新数组字面量但内容相等 → 不应触发解除/重挂
+    rerender(<Probe tick={2} />);
+    expect(addSpy).not.toHaveBeenCalled();
+    expect(removeSpy).not.toHaveBeenCalled();
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
+  });
 });

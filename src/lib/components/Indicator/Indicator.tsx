@@ -9,9 +9,10 @@ import { css } from '@linaria/core';
  */
 type IndicatorProps = {
   /**
-   * Badge content. Omitted/undefined renders a dot (a bare status
-   * marker); a value renders a count badge. Strings longer than
-   * `max`-formatted are the caller's concern (e.g. pass "99+").
+   * Badge content. Omitted (undefined / null, or render-empty values
+   * like false / '') renders a dot (a bare status marker); a value
+   * renders a count badge. Strings longer than `max`-formatted are the
+   * caller's concern (e.g. pass "99+").
    */
   label?: ReactNode;
   /** Zero/out semantics: number 0 shows by default in badge mode. */
@@ -40,7 +41,10 @@ const badge = css`
   justify-content: center;
   padding-inline: var(--haze-space-1);
   border-radius: var(--haze-radius-full);
-  border: 2px solid var(--haze-color-bg);
+  /* Ring separating the badge from the host surface — no --haze border
+   * width step exists (spacing is 4px-based; borders are 1px elsewhere),
+   * so it ships as a component variable with the 2px default instead. */
+  border: var(--haze-indicator-ring-width, 2px) solid var(--haze-color-bg);
   background: var(--haze-color-danger);
   color: var(--haze-color-text-inverse);
   font-family: var(--haze-font-sans);
@@ -111,7 +115,10 @@ export default function Indicator({
   children,
   ...rest
 }: IndicatorProps) {
-  const isDot = label === undefined || label === null;
+  // 渲染为空的 label（false / ''）会产出空泡徽标——按 dot 处理它们，
+  // "不渲染内容"与"没传内容"语义一致
+  const isDot =
+    label === undefined || label === null || label === false || label === '';
   const hidden = !isDot && !showZero && label === 0;
   return (
     <span data-slot='indicator' x-class={[host, className]} {...rest}>

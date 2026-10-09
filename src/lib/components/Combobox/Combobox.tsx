@@ -691,7 +691,7 @@ export default function Combobox({
   );
 
   return (
-    <div x-class={[wrapper, className, resolvedClassNames?.root]}>
+    <div data-slot='combobox' x-class={[wrapper, className, resolvedClassNames?.root]}>
       {multiple ? (
         <div
           ref={boxRef}

@@ -55,6 +55,16 @@ describe('Spoiler', () => {
     expect(screen.getByRole('button', { name: '展开' })).toBeInTheDocument();
   });
 
+  it('forwards native div props to the root (aria-* / data-*)', () => {
+    const { container } = render(
+      <Spoiler aria-label='terms and conditions' data-testid='root'>X</Spoiler>
+    );
+    const root = screen.getByTestId('root');
+    expect(root.dataset.slot).toBe('spoiler');
+    expect(root).toHaveAttribute('aria-label', 'terms and conditions');
+    expect(container.firstChild).toBe(root);
+  });
+
   it('has no axe violations in both states', async () => {
     const { axe } = await import('jest-axe');
     const { rerender } = render(<Spoiler>Body content</Spoiler>);

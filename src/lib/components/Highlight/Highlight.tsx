@@ -37,9 +37,13 @@ export default function Highlight({
   color,
   ...rest
 }: HighlightProps) {
-  const needles = (Array.isArray(highlight) ? highlight : [highlight]).filter(
-    (h) => h.length > 0
-  );
+  // Sort longest-first so overlapping needles match the long one at a
+  // given position (RegExp alternation is leftmost-alternative, not
+  // longest-match: without the sort ['cat','cats'] tags "cat" in
+  // "cats" and leaves a stray "s").
+  const needles = (Array.isArray(highlight) ? highlight : [highlight])
+    .filter((h) => h.length > 0)
+    .sort((a, b) => b.length - a.length);
 
   if (needles.length === 0) {
     return <>{children}</>;

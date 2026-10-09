@@ -4,6 +4,13 @@ import userEvent from '@testing-library/user-event';
 import DateTimePicker from './DateTimePicker';
 
 describe('DateTimePicker', () => {
+  it('marks the root wrapper as data-slot=datetime-picker', () => {
+    const { container } = render(<DateTimePicker value='2025-01-15 14:30' />);
+    // 该属性曾经只传给不展开的 Datepicker props 而被静默丢弃；
+    // rest 透传落地后必须真的落在包装 div 上
+    expect(container.firstChild).toHaveAttribute('data-slot', 'datetime-picker');
+  });
+
   it('renders the date-time trigger input with a date+time value', () => {
     render(<DateTimePicker value='2025-01-15 14:30' />);
     // the trigger is Datepicker's readonly date field; the time part

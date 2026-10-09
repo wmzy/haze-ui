@@ -85,6 +85,11 @@ export function useIdle(options?: UseIdleOptions): UseIdleResult {
     }, timeout);
   }, [timeout, clearTimer]);
 
+  // 用 join 后的内容作 deps 键：调用方传内联数组字面量时，数组身份每次
+  // 渲染都变，但内容不变不该触发「解除全部监听 + 重挂」的徒劳往返。
+  // effect closure 在 deps 变化那次渲染创建，其中的 events 与 key 同步。
+  const eventsKey = events.join(' ');
+
   useEffect(() => {
     // null as never：typeof document undefined 的 SSR 路径根本到不了
     // addEventListener 检查（首次的 element ?? ... 已经筛掉），这一行
@@ -103,17 +108,27 @@ export function useIdle(options?: UseIdleOptions): UseIdleResult {
       if (document.visibilityState === 'visible') onEvent();
     };
 
-    for (const ev of events) target.addEventListener(ev, onEvent, true);
+    // resize 只在 window 派发（document/元素上永不触发）——显式指定
+    // element 时是用户自己选的，尊重之；默认路径下把 resize 挂 window，
+    // 其他事件仍挂 target（document 捕获面）。
+    const win = typeof window !== 'undefined' ? window : null;
+    const attach: [EventTarget, string][] = events.map((ev) =>
+      ev === 'resize' && element === undefined && win !== null
+        ? [win, ev]
+        : [target, ev]
+    );
+    for (const [t, ev] of attach) t.addEventListener(ev, onEvent, true);
     document.addEventListener('visibilitychange', onVisibility);
 
     scheduleTimer();
 
     return () => {
-      for (const ev of events) target.removeEventListener(ev, onEvent, true);
+      for (const [t, ev] of attach) t.removeEventListener(ev, onEvent, true);
       document.removeEventListener('visibilitychange', onVisibility);
       clearTimer();
     };
-  }, [events, element, scheduleTimer, clearTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- events 走 eventsKey
+  }, [eventsKey, element, scheduleTimer, clearTimer]);
 
   return { idle, lastActive };
 }

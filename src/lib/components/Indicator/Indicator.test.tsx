@@ -37,6 +37,14 @@ describe('Indicator', () => {
     expect(document.querySelector("[data-slot='badge']")).toHaveTextContent('99+');
   });
 
+  it('renders render-empty labels (false / "") as a dot, not an empty badge', () => {
+    const { container } = render(<Indicator label={false}>x</Indicator>);
+    expect(container.querySelector("[data-slot='dot']")).not.toBeNull();
+    expect(container.querySelector("[data-slot='badge']")).toBeNull();
+    const { container: c2 } = render(<Indicator label=''>x</Indicator>);
+    expect(c2.querySelector("[data-slot='dot']")).not.toBeNull();
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(

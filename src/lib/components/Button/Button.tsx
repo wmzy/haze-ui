@@ -61,6 +61,14 @@ type ButtonProps<T extends ElementType = 'button'> = ButtonOwnProps & {
   as?: T;
 } & Omit<ComponentPropsWithRef<T>, keyof ButtonOwnProps | 'as' | 'type'>;
 
+/**
+ * DOM contract: `children` always render inside a
+ * `<span data-slot='label'>` (so the busy state can hide the ink while
+ * keeping the width); a busy render adds
+ * `<span data-slot='indicator' aria-hidden>` next to it. Selectors or
+ * tests targeting `button > textNode` need updating — this wrapper
+ * shipped in the `loading` wave (minor).
+ */
 export default function Button<T extends ElementType = 'button'>({
   variant = 'solid',
   size: sizeProp,

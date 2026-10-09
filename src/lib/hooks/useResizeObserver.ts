@@ -1,6 +1,6 @@
 import type { RefCallback } from 'react';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 type UseResizeObserverOptions = {
   /**
@@ -26,9 +26,17 @@ type UseResizeObserverResult = UseResizeObserverResultWithT;
  * return <div ref={ref} style={{minWidth: 200}} />;
  * ```
  *
- * - ref 每次指向新元素时自动解挂旧观察；卸载清空。
- * - snapshot 是 entry 实例本身（ResizeObserver 每次回调给新实例，
- *   天然适合 React 的 Object.is 变化检测）。
+ * - ref 每次指向新元素时自动解挂旧观察；卸载/禁用时只断开观察，
+ *   entry 保留最后一次值（冻结语义，与 useElementSize 的清零语义
+ *   相反——entry 是结构化快照，冻结便于消费方在禁用/卸载后仍读取
+ *   最后时刻的布局；size 是原始数据，清零更安全）。
+ * - ref 回调身份稳定（useCallback([box, enabled])）：React 19 对每个
+ *   新 ref 函数会 null-detach + re-attach，不记忆化会导致每渲染
+ *   disconnect + 重建观察器 + 重新 observe，而 ResizeObserver 每次
+ *   observe 后回调的都是新 entry 实例——setEntry 恒触发重渲染，形成
+ *   无限重渲染循环（jsdom 无 RO，测试测不出，真实浏览器直接卡死）。
+ * - enabled 切换无需 effect：true→false 由 ref 身份变化触发的
+ *   detach(null) 断开观察；false→true 由 re-attach(node) 重建观察。
  * - SSR：不观察，entry 恒 `null`。
  * - 引擎无 `ResizeObserver`（jsdom ≤23）：不抛错，entry 恒 `null`、
  *   ref 是 no-op——消费端可以安全 mock/降级。
@@ -49,36 +57,33 @@ export function useResizeObserver<T extends Element = Element>(
 ): UseResizeObserverResultWithT<T> {
   const { box = 'content-box', enabled = true } = options ?? {};
   const [entry, setEntry] = useState<ResizeObserverEntry | null>(null);
-  const targetRef = useRef<T | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
 
-  // 解绑走 observerRef.disconnect()：换成空观察 + reobserve 也能实现，
+  // 解绑走 observer.disconnect()：换成空观察 + reobserve 也能实现，
   // 但 disconnect 释放所有监听面且无任何竞态窗口。
-  const ref: RefCallback<T> = (node) => {
-    observerRef.current?.disconnect();
-    observerRef.current = null;
-    targetRef.current = node;
-
-    if (!node || !enabled || typeof globalThis.ResizeObserver !== 'function') {
-      return;
-    }
-
-    const observer = new globalThis.ResizeObserver((entries) => {
-      // ResizeObserver 回调给的是数组，但我们观察单个元素——取第一条。
-      const first = entries[0];
-      if (first) setEntry(first);
-    });
-    observer.observe(node, { box });
-    observerRef.current = observer;
-  };
-
-  // enabled 中途切 false：主动断开观察（下次挂/卸载时仍会被 ref 回调清）。
-  useEffect(() => {
-    if (!enabled) {
+  const ref = useCallback<RefCallback<T>>(
+    (node) => {
       observerRef.current?.disconnect();
       observerRef.current = null;
-    }
-  }, [enabled]);
+
+      if (
+        !node ||
+        !enabled ||
+        typeof globalThis.ResizeObserver !== 'function'
+      ) {
+        return;
+      }
+
+      const observer = new globalThis.ResizeObserver((entries) => {
+        // ResizeObserver 回调给的是数组，但我们观察单个元素——取第一条。
+        const first = entries[0];
+        if (first) setEntry(first);
+      });
+      observer.observe(node, { box });
+      observerRef.current = observer;
+    },
+    [box, enabled]
+  );
 
   return [ref, entry];
 }

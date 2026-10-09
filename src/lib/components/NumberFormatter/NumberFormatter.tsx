@@ -3,10 +3,13 @@ import type { ComponentPropsWithoutRef } from 'react';
 type NumberFormatterProps = {
   /** The numeric value to render. */
   value: number;
-  /** Intl.NumberFormat options minus locale — the locale is taken from
-   * the LocaleProvider (falls back to the document locale). */
+  /** Intl.NumberFormat options minus locale. */
   formatOptions?: Intl.NumberFormatOptions;
-  /** Explicit locale override (defaults to the LocaleProvider locale). */
+  /** Explicit locale. Defaults to the runtime default (SSR-stable).
+   *
+   * Note: this formatter is RSC-safe (no hooks) and therefore does NOT
+   * read the LocaleProvider chain — pass `locale` explicitly inside a
+   * localized tree. */
   locale?: string;
   /** Text prepended/appended outside the formatted number. */
   prefix?: string;

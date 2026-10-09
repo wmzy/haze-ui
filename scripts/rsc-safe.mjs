@@ -67,6 +67,8 @@ export const RSC_SAFE_MODULES = new Set([
   'components/Grid/index.ts',
   'components/Icon/Icon.tsx',
   'components/Icon/index.ts',
+  'components/Indicator/Indicator.tsx',
+  'components/Indicator/index.ts',
   'components/Kbd/Kbd.tsx',
   'components/Kbd/index.ts',
   'components/Skeleton/Skeleton.tsx',

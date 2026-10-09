@@ -38,6 +38,15 @@ describe('Highlight', () => {
     expect(container.querySelectorAll('mark')).toHaveLength(3);
   });
 
+  it('prefers the longest overlapping needle (alternation order is not longest-match)', () => {
+    const { container } = render(
+      <Highlight highlight={['cat', 'cats']}>cats</Highlight>
+    );
+    // 未排序时 ['cat','cats'] 在 "cats" 处会先中 "cat" 并留下游离 "s"
+    const marks = [...container.querySelectorAll('mark')].map((m) => m.textContent);
+    expect(marks).toEqual(['cats']);
+  });
+
   it('renders plain text when the needle is empty or absent', () => {
     const { container, rerender } = render(<Highlight highlight=''>hello</Highlight>);
     expect(container.querySelectorAll('mark')).toHaveLength(0);

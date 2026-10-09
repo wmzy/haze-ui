@@ -19,6 +19,14 @@ import Button from './Button';
  * `aria-disabled` (and `tabIndex={-1}` to drop it from the focus
  * order) — the skin styles `aria-disabled` exactly like Button's
  * `:disabled`.
+ *
+ * Migration note (1.4 minor): since Button learned `as`, ButtonLink
+ * delegates rendering to Button — the children are now wrapped in
+ * `<span data-slot='label'>` and the busy spinner in
+ * `<span data-slot='indicator' aria-hidden>`; DOM selectors written
+ * against the old flat label break. Props stay contract-equal:
+ * `variant` still defaults to `'solid'` (the Button tier never read
+ * config) and `size` still reads the `ButtonLink` config section first.
  */
 type ButtonLinkProps = {
   variant?: 'solid' | 'outline' | 'ghost';
