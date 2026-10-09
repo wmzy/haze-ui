@@ -185,6 +185,36 @@ describe('MenuItem', () => {
     );
     expect(screen.getByRole('menuitem')).toHaveClass('custom');
   });
+
+  describe('as polymorphism', () => {
+    it("as='a' keeps the menuitem role/wiring on a real anchor", async () => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      render(
+        <Menu open trigger="T">
+          <MenuItem as='a' href='/docs' onSelect={onSelect}>Docs</MenuItem>
+        </Menu>
+      );
+      const item = screen.getByRole('menuitem', { name: 'Docs' });
+      expect(item.tagName).toBe('A');
+      expect(item).toHaveAttribute('href', '/docs');
+      // button-only attrs are gated off the anchor shape
+      expect(item).not.toHaveAttribute('type');
+      await user.click(item);
+      expect(onSelect).toHaveBeenCalledOnce();
+    });
+
+    it("as='a' disabled reports aria-disabled instead of disabled", () => {
+      render(
+        <Menu open trigger="T">
+          <MenuItem as='a' href='/docs' disabled>Docs</MenuItem>
+        </Menu>
+      );
+      const item = screen.getByRole('menuitem');
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      expect(item).not.toHaveAttribute('disabled');
+    });
+  });
 });
 
 describe('MenuDivider', () => {

@@ -4,6 +4,8 @@ import { render, screen, act, fireEvent, waitFor } from '@testing-library/react'
 import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import ConfigProvider from '../ConfigProvider/ConfigProvider';
+
 import Drawer from './Drawer';
 
 beforeEach(() => {
@@ -80,6 +82,25 @@ describe('Drawer', () => {
   it('renders children', () => {
     render(<Drawer open>Drawer body</Drawer>);
     expect(screen.getByText('Drawer body')).toBeInTheDocument();
+  });
+
+  it('applies classNames content on the dialog element', () => {
+    render(
+      <Drawer open classNames={{ content: 'mine-content' }}>Body</Drawer>
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('mine-content');
+  });
+
+  it('merges ConfigProvider Drawer.classNames under the prop, per key', () => {
+    render(
+      <ConfigProvider defaults={{ Drawer: { classNames: { content: 'from-config' } } }}>
+        <Drawer open classNames={{ content: 'from-prop' }}>Body</Drawer>
+      </ConfigProvider>
+    );
+    const dialog = screen.getByRole('dialog');
+    // prop key beats the provider's same key
+    expect(dialog).toHaveClass('from-prop');
+    expect(dialog).not.toHaveClass('from-config');
   });
 
   it('applies className', () => {

@@ -5,7 +5,28 @@ import type { SelectVirtualizedConfig } from './SelectFloating';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import SelectCore from './SelectCore';
+
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape), following the
+ * data-slot names: `trigger` is the focusable control (native `<select>`
+ * in plain mode, trigger `<button>` in floating modes); `content` is the
+ * floating panel; `option`, `clearButton`, `item`, `searchInput` cover
+ * the rest. Slots not rendered by the current mode are ignored. A
+ * ConfigProvider `Select.classNames` section merges under the prop.
+ */
+type SelectClassNames = {
+  trigger?: string;
+  content?: string;
+  option?: string;
+  clearButton?: string;
+  /** Selected-value chip in multiple mode (data-slot='item'). */
+  item?: string;
+  /** Panel-top filter input in searchable mode (data-slot='input'). */
+  searchInput?: string;
+};
 
 type SelectProps = {
   /** `string` in single mode, `string[]` when `multiple` is set. */
@@ -76,6 +97,9 @@ type SelectProps = {
    */
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
+  /** Slot classes (see {@link SelectClassNames}); merged over any
+   * ConfigProvider `Select.classNames` section, per key. */
+  classNames?: SelectClassNames;
   /**
    * Forwarded to the focusable element — the native `<select>` in plain
    * and clearable single mode, the trigger `<button>` when `multiple`
@@ -97,6 +121,7 @@ export default function Select({
   virtualized,
   size,
   className,
+  classNames,
   children,
   onChange,
   onValuesChange,
@@ -105,6 +130,11 @@ export default function Select({
   ...rest
 }: SelectProps) {
   const [value, setValue] = useControl(valueControl, multiple ? [] : '');
+  // ConfigProvider `Select.classNames` merges under the prop, per key.
+  const config = useConfigDefaults('Select');
+  const resolvedClassNames = config.classNames
+    ? { ...config.classNames, ...classNames }
+    : classNames;
 
   const handleValueChange = (next: string | string[]) => {
     setValue(next);
@@ -126,6 +156,7 @@ export default function Select({
       virtualized={virtualized}
       size={size}
       className={className}
+      classNames={resolvedClassNames}
       placeholder={placeholder}
       {...rest}
     >
@@ -134,4 +165,4 @@ export default function Select({
   );
 }
 
-export type { SelectProps };
+export type { SelectClassNames, SelectProps };

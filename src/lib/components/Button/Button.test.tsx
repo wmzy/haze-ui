@@ -50,6 +50,37 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: 'X' })).toBeInTheDocument();
   });
 
+  describe('as polymorphism', () => {
+    it("as='a' renders a real anchor: href lands on <a>, no type attr", () => {
+      render(<Button as='a' href='/docs'>Docs</Button>);
+      const link = screen.getByRole('link', { name: 'Docs' });
+      expect(link.tagName).toBe('A');
+      expect(link).toHaveAttribute('href', '/docs');
+      // the button-only default is gated — anchors don't carry it
+      expect(link).not.toHaveAttribute('type');
+      // button skin still worn (base/variant/size classes present)
+      expect(link.className).toContain('solid');
+    });
+
+    it("as='a' busy state: aria-disabled instead of disabled, spinner rendered", () => {
+      render(<Button as='a' href='/run' loading aria-label='Run'>Run</Button>);
+      const link = screen.getByRole('link');
+      expect(link).toHaveAttribute('aria-busy', 'true');
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).not.toHaveAttribute('disabled');
+    });
+
+    it('as with a component: wiring (href passthrough + skin) reaches the inner element', () => {
+      function RouterLink({ to, children, ...rest }: { to: string; children: React.ReactNode } & Record<string, unknown>) {
+        return <a href={to} {...rest}>{children}</a>;
+      }
+      render(<Button as={RouterLink} to='/routed'>Go</Button>);
+      const link = screen.getByRole('link', { name: 'Go' });
+      expect(link).toHaveAttribute('href', '/routed');
+      expect(link).toHaveAttribute('data-slot', 'button-link');
+    });
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(
@@ -62,6 +93,57 @@ describe('Button', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+
+  describe('loading', () => {
+    it('locks the control: disabled + aria-busy while the label keeps the accessible name', async () => {
+      const user = userEvent.setup();
+      const onClick = vi.fn();
+      render(<Button loading onClick={onClick}>Save</Button>);
+      const btn = screen.getByRole('button', { name: 'Save' });
+      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-busy', 'true');
+      expect(btn).toHaveAttribute('data-loading');
+      await user.click(btn);
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it('busy does not re-enable an explicitly disabled button', () => {
+      render(<Button loading disabled>Save</Button>);
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('renders a spinner indicator by default, aria-hidden (aria-busy announces the phase)', () => {
+      render(<Button loading>Save</Button>);
+      const indicator = screen.getByRole('button', { name: 'Save' })
+        .querySelector("[data-slot='indicator']");
+      expect(indicator).not.toBeNull();
+      // the default Spinner carries role=status + aria-label; hidden
+      // unconditionally so it cannot leak into the control's name
+      expect(indicator).toHaveAttribute('aria-hidden', 'true');
+      expect(indicator!.querySelector("[data-slot='spinner']")).not.toBeNull();
+    });
+
+    it('object form: custom icon is aria-hidden, custom text replaces the label ink', () => {
+      render(
+        <Button loading={{ icon: <svg data-testid='busy-icon' />, text: 'Saving…' }}>
+          Save
+        </Button>
+      );
+      const btn = screen.getByRole('button', { name: 'Saving…' });
+      expect(screen.getByTestId('busy-icon')).toBeInTheDocument();
+      expect(btn.querySelector("[data-slot='indicator']")).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.queryByText('Save')).not.toBeInTheDocument();
+    });
+
+    it('clears busy state when loading flips back to false', () => {
+      const { rerender } = render(<Button loading>Save</Button>);
+      rerender(<Button>Save</Button>);
+      const btn = screen.getByRole('button');
+      expect(btn).not.toBeDisabled();
+      expect(btn).not.toHaveAttribute('aria-busy');
+      expect(btn.querySelector("[data-slot='indicator']")).toBeNull();
+    });
   });
 });
 
@@ -194,6 +276,31 @@ describe('ButtonLink', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+
+  describe('loading', () => {
+    it('busy anchor reports aria-busy and forces aria-disabled (anchors have no disabled attr)', () => {
+      render(
+        <ButtonLink href='/long-task' loading tabIndex={-1}>
+          Export
+        </ButtonLink>
+      );
+      const link = screen.getByRole('link', { name: 'Export' });
+      expect(link).toHaveAttribute('aria-busy', 'true');
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).toHaveAttribute('data-loading');
+      expect(link.querySelector("[data-slot='spinner']")).not.toBeNull();
+    });
+
+    it('explicit aria-disabled stays put when busy lifts', () => {
+      const { rerender } = render(
+        <ButtonLink href='/x' loading aria-disabled tabIndex={-1}>X</ButtonLink>
+      );
+      rerender(<ButtonLink href='/x' aria-disabled>X</ButtonLink>);
+      const link = screen.getByRole('link');
+      expect(link).not.toHaveAttribute('aria-busy');
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+    });
   });
 });
 

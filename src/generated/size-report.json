@@ -1,641 +1,671 @@
 {
-  "generatedAt": "2026-10-03T07:57:41.689Z",
+  "generatedAt": "2026-10-07T23:47:39.206Z",
   "distAvailable": true,
   "families": [
     {
       "family": "tokens",
-      "cssBytes": 58224,
-      "cssGzipBytes": 4232
+      "cssBytes": 58240,
+      "cssGzipBytes": 4244
     },
     {
       "family": "accordion",
-      "cssBytes": 2275,
-      "cssGzipBytes": 730
+      "cssBytes": 2291,
+      "cssGzipBytes": 743
     },
     {
       "family": "activity-rail",
-      "cssBytes": 2613,
-      "cssGzipBytes": 732
+      "cssBytes": 2629,
+      "cssGzipBytes": 743
     },
     {
       "family": "affix",
-      "cssBytes": 207,
-      "cssGzipBytes": 161
+      "cssBytes": 223,
+      "cssGzipBytes": 171
     },
     {
       "family": "alert",
-      "cssBytes": 1674,
-      "cssGzipBytes": 561
+      "cssBytes": 1690,
+      "cssGzipBytes": 571
     },
     {
       "family": "anchor",
-      "cssBytes": 984,
-      "cssGzipBytes": 382
+      "cssBytes": 1000,
+      "cssGzipBytes": 392
     },
     {
       "family": "app-shell",
-      "cssBytes": 2012,
-      "cssGzipBytes": 658
-    },
-    {
-      "family": "approval-card",
-      "cssBytes": 1626,
-      "cssGzipBytes": 472
-    },
-    {
-      "family": "aspect-ratio",
-      "cssBytes": 258,
-      "cssGzipBytes": 207
-    },
-    {
-      "family": "async-section",
-      "cssBytes": 2148,
-      "cssGzipBytes": 710
-    },
-    {
-      "family": "avatar-group",
-      "cssBytes": 810,
-      "cssGzipBytes": 387
-    },
-    {
-      "family": "avatar",
-      "cssBytes": 687,
-      "cssGzipBytes": 362
-    },
-    {
-      "family": "back-to-top",
-      "cssBytes": 840,
-      "cssGzipBytes": 406
-    },
-    {
-      "family": "badge",
-      "cssBytes": 1015,
-      "cssGzipBytes": 362
-    },
-    {
-      "family": "banner",
-      "cssBytes": 1179,
-      "cssGzipBytes": 480
-    },
-    {
-      "family": "bottom-sheet",
-      "cssBytes": 2416,
-      "cssGzipBytes": 699
-    },
-    {
-      "family": "breadcrumb",
-      "cssBytes": 1054,
-      "cssGzipBytes": 447
-    },
-    {
-      "family": "button",
-      "cssBytes": 3090,
-      "cssGzipBytes": 756
-    },
-    {
-      "family": "calendar",
-      "cssBytes": 3993,
-      "cssGzipBytes": 897
-    },
-    {
-      "family": "card",
-      "cssBytes": 455,
-      "cssGzipBytes": 242
-    },
-    {
-      "family": "carousel",
-      "cssBytes": 2325,
-      "cssGzipBytes": 772
-    },
-    {
-      "family": "cascader",
-      "cssBytes": 4702,
-      "cssGzipBytes": 986
-    },
-    {
-      "family": "chart",
-      "cssBytes": 102,
-      "cssGzipBytes": 117
-    },
-    {
-      "family": "chat-container",
-      "cssBytes": 1146,
-      "cssGzipBytes": 468
-    },
-    {
-      "family": "chat-input",
-      "cssBytes": 1478,
-      "cssGzipBytes": 545
-    },
-    {
-      "family": "chat-message",
-      "cssBytes": 3086,
-      "cssGzipBytes": 864
-    },
-    {
-      "family": "checkbox",
-      "cssBytes": 1768,
-      "cssGzipBytes": 606
-    },
-    {
-      "family": "chip",
-      "cssBytes": 1355,
-      "cssGzipBytes": 490
-    },
-    {
-      "family": "code-block",
-      "cssBytes": 680,
-      "cssGzipBytes": 351
-    },
-    {
-      "family": "collapsible",
-      "cssBytes": 928,
-      "cssGzipBytes": 338
-    },
-    {
-      "family": "color-picker",
-      "cssBytes": 5748,
-      "cssGzipBytes": 1160
-    },
-    {
-      "family": "combobox",
-      "cssBytes": 7792,
-      "cssGzipBytes": 1417
-    },
-    {
-      "family": "command",
-      "cssBytes": 2738,
-      "cssGzipBytes": 764
-    },
-    {
-      "family": "confirm-dialog",
-      "cssBytes": 3496,
-      "cssGzipBytes": 774
-    },
-    {
-      "family": "container",
-      "cssBytes": 386,
-      "cssGzipBytes": 222
-    },
-    {
-      "family": "context-menu",
-      "cssBytes": 4976,
-      "cssGzipBytes": 1082
-    },
-    {
-      "family": "conversation-list",
-      "cssBytes": 1161,
-      "cssGzipBytes": 474
-    },
-    {
-      "family": "count-up",
-      "cssBytes": 196,
-      "cssGzipBytes": 169
-    },
-    {
-      "family": "data-table",
-      "cssBytes": 5415,
-      "cssGzipBytes": 1339
-    },
-    {
-      "family": "date-range-picker",
-      "cssBytes": 2377,
+      "cssBytes": 2028,
       "cssGzipBytes": 668
     },
     {
-      "family": "datepicker",
-      "cssBytes": 6506,
-      "cssGzipBytes": 1240
+      "family": "approval-card",
+      "cssBytes": 1642,
+      "cssGzipBytes": 482
     },
     {
-      "family": "descriptions",
-      "cssBytes": 1255,
-      "cssGzipBytes": 436
+      "family": "aspect-ratio",
+      "cssBytes": 274,
+      "cssGzipBytes": 217
     },
     {
-      "family": "dialog",
-      "cssBytes": 2253,
-      "cssGzipBytes": 606
+      "family": "async-section",
+      "cssBytes": 2164,
+      "cssGzipBytes": 720
     },
     {
-      "family": "diff-viewer",
-      "cssBytes": 1206,
-      "cssGzipBytes": 463
+      "family": "avatar-group",
+      "cssBytes": 826,
+      "cssGzipBytes": 397
     },
     {
-      "family": "disclosure",
-      "cssBytes": 1674,
-      "cssGzipBytes": 596
+      "family": "avatar",
+      "cssBytes": 703,
+      "cssGzipBytes": 375
     },
     {
-      "family": "divider",
-      "cssBytes": 282,
-      "cssGzipBytes": 211
+      "family": "back-to-top",
+      "cssBytes": 856,
+      "cssGzipBytes": 418
     },
     {
-      "family": "drawer",
-      "cssBytes": 3059,
-      "cssGzipBytes": 659
+      "family": "badge",
+      "cssBytes": 1031,
+      "cssGzipBytes": 374
     },
     {
-      "family": "dropdown-menu",
-      "cssBytes": 9067,
-      "cssGzipBytes": 1466
+      "family": "banner",
+      "cssBytes": 1195,
+      "cssGzipBytes": 490
     },
     {
-      "family": "ellipsis",
-      "cssBytes": 613,
-      "cssGzipBytes": 312
+      "family": "bottom-sheet",
+      "cssBytes": 2432,
+      "cssGzipBytes": 710
     },
     {
-      "family": "empty",
-      "cssBytes": 452,
-      "cssGzipBytes": 262
-    },
-    {
-      "family": "file-input",
-      "cssBytes": 1050,
-      "cssGzipBytes": 452
-    },
-    {
-      "family": "file-preview",
-      "cssBytes": 2751,
-      "cssGzipBytes": 812
-    },
-    {
-      "family": "flex",
-      "cssBytes": 102,
-      "cssGzipBytes": 114
-    },
-    {
-      "family": "float-button",
-      "cssBytes": 4339,
-      "cssGzipBytes": 1060
-    },
-    {
-      "family": "form",
-      "cssBytes": 1015,
-      "cssGzipBytes": 372
-    },
-    {
-      "family": "grid",
-      "cssBytes": 2564,
-      "cssGzipBytes": 404
-    },
-    {
-      "family": "hover-card",
-      "cssBytes": 576,
-      "cssGzipBytes": 335
-    },
-    {
-      "family": "icon",
-      "cssBytes": 417,
-      "cssGzipBytes": 253
-    },
-    {
-      "family": "image",
-      "cssBytes": 3882,
-      "cssGzipBytes": 948
-    },
-    {
-      "family": "inline-completion",
-      "cssBytes": 1904,
-      "cssGzipBytes": 615
-    },
-    {
-      "family": "inline-edit",
-      "cssBytes": 969,
-      "cssGzipBytes": 394
-    },
-    {
-      "family": "input",
-      "cssBytes": 1565,
-      "cssGzipBytes": 510
-    },
-    {
-      "family": "json-view",
-      "cssBytes": 2452,
-      "cssGzipBytes": 780
-    },
-    {
-      "family": "kbd",
-      "cssBytes": 603,
-      "cssGzipBytes": 328
-    },
-    {
-      "family": "list",
-      "cssBytes": 608,
-      "cssGzipBytes": 292
-    },
-    {
-      "family": "log-viewer",
-      "cssBytes": 1867,
-      "cssGzipBytes": 593
-    },
-    {
-      "family": "markdown-renderer",
-      "cssBytes": 2631,
-      "cssGzipBytes": 618
-    },
-    {
-      "family": "masonry",
-      "cssBytes": 359,
-      "cssGzipBytes": 223
-    },
-    {
-      "family": "mentions",
-      "cssBytes": 2389,
-      "cssGzipBytes": 635
-    },
-    {
-      "family": "menu",
-      "cssBytes": 9489,
-      "cssGzipBytes": 1533
-    },
-    {
-      "family": "model-picker",
-      "cssBytes": 1329,
-      "cssGzipBytes": 584
-    },
-    {
-      "family": "navigation-bar",
-      "cssBytes": 1411,
-      "cssGzipBytes": 484
-    },
-    {
-      "family": "number-input",
-      "cssBytes": 2110,
-      "cssGzipBytes": 623
-    },
-    {
-      "family": "otp-input",
-      "cssBytes": 774,
-      "cssGzipBytes": 365
-    },
-    {
-      "family": "pagination",
-      "cssBytes": 3766,
-      "cssGzipBytes": 784
-    },
-    {
-      "family": "password-input",
-      "cssBytes": 1377,
-      "cssGzipBytes": 531
-    },
-    {
-      "family": "popover",
-      "cssBytes": 4229,
-      "cssGzipBytes": 905
-    },
-    {
-      "family": "progress",
-      "cssBytes": 1286,
+      "family": "breadcrumb",
+      "cssBytes": 1070,
       "cssGzipBytes": 459
     },
     {
-      "family": "prompt-input",
-      "cssBytes": 3513,
-      "cssGzipBytes": 825
+      "family": "button",
+      "cssBytes": 4000,
+      "cssGzipBytes": 920
     },
     {
-      "family": "qr-code",
-      "cssBytes": 285,
-      "cssGzipBytes": 208
+      "family": "calendar",
+      "cssBytes": 4009,
+      "cssGzipBytes": 908
     },
     {
-      "family": "radio",
-      "cssBytes": 1774,
-      "cssGzipBytes": 630
+      "family": "card",
+      "cssBytes": 471,
+      "cssGzipBytes": 253
     },
     {
-      "family": "rating",
-      "cssBytes": 898,
-      "cssGzipBytes": 419
+      "family": "carousel",
+      "cssBytes": 2341,
+      "cssGzipBytes": 783
     },
     {
-      "family": "resizable",
-      "cssBytes": 2210,
-      "cssGzipBytes": 691
+      "family": "cascader",
+      "cssBytes": 4718,
+      "cssGzipBytes": 997
     },
     {
-      "family": "result",
-      "cssBytes": 692,
-      "cssGzipBytes": 322
+      "family": "chart",
+      "cssBytes": 118,
+      "cssGzipBytes": 130
     },
     {
-      "family": "scroll-area",
-      "cssBytes": 568,
-      "cssGzipBytes": 266
-    },
-    {
-      "family": "segmented",
-      "cssBytes": 1776,
-      "cssGzipBytes": 602
-    },
-    {
-      "family": "select",
-      "cssBytes": 13268,
-      "cssGzipBytes": 2260
-    },
-    {
-      "family": "sidebar",
-      "cssBytes": 3681,
-      "cssGzipBytes": 905
-    },
-    {
-      "family": "signature",
-      "cssBytes": 2009,
-      "cssGzipBytes": 623
-    },
-    {
-      "family": "skeleton",
-      "cssBytes": 675,
-      "cssGzipBytes": 340
-    },
-    {
-      "family": "slider",
-      "cssBytes": 5801,
-      "cssGzipBytes": 1252
-    },
-    {
-      "family": "sources",
-      "cssBytes": 2732,
-      "cssGzipBytes": 769
-    },
-    {
-      "family": "sparkline",
-      "cssBytes": 663,
-      "cssGzipBytes": 247
-    },
-    {
-      "family": "spinner",
-      "cssBytes": 617,
-      "cssGzipBytes": 326
-    },
-    {
-      "family": "stat",
-      "cssBytes": 977,
-      "cssGzipBytes": 368
-    },
-    {
-      "family": "status-bar",
-      "cssBytes": 1366,
-      "cssGzipBytes": 526
-    },
-    {
-      "family": "step-timeline",
-      "cssBytes": 1572,
-      "cssGzipBytes": 557
-    },
-    {
-      "family": "stepper",
-      "cssBytes": 2140,
-      "cssGzipBytes": 630
-    },
-    {
-      "family": "streaming-text",
-      "cssBytes": 869,
-      "cssGzipBytes": 474
-    },
-    {
-      "family": "swipe-action",
-      "cssBytes": 651,
-      "cssGzipBytes": 322
-    },
-    {
-      "family": "switch",
-      "cssBytes": 1995,
-      "cssGzipBytes": 622
-    },
-    {
-      "family": "tab-bar",
-      "cssBytes": 2075,
-      "cssGzipBytes": 692
-    },
-    {
-      "family": "table",
-      "cssBytes": 840,
-      "cssGzipBytes": 368
-    },
-    {
-      "family": "tabs",
-      "cssBytes": 4552,
-      "cssGzipBytes": 1174
-    },
-    {
-      "family": "tag-group",
-      "cssBytes": 1111,
-      "cssGzipBytes": 464
-    },
-    {
-      "family": "tag-input",
-      "cssBytes": 1885,
-      "cssGzipBytes": 622
-    },
-    {
-      "family": "tag",
-      "cssBytes": 1507,
-      "cssGzipBytes": 542
-    },
-    {
-      "family": "textarea",
-      "cssBytes": 1626,
-      "cssGzipBytes": 523
-    },
-    {
-      "family": "thinking-indicator",
-      "cssBytes": 905,
-      "cssGzipBytes": 423
-    },
-    {
-      "family": "time-picker",
-      "cssBytes": 4664,
-      "cssGzipBytes": 978
-    },
-    {
-      "family": "timeline",
-      "cssBytes": 1224,
-      "cssGzipBytes": 454
-    },
-    {
-      "family": "toast",
-      "cssBytes": 4298,
-      "cssGzipBytes": 1131
-    },
-    {
-      "family": "toggle",
-      "cssBytes": 713,
-      "cssGzipBytes": 261
-    },
-    {
-      "family": "token-counter",
-      "cssBytes": 954,
-      "cssGzipBytes": 416
-    },
-    {
-      "family": "tool-call-card",
-      "cssBytes": 1343,
+      "family": "chat-container",
+      "cssBytes": 1162,
       "cssGzipBytes": 480
     },
     {
-      "family": "toolbar",
-      "cssBytes": 1091,
-      "cssGzipBytes": 387
+      "family": "chat-input",
+      "cssBytes": 1494,
+      "cssGzipBytes": 557
     },
     {
-      "family": "tooltip",
-      "cssBytes": 4249,
-      "cssGzipBytes": 907
+      "family": "chat-message",
+      "cssBytes": 3102,
+      "cssGzipBytes": 875
     },
     {
-      "family": "tour",
-      "cssBytes": 3915,
-      "cssGzipBytes": 934
+      "family": "checkbox",
+      "cssBytes": 1784,
+      "cssGzipBytes": 616
     },
     {
-      "family": "transfer",
-      "cssBytes": 1655,
-      "cssGzipBytes": 538
+      "family": "chip",
+      "cssBytes": 1371,
+      "cssGzipBytes": 501
     },
     {
-      "family": "tree-select",
-      "cssBytes": 7759,
-      "cssGzipBytes": 1525
+      "family": "code-block",
+      "cssBytes": 696,
+      "cssGzipBytes": 361
     },
     {
-      "family": "tree",
-      "cssBytes": 4608,
-      "cssGzipBytes": 1186
+      "family": "collapsible",
+      "cssBytes": 944,
+      "cssGzipBytes": 349
     },
     {
-      "family": "typography",
-      "cssBytes": 1667,
+      "family": "color-picker",
+      "cssBytes": 5764,
+      "cssGzipBytes": 1171
+    },
+    {
+      "family": "combobox",
+      "cssBytes": 7808,
+      "cssGzipBytes": 1428
+    },
+    {
+      "family": "command",
+      "cssBytes": 2754,
+      "cssGzipBytes": 776
+    },
+    {
+      "family": "confirm-dialog",
+      "cssBytes": 3512,
+      "cssGzipBytes": 784
+    },
+    {
+      "family": "container",
+      "cssBytes": 402,
+      "cssGzipBytes": 233
+    },
+    {
+      "family": "context-menu",
+      "cssBytes": 4992,
+      "cssGzipBytes": 1092
+    },
+    {
+      "family": "conversation-list",
+      "cssBytes": 1177,
+      "cssGzipBytes": 486
+    },
+    {
+      "family": "count-up",
+      "cssBytes": 212,
+      "cssGzipBytes": 180
+    },
+    {
+      "family": "data-table",
+      "cssBytes": 5431,
+      "cssGzipBytes": 1350
+    },
+    {
+      "family": "date-range-picker",
+      "cssBytes": 2393,
+      "cssGzipBytes": 680
+    },
+    {
+      "family": "datepicker",
+      "cssBytes": 6522,
+      "cssGzipBytes": 1250
+    },
+    {
+      "family": "descriptions",
+      "cssBytes": 1271,
+      "cssGzipBytes": 447
+    },
+    {
+      "family": "dialog",
+      "cssBytes": 2269,
+      "cssGzipBytes": 616
+    },
+    {
+      "family": "diff-viewer",
+      "cssBytes": 1222,
+      "cssGzipBytes": 474
+    },
+    {
+      "family": "disclosure",
+      "cssBytes": 1690,
+      "cssGzipBytes": 607
+    },
+    {
+      "family": "divider",
+      "cssBytes": 298,
+      "cssGzipBytes": 222
+    },
+    {
+      "family": "drawer",
+      "cssBytes": 3075,
+      "cssGzipBytes": 669
+    },
+    {
+      "family": "dropdown-menu",
+      "cssBytes": 9083,
+      "cssGzipBytes": 1477
+    },
+    {
+      "family": "ellipsis",
+      "cssBytes": 629,
+      "cssGzipBytes": 322
+    },
+    {
+      "family": "empty",
+      "cssBytes": 468,
+      "cssGzipBytes": 273
+    },
+    {
+      "family": "fieldset",
+      "cssBytes": 684,
+      "cssGzipBytes": 343
+    },
+    {
+      "family": "file-input",
+      "cssBytes": 1066,
+      "cssGzipBytes": 464
+    },
+    {
+      "family": "file-preview",
+      "cssBytes": 2767,
+      "cssGzipBytes": 824
+    },
+    {
+      "family": "flex",
+      "cssBytes": 118,
+      "cssGzipBytes": 127
+    },
+    {
+      "family": "float-button",
+      "cssBytes": 4355,
+      "cssGzipBytes": 1071
+    },
+    {
+      "family": "form",
+      "cssBytes": 1031,
+      "cssGzipBytes": 384
+    },
+    {
+      "family": "grid",
+      "cssBytes": 2580,
+      "cssGzipBytes": 414
+    },
+    {
+      "family": "hover-card",
+      "cssBytes": 592,
+      "cssGzipBytes": 346
+    },
+    {
+      "family": "icon",
+      "cssBytes": 433,
+      "cssGzipBytes": 263
+    },
+    {
+      "family": "image",
+      "cssBytes": 3898,
+      "cssGzipBytes": 958
+    },
+    {
+      "family": "indicator",
+      "cssBytes": 1704,
+      "cssGzipBytes": 567
+    },
+    {
+      "family": "inline-completion",
+      "cssBytes": 1920,
+      "cssGzipBytes": 627
+    },
+    {
+      "family": "inline-edit",
+      "cssBytes": 985,
+      "cssGzipBytes": 406
+    },
+    {
+      "family": "input",
+      "cssBytes": 2242,
+      "cssGzipBytes": 703
+    },
+    {
+      "family": "json-view",
+      "cssBytes": 2468,
+      "cssGzipBytes": 792
+    },
+    {
+      "family": "kbd",
+      "cssBytes": 619,
+      "cssGzipBytes": 339
+    },
+    {
+      "family": "list",
+      "cssBytes": 624,
+      "cssGzipBytes": 303
+    },
+    {
+      "family": "loading-overlay",
+      "cssBytes": 766,
+      "cssGzipBytes": 408
+    },
+    {
+      "family": "log-viewer",
+      "cssBytes": 1883,
+      "cssGzipBytes": 603
+    },
+    {
+      "family": "mark",
+      "cssBytes": 616,
+      "cssGzipBytes": 269
+    },
+    {
+      "family": "markdown-renderer",
+      "cssBytes": 2647,
+      "cssGzipBytes": 629
+    },
+    {
+      "family": "masonry",
+      "cssBytes": 375,
+      "cssGzipBytes": 234
+    },
+    {
+      "family": "mentions",
+      "cssBytes": 2405,
+      "cssGzipBytes": 647
+    },
+    {
+      "family": "menu",
+      "cssBytes": 9646,
+      "cssGzipBytes": 1582
+    },
+    {
+      "family": "model-picker",
+      "cssBytes": 1345,
+      "cssGzipBytes": 595
+    },
+    {
+      "family": "navigation-bar",
+      "cssBytes": 1427,
+      "cssGzipBytes": 495
+    },
+    {
+      "family": "number-input",
+      "cssBytes": 2126,
+      "cssGzipBytes": 635
+    },
+    {
+      "family": "otp-input",
+      "cssBytes": 790,
+      "cssGzipBytes": 375
+    },
+    {
+      "family": "pagination",
+      "cssBytes": 3782,
+      "cssGzipBytes": 796
+    },
+    {
+      "family": "password-input",
+      "cssBytes": 567,
+      "cssGzipBytes": 326
+    },
+    {
+      "family": "popover",
+      "cssBytes": 4245,
+      "cssGzipBytes": 915
+    },
+    {
+      "family": "progress",
+      "cssBytes": 1302,
+      "cssGzipBytes": 469
+    },
+    {
+      "family": "prompt-input",
+      "cssBytes": 3529,
+      "cssGzipBytes": 836
+    },
+    {
+      "family": "qr-code",
+      "cssBytes": 301,
+      "cssGzipBytes": 218
+    },
+    {
+      "family": "radio",
+      "cssBytes": 1790,
+      "cssGzipBytes": 640
+    },
+    {
+      "family": "rating",
+      "cssBytes": 914,
+      "cssGzipBytes": 429
+    },
+    {
+      "family": "resizable",
+      "cssBytes": 2226,
+      "cssGzipBytes": 702
+    },
+    {
+      "family": "result",
+      "cssBytes": 708,
+      "cssGzipBytes": 333
+    },
+    {
+      "family": "scroll-area",
+      "cssBytes": 584,
+      "cssGzipBytes": 275
+    },
+    {
+      "family": "segmented",
+      "cssBytes": 1792,
+      "cssGzipBytes": 612
+    },
+    {
+      "family": "select",
+      "cssBytes": 13284,
+      "cssGzipBytes": 2271
+    },
+    {
+      "family": "sidebar",
+      "cssBytes": 3697,
+      "cssGzipBytes": 916
+    },
+    {
+      "family": "signature",
+      "cssBytes": 2025,
+      "cssGzipBytes": 635
+    },
+    {
+      "family": "skeleton",
+      "cssBytes": 691,
+      "cssGzipBytes": 351
+    },
+    {
+      "family": "slider",
+      "cssBytes": 5817,
+      "cssGzipBytes": 1263
+    },
+    {
+      "family": "sources",
+      "cssBytes": 2748,
+      "cssGzipBytes": 782
+    },
+    {
+      "family": "sparkline",
+      "cssBytes": 679,
+      "cssGzipBytes": 257
+    },
+    {
+      "family": "spinner",
+      "cssBytes": 633,
+      "cssGzipBytes": 335
+    },
+    {
+      "family": "spoiler",
+      "cssBytes": 833,
+      "cssGzipBytes": 430
+    },
+    {
+      "family": "stat",
+      "cssBytes": 993,
+      "cssGzipBytes": 383
+    },
+    {
+      "family": "status-bar",
+      "cssBytes": 1382,
+      "cssGzipBytes": 536
+    },
+    {
+      "family": "step-timeline",
+      "cssBytes": 1588,
+      "cssGzipBytes": 567
+    },
+    {
+      "family": "stepper",
+      "cssBytes": 2156,
+      "cssGzipBytes": 641
+    },
+    {
+      "family": "streaming-text",
+      "cssBytes": 885,
+      "cssGzipBytes": 484
+    },
+    {
+      "family": "swipe-action",
+      "cssBytes": 667,
+      "cssGzipBytes": 332
+    },
+    {
+      "family": "switch",
+      "cssBytes": 2011,
+      "cssGzipBytes": 632
+    },
+    {
+      "family": "tab-bar",
+      "cssBytes": 2091,
+      "cssGzipBytes": 703
+    },
+    {
+      "family": "table",
+      "cssBytes": 856,
+      "cssGzipBytes": 381
+    },
+    {
+      "family": "tabs",
+      "cssBytes": 4568,
+      "cssGzipBytes": 1185
+    },
+    {
+      "family": "tag-group",
+      "cssBytes": 1127,
+      "cssGzipBytes": 475
+    },
+    {
+      "family": "tag-input",
+      "cssBytes": 1901,
+      "cssGzipBytes": 634
+    },
+    {
+      "family": "tag",
+      "cssBytes": 1523,
+      "cssGzipBytes": 553
+    },
+    {
+      "family": "textarea",
+      "cssBytes": 1642,
+      "cssGzipBytes": 533
+    },
+    {
+      "family": "thinking-indicator",
+      "cssBytes": 921,
+      "cssGzipBytes": 433
+    },
+    {
+      "family": "time-picker",
+      "cssBytes": 4680,
+      "cssGzipBytes": 990
+    },
+    {
+      "family": "timeline",
+      "cssBytes": 1240,
       "cssGzipBytes": 466
     },
     {
+      "family": "toast",
+      "cssBytes": 4314,
+      "cssGzipBytes": 1141
+    },
+    {
+      "family": "toggle",
+      "cssBytes": 729,
+      "cssGzipBytes": 270
+    },
+    {
+      "family": "token-counter",
+      "cssBytes": 970,
+      "cssGzipBytes": 429
+    },
+    {
+      "family": "tool-call-card",
+      "cssBytes": 1359,
+      "cssGzipBytes": 491
+    },
+    {
+      "family": "toolbar",
+      "cssBytes": 1107,
+      "cssGzipBytes": 398
+    },
+    {
+      "family": "tooltip",
+      "cssBytes": 4265,
+      "cssGzipBytes": 917
+    },
+    {
+      "family": "tour",
+      "cssBytes": 3931,
+      "cssGzipBytes": 945
+    },
+    {
+      "family": "transfer",
+      "cssBytes": 1671,
+      "cssGzipBytes": 549
+    },
+    {
+      "family": "tree-select",
+      "cssBytes": 7775,
+      "cssGzipBytes": 1536
+    },
+    {
+      "family": "tree",
+      "cssBytes": 4624,
+      "cssGzipBytes": 1196
+    },
+    {
+      "family": "typography",
+      "cssBytes": 1683,
+      "cssGzipBytes": 477
+    },
+    {
       "family": "upload",
-      "cssBytes": 6231,
-      "cssGzipBytes": 1345
+      "cssBytes": 6247,
+      "cssGzipBytes": 1357
     },
     {
       "family": "virtual-list",
-      "cssBytes": 841,
-      "cssGzipBytes": 338
+      "cssBytes": 857,
+      "cssGzipBytes": 349
+    },
+    {
+      "family": "visually-hidden",
+      "cssBytes": 254,
+      "cssGzipBytes": 215
     },
     {
       "family": "watermark",
-      "cssBytes": 218,
-      "cssGzipBytes": 176
+      "cssBytes": 234,
+      "cssGzipBytes": 187
     },
     {
       "family": "workbench",
-      "cssBytes": 3220,
-      "cssGzipBytes": 826
+      "cssBytes": 3426,
+      "cssGzipBytes": 877
     }
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 327931,
-    "cssGzipBytes": 33929
+    "cssBytes": 335535,
+    "cssGzipBytes": 34881
   }
 }

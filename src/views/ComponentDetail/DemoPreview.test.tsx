@@ -121,7 +121,7 @@ describe('DemoPreview viewport presets', () => {
     );
     // Content sits directly in the preview area — exactly the old layout.
     expect(constrainedWrapper()).toBeNull();
-    expect(screen.getByText('Auto', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Auto', { selector: '[data-slot=width-tag]' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Auto' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -170,7 +170,7 @@ describe('DemoPreview viewport presets', () => {
 
     await user.click(screen.getByRole('button', { name: 'Auto' }));
     expect(constrainedWrapper()).toBeNull();
-    expect(screen.getByText('Auto', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Auto', { selector: '[data-slot=width-tag]' })).toBeInTheDocument();
   });
 
   it('coexists with the dark scope: wrapper lives inside darkTheme', async () => {

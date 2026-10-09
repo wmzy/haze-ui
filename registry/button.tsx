@@ -20,6 +20,7 @@ import { Button, ButtonLink, buttonVariants, buttonSizes } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/button.css';
+import 'haze-ui/css/spinner.css';
 
 export { Button, ButtonLink, buttonVariants, buttonSizes };
 export type { ButtonProps, ButtonLinkProps } from 'haze-ui';

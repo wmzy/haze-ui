@@ -1,2 +1,2 @@
 export {default as Drawer} from './Drawer';
-export type {DrawerProps, DrawerHandle} from './Drawer';
+export type {DrawerClassNames, DrawerProps, DrawerHandle} from './Drawer';

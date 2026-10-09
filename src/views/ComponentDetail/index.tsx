@@ -258,6 +258,15 @@ import FloatButtonDemo from './demos/FloatButtonDemo';
 import MasonryDemo from './demos/MasonryDemo';
 
 import SignatureDemo from './demos/SignatureDemo';
+import MarkDemo from './demos/MarkDemo';
+import HighlightDemo from './demos/HighlightDemo';
+import NumberFormatterDemo from './demos/NumberFormatterDemo';
+import FieldsetDemo from './demos/FieldsetDemo';
+import LoadingOverlayDemo from './demos/LoadingOverlayDemo';
+import IndicatorDemo from './demos/IndicatorDemo';
+import SpoilerDemo from './demos/SpoilerDemo';
+import VisuallyHiddenDemo from './demos/VisuallyHiddenDemo';
+import DateTimePickerDemo from './demos/DateTimePickerDemo';
 
 // ─── Demo registry ─────────────────────────────────────────────
 const demos: Record<string, () => ReactNode> = {
@@ -389,6 +398,15 @@ const demos: Record<string, () => ReactNode> = {
   workbench: WorkbenchDemo,
   chart: ChartDemo,
   form: FormDemo,
+  mark: MarkDemo,
+  highlight: HighlightDemo,
+  'number-formatter': NumberFormatterDemo,
+  fieldset: FieldsetDemo,
+  'loading-overlay': LoadingOverlayDemo,
+  indicator: IndicatorDemo,
+  spoiler: SpoilerDemo,
+  'visually-hidden': VisuallyHiddenDemo,
+  'date-time-picker': DateTimePickerDemo,
 };
 
 // ─── Copy import ────────────────────────────────────────────────

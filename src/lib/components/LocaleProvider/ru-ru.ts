@@ -49,6 +49,10 @@ const ruRU: HazeStrings = {
     create: 'Создать «{query}»',
     noResults: 'Ничего не найдено',
   },
+  spoiler: {
+    showMore: 'Показать ещё',
+    showLess: 'Скрыть',
+  },
   command: {
     noResults: 'Ничего не найдено',
   },

@@ -49,6 +49,10 @@ const esES: HazeStrings = {
     create: 'Crear «{query}»',
     noResults: 'Sin resultados',
   },
+  spoiler: {
+    showMore: 'Mostrar más',
+    showLess: 'Mostrar menos',
+  },
   command: {
     noResults: 'Sin resultados',
   },

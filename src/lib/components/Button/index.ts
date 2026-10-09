@@ -1,6 +1,7 @@
 export {default as Button} from './Button';
 export type {ButtonProps} from './Button';
 export {default as ButtonLink} from './ButtonLink';
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- 公共 barrel 必须透出，供消费方兼容旧签名
 export type {ButtonLinkProps} from './ButtonLink';
 // The skin pieces `Button`/`ButtonLink` wear, exported for composition
 // (shadcn `buttonVariants` precedent): build a custom element that still

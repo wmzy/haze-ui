@@ -47,6 +47,10 @@ const jaJP: HazeStrings = {
     create: '「{query}」を作成',
     noResults: '結果なし',
   },
+  spoiler: {
+    showMore: 'もっと見る',
+    showLess: '閉じる',
+  },
   command: {
     noResults: '結果なし',
   },

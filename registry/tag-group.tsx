@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tag-group.css';
 
 export { TagGroup, TagGroupItem, SortableTagGroup };
-export type { TagGroupProps, TagGroupItemProps, SortableTagGroupProps } from 'haze-ui';
+export type { TagGroupProps, TagGroupClassNames, TagGroupItemProps, SortableTagGroupProps } from 'haze-ui';

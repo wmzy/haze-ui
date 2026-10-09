@@ -8,8 +8,10 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { classnames } from '../../utils/classnames';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import Spinner from '../Spinner/Spinner';
@@ -45,6 +47,17 @@ type ComboboxOptionData = {
    * out hides entirely.
    */
   group?: string;
+};
+
+/**
+ * Semantic slot classes for Combobox (keys follow the data-slot names;
+ * see the `classNames` prop on {@link ComboboxProps}).
+ */
+type ComboboxClassNames = {
+  root?: string;
+  input?: string;
+  item?: string;
+  empty?: string;
 };
 
 type ComboboxProps = {
@@ -131,6 +144,14 @@ type ComboboxProps = {
    */
   virtualized?: boolean | ComboboxVirtualizedConfig;
   className?: string;
+  /**
+   * Slot classes (AntD v6 `classNames` shape), following the data-slot
+   * names: `root` (the positioning wrapper), `input` (the combobox
+   * field), `item` (each option row), `empty` (the no-match state
+   * block). A ConfigProvider `Combobox.classNames` section merges under
+   * the prop, per key.
+   */
+  classNames?: ComboboxClassNames;
   /**
    * Forwarded to the combobox `<input>` — the focusable field in both
    * single and multiple mode (multiple mode's chip box wraps it but is
@@ -359,8 +380,14 @@ export default function Combobox({
   virtualThreshold = 100,
   virtualized: virtualizedProp,
   className,
+  classNames,
   ref,
 }: ComboboxProps) {
+  // ConfigProvider `Combobox.classNames` merges under the prop, per key.
+  const comboboxConfig = useConfigDefaults('Combobox');
+  const resolvedClassNames = comboboxConfig.classNames
+    ? { ...comboboxConfig.classNames, ...classNames }
+    : classNames;
   const strings = useStrings('combobox');
   const [value, setValue] = useControl(valueControl, multiple ? [] : '');
   // Locally created options (creatable) layered on top of `options` —
@@ -625,7 +652,7 @@ export default function Combobox({
       highlighted={i === highlightIndex}
       selected={isSelected(o.value)}
       onSelect={handleSelect}
-      className={virtual ? virtualRow : undefined}
+      className={classnames(virtual && virtualRow, resolvedClassNames?.item)}
     >
       {showCreateItem && i === 0
         ? createText
@@ -650,7 +677,7 @@ export default function Combobox({
       aria-autocomplete="list"
       aria-activedescendant={activeDescendant}
       aria-busy={loading || undefined}
-      className={multiple ? multiInput : input}
+      x-class={[multiple ? multiInput : input, resolvedClassNames?.input]}
       value={query}
       placeholder={placeholder}
       onChange={(e) => {
@@ -664,7 +691,7 @@ export default function Combobox({
   );
 
   return (
-    <div x-class={[wrapper, className]}>
+    <div data-slot='combobox' x-class={[wrapper, className, resolvedClassNames?.root]}>
       {multiple ? (
         <div
           ref={boxRef}
@@ -733,7 +760,7 @@ export default function Combobox({
             data-slot='empty'
             aria-selected={false}
             aria-disabled="true"
-            x-class={[stateRow]}
+            x-class={[stateRow, resolvedClassNames?.empty]}
           >
             {empty ?? strings.noResults}
           </div>
@@ -783,4 +810,4 @@ export default function Combobox({
   );
 }
 
-export type { ComboboxProps, ComboboxVirtualizedConfig, ComboboxOptionData };
+export type { ComboboxClassNames, ComboboxProps, ComboboxVirtualizedConfig, ComboboxOptionData };

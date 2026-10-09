@@ -257,6 +257,38 @@ re-deriving file names — the mapping changes in lockstep with the build.
 The official [`haze-ui-vite`](https://www.npmjs.com/package/haze-ui-vite)
 plugin (above) is the reference consumer of this data.
 
+#### Styling & overriding (the `@layer haze` contract)
+
+All shipped CSS lives inside **`@layer haze`**, so your own *unlayered*
+styles beat every library rule regardless of source order or
+specificity — no `!important`, no selector wrestling:
+
+```css
+/* your stylesheet, plain CSS — always wins over the library */
+[data-slot='button'] {
+  letter-spacing: 0.02em;
+}
+```
+
+Every element a component renders carries a stable **`data-slot`**
+attribute (`data-slot='button'`, `'label'`, `'panel'`, `'menu-item'`,
+…). It is the official override surface: the attribute set is enforced
+by a coverage test, so it cannot silently drift between releases. The
+cascade is intentional — prefer, in order:
+
+1. **tokens** — `var(--haze-color-primary)` and friends re-derive whole
+   interaction-state families at runtime; per-component
+   `--haze-button-*` variables retheme one family;
+2. **`ConfigProvider` defaults** — app-wide per-component prop defaults
+   (and `classNames` where the component exposes slots);
+3. **`data-slot` CSS targeting** — structural overrides (the escape
+   hatch above);
+4. **`className` / `classNames`** — per-instance overrides, reserved
+   for one-offs.
+
+If your own framework ships layered styles too, declare order explicitly
+(e.g. `@layer haze, app;`) to keep the last word.
+
 ### Server Components (Next.js App Router)
 
 Interactive modules in `dist/` carry the `'use client'` directive,
