@@ -8,7 +8,6 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { classnames } from '../../utils/classnames';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
@@ -652,7 +651,7 @@ export default function Combobox({
       highlighted={i === highlightIndex}
       selected={isSelected(o.value)}
       onSelect={handleSelect}
-      className={classnames(virtual && virtualRow, resolvedClassNames?.item)}
+      x-class={[virtual && virtualRow, resolvedClassNames?.item]}
     >
       {showCreateItem && i === 0
         ? createText

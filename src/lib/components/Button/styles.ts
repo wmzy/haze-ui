@@ -168,12 +168,12 @@ export const squareSizes = {
 } as const;
 
 /**
- * Layout conduit for the button's children. Button previously spread
- * children directly under its inline-flex row (icon + text laid out by
- * the row's `gap`); the busy state needs every child wrapped in one
- * span so it can be gridded against the indicator. This class
- * replicates the parent flex context (same gap, same alignment), so
- * wrapping the children changes nothing visually for non-busy buttons.
+ * Layout conduit for the button's children during a busy render. The
+ * span only mounts while busy (idle buttons spread children directly
+ * under the row, byte-identical to the pre-`loading` DOM); it exists so
+ * the children can be gridded against the indicator. This class
+ * replicates the parent flex context (same gap, same alignment) inside
+ * the shared grid cell.
  */
 export const label = css`
   display: inline-flex;

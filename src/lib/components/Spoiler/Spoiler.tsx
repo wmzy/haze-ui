@@ -3,6 +3,7 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
+import { useId } from 'react';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -79,6 +80,7 @@ export default function Spoiler({
 }: SpoilerProps) {
   const strings = useStrings('spoiler');
   const [expanded, setExpanded] = useControl(expandedControl, false);
+  const contentId = useId();
   const toggleText = expanded
     ? (hideLabel ?? strings.showLess)
     : (showLabel ?? strings.showMore);
@@ -86,6 +88,7 @@ export default function Spoiler({
   return (
     <div data-slot='spoiler' x-class={[root, className]} {...rest}>
       <div
+        id={contentId}
         data-slot='content'
         data-expanded={expanded || undefined}
         x-class={[!expanded && clip]}
@@ -98,6 +101,7 @@ export default function Spoiler({
         data-slot='toggle'
         x-class={[toggle]}
         aria-expanded={expanded}
+        aria-controls={contentId}
         onClick={() => setExpanded((prev) => !prev)}
       >
         {toggleText}

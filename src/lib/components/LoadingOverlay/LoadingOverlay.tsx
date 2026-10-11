@@ -6,11 +6,13 @@ import Spinner from '../Spinner/Spinner';
 
 /**
  * Container-level loading state: dims the wrapped content and centers a
- * spinner above it. The content stays in the tree (focus keeps its
- * place when the overlay lifts); `aria-busy` on the wrapper is the AT
- * channel the Mantine equivalent uses — the block becomes non-interactive
- * by aria-disabled on children not being rescriptable, so consumers gate
- * their own handlers on the same `visible` prop.
+ * spinner above it. The content stays in the tree and keeps its place
+ * in the focus order — deliberately, so focus survives the overlay
+ * (`aria-busy` on the wrapper is the AT channel, same as the Mantine
+ * equivalent). The veil blocks pointer and selection, but nothing here
+ * is modal: keyboard users can still reach the content. Consumers that
+ * need a full lock gate their own handlers on the same `visible` prop
+ * (or host the content in an `inert` subtree).
  */
 type LoadingOverlayProps = {
   /** Whether the overlay is shown. */
@@ -55,9 +57,12 @@ const veilLabel = css`
 `;
 
 const dimmed = css`
-  /* The content goes inert under the veil: keyboard focus, pointer and
-   * selection all blocked (aria-modal would be wrong here — this is a
-   * transient region state, not a dialog). */
+  /* Pointer and selection are blocked under the veil. Keyboard focus
+   * is deliberately NOT blocked — the content keeps its place in the
+   * focus order so focus survives the overlay (aria-modal would be
+   * wrong here: this is a transient region state, not a dialog).
+   * Consumers needing a full lock gate handlers on the visible prop or
+   * host the content in an inert subtree. */
   pointer-events: none;
   user-select: none;
   opacity: var(--haze-overlay-dim-opacity, 0.45);

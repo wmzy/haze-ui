@@ -55,6 +55,15 @@ describe('Spoiler', () => {
     expect(screen.getByRole('button', { name: '展开' })).toBeInTheDocument();
   });
 
+  it('toggle is linked to the content region via aria-controls/id', () => {
+    render(<Spoiler>Body</Spoiler>);
+    const toggle = screen.getByRole('button', { name: 'Show more' });
+    const content = document.querySelector("[data-slot='content']");
+    expect(content).not.toBeNull();
+    expect(content!.id).not.toBe('');
+    expect(toggle).toHaveAttribute('aria-controls', content!.id);
+  });
+
   it('forwards native div props to the root (aria-* / data-*)', () => {
     const { container } = render(
       <Spoiler aria-label='terms and conditions' data-testid='root'>X</Spoiler>

@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react';
+import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
@@ -27,9 +27,7 @@ type MenuItemProps<T extends ElementType = 'button'> = MenuItemOwnProps & {
   /** Render element — 'button' (default) or 'a' (or a router Link
    * component forwarding props to an anchor). */
   as?: T;
-} & (T extends 'a'
-    ? Omit<React.ComponentPropsWithRef<'a'>, keyof MenuItemOwnProps | 'as'>
-    : unknown);
+} & Omit<ComponentPropsWithRef<T>, keyof MenuItemOwnProps | 'as'>;
 
 const item = css`
   display: flex;

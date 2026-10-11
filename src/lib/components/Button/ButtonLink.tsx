@@ -21,12 +21,13 @@ import Button from './Button';
  * `:disabled`.
  *
  * Migration note (1.4 minor): since Button learned `as`, ButtonLink
- * delegates rendering to Button — the children are now wrapped in
- * `<span data-slot='label'>` and the busy spinner in
- * `<span data-slot='indicator' aria-hidden>`; DOM selectors written
- * against the old flat label break. Props stay contract-equal:
- * `variant` still defaults to `'solid'` (the Button tier never read
- * config) and `size` still reads the `ButtonLink` config section first.
+ * delegates rendering to Button. Idle anchors keep the flat DOM (no
+ * wrapper); only a busy render wraps the children in
+ * `<span data-slot='label'>` and adds
+ * `<span data-slot='indicator' aria-hidden>`. Props stay
+ * contract-equal: `variant` still defaults to `'solid'` (the Button
+ * tier never read config) and `size` still reads the `ButtonLink`
+ * config section first.
  */
 type ButtonLinkProps = {
   variant?: 'solid' | 'outline' | 'ghost';

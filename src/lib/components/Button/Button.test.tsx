@@ -144,6 +144,25 @@ describe('Button', () => {
       expect(btn).not.toHaveAttribute('aria-busy');
       expect(btn.querySelector("[data-slot='indicator']")).toBeNull();
     });
+
+    it('idle DOM stays flat — no label wrapper outside the busy phase', () => {
+      // byte-identical to the pre-loading DOM, so `button > *`
+      // selectors written before the loading wave keep working
+      render(<Button>Save</Button>);
+      const btn = screen.getByRole('button', { name: 'Save' });
+      expect(btn.querySelector("[data-slot='label']")).toBeNull();
+      expect(btn.innerHTML).toBe('Save');
+    });
+
+    it('busy wraps the label span and unwraps it when the phase lifts', () => {
+      const { rerender } = render(<Button loading>Save</Button>);
+      const btn = screen.getByRole('button');
+      expect(btn.querySelector("[data-slot='label']")).not.toBeNull();
+      rerender(<Button>Save</Button>);
+      expect(btn.querySelector("[data-slot='label']")).toBeNull();
+      expect(btn.querySelector("[data-slot='indicator']")).toBeNull();
+      expect(btn.innerHTML).toBe('Save');
+    });
   });
 });
 

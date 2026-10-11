@@ -24,12 +24,17 @@ type NetworkInformationLike = {
   removeEventListener?: (event: string, listener: () => void) => void;
 };
 
-declare global {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Navigator 是全局接口，必须用 interface 才能合并
-  interface Navigator {
-    connection?: NetworkInformationLike;
-  }
-}
+/**
+ * navigator.connection 的最小形状。不用 declare global 合并进
+ * Navigator —— lib.dom 将来真的收录 NetworkInformation 时接口合并会
+ * 直接冲突报错；局部交叉类型只在使用点断言，届时静默退化为交集。
+ */
+type NavigatorWithConnection = Navigator & {
+  connection?: NetworkInformationLike;
+};
+
+const getConnection = (): NetworkInformationLike | undefined =>
+  (navigator as NavigatorWithConnection).connection;
 
 const subscribeOnline = (onChange: () => void) => {
   if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') {
@@ -39,7 +44,7 @@ const subscribeOnline = (onChange: () => void) => {
   window.addEventListener('offline', onChange);
 
   // navigator 在全局 lib 里是非空值；不存在的情况 SSR 路径上面已经 return
-  const connection = navigator.connection;
+  const connection = getConnection();
   if (connection?.addEventListener) {
     connection.addEventListener('change', onChange);
     return () => {
@@ -60,7 +65,7 @@ let cachedSnapshot: NetworkSnapshot = DEFAULT_SNAPSHOT;
 
 const getSnapshot = (): NetworkSnapshot => {
   if (typeof navigator === 'undefined') return DEFAULT_SNAPSHOT;
-  const conn = navigator.connection;
+  const conn = getConnection();
   const next: NetworkSnapshot = {
     online: navigator.onLine,
     ...(conn?.effectiveType !== undefined && { effectiveType: conn.effectiveType }),

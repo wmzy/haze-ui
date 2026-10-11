@@ -62,12 +62,13 @@ type ButtonProps<T extends ElementType = 'button'> = ButtonOwnProps & {
 } & Omit<ComponentPropsWithRef<T>, keyof ButtonOwnProps | 'as' | 'type'>;
 
 /**
- * DOM contract: `children` always render inside a
- * `<span data-slot='label'>` (so the busy state can hide the ink while
- * keeping the width); a busy render adds
- * `<span data-slot='indicator' aria-hidden>` next to it. Selectors or
- * tests targeting `button > textNode` need updating — this wrapper
- * shipped in the `loading` wave (minor).
+ * DOM contract: idle buttons render their `children` bare —
+ * byte-identical to the pre-`loading` DOM (no wrapper). Only a busy
+ * render wraps them in `<span data-slot='label'>` (transparent ink
+ * keeps sizing the control) and adds
+ * `<span data-slot='indicator' aria-hidden>` next to it; both unmount
+ * when the busy phase lifts. `button > *` selectors keep working for
+ * idle buttons; children remount across a busy toggle.
  */
 export default function Button<T extends ElementType = 'button'>({
   variant = 'solid',
@@ -117,17 +118,25 @@ export default function Button<T extends ElementType = 'button'>({
       ]}
       {...rest}
     >
-      <span data-slot='label' x-class={[labelClass]}>
-        {busy && busyText !== undefined ? busyText : children}
-      </span>
-      {busy && (
-        // always aria-hidden: without it the default Spinner's
-        // role=status label ("Loading") gets concatenated into the
-        // control's accessible name; the busy phase is already
-        // announced by the control's own aria-busy
-        <span data-slot='indicator' aria-hidden>
-          {busyIcon ?? <Spinner size='sm' />}
-        </span>
+      {/* Idle buttons keep the pre-`loading` flat DOM (children spread
+       * directly under the row); the label/indicator spans exist only
+       * while busy, so the grid stacking in `loading` always has both
+       * cells. Children remount across a busy toggle. */}
+      {busy ? (
+        <>
+          <span data-slot='label' x-class={[labelClass]}>
+            {busyText !== undefined ? busyText : children}
+          </span>
+          {/* always aria-hidden: without it the default Spinner's
+           * role=status label ("Loading") gets concatenated into the
+           * control's accessible name; the busy phase is already
+           * announced by the control's own aria-busy */}
+          <span data-slot='indicator' aria-hidden>
+            {busyIcon ?? <Spinner size='sm' />}
+          </span>
+        </>
+      ) : (
+        children
       )}
     </Tag>
   );

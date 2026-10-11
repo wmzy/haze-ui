@@ -29,9 +29,12 @@ const toggle = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--haze-space-1);
-  min-width: var(--haze-space-6);
-  min-height: var(--haze-space-6);
+  /* 40px hit area (space-10) — matches InputCore's padEnd section slot;
+   * the WCAG 2.5.8 floor is space-6, but shrinking a 40px target to the
+   * floor is a UX regression, not a fix. */
+  padding: var(--haze-space-2);
+  min-width: var(--haze-space-10);
+  min-height: var(--haze-space-10);
   background: none;
   border: none;
   cursor: pointer;
