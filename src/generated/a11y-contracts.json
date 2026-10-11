@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T21:03:30.852Z",
+  "generatedAt": "2026-10-07T23:21:44.529Z",
   "components": [
     {
       "component": "Accordion",
@@ -173,11 +173,13 @@
         "link"
       ],
       "aria": [
+        "aria-busy",
         "aria-disabled",
+        "aria-hidden",
         "aria-label"
       ],
       "keys": [],
-      "testCount": 18
+      "testCount": 28
     },
     {
       "component": "Calendar",
@@ -382,7 +384,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 77
+      "testCount": 78
     },
     {
       "component": "Command",
@@ -420,7 +422,7 @@
         "Escape",
         "Tab"
       ],
-      "testCount": 15
+      "testCount": 19
     },
     {
       "component": "Container",
@@ -520,6 +522,15 @@
       "testCount": 24
     },
     {
+      "component": "DateTimePicker",
+      "roles": [
+        "grid"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
+    },
+    {
       "component": "Descriptions",
       "roles": [],
       "aria": [
@@ -572,7 +583,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 22
+      "testCount": 24
     },
     {
       "component": "DropdownMenu",
@@ -627,6 +638,16 @@
       "aria": [],
       "keys": [],
       "testCount": 6
+    },
+    {
+      "component": "Fieldset",
+      "roles": [
+        "button",
+        "group"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
     },
     {
       "component": "FileInput",
@@ -687,6 +708,13 @@
       "testCount": 17
     },
     {
+      "component": "Highlight",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 7
+    },
+    {
       "component": "HoverCard",
       "roles": [
         "button"
@@ -722,6 +750,15 @@
       "testCount": 28
     },
     {
+      "component": "Indicator",
+      "roles": [],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [],
+      "testCount": 5
+    },
+    {
       "component": "InlineCompletion",
       "roles": [
         "textbox"
@@ -749,11 +786,12 @@
     {
       "component": "Input",
       "roles": [
+        "button",
         "textbox"
       ],
       "aria": [],
       "keys": [],
-      "testCount": 11
+      "testCount": 17
     },
     {
       "component": "JsonView",
@@ -786,6 +824,17 @@
       "testCount": 8
     },
     {
+      "component": "LoadingOverlay",
+      "roles": [
+        "status"
+      ],
+      "aria": [
+        "aria-busy"
+      ],
+      "keys": [],
+      "testCount": 5
+    },
+    {
       "component": "LocaleProvider",
       "roles": [
         "button",
@@ -801,6 +850,13 @@
       "aria": [],
       "keys": [],
       "testCount": 12
+    },
+    {
+      "component": "Mark",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 4
     },
     {
       "component": "MarkdownRenderer",
@@ -854,6 +910,7 @@
       ],
       "aria": [
         "aria-checked",
+        "aria-disabled",
         "aria-expanded",
         "aria-haspopup",
         "aria-owns"
@@ -868,7 +925,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 53
+      "testCount": 55
     },
     {
       "component": "ModelPicker",
@@ -887,6 +944,13 @@
       ],
       "keys": [],
       "testCount": 13
+    },
+    {
+      "component": "NumberFormatter",
+      "roles": [],
+      "aria": [],
+      "keys": [],
+      "testCount": 6
     },
     {
       "component": "NumberInput",
@@ -1103,7 +1167,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 66
+      "testCount": 69
     },
     {
       "component": "Sidebar",
@@ -1194,6 +1258,17 @@
       ],
       "aria": [
         "aria-label"
+      ],
+      "keys": [],
+      "testCount": 5
+    },
+    {
+      "component": "Spoiler",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-expanded"
       ],
       "keys": [],
       "testCount": 5
@@ -1340,7 +1415,7 @@
         "ArrowRight",
         "Escape"
       ],
-      "testCount": 14
+      "testCount": 16
     },
     {
       "component": "TagInput",
@@ -1604,6 +1679,15 @@
       "aria": [],
       "keys": [],
       "testCount": 52
+    },
+    {
+      "component": "VisuallyHidden",
+      "roles": [
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 5
     },
     {
       "component": "Watermark",

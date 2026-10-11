@@ -1,4 +1,4 @@
-import type { Ref, SetStateAction } from 'react';
+import type { ComponentPropsWithoutRef, Ref, SetStateAction } from 'react';
 
 import type { CalendarCellRender, CalendarPickerMode } from '../Calendar/Calendar';
 
@@ -93,7 +93,7 @@ type DatepickerCoreProps = {
   cellRender?: CalendarCellRender;
   /** Forwarded to the trigger `<input>` (not the wrapper div). */
   ref?: Ref<HTMLInputElement>;
-};
+} & Omit<ComponentPropsWithoutRef<'div'>, 'onChange' | 'children'>;
 
 const wrapper = css`
   position: relative;
@@ -226,6 +226,7 @@ export default function DatepickerCore({
   placeholder = 'Select date',
   className,
   ref,
+  ...rest
 }: DatepickerCoreProps) {
   const strings = useStrings('datepicker');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -335,7 +336,7 @@ export default function DatepickerCore({
   });
 
   return (
-    <div x-class={[wrapper, className]}>
+    <div x-class={[wrapper, className]} {...rest}>
       <input
         ref={setInputRef}
         data-slot='input'

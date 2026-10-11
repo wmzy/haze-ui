@@ -35,11 +35,12 @@ export type {
 
 // components
 export { Button, ButtonLink, buttonVariants, buttonSizes } from './components/Button';
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- 主 barrel 必须透出 ButtonLinkProps，供消费方兼容旧签名
 export type { ButtonProps, ButtonLinkProps } from './components/Button';
 export { Input, InputCore } from './components/Input';
 export type { InputProps, InputCoreProps } from './components/Input';
 export { Select, Option, SelectCore, OptionGroup } from './components/Select';
-export type { SelectProps, OptionProps, SelectCoreProps, OptionGroupProps } from './components/Select';
+export type { SelectProps, SelectClassNames, OptionProps, SelectCoreProps, OptionGroupProps } from './components/Select';
 export { Checkbox, CheckboxCore } from './components/Checkbox';
 export type { CheckboxProps, CheckboxCoreProps } from './components/Checkbox';
 export { Switch, SwitchCore } from './components/Switch';
@@ -109,7 +110,7 @@ export type { ToastProps, ToastContainerProps, ToastOptions, ToastVariant, Toast
 export { List, ListItem } from './components/List';
 export type { ListProps, ListItemProps } from './components/List';
 export { Combobox, ComboboxOption, ComboboxGroup } from './components/Combobox';
-export type { ComboboxProps, ComboboxOptionProps, ComboboxGroupProps, ComboboxOptionData, ComboboxVirtualizedConfig } from './components/Combobox';
+export type { ComboboxProps, ComboboxClassNames, ComboboxOptionProps, ComboboxGroupProps, ComboboxOptionData, ComboboxVirtualizedConfig } from './components/Combobox';
 export {
   Table,
   TableHead,
@@ -148,7 +149,7 @@ export type { PaginationProps } from './components/Pagination';
 export { Grid, GridItem } from './components/Grid';
 export type { GridProps, GridItemProps } from './components/Grid';
 export { Drawer } from './components/Drawer';
-export type { DrawerProps, DrawerHandle } from './components/Drawer';
+export type { DrawerProps, DrawerClassNames, DrawerHandle } from './components/Drawer';
 
 export { Stepper, Step } from './components/Stepper';
 export type { StepperProps, StepProps } from './components/Stepper';
@@ -225,8 +226,8 @@ export { Container } from './components/Container';
 export type { ContainerProps } from './components/Container';
 export { Banner } from './components/Banner';
 export type { BannerProps } from './components/Banner';
-export { ConfirmDialog } from './components/ConfirmDialog';
-export type { ConfirmDialogProps } from './components/ConfirmDialog';
+export { ConfirmDialog, confirm } from './components/ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmOptions } from './components/ConfirmDialog';
 export { CodeBlock } from './components/CodeBlock';
 export type { CodeBlockProps, Highlighter } from './components/CodeBlock';
 export { AspectRatio } from './components/AspectRatio';
@@ -234,7 +235,7 @@ export type { AspectRatioProps } from './components/AspectRatio';
 export { VirtualList } from './components/VirtualList';
 export type { VirtualListProps, VirtualListHandle, VirtualListGroup, VirtualListAlign, VirtualListOrientation } from './components/VirtualList';
 export { TagGroup, TagGroupItem, SortableTagGroup } from './components/TagGroup';
-export type { TagGroupProps, TagGroupItemProps, SortableTagGroupProps } from './components/TagGroup';
+export type { TagGroupProps, TagGroupClassNames, TagGroupItemProps, SortableTagGroupProps } from './components/TagGroup';
 export { BottomSheet } from './components/BottomSheet';
 export type { BottomSheetProps, BottomSheetHandle } from './components/BottomSheet';
 export { SwipeAction } from './components/SwipeAction';
@@ -297,6 +298,24 @@ export { TabBar, TabBarItem } from './components/TabBar';
 export type { TabBarProps, TabBarItemProps } from './components/TabBar';
 export { Workbench } from './components/Workbench';
 export type { WorkbenchProps } from './components/Workbench';
+export { VisuallyHidden } from './components/VisuallyHidden';
+export type { VisuallyHiddenProps } from './components/VisuallyHidden';
+export { Mark } from './components/Mark';
+export type { MarkProps } from './components/Mark';
+export { Highlight } from './components/Highlight';
+export type { HighlightProps } from './components/Highlight';
+export { NumberFormatter } from './components/NumberFormatter';
+export type { NumberFormatterProps } from './components/NumberFormatter';
+export { Fieldset } from './components/Fieldset';
+export type { FieldsetProps } from './components/Fieldset';
+export { LoadingOverlay } from './components/LoadingOverlay';
+export type { LoadingOverlayProps } from './components/LoadingOverlay';
+export { Indicator } from './components/Indicator';
+export type { IndicatorProps } from './components/Indicator';
+export { Spoiler } from './components/Spoiler';
+export type { SpoilerProps } from './components/Spoiler';
+export { DateTimePicker } from './components/DateTimePicker';
+export type { DateTimePickerProps } from './components/DateTimePicker';
 export { Cascader } from './components/Cascader';
 export type { CascaderProps, CascaderOption } from './components/Cascader';
 export { Sidebar, SidebarGroup, SidebarItem, SidebarFooter, SidebarToggle } from './components/Sidebar';

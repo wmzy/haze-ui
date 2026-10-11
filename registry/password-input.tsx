@@ -20,6 +20,7 @@ import { PasswordInput, PasswordInputCore } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/password-input.css';
+import 'haze-ui/css/input.css';
 
 export { PasswordInput, PasswordInputCore };
 export type { PasswordInputProps, PasswordInputCoreProps } from 'haze-ui';

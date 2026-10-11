@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from 'react';
 
 import type { SelectVirtualizedConfig } from './SelectFloating';
+import type { SelectClassNames } from './Select';
 
 import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
@@ -86,6 +87,8 @@ type SelectCoreProps = {
   virtualized?: boolean | SelectVirtualizedConfig;
   children: ReactNode;
   className?: string;
+  /** Slot classes (see SelectProps.classNames in ./Select). */
+  classNames?: SelectClassNames;
   /**
    * Forwarded to the focusable element — the native `<select>` in plain
    * and clearable single mode, the trigger `<button>` when `multiple`
@@ -218,6 +221,7 @@ export default function SelectCore({
   size = 'md',
   virtualized,
   className,
+  classNames,
   placeholder,
   children,
   ref,
@@ -249,6 +253,7 @@ export default function SelectCore({
         size={size}
         virtualized={virtualized}
         className={className}
+        classNames={classNames}
         placeholder={placeholder}
         // Select-typed passthrough re-hosted on the floating trigger's
         // button: only the element-generic event handler types differ
@@ -281,7 +286,7 @@ export default function SelectCore({
         <select
           ref={setNativeSelectRef}
           data-slot='trigger'
-          x-class={[base, sizes[size], className]}
+          x-class={[base, sizes[size], className, classNames?.trigger]}
           value={value}
           onChange={(e) => {
             onChange(e.target.value);
@@ -306,7 +311,7 @@ export default function SelectCore({
             aria-hidden='true'
             data-slot='clear-button'
             title={strings.clear}
-            x-class={nativeClear}
+            x-class={[nativeClear, classNames?.clearButton]}
             onClick={(e) => {
               // The span is a sibling overlay, so the click never
               // reaches the select — no dropdown opens. Focus is
@@ -328,7 +333,7 @@ export default function SelectCore({
     <select
       ref={ref as Ref<HTMLSelectElement> | undefined}
       data-slot='trigger'
-      x-class={[base, sizes[size], className]}
+      x-class={[base, sizes[size], className, classNames?.trigger]}
       value={value}
       onChange={(e) => {
         onChange(e.target.value);

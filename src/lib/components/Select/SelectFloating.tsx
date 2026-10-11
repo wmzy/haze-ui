@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef, KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from 'react';
 import type { VirtualListHandle } from '../VirtualList';
+import type { SelectClassNames } from './Select';
 
 import type { SelectEntryData, SelectOptionData } from './select-options';
 
@@ -55,6 +56,10 @@ type SelectFloatingProps = {
   /** Falls back to the `select.placeholder` locale string. */
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
+  /** Slot classes, following data-slot names (see SelectProps.classNames
+   * in ./Select; the Select wrapper merges its ConfigProvider section
+   * under this prop already). */
+  classNames?: SelectClassNames;
   /**
    * Render a search input at the top of the panel that filters the
    * options (case-insensitive substring over the label text). Typing
@@ -548,6 +553,7 @@ export default function SelectFloating({
   size = 'md',
   virtualized,
   className,
+  classNames,
   ref,
   ...rest
 }: SelectFloatingProps) {
@@ -828,6 +834,7 @@ export default function SelectFloating({
           i === activeIndex && optionActive,
           !multiple && isSelected && optionSelected,
           virtual && virtualRow,
+          classNames?.option,
         ]}
         onClick={() => choose(option.value)}
       >
@@ -850,7 +857,7 @@ export default function SelectFloating({
       aria-hidden='true'
       data-slot='clear-button'
       title={strings.clear}
-      x-class={clearBtn}
+      x-class={[clearBtn, classNames?.clearButton]}
       onClick={(e) => {
         // Keep the trigger's open toggle out of this click — clearing
         // must not flip the panel either way (the pointerdown above
@@ -876,7 +883,7 @@ export default function SelectFloating({
           ? selected
           : selected.slice(0, Math.max(maxTagCount, 0))
         ).map((v) => (
-          <span data-slot='item' x-class={chipItem} key={v}>
+          <span data-slot='item' x-class={[chipItem, classNames?.item]} key={v}>
             <Chip color='primary'>{labelFor(v)}</Chip>
             <span
               aria-hidden='true'
@@ -993,7 +1000,7 @@ export default function SelectFloating({
         onPointerDown={floating.onTriggerPointerDown}
         onClick={floating.onTriggerClick}
         onKeyDown={handleKeyDown}
-        x-class={[trigger, sizes[size], className]}
+        x-class={[trigger, sizes[size], className, classNames?.trigger]}
       >
         {triggerBody}
         {clearAffordance}
@@ -1008,6 +1015,7 @@ export default function SelectFloating({
           placement='bottom-span'
           aria-busy={loading || undefined}
           visualClass={panelSearch}
+          className={classNames?.content}
         >
           <input
             ref={searchRef}
@@ -1023,7 +1031,7 @@ export default function SelectFloating({
               'aria-autocomplete': 'list' as const,
             })}
             aria-activedescendant={activeDescendant}
-            x-class={searchInput}
+            x-class={[searchInput, classNames?.searchInput]}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
@@ -1054,6 +1062,7 @@ export default function SelectFloating({
           aria-label={strings.listboxLabel}
           aria-busy={loading || undefined}
           visualClass={virtual ? listboxVirtual : listbox}
+          className={classNames?.content}
         >
           {hasVisibleOptions ? optionsList : listboxBody}
         </FloatingPanel>

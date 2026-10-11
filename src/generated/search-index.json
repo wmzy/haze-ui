@@ -256,6 +256,24 @@
   },
   {
     "type": "component",
+    "label": "Mark",
+    "route": "/components/mark",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Highlight",
+    "route": "/components/highlight",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "NumberFormatter",
+    "route": "/components/number-formatter",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "AppShell",
     "route": "/components/app-shell",
     "keywords": []
@@ -370,8 +388,20 @@
   },
   {
     "type": "component",
+    "label": "DateTimePicker",
+    "route": "/components/date-time-picker",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "DateRangePicker",
     "route": "/components/date-range-picker",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Fieldset",
+    "route": "/components/fieldset",
     "keywords": []
   },
   {
@@ -653,6 +683,12 @@
   },
   {
     "type": "component",
+    "label": "Indicator",
+    "route": "/components/indicator",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "JsonView",
     "route": "/components/json-view",
     "keywords": [
@@ -691,6 +727,12 @@
     "type": "component",
     "label": "Sparkline",
     "route": "/components/sparkline",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Spoiler",
+    "route": "/components/spoiler",
     "keywords": []
   },
   {
@@ -862,6 +904,12 @@
   },
   {
     "type": "component",
+    "label": "LoadingOverlay",
+    "route": "/components/loading-overlay",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Toast",
     "route": "/components/toast",
     "keywords": [
@@ -1017,6 +1065,12 @@
     "type": "component",
     "label": "SwipeAction",
     "route": "/components/swipe-action",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "VisuallyHidden",
+    "route": "/components/visually-hidden",
     "keywords": []
   },
   {
@@ -3286,6 +3340,108 @@
     "label": "Cross-field validation — password match",
     "sublabel": "Form",
     "route": "/components/form"
+  },
+  {
+    "type": "section",
+    "label": "Tones",
+    "sublabel": "Mark",
+    "route": "/components/mark"
+  },
+  {
+    "type": "section",
+    "label": "In context",
+    "sublabel": "Mark",
+    "route": "/components/mark"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Highlight",
+    "route": "/components/highlight"
+  },
+  {
+    "type": "section",
+    "label": "Multiple needles",
+    "sublabel": "Highlight",
+    "route": "/components/highlight"
+  },
+  {
+    "type": "section",
+    "label": "Tone",
+    "sublabel": "Highlight",
+    "route": "/components/highlight"
+  },
+  {
+    "type": "section",
+    "label": "Basics",
+    "sublabel": "NumberFormatter",
+    "route": "/components/number-formatter"
+  },
+  {
+    "type": "section",
+    "label": "Currency",
+    "sublabel": "NumberFormatter",
+    "route": "/components/number-formatter"
+  },
+  {
+    "type": "section",
+    "label": "Prefix + suffix",
+    "sublabel": "NumberFormatter",
+    "route": "/components/number-formatter"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Fieldset",
+    "route": "/components/fieldset"
+  },
+  {
+    "type": "section",
+    "label": "Disabled group",
+    "sublabel": "Fieldset",
+    "route": "/components/fieldset"
+  },
+  {
+    "type": "section",
+    "label": "Modes",
+    "sublabel": "Indicator",
+    "route": "/components/indicator"
+  },
+  {
+    "type": "section",
+    "label": "Zero semantics",
+    "sublabel": "Indicator",
+    "route": "/components/indicator"
+  },
+  {
+    "type": "section",
+    "label": "Position",
+    "sublabel": "Indicator",
+    "route": "/components/indicator"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Spoiler",
+    "route": "/components/spoiler"
+  },
+  {
+    "type": "section",
+    "label": "Icon-only button pattern",
+    "sublabel": "VisuallyHidden",
+    "route": "/components/visually-hidden"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "DateTimePicker",
+    "route": "/components/date-time-picker"
+  },
+  {
+    "type": "section",
+    "label": "Seconds",
+    "sublabel": "DateTimePicker",
+    "route": "/components/date-time-picker"
   },
   {
     "type": "prop",

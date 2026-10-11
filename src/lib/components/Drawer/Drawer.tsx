@@ -8,6 +8,7 @@ import { useControl } from 'react-use-control';
 import { useFocusScope } from '../../utils/focus-scope';
 import { whenExitSettles } from '../../utils/presence';
 import { useViewTransitionFlip } from '../../utils/view-transition';
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -28,6 +29,18 @@ type DrawerHandle = {
   focusTrigger: () => void;
 };
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape): keys land classes
+ * on Drawer's structural parts. Drawer renders a single `<dialog>` —
+ * `content` is that element's part (the placement class and any
+ * `className` land on the same node). A `classNames` prop set via
+ * ConfigProvider merges under the prop's keys.
+ */
+type DrawerClassNames = {
+  /** The `<dialog>` panel itself (data-slot='content'). */
+  content?: string;
+};
+
 type DrawerProps = {
   open?: ControlOrValue<boolean>;
   placement?: 'left' | 'right' | 'top' | 'bottom';
@@ -44,6 +57,8 @@ type DrawerProps = {
    */
   viewTransition?: boolean;
   className?: string;
+  /** Slot classes (see {@link DrawerClassNames}). */
+  classNames?: DrawerClassNames;
   children: ReactNode;
   ref?: Ref<DrawerHandle>;
 };
@@ -189,10 +204,17 @@ export default function Drawer({
   onClose,
   viewTransition = false,
   className,
+  classNames,
   children,
   ref,
 }: DrawerProps) {
   const [open, setOpen] = useControl(openControl, false);
+  // ConfigProvider defaults merge under the prop — per-key: an explicit
+  // classNames key on the component wins over the provider's.
+  const config = useConfigDefaults('Drawer');
+  const resolvedClassNames = config.classNames
+    ? { ...config.classNames, ...classNames }
+    : classNames;
   // open/close 翻转的统一出口：viewTransition 开启时每次翻转包在
   // document.startViewTransition(() => flushSync(...)) 里（不支持或
   // reduce 偏好时退化为直接 setOpen）。
@@ -266,7 +288,7 @@ export default function Drawer({
       ref={setDialogRef}
       data-slot='content'
       data-state={open ? 'open' : 'closed'}
-      x-class={[overlay, placements[placement], className]}
+      x-class={[overlay, placements[placement], className, resolvedClassNames?.content]}
       onClose={() => {
         // 原生 close 事件到达时 DOM 已关闭（el.close() 已生效），这里
         // 的 setOpen(false) 只是把 React 状态同步回事实——发起关闭的
@@ -294,4 +316,4 @@ export default function Drawer({
   );
 }
 
-export type { DrawerProps, DrawerHandle };
+export type { DrawerClassNames, DrawerProps, DrawerHandle };

@@ -50,12 +50,102 @@ describe('Input', () => {
     });
     expect(results.violations).toEqual([]);
   });
+
+  it('forwards leftSection/rightSection to the core', () => {
+    render(
+      <Input
+        aria-label='amount'
+        leftSection={<span data-testid='l'>$</span>}
+        rightSection={<span data-testid='r'>.00</span>}
+      />
+    );
+    expect(document.querySelector("[data-slot='left-section']")).toContainElement(screen.getByTestId('l'));
+    expect(document.querySelector("[data-slot='right-section']")).toContainElement(screen.getByTestId('r'));
+  });
 });
 
 describe('InputCore', () => {
   it('renders the given value as a controlled input', () => {
     render(<InputCore value="hello" onChange={() => undefined} aria-label="core" />);
     expect(screen.getByRole('textbox')).toHaveValue('hello');
+  });
+
+  describe('sections', () => {
+    it('bare input keeps the pre-section DOM (no wrapper, classes on the input)', () => {
+      const { container } = render(
+        <InputCore value='' onChange={() => undefined} aria-label='bare' className='mine' />
+      );
+      const input = screen.getByRole('textbox');
+      // visual baselines depend on the unwrapped shape
+      expect(container.firstChild).toBe(input);
+      expect(input).toHaveClass('mine');
+      expect(container.querySelector("[data-slot='field']")).toBeNull();
+    });
+
+    it('leftSection renders inside a wrapping field before the input', () => {
+      render(
+        <InputCore
+          value=''
+          onChange={() => undefined}
+          aria-label='price'
+          leftSection={<span data-testid='currency'>¥</span>}
+        />
+      );
+      const field = document.querySelector("[data-slot='field']");
+      expect(field).not.toBeNull();
+      const section = field!.querySelector("[data-slot='left-section']");
+      expect(section).toContainElement(screen.getByTestId('currency'));
+      // section comes before the input in DOM order (flex row
+      // ordering is the contract screen magnifiers follow)
+      expect(section!.compareDocumentPosition(screen.getByRole('textbox')))
+        .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('rightSection renders at the trailing edge', () => {
+      render(
+        <InputCore
+          value=''
+          onChange={() => undefined}
+          aria-label='search'
+          rightSection={<span data-testid='icon'>🔍</span>}
+        />
+      );
+      const section = document.querySelector("[data-slot='right-section']");
+      expect(section).toContainElement(screen.getByTestId('icon'));
+    });
+
+    it('sections do not swallow typing — value flows through the wrapper', async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <InputCore
+          value=''
+          onChange={onChange}
+          aria-label='wrapped'
+          leftSection={<span>L</span>}
+          rightSection={<span>R</span>}
+        />
+      );
+      await user.type(screen.getByRole('textbox'), 'ab');
+      expect(onChange).toHaveBeenCalledTimes(2);
+    });
+
+    it('interactive section children carry the pointer-events opt-in marker', () => {
+      render(
+        <InputCore
+          value=''
+          onChange={() => undefined}
+          aria-label='x'
+          rightSection={<button type='button' data-section-pointer='auto'>go</button>}
+        />
+      );
+      // CSS is disabled in tests, so the contract under test is the
+      // DOM marker: the section wrapper carries pointer-events: none,
+      // interactive children re-enable with data-section-pointer=auto
+      // (PasswordInput's visibility toggle rides the same opt-in)
+      expect(screen.getByRole('button', { name: 'go' }))
+        .toHaveAttribute('data-section-pointer', 'auto');
+    });
   });
 
   it('calls onChange with the new value on input', async () => {

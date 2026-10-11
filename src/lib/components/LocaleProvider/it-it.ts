@@ -49,6 +49,10 @@ const itIT: HazeStrings = {
     create: 'Crea "{query}"',
     noResults: 'Nessun risultato',
   },
+  spoiler: {
+    showMore: 'Mostra di più',
+    showLess: 'Mostra meno',
+  },
   command: {
     noResults: 'Nessun risultato',
   },

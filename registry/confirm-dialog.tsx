@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { ConfirmDialog } from 'haze-ui';
+import { ConfirmDialog, confirm } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/confirm-dialog.css';
 
-export { ConfirmDialog };
-export type { ConfirmDialogProps } from 'haze-ui';
+export { ConfirmDialog, confirm };
+export type { ConfirmDialogProps, ConfirmOptions } from 'haze-ui';

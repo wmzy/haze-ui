@@ -3,6 +3,8 @@ import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import ConfigProvider from '../ConfigProvider/ConfigProvider';
+
 import Select from './Select';
 import SelectCore from './SelectCore';
 import Option from './Option';
@@ -38,6 +40,15 @@ describe('Select', () => {
       </Select>
     );
     expect(screen.getByRole('combobox')).toHaveClass('custom');
+  });
+
+  it('applies classNames.trigger on the native select', () => {
+    render(
+      <Select classNames={{ trigger: 'trig' }} aria-label="test">
+        <option>A</option>
+      </Select>
+    );
+    expect(screen.getByRole('combobox')).toHaveClass('trig');
   });
 
   it('works as uncontrolled with initial value', () => {
@@ -148,11 +159,44 @@ describe('Select multiple', () => {
 
   it('applies className', () => {
     render(
-      <Select multiple className="custom" aria-label="fruit">
+      <Select multiple className="custom" aria-label="test">
         {FRUITS}
       </Select>
     );
     expect(screen.getByRole('combobox')).toHaveClass('custom');
+  });
+
+  it('applies classNames slots on the floating path: trigger button, panel, options', async () => {
+    const user = userEvent.setup();
+    render(
+      <Select
+        multiple
+        classNames={{ trigger: 'trig', content: 'panel', option: 'opt' }}
+        aria-label="test"
+      >
+        {FRUITS}
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveClass('trig');
+    await user.click(trigger);
+    expect(screen.getByRole('listbox')).toHaveClass('panel');
+    for (const opt of screen.getAllByRole('option')) {
+      expect(opt).toHaveClass('opt');
+    }
+  });
+
+  it('merges ConfigProvider Select.classNames under the prop, per key', () => {
+    render(
+      <ConfigProvider defaults={{ Select: { classNames: { trigger: 'from-config' } } }}>
+        <Select classNames={{ trigger: 'from-prop' }} aria-label="test">
+          <option>A</option>
+        </Select>
+      </ConfigProvider>
+    );
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveClass('from-prop');
+    expect(trigger).not.toHaveClass('from-config');
   });
 
   it('accepts a placeholder override', () => {

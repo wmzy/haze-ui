@@ -388,6 +388,8 @@ const descriptions = {
   'conversation-list': 'Selectable list of conversations for a chat-history sidebar.',
   'data-table':
     'Feature table on @tanstack/react-table with sorting, (manual) pagination, row selection and `dataTableToCsv` export.',
+  'datetime-picker':
+    'Date+time picker (Mantine DateTimePicker niche): Datepicker with the time row always on, `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
   'date-range-picker':
     'Picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
   datepicker:
@@ -404,16 +406,27 @@ const descriptions = {
     'Interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse; Typography also ships a pure-CSS `ellipsis` prop.',
   'file-input': 'Trigger element that opens a hidden native file input.',
   flex: 'Flexbox layout primitive mapping props to flex CSS.',
+  fieldset:
+    'Semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.',
   form: 'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
   grid: 'CSS grid layout primitive with `GridItem` children.',
+  highlight:
+    'Search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML, no injection).',
   'hover-card':
     'Non-modal floating preview (avatar card, link summary) anchored to its trigger.',
+  indicator:
+    'Corner badge attached to a host element (avatar, icon button): dot or count label, tone + corner position, zero-badge hides unless `showZero`.',
   icon: 'Inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.',
   image: 'Image with fallback and `aspectRatio`/`objectFit` control.',
   'inline-edit': 'Click-to-edit text value in place.',
   input: 'Text input with adornments; `InputCore` is the headless form-bindable core.',
   kbd: 'Keyboard key-cap styling for shortcuts.',
+  'number-formatter':
+    'Presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.',
+  'loading-overlay':
+    'Container-level loading state: dims content and centers a spinner (or custom loader) above it, `aria-busy` mirrors the phase.',
   list: 'Styled `ul`/`ol`/plain list with `ListItem` children.',
+  mark: 'Text-level highlight — semantic `<mark>` skinned with the status tokens (`warning`/`primary`/`success`/`danger`).',
   'log-viewer': 'Scrollable log stream with severity-level filtering.',
   'markdown-renderer': 'Renders markdown content (including code blocks) for assistant responses.',
   mentions:
@@ -449,12 +462,16 @@ const descriptions = {
   sparkline:
     'Inline-SVG mini trend chart (line/area variants, tone colors); stateless, recharts-free and RSC-safe.',
   spinner: 'Loading spinner.',
+  spoiler:
+    'Collapsed long-content gate ("show more/less"): height-capped preview with a fade edge and a toggle button; `expanded` is controllable.',
   stat: 'Metric display with title, value and trend indicator (`StatGroup` container).',
   'step-timeline': 'Vertical timeline of agent execution steps with per-step status.',
   stepper: 'Step indicator driven by `activeStep` (`Step` children).',
   'streaming-text':
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
   'swipe-action': 'Swipe-to-reveal row actions on left/right edges with a commit threshold.',
+  'visually-hidden':
+    'Screen-reader-only content primitive: clipped off every visual axis while staying in the a11y tree (the icon-only-button label soup).',
   switch: 'Toggle switch (`role="switch"`) with controllable `checked`.',
   table: 'Styled semantic table (`striped`, `bordered`) with head/body/row/cell parts.',
   tabs: 'Tab panel switcher with controllable active tab (`TabList`, `Tab`, `TabPanel`).',
@@ -515,7 +532,8 @@ const descriptions = {
 const CATEGORY_GROUPS = {
   general: [
     'avatar', 'avatar-group', 'badge', 'button', 'count-up', 'divider',
-    'ellipsis', 'icon', 'tag', 'tag-group', 'typography',
+    'ellipsis', 'icon', 'mark', 'tag', 'tag-group',
+    'typography',
   ],
   layout: [
     'activity-rail', 'aspect-ratio', 'app-shell', 'container', 'flex',
@@ -524,11 +542,11 @@ const CATEGORY_GROUPS = {
   ],
   form: [
     'cascader', 'checkbox', 'color-picker', 'combobox', 'datepicker',
-    'date-range-picker', 'file-input', 'form', 'inline-edit', 'input',
-    'mentions', 'number-input', 'otp-input', 'password-input', 'radio',
-    'rating', 'segmented', 'select', 'signature', 'slider', 'switch',
-    'tag-input', 'textarea', 'time-picker', 'toggle', 'transfer',
-    'tree-select', 'upload',
+    'date-range-picker', 'fieldset', 'file-input',
+    'form', 'inline-edit', 'input', 'mentions', 'number-input', 'otp-input',
+    'password-input', 'radio', 'rating', 'segmented', 'select',
+    'signature', 'slider', 'switch', 'tag-input', 'textarea',
+    'time-picker', 'toggle', 'transfer', 'tree-select', 'upload',
   ],
   overlay: [
     'bottom-sheet', 'confirm-dialog', 'context-menu', 'dialog', 'drawer',
@@ -536,8 +554,9 @@ const CATEGORY_GROUPS = {
   ],
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
-    'code-block', 'data-table', 'descriptions', 'image', 'json-view', 'kbd',
-    'list', 'progress', 'qr-code', 'sparkline', 'stat', 'table', 'timeline', 'tree',
+    'code-block', 'data-table', 'descriptions', 'image', 'indicator',
+    'json-view', 'kbd', 'list', 'progress', 'qr-code',
+    'sparkline', 'spoiler', 'stat', 'table', 'timeline', 'tree',
     'virtual-list', 'watermark',
   ],
   navigation: [
@@ -546,8 +565,8 @@ const CATEGORY_GROUPS = {
     'toolbar', 'tour',
   ],
   feedback: [
-    'alert', 'async-section', 'banner', 'empty', 'result', 'skeleton',
-    'spinner', 'toast',
+    'alert', 'async-section', 'banner', 'empty', 'loading-overlay',
+    'result', 'skeleton', 'spinner', 'toast',
   ],
   agent: [
     'approval-card', 'chat-container', 'chat-input', 'chat-message',
@@ -556,7 +575,7 @@ const CATEGORY_GROUPS = {
     'sources', 'step-timeline', 'streaming-text', 'thinking-indicator',
     'token-counter', 'tool-call-card',
   ],
-  utilities: ['collapsible', 'disclosure', 'swipe-action'],
+  utilities: ['collapsible', 'disclosure', 'swipe-action', 'visually-hidden'],
 };
 
 const categoryByFamily = new Map();

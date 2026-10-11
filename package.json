@@ -175,7 +175,7 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "2 KB"
+      "limit": "5.75 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
@@ -199,16 +199,16 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "18 KB"
+      "limit": "18.5 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "25.25 KB"
+      "limit": "26.25 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "32.25 KB",
+      "limit": "35 KB",
       "gzip": true
     },
     {

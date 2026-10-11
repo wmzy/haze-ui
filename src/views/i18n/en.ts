@@ -80,8 +80,12 @@ const COMPONENT_BLURBS = {
     'Autocomplete text input with filterable option list; onSearch defers filtering to the host.',
   Datepicker:
     'Date input with popup calendar (YYYY-MM-DD value); showTime adds a time-of-day field.',
+  DateTimePicker:
+    'Date+time picker (Datepicker with the time row always on); showSeconds opt-in; value serializes YYYY-MM-DD HH:mm[:ss].',
   DateRangePicker:
     'Picks a start/end date range, with built-in or custom presets (Today, Last 7 days, …).',
+  Fieldset:
+    'Semantic fieldset+legend grouping for form sections; disabled disables every control inside.',
   FileInput: 'Trigger element that opens a hidden native file input.',
   Form: 'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
   InlineEdit: 'Click-to-edit text value in place.',
@@ -142,10 +146,14 @@ const COMPONENT_BLURBS = {
   Descriptions:
     'Definition-list description groups (dl/dt/dd on CSS Grid): items pairs, columns, bordered, size.',
   Image: 'Image with fallback and aspectRatio/objectFit control.',
+  Indicator: 'Corner badge attached to a host element: dot or count label, tone + corner position, showZero.',
   JsonView:
     'Collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.',
   Kbd: 'Keyboard key-cap styling for shortcuts.',
   List: 'Styled ul/ol/plain list variants.',
+  Mark: 'Text-level highlight (semantic mark element) in status tones.',
+  Highlight: 'Search-result text highlighting across a string; multiple needles, escaped (no innerHTML).',
+  NumberFormatter: 'Presentational number formatting on Intl: locale, formatOptions (currency/unit/percent), prefix/suffix.',
   Progress: 'Progress bar or circle driven by a percentage value.',
   QRCode:
     'QR code rendered as one crisp SVG path with value/size/level/bordered options and theme-token module/background colors.',
@@ -187,6 +195,11 @@ const COMPONENT_BLURBS = {
     'Result feedback page: status illustration (success/error/info/warning/403/404/500), title, subTitle and an extra action area; icon replaces the default illustration.',
   Skeleton: 'Shimmering loading placeholder (text/circular/rectangular).',
   Spinner: 'Loading spinner.',
+  LoadingOverlay: 'Container-level loading state: dims content, centers a spinner (or custom loader), aria-busy mirrors the phase.',
+  Spoiler:
+    'Collapsed long-content gate (show more/less): height-capped preview with fade edge, controllable expanded.',
+  VisuallyHidden:
+    'Screen-reader-only content primitive: clipped off the visual canvas, kept in the a11y tree.',
   Toast:
     'Toast notifications via useToast + ToastContainer (imperative toast() helper included).',
 

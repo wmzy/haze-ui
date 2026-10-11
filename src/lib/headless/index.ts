@@ -18,6 +18,7 @@
  * own components, within that contract.
  */
 
+import { useBusyPressable } from '../hooks/useBusyPressable';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { hotkey, useHotkeys } from '../hooks/useHotkeys';
 import { useInView } from '../hooks/useInView';
@@ -501,6 +502,19 @@ export type { UseInViewOptions } from '../hooks/useInView';
  * get a stable `false` instead of a throw.
  */
 export { useMediaQuery };
+
+// ---------------------------------------------------------------------------
+// Busy pressable (../hooks/useBusyPressable)
+// ---------------------------------------------------------------------------
+
+/**
+ * Props bag for a pressable that can enter a busy/loading state —
+ * `disabled` forced while busy, `aria-busy` mirrored. The behavior
+ * half of `Button`'s/`ButtonLink`'s `loading` prop, for consumers
+ * composing their own trigger. Anchors translate `disabled` to
+ * `aria-disabled` (see ButtonLink).
+ */
+export { useBusyPressable };
 
 // ---------------------------------------------------------------------------
 // Persistent state hooks (../hooks)

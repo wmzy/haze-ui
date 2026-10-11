@@ -7,7 +7,7 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-128 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+137 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
 `'use client'` is pre-injected on interactive modules; 36 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
@@ -64,6 +64,9 @@ re-deriving file names.
 - **Typography** — text primitives: `Title`, `Text`, `Paragraph` on typography tokens.
 - **Ellipsis** — interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.
 - **CountUp** — animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.
+- **Mark** — text-level highlight — semantic `<mark>` skinned with status tokens.
+- **Highlight** — search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML).
+- **NumberFormatter** — presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.
 
 ### Layout
 
@@ -88,11 +91,13 @@ re-deriving file names.
 - **ColorPicker** — color selector with controllable value and preset swatches.
 - **Combobox** — autocomplete text input with filterable option list; `onSearch` defers filtering to the host.
 - **Datepicker** — date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.
+- **DateTimePicker** — date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".
 - **DateRangePicker** — picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).
+- **Fieldset** — semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.
 - **FileInput** — trigger element that opens a hidden native file input.
 - **Form (FormItem)** — react-f0rm field wrapper adding label, error and aria wiring to controlled cores.
 - **InlineEdit** — click-to-edit text value in place.
-- **Input** — text input with adornments; sugar over `InputCore`.
+- **Input** — text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.
 - **Mentions** — mentions input with trigger-character suggestions picked from an option list.
 - **NumberInput** — numeric input with `min`/`max`/`step`.
 - **OTPInput** — one-time-password input of `length` segmented character boxes.
@@ -137,12 +142,14 @@ re-deriving file names.
 - **DataTable** — feature table on `@tanstack/react-table` (sorting, row selection, client or `manual` pagination); `dataTableToCsv` exports the rows.
 - **Descriptions** — definition-list description groups (`dl`/`dt`/`dd` on CSS Grid): `items` pairs, `columns`, `bordered`, `size`.
 - **Image** — image with fallback and `aspectRatio`/`objectFit` control.
+- **Indicator** — corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.
 - **JsonView** — collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.
 - **Kbd** — keyboard key-cap styling for shortcuts.
 - **List** — styled `ul`/`ol`/plain list variants.
 - **Progress** — progress bar or circle driven by a percentage `value`.
 - **QRCode** — QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.
 - **Sparkline** — inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.
+- **Spoiler** — collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.
 - **Stat** — metric display with title, value and trend indicator.
 - **Table** — styled semantic table (`striped`, `bordered`).
 - **Timeline** — vertical timeline container for `TimelineItem` children.
@@ -174,6 +181,7 @@ re-deriving file names.
 - **Result** — result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.
 - **Skeleton** — shimmering loading placeholder (`text`/`circular`/`rectangular`).
 - **Spinner** — loading spinner.
+- **LoadingOverlay** — container-level loading state: dims content, centers a spinner (or custom loader), `aria-busy` mirrors the phase.
 - **Toast** — toast notifications via `useToast` + `ToastContainer` (imperative `toast()` helper included).
 
 ### AI & Chat
@@ -205,6 +213,7 @@ re-deriving file names.
 - **Fullscreen** — wrap-mode Fullscreen API binding around a single trigger child with controllable `fullscreen` state; `useFullscreen()` hook also exported.
 - **LocaleProvider** — supplies UI string packs (built-in English, zh-CN and ja-JP) to locale-aware components; `direction` (explicit or locale-derived) feeds `useDirection()`; `createStrings(base, overrides)` derives packs without forking the table. RTL locales (ar/he/fa/…) are derived automatically.
 - **SwipeAction** — swipe-to-reveal row actions on left/right edges with a commit threshold.
+- **VisuallyHidden** — screen-reader-only content: clipped off the visual canvas, kept in the a11y tree.
 
 ## Design tokens
 

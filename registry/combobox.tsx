@@ -25,4 +25,4 @@ import 'haze-ui/css/spinner.css';
 import 'haze-ui/css/virtual-list.css';
 
 export { Combobox, ComboboxOption, ComboboxGroup };
-export type { ComboboxProps, ComboboxOptionProps, ComboboxGroupProps, ComboboxOptionData, ComboboxVirtualizedConfig } from 'haze-ui';
+export type { ComboboxProps, ComboboxClassNames, ComboboxOptionProps, ComboboxGroupProps, ComboboxOptionData, ComboboxVirtualizedConfig } from 'haze-ui';

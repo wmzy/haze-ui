@@ -1,3 +1,7 @@
+import type { DrawerClassNames } from '../Drawer/Drawer';
+import type { SelectClassNames } from '../Select/Select';
+import type { ComboboxClassNames } from '../Combobox/Combobox';
+import type { TagGroupClassNames } from '../TagGroup/TagGroup';
 import type { ToastPlacement } from '../Toast/ToastContainer';
 
 import { createContext } from 'react';
@@ -51,6 +55,14 @@ type HazeConfig = {
      */
     closeDelay?: number;
   };
+  /** `Drawer` slot classes — merged under an explicit `classNames` prop. */
+  Drawer?: { classNames?: DrawerClassNames };
+  /** `Select` slot classes — merged under an explicit `classNames` prop. */
+  Select?: { classNames?: SelectClassNames };
+  /** `Combobox` slot classes — merged under an explicit `classNames` prop. */
+  Combobox?: { classNames?: ComboboxClassNames };
+  /** `TagGroup` slot classes — merged under an explicit `classNames` prop. */
+  TagGroup?: { classNames?: TagGroupClassNames };
 };
 
 /**
@@ -81,6 +93,10 @@ function mergeConfig(
     Toast: { ...(outer.Toast ?? {}), ...(inner.Toast ?? {}) },
     Tooltip: { ...(outer.Tooltip ?? {}), ...(inner.Tooltip ?? {}) },
     HoverCard: { ...(outer.HoverCard ?? {}), ...(inner.HoverCard ?? {}) },
+    Drawer: { ...(outer.Drawer ?? {}), ...(inner.Drawer ?? {}) },
+    Select: { ...(outer.Select ?? {}), ...(inner.Select ?? {}) },
+    Combobox: { ...(outer.Combobox ?? {}), ...(inner.Combobox ?? {}) },
+    TagGroup: { ...(outer.TagGroup ?? {}), ...(inner.TagGroup ?? {}) },
   };
 }
 

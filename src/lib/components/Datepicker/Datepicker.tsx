@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import type { CalendarCellRender, CalendarPickerMode } from '../Calendar/Calendar';
@@ -46,7 +46,7 @@ type DatepickerProps = {
   /** Forwarded to the trigger `<input>` (not the wrapper div) — the
    * element form bridges and `ref.current.focus()` reach. */
   ref?: Ref<HTMLInputElement>;
-};
+} & Omit<ComponentPropsWithoutRef<'div'>, 'onChange' | 'children'>;
 
 export default function Datepicker({
   value: valueControl,
@@ -65,6 +65,7 @@ export default function Datepicker({
   placeholder,
   className,
   ref,
+  ...rest
 }: DatepickerProps) {
   const [value, setValue] = useControl(valueControl, '');
   const [open, setOpen] = useControl(openControl, false);
@@ -89,6 +90,7 @@ export default function Datepicker({
       cellRender={cellRender}
       placeholder={placeholder}
       className={className}
+      {...rest}
     />
   );
 }

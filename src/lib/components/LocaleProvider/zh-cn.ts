@@ -47,6 +47,10 @@ const zhCN: HazeStrings = {
     create: '创建「{query}」',
     noResults: '无结果',
   },
+  spoiler: {
+    showMore: '显示更多',
+    showLess: '收起',
+  },
   command: {
     noResults: '无结果',
   },

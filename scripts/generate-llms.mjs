@@ -100,13 +100,21 @@ const DESCRIPTIONS = {
     'autocomplete text input with filterable option list; `onSearch` defers filtering to the host.',
   Datepicker:
     'date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.',
+  DateTimePicker:
+    'date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
   DateRangePicker:
     'picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
   FileInput: 'trigger element that opens a hidden native file input.',
   Form:
     'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
   InlineEdit: 'click-to-edit text value in place.',
-  Input: 'text input with adornments; sugar over `InputCore`.',
+  Fieldset:
+    'semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.',
+  Highlight:
+    'search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML).',
+  Indicator:
+    'corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.',
+  Input: 'text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.',
   Mentions:
     'mentions input with trigger-character suggestions picked from an option list.',
   NumberInput: 'numeric input with `min`/`max`/`step`.',
@@ -217,6 +225,15 @@ const DESCRIPTIONS = {
   Skeleton:
     'shimmering loading placeholder (`text`/`circular`/`rectangular`).',
   Spinner: 'loading spinner.',
+  LoadingOverlay:
+    'container-level loading state: dims content, centers a spinner (or custom loader), `aria-busy` mirrors the phase.',
+  Mark: 'text-level highlight — semantic `<mark>` skinned with status tokens.',
+  NumberFormatter:
+    'presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.',
+  Spoiler:
+    'collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.',
+  VisuallyHidden:
+    'screen-reader-only content: clipped off the visual canvas, kept in the a11y tree.',
   Toast:
     'toast notifications via `useToast` + `ToastContainer` (imperative `toast()` helper included).',
 

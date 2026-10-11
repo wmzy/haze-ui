@@ -3,6 +3,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { expect } from 'vitest';
+
 // 发布契约：dist/css-manifest.json（split-css 从本次构建产物推导的
 // 导出 → css 文件映射，发布为 haze-ui/css-manifest.json 子路径）必须与
 // 实际发布面一致。消费方（如 painless 的 vite-plugin-haze-css）以它为
@@ -21,7 +23,15 @@ const distDir = path.resolve(
 );
 const built = existsSync(path.join(distDir, 'css-manifest.json'));
 
-type CssManifest = { families: Record<string, string>; noCss: string[] };
+type CssManifest = {
+  families: Record<string, string>;
+  noCss: string[];
+  // export -> 其渲染闭包需要的 *额外* css 家族文件（自身 family 已由
+  // families 承载，tokens 恒注入故不在列）。split-css 从 dist JS import
+  // 图推演——Button 的 loading 挂 Spinner、DateTimePicker 纯糖装
+  // Datepicker 这类跨目录依赖不靠手工表维护。
+  dependencies: Record<string, string[]>;
+};
 
 // describe.skip 仍会执行工厂函数（vitest 同 jest 语义：skip 只标记执行，
 // 收集阶段照跑）——dist 缺席时工厂里不能做文件 IO，否则普通 CI
@@ -30,7 +40,7 @@ const manifest = built
   ? (JSON.parse(
       readFileSync(path.join(distDir, 'css-manifest.json'), 'utf8')
     ) as CssManifest)
-  : { families: {}, noCss: [] };
+  : { families: {}, noCss: [], dependencies: {} };
 
 const manifestContract = built ? describe : describe.skip;
 manifestContract('dist 发布契约：css-manifest.json 与产物一致', () => {
@@ -75,5 +85,32 @@ manifestContract('dist 发布契约：css-manifest.json 与产物一致', () => 
       .map((f) => f.replace(/\.css$/, ''))
       .sort();
     expect([...new Set(Object.values(families))].sort()).toEqual(cssFiles);
+  });
+
+  it('dependencies：键 ⊆ 导出面、值 ⊆ 存在的 css 文件、不含自身 family', () => {
+    const cssFiles = new Set(
+      readdirSync(path.join(distDir, 'css'))
+        .filter((f) => f.endsWith('.css'))
+        .map((f) => f.replace(/\.css$/, ''))
+    );
+    cssFiles.delete('tokens'); // tokens 恒注入，dependencies 不该引用
+    const exports_ = new Set([...Object.keys(families), ...noCss]);
+    for (const [name, deps] of Object.entries(manifest.dependencies)) {
+      expect(exports_.has(name), `${name} not an export`).toBe(true);
+      expect(deps.length).toBeGreaterThan(0);
+      for (const dep of deps) {
+        expect(cssFiles.has(dep), `${name} -> ${dep}.css does not exist`).toBe(true);
+        expect(dep).not.toBe(families[name]); // 自身 family 由 families 承载
+      }
+    }
+  });
+
+  it('dependencies 覆盖跨家族渲染面（Button loading → spinner 的前科）', () => {
+    // 注册了前科锚点：Button 的 loading 渲染 Spinner、DateTimePicker 纯
+    // 糖装 Datepicker——两处跨目录 css 依赖曾因 manifest 1:1 映射而不可
+    // 表达，haze-ui-vite 只能拿 SHARING 手工补丁兜。闭包推演落地后这两
+    // 个条目必须常驻；改动组件实现移除了依赖时删除对应断言即可。
+    expect(manifest.dependencies.Button).toContain('spinner');
+    expect(manifest.dependencies.DateTimePicker).toContain('datepicker');
   });
 });

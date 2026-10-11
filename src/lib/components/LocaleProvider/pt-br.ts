@@ -50,6 +50,10 @@ const ptBR: HazeStrings = {
     create: 'Criar "{query}"',
     noResults: 'Nenhum resultado',
   },
+  spoiler: {
+    showMore: 'Mostrar mais',
+    showLess: 'Mostrar menos',
+  },
   command: {
     noResults: 'Nenhum resultado',
   },

@@ -49,6 +49,10 @@ const koKR: HazeStrings = {
     create: '"{query}" 만들기',
     noResults: '결과 없음',
   },
+  spoiler: {
+    showMore: '더 보기',
+    showLess: '접기',
+  },
   command: {
     noResults: '결과 없음',
   },

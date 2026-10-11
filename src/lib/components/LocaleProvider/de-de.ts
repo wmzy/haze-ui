@@ -49,6 +49,10 @@ const deDE: HazeStrings = {
     create: '„{query}“ erstellen',
     noResults: 'Keine Ergebnisse',
   },
+  spoiler: {
+    showMore: 'Mehr anzeigen',
+    showLess: 'Weniger anzeigen',
+  },
   command: {
     noResults: 'Keine Ergebnisse',
   },

@@ -214,6 +214,23 @@ describe('Combobox', () => {
     expect(container.firstChild).toHaveClass('custom');
   });
 
+  it('applies classNames on root, input, and option slots', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Combobox
+        options={OPTIONS}
+        classNames={{ root: 'c-root', input: 'c-input', item: 'c-item' }}
+      />
+    );
+    expect(container.firstChild).toHaveClass('c-root');
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveClass('c-input');
+    await user.click(input);
+    for (const opt of screen.getAllByRole('option')) {
+      expect(opt).toHaveClass('c-item');
+    }
+  });
+
   it('mirrors the animated lifecycle as data-state on the listbox', async () => {
     const user = userEvent.setup();
     render(<Combobox options={OPTIONS} />);

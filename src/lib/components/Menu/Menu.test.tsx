@@ -1,3 +1,5 @@
+import type { ComponentPropsWithoutRef } from 'react';
+
 import { expect } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -184,6 +186,52 @@ describe('MenuItem', () => {
       </Menu>
     );
     expect(screen.getByRole('menuitem')).toHaveClass('custom');
+  });
+
+  describe('as polymorphism', () => {
+    it("as='a' keeps the menuitem role/wiring on a real anchor", async () => {
+      const user = userEvent.setup();
+      const onSelect = vi.fn();
+      render(
+        <Menu open trigger="T">
+          <MenuItem as='a' href='/docs' onSelect={onSelect}>Docs</MenuItem>
+        </Menu>
+      );
+      const item = screen.getByRole('menuitem', { name: 'Docs' });
+      expect(item.tagName).toBe('A');
+      expect(item).toHaveAttribute('href', '/docs');
+      // button-only attrs are gated off the anchor shape
+      expect(item).not.toHaveAttribute('type');
+      await user.click(item);
+      expect(onSelect).toHaveBeenCalledOnce();
+    });
+
+    it("as='a' disabled reports aria-disabled instead of disabled", () => {
+      render(
+        <Menu open trigger="T">
+          <MenuItem as='a' href='/docs' disabled>Docs</MenuItem>
+        </Menu>
+      );
+      const item = screen.getByRole('menuitem');
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      expect(item).not.toHaveAttribute('disabled');
+    });
+
+    it('as with a custom component: target props flow through, wiring lands on the anchor', () => {
+      // router-Link shape: own props (to) plus forwarded anchor props —
+      // also exercises the polymorphic typing (to must type-check)
+      function Link({ to, ...rest }: { to: string } & ComponentPropsWithoutRef<'a'>) {
+        return <a href={to} {...rest} />;
+      }
+      render(
+        <Menu open trigger="T">
+          <MenuItem as={Link} to='/route'>Route</MenuItem>
+        </Menu>
+      );
+      const item = screen.getByRole('menuitem', { name: 'Route' });
+      expect(item.tagName).toBe('A');
+      expect(item).toHaveAttribute('href', '/route');
+    });
   });
 });
 
