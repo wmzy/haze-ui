@@ -256,6 +256,12 @@
   },
   {
     "type": "component",
+    "label": "Countdown",
+    "route": "/components/countdown",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Mark",
     "route": "/components/mark",
     "keywords": []
@@ -333,6 +339,12 @@
     "type": "component",
     "label": "Sidebar",
     "route": "/components/sidebar",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Splitter",
+    "route": "/components/splitter",
     "keywords": []
   },
   {
@@ -415,6 +427,15 @@
     "label": "Form",
     "route": "/components/form",
     "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "ImageCrop",
+    "route": "/components/image-crop",
+    "keywords": [
+      "cropper",
+      "avatar"
+    ]
   },
   {
     "type": "component",
@@ -2137,6 +2158,30 @@
   },
   {
     "type": "section",
+    "label": "Horizontal — three panes",
+    "sublabel": "Splitter",
+    "route": "/components/splitter"
+  },
+  {
+    "type": "section",
+    "label": "Vertical",
+    "sublabel": "Splitter",
+    "route": "/components/splitter"
+  },
+  {
+    "type": "section",
+    "label": "Splitter Props",
+    "sublabel": "Splitter",
+    "route": "/components/splitter"
+  },
+  {
+    "type": "section",
+    "label": "SplitterPane Props",
+    "sublabel": "Splitter",
+    "route": "/components/splitter"
+  },
+  {
+    "type": "section",
     "label": "classNames slots",
     "sublabel": "Collapsible",
     "route": "/components/collapsible"
@@ -2332,6 +2377,48 @@
     "label": "CountUp Props",
     "sublabel": "CountUp",
     "route": "/components/count-up"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "Ending soon",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "Re-aiming on deadline change",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "Custom format",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "Render escape hatch",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "With Stat",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
+  },
+  {
+    "type": "section",
+    "label": "Countdown Props",
+    "sublabel": "Countdown",
+    "route": "/components/countdown"
   },
   {
     "type": "section",
@@ -2785,6 +2872,18 @@
   },
   {
     "type": "section",
+    "label": "Free crop",
+    "sublabel": "ImageCrop",
+    "route": "/components/image-crop"
+  },
+  {
+    "type": "section",
+    "label": "Avatar crop (aspect + circle)",
+    "sublabel": "ImageCrop",
+    "route": "/components/image-crop"
+  },
+  {
+    "type": "section",
     "label": "Sizes",
     "sublabel": "Kbd",
     "route": "/components/kbd"
@@ -2900,6 +2999,12 @@
   {
     "type": "section",
     "label": "Profile card with resting zone",
+    "sublabel": "HoverCard",
+    "route": "/components/hover-card"
+  },
+  {
+    "type": "section",
+    "label": "Interactive card (PreviewTrigger semantics)",
     "sublabel": "HoverCard",
     "route": "/components/hover-card"
   },
@@ -4933,6 +5038,12 @@
   },
   {
     "type": "prop",
+    "label": "interactive",
+    "sublabel": "HoverCard — PreviewTrigger semantics: focusable card content joins the Tab order (never trapped), focus may travel between trigger and card without closing it, Escape closes and returns focus to the trigger. Pointer grace defaults to 300ms in this mode; a focused card ignores pointer leaves.",
+    "route": "/components/hover-card"
+  },
+  {
+    "type": "prop",
     "label": "icon",
     "sublabel": "Icon — SVG component to render (alternative to children). Stroke mode is auto-enabled.",
     "route": "/components/icon"
@@ -5469,12 +5580,6 @@
     "type": "prop",
     "label": "children",
     "sublabel": "ResizableGroup — ResizablePanel and ResizableHandle elements",
-    "route": "/components/resizable"
-  },
-  {
-    "type": "prop",
-    "label": "SplitterGroup · SplitterPanel · SplitterHandle",
-    "sublabel": "ResizableGroup — AntD migration entry: `import { SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui'` maps 1:1 onto ResizableGroup / ResizablePanel / ResizableHandle (same props)",
     "route": "/components/resizable"
   },
   {

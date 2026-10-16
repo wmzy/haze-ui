@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T23:47:39.206Z",
+  "generatedAt": "2026-10-16T14:35:49.774Z",
   "distAvailable": true,
   "families": [
     {
@@ -193,6 +193,11 @@
       "cssGzipBytes": 180
     },
     {
+      "family": "countdown",
+      "cssBytes": 215,
+      "cssGzipBytes": 178
+    },
+    {
       "family": "data-table",
       "cssBytes": 5431,
       "cssGzipBytes": 1350
@@ -298,14 +303,19 @@
       "cssGzipBytes": 263
     },
     {
+      "family": "image-crop",
+      "cssBytes": 2600,
+      "cssGzipBytes": 807
+    },
+    {
       "family": "image",
       "cssBytes": 3898,
       "cssGzipBytes": 958
     },
     {
       "family": "indicator",
-      "cssBytes": 1704,
-      "cssGzipBytes": 567
+      "cssBytes": 1737,
+      "cssGzipBytes": 578
     },
     {
       "family": "inline-completion",
@@ -339,8 +349,8 @@
     },
     {
       "family": "loading-overlay",
-      "cssBytes": 766,
-      "cssGzipBytes": 408
+      "cssBytes": 852,
+      "cssGzipBytes": 424
     },
     {
       "family": "log-viewer",
@@ -399,7 +409,7 @@
     },
     {
       "family": "password-input",
-      "cssBytes": 567,
+      "cssBytes": 569,
       "cssGzipBytes": 326
     },
     {
@@ -493,9 +503,14 @@
       "cssGzipBytes": 335
     },
     {
+      "family": "splitter",
+      "cssBytes": 2086,
+      "cssGzipBytes": 654
+    },
+    {
       "family": "spoiler",
-      "cssBytes": 833,
-      "cssGzipBytes": 430
+      "cssBytes": 861,
+      "cssGzipBytes": 441
     },
     {
       "family": "stat",
@@ -665,7 +680,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 335535,
-    "cssGzipBytes": 34881
+    "cssBytes": 340360,
+    "cssGzipBytes": 35653
   }
 }

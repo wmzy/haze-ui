@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 
 import type { HoverCardProps } from './HoverCard';
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import ConfigProvider from '../ConfigProvider/ConfigProvider';
@@ -470,5 +471,231 @@ describe('HoverCard (native popover API)', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// interactive: React Aria PreviewTrigger semantics — focusable card
+// content, pointer grace 300, focus handoff trigger ↔ card, Escape
+// returning focus to the trigger. All cases run on the fallback tier
+// (jsdom), where Escape is owned by useFloating's document keydown.
+// ---------------------------------------------------------------------------
+
+describe('HoverCard (interactive)', () => {
+  it('keeps the card open while the pointer rests inside the panel', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness
+          interactive
+          content={<button type="button">Open profile</button>}
+        />
+      );
+      hover();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(openState()).toBe('true');
+      leave();
+      enterPanel();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(openState()).toBe('true');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('closes after the interactive grace (300ms) once the pointer leaves both', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness
+          interactive
+          content={<button type="button">Open profile</button>}
+        />
+      );
+      hover();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(openState()).toBe('true');
+      leave();
+      act(() => {
+        vi.advanceTimersByTime(299);
+      });
+      expect(openState()).toBe('true');
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(openState()).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cancels the pending close when the pointer re-enters within the grace', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness
+          interactive
+          content={<button type="button">Open profile</button>}
+        />
+      );
+      hover();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      leave();
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+      enterPanel();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(openState()).toBe('true');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the card open when focus moves from the trigger into it', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness
+          interactive
+          content={<button type="button">Open profile</button>}
+        />
+      );
+      const trigger = screen.getByRole('button', { name: 'Hover me' });
+      const cardButton = screen.getByRole('button', { name: 'Open profile' });
+      fireEvent.focus(trigger);
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(openState()).toBe('true');
+      // Tab from the trigger lands inside the card — relatedTarget is
+      // in the container, so no close is armed (and none fires later).
+      fireEvent.blur(trigger, { relatedTarget: cardButton });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(openState()).toBe('true');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reaches the card button by Tab and keeps the card open', async () => {
+    const user = userEvent.setup();
+    render(
+      <HoverCardHarness
+        interactive
+        content={<button type="button">Open profile</button>}
+      />
+    );
+    // First Tab stop is the trigger's focusable child; the card opens
+    // on focus after the 200ms dwell.
+    await user.tab();
+    await waitFor(() => expect(openState()).toBe('true'));
+    // Next Tab walks into the card (panel follows the trigger in DOM
+    // order on every tier) — without closing it.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Open profile' })).toHaveFocus();
+    expect(openState()).toBe('true');
+  });
+
+  it('closes on Escape and returns focus to the trigger', async () => {
+    const user = userEvent.setup();
+    render(
+      <HoverCardHarness
+        interactive
+        content={<button type="button">Open profile</button>}
+      />
+    );
+    const trigger = screen.getByRole('button', { name: 'Hover me' });
+    trigger.focus();
+    await waitFor(() => expect(openState()).toBe('true'));
+    const cardButton = screen.getByRole('button', { name: 'Open profile' });
+    cardButton.focus();
+    expect(cardButton).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(openState()).toBe('false');
+    expect(trigger).toHaveFocus();
+  });
+
+  it('does not close on pointer leave while focus rests inside the card', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness
+          interactive
+          content={<button type="button">Open profile</button>}
+        />
+      );
+      hover();
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      const cardButton = screen.getByRole('button', { name: 'Open profile' });
+      cardButton.focus();
+      leavePanel();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(openState()).toBe('true');
+      // Escape still closes it — the keyboard lifecycle owns a focused card.
+      fireEvent.keyDown(cardButton, { key: 'Escape' });
+      expect(openState()).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('closes on trigger blur after the plain grace when interactive is off', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <HoverCardHarness content={<button type="button">Open profile</button>} />
+      );
+      const trigger = screen.getByRole('button', { name: 'Hover me' });
+      fireEvent.focus(trigger);
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(openState()).toBe('true');
+      // Even with focus moving into the card, legacy semantics close on
+      // trigger blur — interactive is strictly opt-in.
+      fireEvent.blur(trigger, {
+        relatedTarget: screen.getByRole('button', { name: 'Open profile' }),
+      });
+      act(() => {
+        vi.advanceTimersByTime(120);
+      });
+      expect(openState()).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('has no axe violations while open (interactive)', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <HoverCard
+        interactive
+        open
+        content={<button type="button">Open profile</button>}
+      >
+        <button>Hover me</button>
+      </HoverCard>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });

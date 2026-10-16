@@ -11,8 +11,9 @@ import {
   useClipboard,
 } from '@/lib';
 
-import { buildStackblitzProject } from './stackblitz';
+import { resolveDemo } from './demo-sources';
 import { highlightTsx } from './highlight';
+import { buildStackblitzProject } from './stackblitz';
 
 /** 打开 StackBlitz 工程；弹窗被拦截 / sdk 加载失败时静默放弃，不 crash。 */
 async function openInStackBlitz(name: string, source: string): Promise<void> {
@@ -22,39 +23,6 @@ async function openInStackBlitz(name: string, source: string): Promise<void> {
   } catch {
     // 文档页不受影响，用户可改用 Copy 手动搭建
   }
-}
-
-// demos 目录源码映射：'./demos/ButtonDemo.tsx' → 文件内容字符串。
-const demoSources = import.meta.glob('./demos/*.tsx', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-});
-
-/** route 名 → demo 文件名（'data-table' → 'DataTableDemo.tsx'）。 */
-function demoFileName(route: string): string {
-  const componentName = `${route
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('')}Demo`;
-  return `${componentName}.tsx`;
-}
-
-type DemoEntry = { fileName: string; source: string };
-
-// route key 全小写，而文件名内部的大写切分无法从 route 恢复
-// （'numberinput' → NumberInputDemo、'otpinput' → OTPInputDemo），统一转
-// 小写后比对即可全部命中。demos 目录之外的 demo（'form' 在
-// @/components/FormDemo）找不到 → DemoSource 渲染 null。
-const demoEntriesByName = new Map<string, DemoEntry>(
-  Object.entries(demoSources).map(([path, source]) => {
-    const fileName = path.slice('./demos/'.length);
-    return [fileName.toLowerCase(), { fileName, source }];
-  })
-);
-
-function resolveDemo(name: string): DemoEntry | undefined {
-  return demoEntriesByName.get(demoFileName(name).toLowerCase());
 }
 
 const chevron = css`

@@ -11,15 +11,19 @@ import { COMPONENT_GROUPS } from '@/views/Layout/component-groups';
 import Home from '@/views/Home';
 import Layout from '@/views/Layout/index';
 
+import { de } from './de';
 import { en } from './en';
+import { fr } from './fr';
 import {
   LOCALE_STORAGE_KEY,
+  SITE_LOCALES,
   SiteLocaleProvider,
   fill,
   mergeStrings,
   resolveInitialLocale,
   useSiteLocale,
 } from './index';
+import { ja } from './ja';
 import { zh } from './zh';
 
 const GROUP_NAMES = COMPONENT_GROUPS.map((g) => g.group);
@@ -145,6 +149,75 @@ describe('locale dictionaries', () => {
   });
 });
 
+/*
+ * Same parity contract as zh for the newer packs: keys must be an en
+ * subset, sidebar coverage complete, group names translated.
+ */
+describe.each([
+  ['ja', ja],
+  ['de', de],
+  ['fr', fr],
+] as const)('%s dictionary', (name, dict) => {
+  it('only uses keys that exist in en (DeepPartial parity)', () => {
+    const errors: string[] = [];
+    walk(dict, en, name, errors);
+    expect(errors).toEqual([]);
+  });
+
+  it('covers every sidebar component with a one-liner and no strays', () => {
+    const blurbs: Record<string, string | undefined> = dict.components ?? {};
+    for (const comp of COMPONENT_NAMES) {
+      expect(blurbs[comp], `${name} blurb for ${comp}`).toBeTruthy();
+    }
+    // No stray keys: every dictionary entry maps to a real component.
+    for (const key of Object.keys(blurbs)) {
+      expect(COMPONENT_NAMES, `${name} blurb key ${key}`).toContain(key);
+    }
+  });
+
+  it('translates every component group name and no others', () => {
+    const groups: Record<string, string | undefined> =
+      dict.componentGroups ?? {};
+    expect(Object.keys(groups).sort()).toEqual([...GROUP_NAMES].sort());
+    // True cognates (de/fr "Navigation", "Feedback") may match en verbatim,
+    // so the zh-style `not.toBe` contract cannot apply wholesale — instead
+    // the sentinel group "General" must differ, which catches an unedited
+    // en copy of the whole table.
+    expect(groups.General, `${name} group General`).not.toBe('General');
+    for (const g of GROUP_NAMES) {
+      expect(groups[g], `${name} group ${g}`).toBeTruthy();
+    }
+  });
+
+  it('falls back to en values for keys it does not translate', () => {
+    const merged = mergeStrings(en, dict as Record<string, unknown>);
+    // browser.browsers is deliberately locale-free in every pack.
+    expect(merged.gettingStarted.browser.browsers).toEqual(
+      en.gettingStarted.browser.browsers
+    );
+    // Translated keys come through.
+    expect(merged.nav.home).toBe(dict.nav?.home);
+  });
+
+  it('mirrors the zh key selection (same translated key paths)', () => {
+    /** Collect every translated key path of a DeepPartial dictionary. */
+    const keyPaths = (node: unknown, prefix: string, out: string[]) => {
+      if (typeof node === 'object' && node !== null && !Array.isArray(node)) {
+        for (const [key, value] of Object.entries(node)) {
+          keyPaths(value, `${prefix}.${key}`, out);
+        }
+        return;
+      }
+      out.push(prefix);
+    };
+    const zhPaths: string[] = [];
+    const dictPaths: string[] = [];
+    keyPaths(zh, '', zhPaths);
+    keyPaths(dict, '', dictPaths);
+    expect(dictPaths.sort()).toEqual(zhPaths.sort());
+  });
+});
+
 describe('resolveInitialLocale', () => {
   afterEach(() => {
     localStorage.clear();
@@ -168,9 +241,22 @@ describe('resolveInitialLocale', () => {
     expect(resolveInitialLocale()).toBe('zh');
   });
 
+  it.each([
+    ['ja', 'ja-JP'],
+    ['de', 'de-AT'],
+    ['fr', 'fr-CA'],
+  ] as const)('falls back to a %s browser language prefix', (locale, lang) => {
+    Object.defineProperty(window.navigator, 'language', {
+      value: lang,
+      configurable: true,
+    });
+    expect(resolveInitialLocale()).toBe(locale);
+  });
+
   it('defaults to en and ignores invalid stored values', () => {
     expect(resolveInitialLocale()).toBe('en');
-    localStorage.setItem(LOCALE_STORAGE_KEY, 'fr');
+    // 'pt' is a real language but not one the site offers.
+    localStorage.setItem(LOCALE_STORAGE_KEY, 'pt');
     expect(resolveInitialLocale()).toBe('en');
   });
 });
@@ -184,9 +270,11 @@ function Probe() {
       <output data-testid='browsers'>
         {t.gettingStarted.browser.browsers.join(',')}
       </output>
-      <button type='button' onClick={() => setLocale('zh')}>
-        to-zh
-      </button>
+      {SITE_LOCALES.map((loc) => (
+        <button key={loc} type='button' onClick={() => setLocale(loc)}>
+          to-{loc}
+        </button>
+      ))}
     </div>
   );
 }
@@ -240,6 +328,34 @@ describe('SiteLocaleProvider', () => {
     expect(screen.getByTestId('browsers')).toHaveTextContent(
       'Chrome / Edge 84+'
     );
+  });
+
+  it('switches to ja/de/fr, persists and syncs <html lang>', async () => {
+    const user = userEvent.setup();
+    render(
+      <SiteLocaleProvider>
+        <Probe />
+      </SiteLocaleProvider>
+    );
+
+    const cases = [
+      { button: 'to-ja', lang: 'ja', home: 'ホーム' },
+      { button: 'to-de', lang: 'de', home: 'Start' },
+      { button: 'to-fr', lang: 'fr', home: 'Accueil' },
+    ] as const;
+
+    for (const { button, lang, home } of cases) {
+      await user.click(screen.getByRole('button', { name: button }));
+
+      expect(screen.getByTestId('locale')).toHaveTextContent(lang);
+      expect(screen.getByTestId('nav-home')).toHaveTextContent(home);
+      expect(document.documentElement.lang).toBe(lang);
+      expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe(lang);
+      // browser.browsers is deliberately untranslated — en value survives.
+      expect(screen.getByTestId('browsers')).toHaveTextContent(
+        'Chrome / Edge 84+'
+      );
+    }
   });
 });
 
@@ -371,6 +487,55 @@ describe('Layout chrome localization', () => {
       screen.queryByRole('link', { name: 'Home' })
     ).not.toBeInTheDocument();
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('zh');
+  });
+
+  it('offers all five site languages in the header switcher', async () => {
+    renderSite();
+    await screen.findAllByText('home-view');
+
+    for (const label of ['EN', '中文', '日本語', 'DE', 'FR']) {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+    }
+  });
+
+  it('switches the whole sidebar to Japanese via the header switcher', async () => {
+    const user = userEvent.setup();
+    renderSite();
+    await screen.findAllByText('home-view');
+
+    await user.click(screen.getByRole('button', { name: '日本語' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole('link', { name: 'ホーム' }).length
+      ).toBeGreaterThan(0);
+    });
+    expect(
+      screen.getAllByRole('link', { name: 'はじめに' }).length
+    ).toBeGreaterThan(0);
+    // Group titles and guide summaries localized.
+    expect(screen.getAllByText('全般').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/明暗両方のトークンクラス/).length
+    ).toBeGreaterThan(0);
+    expect(document.documentElement.lang).toBe('ja');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('ja');
+  });
+
+  it('switches the whole sidebar to French via the header switcher', async () => {
+    const user = userEvent.setup();
+    renderSite();
+    await screen.findAllByText('home-view');
+
+    await user.click(screen.getByRole('button', { name: 'FR' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole('link', { name: 'Accueil' }).length
+      ).toBeGreaterThan(0);
+    });
+    expect(screen.getAllByText('Général').length).toBeGreaterThan(0);
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('fr');
   });
 });
 

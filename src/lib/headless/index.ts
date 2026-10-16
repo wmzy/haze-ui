@@ -454,11 +454,12 @@ export type { UseClickOutsideOptions } from '../hooks/useClickOutside';
 
 /**
  * Declarative keyboard shortcuts: a map of spec strings (`'mod+k'`,
- * `'ctrl+shift+p'`, `'?'`, named keys) to handlers, listened on the
- * window (or a ref target). `mod` normalizes per platform (⌘ on macOS,
- * Ctrl elsewhere), editable focus suppresses fires unless
- * `allowInInput`, and the map may be an inline literal — a latest-ref
- * keeps the listener mounted once.
+ * `'ctrl+shift+p'`, `'?'`, named keys, whitespace-joined sequences like
+ * `'g h'`) to handlers, listened on the window (or a ref target). `mod`
+ * normalizes per platform (⌘ on macOS, Ctrl elsewhere), editable focus
+ * suppresses fires unless `allowInInput`, sequences reset on a wrong key
+ * or after `sequenceTimeout` (default 1000ms), and the map may be an
+ * inline literal — a latest-ref keeps the listener mounted once.
  */
 export { useHotkeys };
 
@@ -477,7 +478,7 @@ export type { HotkeyHandler } from '../hooks/useHotkeys';
 
 /**
  * Options accepted by {@link useHotkeys}: `enabled`, `target` (element
- * ref or `window`), `eventName` and `allowInInput`.
+ * ref or `window`), `eventName`, `allowInInput` and `sequenceTimeout`.
  */
 export type { UseHotkeysOptions } from '../hooks/useHotkeys';
 

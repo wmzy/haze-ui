@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui';
+import { ResizableGroup, ResizablePanel, ResizableHandle } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/resizable.css';
 
-export { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, SplitterPanel, SplitterHandle };
-export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps, SplitterGroupProps, SplitterPanelProps, SplitterHandleProps } from 'haze-ui';
+export { ResizableGroup, ResizablePanel, ResizableHandle };
+export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps } from 'haze-ui';

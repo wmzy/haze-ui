@@ -71,6 +71,38 @@ export default function HoverCardDemo() {
       </div>
 
       <div className={section}>
+        <h2>Interactive card (PreviewTrigger semantics)</h2>
+        <div className={row}>
+          <HoverCard
+            interactive
+            content={
+              <>
+                <strong>Weekly digest</strong>
+                <p>Release notes, tokens changelog and new components.</p>
+                <Button
+                  size="sm"
+                  onClick={() => setVisits((v) => v + 1)}
+                >
+                  Subscribe ({visits})
+                </Button>
+              </>
+            }
+          >
+            <a href="https://example.com/digest" target="_blank" rel="noreferrer">
+              What's new
+            </a>
+          </HoverCard>
+          <span>
+            With <code>interactive</code>, focusables inside the card join the
+            Tab order: hover or focus the link, Tab into the card, act, and
+            press Escape — the card closes and focus returns to the link. The
+            pointer grace widens to 300ms and a focused card ignores stray
+            pointer leaves.
+          </span>
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>Usage</h2>
         <pre className={codeBlock}>{`import { HoverCard } from 'haze-ui';
 
@@ -103,6 +135,11 @@ export default function HoverCardDemo() {
             <li>
               Card content stays in the DOM; <strong>Escape</strong> closes an
               open card
+            </li>
+            <li>
+              With <strong>interactive</strong>, card content is Tab-reachable
+              (never focus-trapped — a hover card is a preview, not a modal)
+              and Escape returns focus to the trigger
             </li>
           </ul>
         </A11yNote>

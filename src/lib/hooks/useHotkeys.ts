@@ -14,6 +14,8 @@ type UseHotkeysOptions = {
   eventName?: 'keydown' | 'keyup';
   /** 焦点在 input/textarea/select/contenteditable 内时是否仍触发（默认 `false`）。 */
   allowInInput?: boolean;
+  /** 序列快捷键相邻两步的最大间隔毫秒，超时清空进度（默认 `1000`）。 */
+  sequenceTimeout?: number;
 };
 
 type ModifierName = 'ctrl' | 'shift' | 'alt' | 'meta';
@@ -21,6 +23,13 @@ type ModifierName = 'ctrl' | 'shift' | 'alt' | 'meta';
 type ParsedHotkey = {
   modifiers: Set<ModifierName>;
   key: string;
+};
+
+// 序列进度：规格字符串 → 已命中的步数。Map 让多个序列可并行推进
+// （'g h' 与 'g o' 共享首步）；按错键 / 超时 / 完整命中时整体重建或清空。
+type SequenceState = {
+  progress: Map<string, number>;
+  timer: ReturnType<typeof setTimeout> | null;
 };
 
 // 'mod' 在匹配时按平台归一：macOS 为 ⌘(meta)，其余为 ctrl。
@@ -64,6 +73,10 @@ function parseHotkey(spec: string): ParsedHotkey | null {
 function matchesSpec(spec: string, event: KeyboardEvent): boolean {
   const parsed = parseHotkey(spec);
   if (parsed === null) return false;
+  return matchesParsedHotkey(parsed, event);
+}
+
+function matchesParsedHotkey(parsed: ParsedHotkey, event: KeyboardEvent): boolean {
   const { modifiers, key } = parsed;
   // 声明的修饰键必须全部按下
   if (modifiers.has('ctrl') && !event.ctrlKey) return false;
@@ -81,6 +94,20 @@ function matchesSpec(spec: string, event: KeyboardEvent): boolean {
     : event.key === key;
 }
 
+// 序列规格以空白分段，每段是一个独立的 `[修饰键+]*键` 步骤
+// （'g h'、'ctrl+k g g'）。任一步骤非法 → 整条规格永不命中（静默），
+// 与单步规格的无效修饰键语义一致。
+function parseSequenceSpec(spec: string): ParsedHotkey[] | null {
+  const steps: ParsedHotkey[] = [];
+  for (const part of spec.split(/\s+/)) {
+    if (part === '') continue;
+    const parsed = parseHotkey(part);
+    if (parsed === null) return null;
+    steps.push(parsed);
+  }
+  return steps.length >= 2 ? steps : null;
+}
+
 function isTargetEditable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable) return true;
@@ -91,12 +118,13 @@ function isTargetEditable(target: EventTarget | null): boolean {
 /**
  * 组合多个快捷键规格为一条别名绑定（逗号连接），任一命中即触发同一
  * handler——对象字面量的键只能是字符串，数组规格经由本函数进入。
+ * 规格可以是单键组合或序列（含空白，如 `'g h'`）。
  *
  * ```tsx
  * useHotkeys({ [hotkey('mod+k', 'mod+j')]: cyclePalette });
  * ```
  *
- * @param specs 至少一个规格，如 `'mod+k'`、`'ctrl+shift+p'`。
+ * @param specs 至少一个规格，如 `'mod+k'`、`'ctrl+shift+p'`、`'g h'`。
  */
 export function hotkey(...specs: [string, ...string[]]): string {
   return specs.join(',');
@@ -112,6 +140,8 @@ export function hotkey(...specs: [string, ...string[]]): string {
  *   'ctrl+shift+p': openCommandPalette,
  *   '?': showHelp,                        // 符号键天然携带 shift，无需声明
  *   ArrowUp: selectPrev,                  // 命名键精确匹配
+ *   'g h': goHome,                        // 序列：先 g 再 h（步间默认 1s）
+ *   'ctrl+k g': goHome,                   // 修饰键组合可作序列元素
  *   [hotkey('mod+k', 'mod+j')]: cycle,     // 多规格别名：任一命中
  * }, { allowInInput: false });
  * ```
@@ -119,11 +149,18 @@ export function hotkey(...specs: [string, ...string[]]): string {
  * - 规格语法：`[修饰键+]*键`；修饰键别名 mod/ctrl/control/meta/cmd/⌘/
  *   shift/alt/option/⌥；`mod` 按平台归一（macOS ⌘，否则 ctrl，
  *   `navigator.platform` 判定，SSR 安全）。
+ * - 序列语法：空白分隔多个步骤（`'g h'`、`'ctrl+k g g'`），每步是独立的
+ *   规格并沿用严格修饰键校验（未声明的 ctrl/alt/meta 必须抬起）。相邻
+ *   两步间隔超过 `sequenceTimeout`（默认 1000ms）重置；中途按错键重置
+ *   ——但错键若本身是某序列的首步（如 `g g h` 的第二个 g）则从该键重新
+ *   起步，若命中任何单键绑定则照常触发该绑定并清空进度。推进中的步骤
+ *   不 `preventDefault`，序列完整命中才拦截事件；命中后进度清零，
+ *   同一序列可立即重新输入。
  * - 默认焦点在 input/textarea/select/contenteditable 时忽略全部快捷键，
  *   `allowInInput: true` 打开。
- * - 一个事件只触发第一个命中的绑定；`hotkeys` 映射每次渲染变化不重挂
- *   监听（latest-ref），`enabled/target/eventName/allowInInput` 变化才
- *   重新绑定。
+ * - 一个事件只触发第一个命中的绑定（含序列完成）；`hotkeys` 映射每次
+ *   渲染变化不重挂监听（latest-ref），`enabled/target/eventName/
+ *   allowInInput/sequenceTimeout` 变化才重新绑定（重绑会清空序列进度）。
  * - `enabled: false` 等价于不挂载监听。
  *
  * @param hotkeys 规格（或逗号连接的规格列表）到处理器的映射。
@@ -133,7 +170,13 @@ export function useHotkeys(
   hotkeys: Record<string, HotkeyHandler>,
   options: UseHotkeysOptions = {}
 ): void {
-  const { enabled = true, target, eventName = 'keydown', allowInInput = false } = options;
+  const {
+    enabled = true,
+    target,
+    eventName = 'keydown',
+    allowInInput = false,
+    sequenceTimeout = 1000,
+  } = options;
 
   // latest-ref：hotkeys 通常是渲染期新建的对象字面量，经 ref 取最新值，
   // 避免每次渲染解绑/重挂监听
@@ -142,34 +185,96 @@ export function useHotkeys(
     hotkeysRef.current = hotkeys;
   });
 
+  // 序列进度存活于监听生命周期内：重绑/停用时随 effect cleanup 清空
+  const sequenceRef = useRef<SequenceState>({ progress: new Map(), timer: null });
+
   useEffect(() => {
     if (!enabled) return;
     const node: Window | HTMLElement | null =
       target === undefined ? window : 'current' in target ? target.current : target;
     if (node === null) return;
+
+    const clearSequenceTimer = (): void => {
+      const state = sequenceRef.current;
+      if (state.timer !== null) {
+        clearTimeout(state.timer);
+        state.timer = null;
+      }
+    };
+    const resetSequence = (): void => {
+      clearSequenceTimer();
+      sequenceRef.current.progress.clear();
+    };
+
     const listener = (event: Event): void => {
       // 只注册在 eventName（keydown/keyup）上，收到的必是 KeyboardEvent
       const keyboardEvent = event as KeyboardEvent;
       if (!allowInInput && isTargetEditable(keyboardEvent.target)) return;
       const map = hotkeysRef.current;
+      // 本事件后仍存活的序列进度：推进到的步骤 + 从当前键重新起步的序列
+      const next = new Map<string, number>();
+
       for (const recordKey of Object.keys(map)) {
+        let fired = false;
         // 键可以是逗号连接的别名列表（hotkey(...) 的产物）
-        const matched = recordKey
-          .split(',')
-          .some((spec) => matchesSpec(spec.trim(), keyboardEvent));
-        if (matched) {
+        for (const rawSpec of recordKey.split(',')) {
+          const spec = rawSpec.trim();
+          // 不含空白的规格走单键路径（与序列引入前逐字符一致）
+          if (!/\s/.test(spec)) {
+            if (matchesSpec(spec, keyboardEvent)) {
+              fired = true;
+              break;
+            }
+            continue;
+          }
+          const steps = parseSequenceSpec(spec);
+          if (steps === null) continue;
+          const prev = sequenceRef.current.progress.get(spec) ?? 0;
+          const expected = steps[prev];
+          if (expected !== undefined && matchesParsedHotkey(expected, keyboardEvent)) {
+            if (prev + 1 === steps.length) {
+              fired = true;
+              break;
+            }
+            next.set(spec, prev + 1);
+          } else {
+            // 当前步不匹配：若本键恰是首步则从头重启（g g h 的第二个 g），
+            // 否则该序列被丢弃（按错键重置）
+            const first = steps[0];
+            if (first !== undefined && matchesParsedHotkey(first, keyboardEvent)) {
+              next.set(spec, 1);
+            }
+          }
+        }
+        if (fired) {
           const handler = map[recordKey];
           if (!handler) continue;
+          resetSequence();
           keyboardEvent.preventDefault();
           keyboardEvent.stopPropagation();
           handler(keyboardEvent);
           return;
         }
       }
+
+      if (next.size > 0) {
+        // 有序列在推进：采纳新进度并（重）起超时
+        clearSequenceTimer();
+        sequenceRef.current.progress = next;
+        sequenceRef.current.timer = setTimeout(() => {
+          sequenceRef.current.progress.clear();
+          sequenceRef.current.timer = null;
+        }, sequenceTimeout);
+      } else {
+        resetSequence();
+      }
     };
     node.addEventListener(eventName, listener);
-    return () => node.removeEventListener(eventName, listener);
-  }, [enabled, target, eventName, allowInInput]);
+    return () => {
+      node.removeEventListener(eventName, listener);
+      resetSequence();
+    };
+  }, [enabled, target, eventName, allowInInput, sequenceTimeout]);
 }
 
 export type { UseHotkeysOptions };

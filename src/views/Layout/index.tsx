@@ -24,7 +24,7 @@ import {
   useMediaQuery,
 } from '@/lib';
 import { useTheme } from '@/contexts/theme';
-import { fill, useSiteLocale } from '@/views/i18n';
+import { fill, isSiteLocale, useSiteLocale } from '@/views/i18n';
 import { sourceUrl, shortCommit, versionInfo } from '@/views/version-info';
 
 import SidebarSearch, { MatchText } from './SidebarSearch';
@@ -313,10 +313,10 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
   );
   const searching = search.trim() !== '';
 
-  /* 指南摘要行：仅 zh 渲染（en 侧边栏保持零变化），摘要文本走词典。
+  /* 指南摘要行：仅非 en 语言渲染（en 侧边栏保持零变化），摘要文本走词典。
    * 放在 Link 外侧，避免污染链接的 accessible name。 */
   const guideSummary = (summary: string) =>
-    locale === 'zh' ? <div className={navSummary}>{summary}</div> : null;
+    locale !== 'en' ? <div className={navSummary}>{summary}</div> : null;
 
   return (
     <List variant='none'>
@@ -590,9 +590,12 @@ export default function Layout() {
             options={[
               { value: 'en', label: 'EN' },
               { value: 'zh', label: '中文' },
+              { value: 'ja', label: '日本語' },
+              { value: 'de', label: 'DE' },
+              { value: 'fr', label: 'FR' },
             ]}
             value={locale}
-            onChange={(next) => setLocale(next === 'zh' ? 'zh' : 'en')}
+            onChange={(next) => setLocale(isSiteLocale(next) ? next : 'en')}
           />
         </Tooltip>
         {customThemes.length > 0 && (

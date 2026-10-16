@@ -51,7 +51,8 @@ type HazeConfig = {
     openDelay?: number;
     /**
      * Grace period in ms after the pointer leaves before the card
-     * closes — the travel window into the panel (120).
+     * closes — the travel window into the panel (120; 300 when the
+     * card renders `interactive`).
      */
     closeDelay?: number;
   };

@@ -1,0 +1,57 @@
+name: ✨ Feature request
+description: Propose a new component, prop, or behavior change
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the proposal! haze-ui already ships 137 components —
+        please skim the [component docs](https://wmzy.github.io/haze-ui/components)
+        first: the capability you need may exist under a different name, or
+        be composable from existing pieces (`FormItem`'s `as`/`input`
+        bindings, `ConfigProvider` defaults, `data-slot` CSS overrides).
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to build, and what makes it hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: |
+        What should the API look like? A props sketch or short JSX snippet
+        helps a lot. Stateful props follow the `Control<T> | T` protocol.
+      placeholder: |
+        <Combobox multiple values={selected} onChange={setSelected} />
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing components, wrappers, or workarounds you tried (optional).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New component
+        - Existing component (props / behavior)
+        - Styling / theming / tokens
+        - Forms
+        - Accessibility
+        - Docs / docs site
+        - Tooling / distribution (registry, CLI, plugins)
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the component docs — this capability does not exist yet.
+          required: true

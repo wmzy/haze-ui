@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T23:21:44.529Z",
+  "generatedAt": "2026-10-16T14:35:49.750Z",
   "components": [
     {
       "component": "Accordion",
@@ -179,7 +179,7 @@
         "aria-label"
       ],
       "keys": [],
-      "testCount": 28
+      "testCount": 30
     },
     {
       "component": "Calendar",
@@ -452,6 +452,16 @@
       "testCount": 11
     },
     {
+      "component": "Countdown",
+      "roles": [],
+      "aria": [
+        "aria-label",
+        "aria-live"
+      ],
+      "keys": [],
+      "testCount": 13
+    },
+    {
       "component": "CountUp",
       "roles": [],
       "aria": [],
@@ -528,7 +538,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 5
+      "testCount": 6
     },
     {
       "component": "Descriptions",
@@ -712,7 +722,7 @@
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 7
+      "testCount": 8
     },
     {
       "component": "HoverCard",
@@ -723,9 +733,10 @@
         "aria-describedby"
       ],
       "keys": [
-        "Escape"
+        "Escape",
+        "Tab"
       ],
-      "testCount": 19
+      "testCount": 28
     },
     {
       "component": "Icon",
@@ -750,13 +761,32 @@
       "testCount": 28
     },
     {
+      "component": "ImageCrop",
+      "roles": [
+        "group",
+        "status"
+      ],
+      "aria": [
+        "aria-disabled",
+        "aria-hidden"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "Enter"
+      ],
+      "testCount": 24
+    },
+    {
       "component": "Indicator",
       "roles": [],
       "aria": [
         "aria-hidden"
       ],
       "keys": [],
-      "testCount": 5
+      "testCount": 6
     },
     {
       "component": "InlineCompletion",
@@ -925,7 +955,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 55
+      "testCount": 56
     },
     {
       "component": "ModelPicker",
@@ -1263,15 +1293,39 @@
       "testCount": 5
     },
     {
+      "component": "Splitter",
+      "roles": [
+        "button",
+        "separator"
+      ],
+      "aria": [
+        "aria-orientation",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Home"
+      ],
+      "testCount": 29
+    },
+    {
       "component": "Spoiler",
       "roles": [
         "button"
       ],
       "aria": [
-        "aria-expanded"
+        "aria-controls",
+        "aria-expanded",
+        "aria-label"
       ],
       "keys": [],
-      "testCount": 5
+      "testCount": 7
     },
     {
       "component": "Stat",

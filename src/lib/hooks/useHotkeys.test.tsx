@@ -1,4 +1,4 @@
-import { fireEvent, render, renderHook } from '@testing-library/react';
+import { act, createEvent, fireEvent, render, renderHook } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRef } from 'react';
 
@@ -198,5 +198,164 @@ describe('useHotkeys', () => {
     } finally {
       restore();
     }
+  });
+
+  it('fires a sequence only after every step and only intercepts the final event', () => {
+    const handler = vi.fn();
+    renderHook(() => useHotkeys({ 'g h': handler }));
+
+    const first = createEvent.keyDown(document.body, { key: 'g' });
+    fireEvent(document.body, first);
+    expect(handler).not.toHaveBeenCalled();
+    // 中途步骤不劫持事件
+    expect(first.defaultPrevented).toBe(false);
+
+    const final = createEvent.keyDown(document.body, { key: 'h' });
+    fireEvent(document.body, final);
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith(final);
+    expect(final.defaultPrevented).toBe(true);
+
+    // 命中后进度清零：同一序列可立即重新输入
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it('resets sequence progress on a wrong key but lets it restart from the first step', () => {
+    const handler = vi.fn();
+    renderHook(() => useHotkeys({ 'g h': handler }));
+
+    // 中途按错键：进度重置，随后的 h 不再补完序列
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'x' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(handler).not.toHaveBeenCalled();
+
+    // 错键本身是首步：从头重启（g g h 仍触发）
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets sequence progress when the timeout elapses', () => {
+    vi.useFakeTimers();
+    try {
+      const handler = vi.fn();
+      renderHook(() => useHotkeys({ 'g h': handler }));
+
+      fireEvent.keyDown(document.body, { key: 'g' });
+      act(() => {
+        vi.advanceTimersByTime(999);
+      });
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(handler).toHaveBeenCalledTimes(1);
+
+      // 默认 1000ms：超时后进度清空
+      fireEvent.keyDown(document.body, { key: 'g' });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(handler).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('honors a custom sequenceTimeout', () => {
+    vi.useFakeTimers();
+    try {
+      const handler = vi.fn();
+      renderHook(() => useHotkeys({ 'g h': handler }, { sequenceTimeout: 2000 }));
+
+      fireEvent.keyDown(document.body, { key: 'g' });
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(handler).toHaveBeenCalledTimes(1);
+
+      fireEvent.keyDown(document.body, { key: 'g' });
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(handler).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('supports modifier combos as sequence steps', () => {
+    const restore = stubPlatform('Win32');
+    try {
+      const handler = vi.fn();
+      renderHook(() => useHotkeys({ 'mod+k g': handler }));
+
+      fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
+      fireEvent.keyDown(document.body, { key: 'g' });
+      expect(handler).toHaveBeenCalledTimes(1);
+
+      // 第二步未声明 ctrl：按住 ctrl 的 g 不命中也不重启 → 进度重置，
+      // 之后的裸 g 不再补完序列，须重走 mod+k
+      fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
+      fireEvent.keyDown(document.body, { key: 'g', ctrlKey: true });
+      fireEvent.keyDown(document.body, { key: 'g' });
+      expect(handler).toHaveBeenCalledTimes(1);
+
+      fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
+      fireEvent.keyDown(document.body, { key: 'g' });
+      expect(handler).toHaveBeenCalledTimes(2);
+    } finally {
+      restore();
+    }
+  });
+
+  it('mixes single keys and sequences in one hook instance', () => {
+    const restore = stubPlatform('Win32');
+    try {
+      const seq = vi.fn();
+      const single = vi.fn();
+      const help = vi.fn();
+      renderHook(() => useHotkeys({ 'g h': seq, 'mod+k': single, '?': help }));
+
+      // 序列推进中：单键绑定照常命中并清空序列进度
+      fireEvent.keyDown(document.body, { key: 'g' });
+      fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
+      expect(single).toHaveBeenCalledTimes(1);
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(seq).not.toHaveBeenCalled();
+
+      // 序列完整触发；单键回归不受影响
+      fireEvent.keyDown(document.body, { key: 'g' });
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(seq).toHaveBeenCalledTimes(1);
+      fireEvent.keyDown(document.body, { key: '?', shiftKey: true });
+      expect(help).toHaveBeenCalledTimes(1);
+
+      // h 不是任何序列的首步/单键绑定：无触发
+      fireEvent.keyDown(document.body, { key: 'h' });
+      expect(seq).toHaveBeenCalledTimes(1);
+      expect(single).toHaveBeenCalledTimes(1);
+      expect(help).toHaveBeenCalledTimes(1);
+    } finally {
+      restore();
+    }
+  });
+
+  it('binds sequence aliases via hotkey()', () => {
+    const handler = vi.fn();
+    renderHook(() => useHotkeys({ [hotkey('g h', 'g o')]: handler }));
+
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'o' });
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    // 别名另一支同样走序列
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(handler).toHaveBeenCalledTimes(2);
   });
 });

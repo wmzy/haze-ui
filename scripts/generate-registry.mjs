@@ -46,7 +46,7 @@
  *
  * Coverage: every *styled* named export of the main barrel
  * (src/lib/index.ts), grouped by css family. Multi-export directories
- * (Tabs/TabList/Tab/TabPanel, Resizable + its Splitter aliases, …)
+ * (Tabs/TabList/Tab/TabPanel, Splitter/SplitterPane, …)
  * merge into one item; the token classes (lightTheme/darkTheme/
  * spacing/typography across three modules) merge into the `tokens`
  * item. On top of the generated set, the hand-curated `haze-tokens`
@@ -380,6 +380,8 @@ const descriptions = {
   combobox: 'Autocomplete text input with filterable option list; `onSearch` defers filtering to the host.',
   'count-up':
     'Animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.',
+  countdown:
+    'Deadline countdown: `value` timestamp or Date, setTimeout-chain ticks aligned to second boundaries (no interval drift), `onFinish` fires once, adaptive `1d hh:mm:ss` / `hh:mm:ss` default format with `format`/`render` escape hatches.',
   command:
     'Command palette surface: `CommandInput` plus filterable `CommandItem`s in a `CommandList`.',
   'confirm-dialog': 'Ready-made confirm dialog with confirm/cancel actions and a danger variant.',
@@ -448,7 +450,7 @@ const descriptions = {
     'Radio option and group with controllable selection (`Radio`, `RadioGroup`, headless `RadioGroupCore`).',
   rating: 'Star rating with half-step support.',
   resizable:
-    'Split-pane group with draggable dividers, horizontal or vertical; also exported as `SplitterGroup`/`SplitterPanel`/`SplitterHandle` (AntD-style naming).',
+    'Split-pane group with draggable dividers, horizontal or vertical; px sizing per panel with `onResizeCommit` for persistence.',
   result:
     'Result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.',
   'scroll-area': 'Scrollable region with custom-styled thin scrollbars and `maxHeight`.',
@@ -521,6 +523,10 @@ const descriptions = {
     'Masonry (pinboard) layout: JS greedy column distribution balances children across `columns`.',
   signature:
     'Canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.',
+  splitter:
+    'Multi-pane split layout with implicit draggable dividers (AntD Splitter semantics): `sizes` in percent of the pane area (`ControlOrValue` array), per-pane `min`/`max` clamps, keyboard arrows and pointer drags.',
+  'image-crop':
+    'Interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.',
 };
 
 // Component categories for the shadcn `categories` field (search
@@ -531,19 +537,20 @@ const descriptions = {
 // missing entry (same contract as the descriptions table).
 const CATEGORY_GROUPS = {
   general: [
-    'avatar', 'avatar-group', 'badge', 'button', 'count-up', 'divider',
-    'ellipsis', 'icon', 'mark', 'tag', 'tag-group',
+    'avatar', 'avatar-group', 'badge', 'button', 'count-up', 'countdown',
+    'divider', 'ellipsis', 'icon', 'mark', 'tag', 'tag-group',
     'typography',
   ],
   layout: [
     'activity-rail', 'aspect-ratio', 'app-shell', 'container', 'flex',
-    'grid', 'masonry', 'resizable', 'scroll-area', 'sidebar', 'status-bar',
-    'tab-bar', 'workbench',
+    'grid', 'masonry', 'resizable', 'scroll-area', 'sidebar', 'splitter',
+    'status-bar', 'tab-bar', 'workbench',
   ],
   form: [
     'cascader', 'checkbox', 'color-picker', 'combobox', 'datepicker',
     'date-range-picker', 'fieldset', 'file-input',
-    'form', 'inline-edit', 'input', 'mentions', 'number-input', 'otp-input',
+    'form', 'image-crop', 'inline-edit', 'input', 'mentions',
+    'number-input', 'otp-input',
     'password-input', 'radio', 'rating', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
     'time-picker', 'toggle', 'transfer', 'tree-select', 'upload',

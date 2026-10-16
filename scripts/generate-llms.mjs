@@ -58,6 +58,8 @@ const DESCRIPTIONS = {
     'action button with `variant`/`size`/`square` options; native `<button>` under the hood.',
   CountUp:
     'animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.',
+  Countdown:
+    'deadline countdown with second-boundary-aligned setTimeout-chain ticks, `onFinish` firing once, and adaptive `d`/`h:mm:ss` formatting.',
   Divider: 'content separator line, horizontal or vertical.',
   Ellipsis:
     'interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.',
@@ -77,11 +79,13 @@ const DESCRIPTIONS = {
   Masonry:
     'pinboard layout: JS greedy column distribution balances children across `columns` (order-first, shortest-column-next).',
   Resizable:
-    'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence; also exported as `SplitterGroup`/`SplitterPanel`/`SplitterHandle`.',
+    'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence.',
   ScrollArea:
     'scrollable region with custom-styled thin scrollbars and `maxHeight`.',
   Sidebar:
     'app sidebar shell with controllable collapsed state (`aside` + rail width tokens).',
+  Splitter:
+    'multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.',
   ActivityRail:
     'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
   StatusBar:
@@ -129,6 +133,8 @@ const DESCRIPTIONS = {
     'dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.',
   Signature:
     'canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.',
+  ImageCrop:
+    'interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.',
   Slider: 'native range slider with controllable value.',
   Switch: 'toggle switch (`role="switch"`) with controllable `checked`.',
   TagInput:
@@ -490,8 +496,8 @@ A self-contained, machine-executable setup protocol — every step is copy-paste
    verbatim from source) lives in [llms-full.txt](llms-full.txt) — generated,
    always current.
 
-To install the agent components via the shadcn CLI instead, see README ›
-Install via shadcn CLI.
+To install the agent components via the shadcn CLI instead, see
+[registry/README.md](https://github.com/wmzy/haze-ui/blob/main/registry/README.md).
 
 ## Accessibility references
 

@@ -5,13 +5,14 @@
  *
  * Resolution order for the initial locale:
  *   1. localStorage('haze-docs-lang') — the user's last explicit choice;
- *   2. navigator.language starting with 'zh' — browser preference;
+ *   2. navigator.language starting with zh/ja/de/fr — browser preference;
  *   3. 'en' — the source dictionary, always complete.
  *
- * The active dictionary `t` is `en` deep-merged with the zh overrides, so
- * any key zh.ts has not translated yet renders the English fallback —
- * the dictionary is incrementally expandable by design. Switching persists
- * the choice and syncs document.documentElement.lang for assistive tech.
+ * The active dictionary `t` is `en` deep-merged with the locale overrides,
+ * so any key the locale file has not translated yet renders the English
+ * fallback — the dictionary is incrementally expandable by design. Switching
+ * persists the choice and syncs document.documentElement.lang for assistive
+ * tech.
  *
  * Components under test (and any stray consumer outside the provider)
  * get a working English fallback instead of a throw: several suites
@@ -31,36 +32,79 @@ import {
   useState,
 } from 'react';
 
+import { de } from './de';
 import { en } from './en';
+import { fr } from './fr';
+import { ja } from './ja';
 import { zh } from './zh';
 
-export type SiteLocale = 'en' | 'zh';
+export type SiteLocale = 'en' | 'zh' | 'ja' | 'de' | 'fr';
+
+/** Every locale the site offers; keep in sync with DICTS/SiteLocale. */
+export const SITE_LOCALES = [
+  'en',
+  'zh',
+  'ja',
+  'de',
+  'fr',
+] as const satisfies readonly SiteLocale[];
+
+/** Narrow an untrusted value (storage, switcher event) to a SiteLocale. */
+export function isSiteLocale(value: unknown): value is SiteLocale {
+  return (
+    typeof value === 'string' &&
+    (SITE_LOCALES as readonly string[]).includes(value)
+  );
+}
 
 export const LOCALE_STORAGE_KEY = 'haze-docs-lang';
 
 export type SiteLocaleValue = {
   locale: SiteLocale;
   setLocale: (locale: SiteLocale) => void;
-  /** Merged dictionary: zh overrides on top of the complete en base. */
+  /** Merged dictionary: locale overrides on top of the complete en base. */
   t: typeof en;
 };
 
 /** Locale dictionaries allowed by the provider; keep in sync with SiteLocale. */
-const DICTS: Partial<Record<SiteLocale, Record<string, unknown>>> = { zh };
+const DICTS: Partial<Record<SiteLocale, Record<string, unknown>>> = {
+  zh,
+  ja,
+  de,
+  fr,
+};
+
+/* <html lang> per locale; only zh needs a region tag (site copy is
+ * Simplified Chinese, not zh-TW etc.). */
+const HTML_LANG: Record<SiteLocale, string> = {
+  en: 'en',
+  zh: 'zh-CN',
+  ja: 'ja',
+  de: 'de',
+  fr: 'fr',
+};
+
+/** navigator.language prefix → locale, checked in order (en needs none). */
+const BROWSER_PREFIXES: readonly (readonly [string, SiteLocale])[] = [
+  ['zh', 'zh'],
+  ['ja', 'ja'],
+  ['de', 'de'],
+  ['fr', 'fr'],
+];
 
 /** Resolve the initial locale (storage > browser language > en). */
 export function resolveInitialLocale(): SiteLocale {
   try {
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored === 'en' || stored === 'zh') return stored;
+    if (isSiteLocale(stored)) return stored;
   } catch {
     /* storage unavailable (privacy mode / SSR) */
   }
-  if (
-    typeof navigator !== 'undefined' &&
-    navigator.language.toLowerCase().startsWith('zh')
-  ) {
-    return 'zh';
+  if (typeof navigator !== 'undefined') {
+    const language = navigator.language.toLowerCase();
+    for (const [prefix, locale] of BROWSER_PREFIXES) {
+      if (language.startsWith(prefix)) return locale;
+    }
   }
   return 'en';
 }
@@ -98,7 +142,7 @@ export function SiteLocaleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+    document.documentElement.lang = HTML_LANG[locale];
   }, [locale]);
 
   const t = useMemo(() => {

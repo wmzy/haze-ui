@@ -5,7 +5,7 @@
   "title": "Haze UI base (tokens + every component wrapper)",
   "description": "One-command setup of the whole haze-ui design system: theme tokens plus a thin wrapper for every styled component, pulled in through registryDependencies.",
   "author": "wmzy <https://github.com/wmzy>",
-  "docs": "One command installs the entire haze-ui design system: the theme tokens\n(this item ships the token-activation wrapper) plus a thin re-export\nwrapper for every styled component — 132 registry items pulled\nin through `registryDependencies`, resolved recursively by the CLI.\n\n## Install\n\n```bash\nnpx shadcn@latest add wmzy/haze-ui/base\n```\n\nEach component wrapper lands at `components/ui/haze/<component>.tsx` and\nre-exports its component from the `haze-ui` npm package (installed\nautomatically), importing its stylesheet — no other setup is needed.\n\n## Theming\n\nThis wrapper re-exports the 'lightTheme' (or 'darkTheme'), 'spacing' and\n'typography' classes from 'haze-ui' and imports 'haze-ui/css/tokens.css'.\n\nActivate the design tokens by applying the classes to a root element:\n\n```jsx\nimport { lightTheme, spacing, typography } from 'haze-ui';\n\n// on <body> or any root container — darkTheme is a drop-in swap\n<div className={`${lightTheme} ${spacing} ${typography}`}>…</div>\n```\n\nDetails: https://github.com/wmzy/haze-ui/tree/main/registry",
+  "docs": "One command installs the entire haze-ui design system: the theme tokens\n(this item ships the token-activation wrapper) plus a thin re-export\nwrapper for every styled component — 135 registry items pulled\nin through `registryDependencies`, resolved recursively by the CLI.\n\n## Install\n\n```bash\nnpx shadcn@latest add wmzy/haze-ui/base\n```\n\nEach component wrapper lands at `components/ui/haze/<component>.tsx` and\nre-exports its component from the `haze-ui` npm package (installed\nautomatically), importing its stylesheet — no other setup is needed.\n\n## Theming\n\nThis wrapper re-exports the 'lightTheme' (or 'darkTheme'), 'spacing' and\n'typography' classes from 'haze-ui' and imports 'haze-ui/css/tokens.css'.\n\nActivate the design tokens by applying the classes to a root element:\n\n```jsx\nimport { lightTheme, spacing, typography } from 'haze-ui';\n\n// on <body> or any root container — darkTheme is a drop-in swap\n<div className={`${lightTheme} ${spacing} ${typography}`}>…</div>\n```\n\nDetails: https://github.com/wmzy/haze-ui/tree/main/registry",
   "categories": [
     "theme",
     "setup"
@@ -51,6 +51,7 @@
     "wmzy/haze-ui/context-menu",
     "wmzy/haze-ui/conversation-list",
     "wmzy/haze-ui/count-up",
+    "wmzy/haze-ui/countdown",
     "wmzy/haze-ui/data-table",
     "wmzy/haze-ui/date-range-picker",
     "wmzy/haze-ui/datepicker",
@@ -73,6 +74,7 @@
     "wmzy/haze-ui/hover-card",
     "wmzy/haze-ui/icon",
     "wmzy/haze-ui/image",
+    "wmzy/haze-ui/image-crop",
     "wmzy/haze-ui/indicator",
     "wmzy/haze-ui/inline-completion",
     "wmzy/haze-ui/inline-edit",
@@ -111,6 +113,7 @@
     "wmzy/haze-ui/sources",
     "wmzy/haze-ui/sparkline",
     "wmzy/haze-ui/spinner",
+    "wmzy/haze-ui/splitter",
     "wmzy/haze-ui/spoiler",
     "wmzy/haze-ui/stat",
     "wmzy/haze-ui/status-bar",

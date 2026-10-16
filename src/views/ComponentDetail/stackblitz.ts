@@ -132,8 +132,11 @@ createRoot(document.getElementById('root')!).render(
       ...inferDependencies(source),
     },
     devDependencies: {
-      vite: '^8.2.2',
-      '@vitejs/plugin-react': '^6.1.1',
+      // WebContainer（StackBlitz 的 node 运行时）跑不了 vite 8 的 rolldown
+      // 原生绑定（dev server 起监听后即崩，见 webcontainer-core#2141），
+      // 生成工程钉在 vite 7（esbuild 路线）保证页内/新标签都能跑起来。
+      vite: '^7.3.7',
+      '@vitejs/plugin-react': '^5.2.0',
       typescript: '^6.0.3',
     },
   };

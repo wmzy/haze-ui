@@ -1487,6 +1487,14 @@
       "description": "GridItem elements"
     }
   ],
+  "HoverCardProps": [
+    {
+      "name": "interactive",
+      "type": "boolean",
+      "default": "false",
+      "description": "PreviewTrigger semantics: focusable card content joins the Tab order (never trapped), focus may travel between trigger and card without closing it, Escape closes and returns focus to the trigger. Pointer grace defaults to 300ms in this mode; a focused card ignores pointer leaves."
+    }
+  ],
   "IconProps": [
     {
       "name": "icon",
@@ -2086,11 +2094,6 @@
       "name": "children",
       "type": "ReactNode",
       "description": "ResizablePanel and ResizableHandle elements"
-    },
-    {
-      "name": "SplitterGroup · SplitterPanel · SplitterHandle",
-      "type": "aliases",
-      "description": "AntD migration entry: `import { SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui'` maps 1:1 onto ResizableGroup / ResizablePanel / ResizableHandle (same props)"
     }
   ],
   "ResizablePanelProps": [

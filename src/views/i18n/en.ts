@@ -38,6 +38,8 @@ const COMPONENT_BLURBS = {
     'Action button with variant/size/square options; native <button> under the hood.',
   CountUp:
     'Animated number ticker: rAF + ease-out interpolation toward the target, honoring prefers-reduced-motion with an instant snap.',
+  Countdown:
+    'Deadline countdown: boundary-aligned ticks, onFinish fires once, adaptive d/h:mm:ss formatting.',
   Divider: 'Content separator line, horizontal or vertical.',
   Ellipsis:
     'Interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.',
@@ -57,11 +59,13 @@ const COMPONENT_BLURBS = {
   Masonry:
     'Pinboard layout: JS greedy column distribution balances children across columns (order-first, shortest-column-next).',
   Resizable:
-    'Split-pane group with draggable dividers (ResizableGroup, horizontal or vertical); px defaultSize/minSize/maxSize per panel, collapsible panels and onResizeCommit for persistence; also exported as SplitterGroup/SplitterPanel/SplitterHandle.',
+    'Split-pane group with draggable dividers (ResizableGroup, horizontal or vertical); px defaultSize/minSize/maxSize per panel, collapsible panels and onResizeCommit for persistence.',
   ScrollArea:
     'Scrollable region with custom-styled thin scrollbars and maxHeight.',
   Sidebar:
     'App sidebar shell with controllable collapsed state (aside + rail width tokens).',
+  Splitter:
+    'Splitter: multi-pane split layout with implicit draggable dividers (AntD Splitter semantics); sizes as percentages of the pane area via a single ControlOrValue number[] prop, per-pane min/max percent clamps, keyboard arrows (5% steps) and Home/End, live onSizesChange; for px-sized panes see Resizable.',
   ActivityRail:
     'VSCode-style vertical icon rail (nav): 44px items with icon/label/badge and active indicator, tooltip labels, slot="end" bottom pinning. orientation="horizontal" lays it out as a strip — Workbench does this automatically when the rail is docked inside the sidebar column.',
   StatusBar:
@@ -88,6 +92,8 @@ const COMPONENT_BLURBS = {
     'Semantic fieldset+legend grouping for form sections; disabled disables every control inside.',
   FileInput: 'Trigger element that opens a hidden native file input.',
   Form: 'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
+  ImageCrop:
+    'Interactive image cropper pairing with Upload: controllable normalized crop rect, aspect lock, circle avatar mask, and full keyboard operation (arrows move, Shift+arrows resize).',
   InlineEdit: 'Click-to-edit text value in place.',
   Input: 'Text input with adornments; sugar over InputCore.',
   Mentions:

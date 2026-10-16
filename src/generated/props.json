@@ -2181,6 +2181,43 @@
       },
       "otherTypes": {}
     },
+    "Countdown": {
+      "routeKey": "countdown",
+      "cssFamily": "countdown",
+      "imports": [
+        "Countdown"
+      ],
+      "propsTypes": {
+        "CountdownProps": [
+          {
+            "name": "value",
+            "type": "number | Date",
+            "required": true
+          },
+          {
+            "name": "onFinish",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "format",
+            "type": "(parts: CountdownParts) => string",
+            "required": false
+          },
+          {
+            "name": "render",
+            "type": "(parts: CountdownParts) => ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "DataTable": {
       "routeKey": "data-table",
       "cssFamily": "data-table",
@@ -3775,6 +3812,11 @@
             "required": false
           },
           {
+            "name": "interactive",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "placement",
             "type": "FloatingPlacement",
             "required": false
@@ -3898,6 +3940,83 @@
           {
             "name": "preview",
             "type": "boolean | ImagePreviewConfig",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "ImageCrop": {
+      "routeKey": "image-crop",
+      "cssFamily": "image-crop",
+      "imports": [
+        "ImageCrop"
+      ],
+      "propsTypes": {
+        "ImageCropProps": [
+          {
+            "name": "src",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "alt",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "ControlOrValue<CropRect>",
+            "required": false
+          },
+          {
+            "name": "onChange",
+            "type": "(rect: CropRect) => void",
+            "required": false
+          },
+          {
+            "name": "aspect",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "shape",
+            "type": "'circle' | 'rect'",
+            "required": false
+          },
+          {
+            "name": "cropLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "unsupportedLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "errorLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "crossOrigin",
+            "type": "'anonymous' | 'use-credentials'",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<ImageCropHandle>",
             "required": false
           }
         ]
@@ -5610,10 +5729,7 @@
       "imports": [
         "ResizableGroup",
         "ResizablePanel",
-        "ResizableHandle",
-        "SplitterGroup",
-        "SplitterPanel",
-        "SplitterHandle"
+        "ResizableHandle"
       ],
       "propsTypes": {
         "ResizableGroupProps": [
@@ -6532,6 +6648,66 @@
           {
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "Splitter": {
+      "routeKey": "splitter",
+      "cssFamily": "splitter",
+      "imports": [
+        "Splitter",
+        "SplitterPane"
+      ],
+      "propsTypes": {
+        "SplitterPaneProps": [
+          {
+            "name": "min",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "max",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "SplitterProps": [
+          {
+            "name": "orientation",
+            "type": "'vertical' | 'horizontal'",
+            "required": false
+          },
+          {
+            "name": "sizes",
+            "type": "ControlOrValue<number[]>",
+            "required": false
+          },
+          {
+            "name": "onSizesChange",
+            "type": "(sizes: number[]) => void",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
             "required": false
           },
           {

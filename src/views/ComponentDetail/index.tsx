@@ -171,6 +171,7 @@ import LogViewerDemo from './demos/LogViewerDemo';
 import CommandDemo from './demos/CommandDemo';
 
 import ResizableDemo from './demos/ResizableDemo';
+import SplitterDemo from './demos/SplitterDemo';
 
 import CollapsibleDemo from './demos/CollapsibleDemo';
 
@@ -187,6 +188,7 @@ import TimelineDemo from './demos/TimelineDemo';
 import TypographyDemo from './demos/TypographyDemo';
 import EllipsisDemo from './demos/EllipsisDemo';
 import CountUpDemo from './demos/CountUpDemo';
+import CountdownDemo from './demos/CountdownDemo';
 import SparklineDemo from './demos/SparklineDemo';
 
 import StatDemo from './demos/StatDemo';
@@ -258,6 +260,7 @@ import FloatButtonDemo from './demos/FloatButtonDemo';
 import MasonryDemo from './demos/MasonryDemo';
 
 import SignatureDemo from './demos/SignatureDemo';
+import ImageCropDemo from './demos/ImageCropDemo';
 import MarkDemo from './demos/MarkDemo';
 import HighlightDemo from './demos/HighlightDemo';
 import NumberFormatterDemo from './demos/NumberFormatterDemo';
@@ -331,6 +334,7 @@ const demos: Record<string, () => ReactNode> = {
   'async-section': AsyncSectionDemo,
   command: CommandDemo,
   resizable: ResizableDemo,
+  splitter: SplitterDemo,
   collapsible: CollapsibleDemo,
   transfer: TransferDemo,
   upload: UploadDemo,
@@ -340,6 +344,7 @@ const demos: Record<string, () => ReactNode> = {
   typography: TypographyDemo,
   ellipsis: EllipsisDemo,
   'count-up': CountUpDemo,
+  countdown: CountdownDemo,
   sparkline: SparklineDemo,
   stat: StatDemo,
   segmented: SegmentedDemo,
@@ -376,6 +381,7 @@ const demos: Record<string, () => ReactNode> = {
   'float-button': FloatButtonDemo,
   masonry: MasonryDemo,
   signature: SignatureDemo,
+  'image-crop': ImageCropDemo,
   kbd: KbdDemo,
   'avatar-group': AvatarGroupDemo,
   calendar: CalendarDemo,
@@ -431,7 +437,7 @@ const NAME_BY_ROUTE = new Map(
   )
 );
 
-/* zh lede sits above the demo's own English h1/intro (component doc bodies
+/* localized lede sits above the demo's own English h1/intro (component doc bodies
  * stay untranslated this round); en renders nothing extra. */
 const lede = css`
   font-family: var(--haze-font-sans);
@@ -444,7 +450,7 @@ const lede = css`
 /** Locale overlay for the per-component one-line description. */
 function ComponentLede({ route }: { route: string }) {
   const { locale, t } = useSiteLocale();
-  if (locale !== 'zh') return null;
+  if (locale === 'en') return null;
   const blurb = t.components[NAME_BY_ROUTE.get(route) ?? ''];
   if (blurb === undefined || blurb === '') return null;
   return <p className={lede}>{blurb}</p>;
@@ -577,7 +583,7 @@ export default function ComponentDetail() {
         <>
           <ComponentLede route={name} />
           <CopyImportButton name={name} />
-          <DemoPreview>
+          <DemoPreview name={name}>
             <Demo />
           </DemoPreview>
           <DemoSource name={name} />

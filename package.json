@@ -101,6 +101,7 @@
   ],
   "author": "wmzy",
   "license": "MIT",
+  "homepage": "https://wmzy.github.io/haze-ui/",
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -227,6 +228,24 @@
       "name": "CSS family ratchet: count-up",
       "path": "dist/css/count-up.css",
       "limit": "0.3 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: countdown",
+      "path": "dist/css/countdown.css",
+      "limit": "0.2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: splitter",
+      "path": "dist/css/splitter.css",
+      "limit": "0.7 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: image-crop",
+      "path": "dist/css/image-crop.css",
+      "limit": "0.85 KB",
       "gzip": true
     },
     {

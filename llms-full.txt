@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 136 Haze UI components in one
-> file (246 type tables), generated from the library source. Do not
+> Complete props reference for all 139 Haze UI components in one
+> file (250 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -922,6 +922,22 @@ import { CountUp } from 'haze-ui';
 | `autostart` | `boolean` | — |  |
 | `className` | `string` | — |  |
 
+## Countdown
+
+```jsx
+import { Countdown } from 'haze-ui';
+```
+
+### CountdownProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number \| Date` | — |  |
+| `onFinish` | `() => void` | — |  |
+| `format` | `(parts: CountdownParts) => string` | — |  |
+| `render` | `(parts: CountdownParts) => ReactNode` | — |  |
+| `className` | `string` | — |  |
+
 ## DataTable
 
 ```jsx
@@ -1507,6 +1523,7 @@ import { HoverCard } from 'haze-ui';
 | `content` | `ReactNode` | — |  |
 | `openDelay` | `number` | — |  |
 | `closeDelay` | `number` | — |  |
+| `interactive` | `boolean` | `false` | PreviewTrigger semantics: focusable card content joins the Tab order (never trapped), focus may travel between trigger and card without closing it, Escape closes and returns focus to the trigger. Pointer grace defaults to 300ms in this mode; a focused card ignores pointer leaves. |
 | `placement` | `FloatingPlacement` | — |  |
 | `open` | `ControlOrValue<boolean>` | — |  |
 | `collisionPadding` | `CollisionPadding` | — |  |
@@ -1555,6 +1572,30 @@ import { Image } from 'haze-ui';
 | `objectFit` | `ObjectFit \| undefined` | `'cover'` | Object-fit behavior |
 | `preview` | `boolean \| ImagePreviewConfig` | — |  |
 | `className` | `string` | — | Additional CSS class |
+
+## ImageCrop
+
+```jsx
+import { ImageCrop } from 'haze-ui';
+```
+
+### ImageCropProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `src` | `string` | — |  |
+| `alt` | `string` | — |  |
+| `value` | `ControlOrValue<CropRect>` | — |  |
+| `onChange` | `(rect: CropRect) => void` | — |  |
+| `aspect` | `number` | — |  |
+| `shape` | `'circle' \| 'rect'` | — |  |
+| `cropLabel` | `string` | — |  |
+| `unsupportedLabel` | `string` | — |  |
+| `errorLabel` | `string` | — |  |
+| `disabled` | `boolean` | — |  |
+| `crossOrigin` | `'anonymous' \| 'use-credentials'` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<ImageCropHandle>` | — |  |
 
 ## Indicator
 
@@ -2232,7 +2273,7 @@ import { Rating, RatingCore } from 'haze-ui';
 ## Resizable
 
 ```jsx
-import { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui';
+import { ResizableGroup, ResizablePanel, ResizableHandle } from 'haze-ui';
 ```
 
 ### ResizableGroupProps
@@ -2244,7 +2285,6 @@ import { ResizableGroup, ResizablePanel, ResizableHandle, SplitterGroup, Splitte
 | `className` | `string` | — | Additional CSS class |
 | `style` | `CSSProperties` | — |  |
 | `onResizeCommit` | `(sizes: Record<string, number>) => void` | — | Fires once when a drag or keyboard resize settles, mapping fixed-panel ids to their committed px sizes — the persistence hook (write it back into a store or Control) |
-| `SplitterGroup · SplitterPanel · SplitterHandle` | `aliases` | — | AntD migration entry: `import { SplitterGroup, SplitterPanel, SplitterHandle } from 'haze-ui'` maps 1:1 onto ResizableGroup / ResizablePanel / ResizableHandle (same props) |
 
 ### ResizableHandleProps
 
@@ -2579,6 +2619,31 @@ import { Spinner } from 'haze-ui';
 | --- | --- | --- | --- |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Spinner size (16px / 24px / 32px) |
 | `className` | `string` | — | Additional CSS class |
+
+## Splitter
+
+```jsx
+import { Splitter, SplitterPane } from 'haze-ui';
+```
+
+### SplitterPaneProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `min` | `number` | — |  |
+| `max` | `number` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+### SplitterProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
+| `sizes` | `ControlOrValue<number[]>` | — |  |
+| `onSizesChange` | `(sizes: number[]) => void` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
 
 ## Spoiler
 

@@ -157,16 +157,8 @@ export { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandD
 export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps, CommandGroupProps, CommandDialogProps } from './components/Command';
 export { ResizableGroup, ResizablePanel, ResizableHandle } from './components/Resizable';
 export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps } from './components/Resizable';
-export {
-  SplitterGroup,
-  SplitterPanel,
-  SplitterHandle,
-} from './components/Resizable';
-export type {
-  ResizableGroupProps as SplitterGroupProps,
-  ResizablePanelProps as SplitterPanelProps,
-  ResizableHandleProps as SplitterHandleProps,
-} from './components/Resizable';
+export { Splitter, SplitterPane } from './components/Splitter';
+export type { SplitterProps, SplitterPaneProps } from './components/Splitter';
 export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/Collapsible';
 export type { CollapsibleProps, CollapsibleTriggerProps, CollapsibleContentProps, CollapsibleClassNames } from './components/Collapsible';
 export { Transfer, TransferCore } from './components/Transfer';
@@ -187,6 +179,8 @@ export { Ellipsis } from './components/Ellipsis';
 export type { EllipsisProps } from './components/Ellipsis';
 export { CountUp } from './components/CountUp';
 export type { CountUpProps } from './components/CountUp';
+export { Countdown } from './components/Countdown';
+export type { CountdownProps, CountdownParts } from './components/Countdown';
 export { Sparkline, sparklineToneStrokes, sparklineToneFills } from './components/Sparkline';
 export type { SparklineProps } from './components/Sparkline';
 export type { StatProps, StatGroupProps } from './components/Stat';
@@ -388,6 +382,9 @@ export { Masonry } from './components/Masonry';
 export type { MasonryProps } from './components/Masonry';
 export { Signature } from './components/Signature';
 export type { SignatureProps } from './components/Signature';
+export { ImageCrop } from './components/ImageCrop';
+export type { ImageCropHandle, ImageCropProps } from './components/ImageCrop';
+export type { CropRect } from './components/ImageCrop';
 
 // hooks
 export {

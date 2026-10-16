@@ -58,6 +58,11 @@ const REMOVED_FAMILIES: Record<string, string> = {
   // 轨道/胶片层没有尺寸盒：唯一的 min-width: 0 是 flex 溢出防护，
   // 胶片宽度来自 flex-basis（无 padding/border，两种盒模型等价）。
   carousel: 'no sized box — only a min-width: 0 flex guard',
+  // 分栏分隔条：命中条有意保持 content-box（2px 发丝条 + 对称 padding
+  // 撑出 24px/44px 命中区，border-box 会把它钳成 2px）；pane 只有
+  // min-width/min-height 0 的 flex 防护，无尺寸盒。
+  splitter:
+    'divider hit strip is content-box by design (2px bar + symmetric padding = 24px target, 44px coarse); panes only carry min-width/min-height 0 flex guards',
 };
 
 const familyCss = (family: string) =>

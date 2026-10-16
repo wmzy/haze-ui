@@ -13,6 +13,7 @@ import { writeProps } from './scripts/generate-props.mjs';
 import { writeA11yContracts } from './scripts/generate-a11y-contracts.mjs';
 import { writeLlmsFull } from './scripts/generate-llms-full.mjs';
 import { writeSearchIndex } from './scripts/generate-search-index.mjs';
+import { writeSitemap } from './scripts/generate-sitemap.mjs';
 import { writeSizeReport } from './scripts/generate-size-report.mjs';
 import { isRscSafeModule } from './scripts/rsc-safe.mjs';
 
@@ -69,7 +70,9 @@ function jsxPlusPlugin(): Plugin {
 // and the Copy-import index) before the module graph resolves it, then the
 // repo-root llms-full.txt single-file API reference built on top of it and
 // the ⌘K palette's search-index.json (joins the fresh props.json routes
-// with props-docs.json descriptions — must run after writeProps).
+// with props-docs.json descriptions — must run after writeProps), plus
+// public/sitemap.xml + robots.txt (docs-site SEO surface enumerated from
+// the route table + demo registry, origin from package.json homepage).
 // Skipped for lib builds and vitest — neither reads the generated files.
 function propsDocgenPlugin(): Plugin {
   return {
@@ -103,6 +106,12 @@ function propsDocgenPlugin(): Plugin {
       if (search.changed) {
         console.log(
           `props-docgen: regenerated search-index.json (${search.entryCount} entries)`
+        );
+      }
+      const sitemap = writeSitemap(__dirname);
+      if (sitemap.changed) {
+        console.log(
+          `props-docgen: regenerated public/sitemap.xml + robots.txt (${sitemap.urlCount} urls)`
         );
       }
     },
@@ -203,6 +212,13 @@ export default defineConfig({
   server: {
     open: true,
     host: true,
+    // StackBlitz WebContainer (demo 页内运行) 需要宿主页跨域隔离；
+    // dev 由这里提供响应头，生产 gh-pages 由 coi-serviceworker 补齐
+    // （见 src/main.tsx 与 public/coi-serviceworker.js）。
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
   },
   plugins: [
     jsxPlusPlugin(),

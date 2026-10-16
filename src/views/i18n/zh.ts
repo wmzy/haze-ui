@@ -78,6 +78,8 @@ export const zh: DeepPartial<SiteStrings> = {
     Button: '操作按钮：variant/size/square 选项，底层为原生 <button>。',
     CountUp:
       '数字滚动动画：rAF + 缓动插值逼近目标值，prefers-reduced-motion 时瞬时落位。',
+    Countdown:
+      '截止倒计时：对齐秒边界的计时链，onFinish 仅触发一次，自适应 d/h:mm:ss 格式。',
     Divider: '内容分隔线，可水平或垂直。',
     Ellipsis: '交互式文本截断：N 行钳制并检测溢出，可选提示与展开/收起。',
     Icon: '内联 SVG 图标封装，提供 sm/md/lg 令牌尺寸。',
@@ -95,9 +97,11 @@ export const zh: DeepPartial<SiteStrings> = {
     Grid: 'CSS Grid 布局原语。',
     Masonry: '瀑布流布局：JS 贪心分配，先按顺序入列、再入最短列以保持平衡。',
     Resizable:
-      '可拖拽分隔条的面板分组（ResizableGroup，支持水平/垂直）：面板级 px defaultSize/minSize/maxSize、可折叠面板与 onResizeCommit 持久化钩子；另以 SplitterGroup/SplitterPanel/SplitterHandle 别名导出。',
+      '可拖拽分隔条的面板分组（ResizableGroup，支持水平/垂直）：面板级 px defaultSize/minSize/maxSize、可折叠面板与 onResizeCommit 持久化钩子。',
     ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',
     Sidebar: '应用侧栏外壳，折叠状态可控（aside 与轨道宽度令牌）。',
+    Splitter:
+      'Splitter：多面板分栏布局（antd Splitter 语义）：分隔条隐式插入面板之间；sizes 以面板区百分比统一可控（ControlOrValue 数组），面板级 min/max 百分比约束，方向键 5% 步进与 Home/End，onSizesChange 实时回调；像素级面板请用 Resizable。',
     ActivityRail:
       'VSCode 式竖向图标轨道（nav）：44px 图标项带 label/badge/激活指示条，悬停提示，slot="end" 沉底。orientation="horizontal" 布局为横向条——rail 叠入侧栏顶部/底部时 Workbench 自动切换。',
     StatusBar:
@@ -122,6 +126,8 @@ export const zh: DeepPartial<SiteStrings> = {
     Fieldset: '语义化 fieldset+legend 表单分组；disabled 一次性禁用整组控件。',
     FileInput: '触发器元素，打开隐藏的原生文件输入。',
     Form: 'react-f0rm 字段包装：为受控内核补齐 label、错误与 aria 接线。',
+    ImageCrop:
+      '图片裁剪（配 Upload 用）：归一化裁剪区域可控，支持比例锁定与圆形头像遮罩，键盘可完整操作（方向键移动、Shift+方向键缩放）。',
     InlineEdit: '点击即原地编辑的文本值。',
     Input: '文本输入框：支持前后修饰，封装自 InputCore。',
     Mentions: '@提及输入：按触发字符从选项列表弹出建议。',
