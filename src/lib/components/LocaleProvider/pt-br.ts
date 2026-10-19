@@ -233,6 +233,12 @@ const ptBR: HazeStrings = {
   spinner: {
     loading: 'Carregando',
   },
+  splitter: {
+    collapseLead: 'Recolher o painel anterior',
+    expandLead: 'Expandir o painel anterior',
+    collapseTrail: 'Recolher o painel seguinte',
+    expandTrail: 'Expandir o painel seguinte',
+  },
   sources: {
     label: 'Fontes',
     expand: 'Mostrar trecho',

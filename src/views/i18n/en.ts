@@ -65,7 +65,7 @@ const COMPONENT_BLURBS = {
   Sidebar:
     'App sidebar shell with controllable collapsed state (aside + rail width tokens).',
   Splitter:
-    'Splitter: multi-pane split layout with implicit draggable dividers (AntD Splitter semantics); sizes as percentages of the pane area via a single ControlOrValue number[] prop, per-pane min/max percent clamps, keyboard arrows (5% steps) and Home/End, live onSizesChange; for px-sized panes see Resizable.',
+    'Splitter: multi-pane split layout with implicit draggable dividers (AntD Splitter semantics); sizes as percentages of the pane area via a single ControlOrValue number[] prop, per-pane min/max percent clamps, opt-in collapsible panes (divider collapse/expand triggers restore the pre-collapse split), keyboard arrows (5% steps) and Home/End, live onSizesChange; for px-sized panes see Resizable.',
   ActivityRail:
     'VSCode-style vertical icon rail (nav): 44px items with icon/label/badge and active indicator, tooltip labels, slot="end" bottom pinning. orientation="horizontal" lays it out as a strip — Workbench does this automatically when the rail is docked inside the sidebar column.',
   StatusBar:

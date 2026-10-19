@@ -232,6 +232,12 @@ const deDE: HazeStrings = {
   spinner: {
     loading: 'Lädt',
   },
+  splitter: {
+    collapseLead: 'Führenden Bereich einklappen',
+    expandLead: 'Führenden Bereich ausklappen',
+    collapseTrail: 'Nachfolgenden Bereich einklappen',
+    expandTrail: 'Nachfolgenden Bereich ausklappen',
+  },
   sources: {
     label: 'Quellen',
     expand: 'Auszug anzeigen',

@@ -38,7 +38,13 @@ function collectJs(dir: string, prefix = ''): string[] {
   });
 }
 
-const jsFiles = built ? collectJs(distDir) : [];
+// 构建从 public/ 原样复制的第三方独立资产（coi-serviceworker，文档站
+// playground 的 COI 引导）——不是库模块，无 React 边界可言。
+const vendoredAssets = new Set(['coi-serviceworker.js']);
+
+const jsFiles = built
+  ? collectJs(distDir).filter((rel) => !vendoredAssets.has(rel))
+  : [];
 
 // 'use client' 指令（vite banner 注入；rolldown 的 oxc codegen 会把单引号
 // 重印为双引号，两种引号对 Next.js / React Flight / SWC 完全等价）。

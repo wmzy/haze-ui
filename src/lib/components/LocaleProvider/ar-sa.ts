@@ -239,6 +239,12 @@ const arSA: HazeStrings = {
   spinner: {
     loading: 'جارٍ التحميل',
   },
+  splitter: {
+    collapseLead: 'طيّ اللوحة الأمامية',
+    expandLead: 'توسيع اللوحة الأمامية',
+    collapseTrail: 'طيّ اللوحة الخلفية',
+    expandTrail: 'توسيع اللوحة الخلفية',
+  },
   sources: {
     label: 'المصادر',
     expand: 'إظهار المقتطف',

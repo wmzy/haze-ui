@@ -3,6 +3,8 @@ import { expect, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useControl } from 'react-use-control';
 
+import LocaleProvider from '../LocaleProvider';
+
 import { Splitter, SplitterPane } from './index';
 
 function splitterEl(): HTMLElement {
@@ -23,11 +25,16 @@ function paneAt(index = 0): HTMLElement {
 }
 
 function dividerAt(index = 0): HTMLElement {
-  const dividers = Array.from(
-    document.querySelectorAll<HTMLElement>("[data-slot='divider']")
+  // The interactive surface is the separator handle inside the bar
+  // (role, keyboard and pointer handlers live there; the bar itself is
+  // a plain positioning wrapper shared with the collapse triggers).
+  const handles = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "[data-slot='divider-handle']"
+    )
   );
-  const el = dividers[index];
-  if (el === undefined) throw new Error(`divider ${index} not found`);
+  const el = handles[index];
+  if (el === undefined) throw new Error(`divider handle ${index} not found`);
   return el;
 }
 
@@ -412,6 +419,120 @@ describe('Splitter pointer resizing', () => {
   });
 });
 
+describe('Splitter collapsible panes', () => {
+  const collapseButtons = () =>
+    Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        "[data-slot='divider-collapse']"
+      )
+    );
+
+  const collapseButtonAt = (index = 0): HTMLButtonElement => {
+    const el = collapseButtons()[index];
+    if (el === undefined) throw new Error(`collapse button ${index} not found`);
+    return el;
+  };
+
+  it('grows triggers only on dividers touching a collapsible pane', () => {
+    render(
+      <Splitter>
+        <SplitterPane collapsible>A</SplitterPane>
+        <SplitterPane>B</SplitterPane>
+        <SplitterPane>C</SplitterPane>
+      </Splitter>
+    );
+    // Pane 0 is collapsible: divider 0 (panes 0|1) gets its trigger;
+    // divider 1 (panes 1|2) touches no collapsible pane.
+    expect(collapseButtons()).toHaveLength(1);
+    expect(collapseButtonAt()).toHaveAttribute('data-side', 'lead');
+    expect(collapseButtonAt()).toHaveAttribute(
+      'aria-label',
+      'Collapse leading pane'
+    );
+    expect(collapseButtonAt()).toHaveAttribute('aria-expanded', 'true');
+    expect(collapseButtonAt()).toHaveProperty('tagName', 'BUTTON');
+  });
+
+  it('collapses via the trigger: sizes, callback and aria all report it', () => {
+    const onSizesChange = vi.fn();
+    render(
+      <Splitter sizes={[60, 40]} onSizesChange={onSizesChange}>
+        <SplitterPane collapsible min={20}>
+          A
+        </SplitterPane>
+        <SplitterPane>B</SplitterPane>
+      </Splitter>
+    );
+    fireEvent.click(collapseButtonAt());
+    expect(growOf(0)).toBe('0');
+    expect(growOf(1)).toBe('100');
+    expect(onSizesChange).toHaveBeenLastCalledWith([0, 100]);
+    const trigger = collapseButtonAt();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(trigger).toHaveAttribute('aria-label', 'Expand leading pane');
+    // The collapsed pane suspends its min: the reachable range starts at 0.
+    expect(dividerAt()).toHaveAttribute('aria-valuemin', '0');
+    expect(dividerAt()).toHaveAttribute('aria-valuenow', '0');
+  });
+
+  it('expands back to the pre-collapse size', () => {
+    render(
+      <Splitter sizes={[60, 40]}>
+        <SplitterPane collapsible>A</SplitterPane>
+        <SplitterPane>B</SplitterPane>
+      </Splitter>
+    );
+    fireEvent.click(collapseButtonAt());
+    fireEvent.click(collapseButtonAt());
+    expect(growOf(0)).toBe('60');
+    expect(growOf(1)).toBe('40');
+    expect(collapseButtonAt()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('expands a drag-to-zero pane to half the pair (no stored size)', () => {
+    render(
+      <Splitter sizes={[50, 50]}>
+        <SplitterPane collapsible>A</SplitterPane>
+        <SplitterPane>B</SplitterPane>
+      </Splitter>
+    );
+    mockRects(500, 400);
+    drag(dividerAt(), 400, -10000); // pinned at the trail's zero floor
+    expect(growOf(0)).toBe('0');
+    fireEvent.click(collapseButtonAt());
+    expect(growOf(0)).toBe('50');
+    expect(growOf(1)).toBe('50');
+  });
+
+  it('drags a collapsed pane straight out of the collapsed state', () => {
+    render(
+      <Splitter sizes={[0, 100]}>
+        <SplitterPane collapsible>A</SplitterPane>
+        <SplitterPane>B</SplitterPane>
+      </Splitter>
+    );
+    mockRects(500, 400);
+    drag(dividerAt(), 400, 440); // +40px on a 1000px area = +4 points
+    expect(growOf(0)).toBe('4');
+    expect(growOf(1)).toBe('96');
+  });
+
+  it('serves trigger labels from the LocaleProvider pack', () => {
+    render(
+      <LocaleProvider locale="zh-CN">
+        <Splitter>
+          <SplitterPane collapsible>A</SplitterPane>
+          <SplitterPane>B</SplitterPane>
+        </Splitter>
+      </LocaleProvider>
+    );
+    expect(collapseButtonAt()).toHaveAttribute(
+      'aria-label',
+      '收起前侧窗格'
+    );
+  });
+});
+
 describe('Splitter controlled sizes (ControlOrValue)', () => {
   it('treats an external Control as the single source of truth', () => {
     function Harness() {
@@ -515,8 +636,22 @@ describe('Splitter accessibility', () => {
     const { axe } = await import('jest-axe');
     const { container } = render(
       <Splitter sizes={[30, 40, 30]}>
-        <SplitterPane>Left pane</SplitterPane>
-        <SplitterPane>Middle pane</SplitterPane>
+        <SplitterPane collapsible>Left pane</SplitterPane>
+        <SplitterPane collapsible>Middle pane</SplitterPane>
+        <SplitterPane>Right pane</SplitterPane>
+      </Splitter>
+    );
+    const results = await axe(container, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+
+  it('has no axe violations with a collapsed pane', async () => {
+    const { axe } = await import('jest-axe');
+    const { container } = render(
+      <Splitter sizes={[0, 100]}>
+        <SplitterPane collapsible>Left pane</SplitterPane>
         <SplitterPane>Right pane</SplitterPane>
       </Splitter>
     );

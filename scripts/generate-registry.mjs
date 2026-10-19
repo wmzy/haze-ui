@@ -524,7 +524,7 @@ const descriptions = {
   signature:
     'Canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.',
   splitter:
-    'Multi-pane split layout with implicit draggable dividers (AntD Splitter semantics): `sizes` in percent of the pane area (`ControlOrValue` array), per-pane `min`/`max` clamps, keyboard arrows and pointer drags.',
+    'Multi-pane split layout with implicit draggable dividers (AntD Splitter semantics): `sizes` in percent of the pane area (`ControlOrValue` array), per-pane `min`/`max` clamps, opt-in `collapsible` panes with divider collapse/expand triggers, keyboard arrows and pointer drags.',
   'image-crop':
     'Interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.',
 };

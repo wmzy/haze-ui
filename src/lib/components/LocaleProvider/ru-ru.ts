@@ -232,6 +232,12 @@ const ruRU: HazeStrings = {
   spinner: {
     loading: 'Загрузка',
   },
+  splitter: {
+    collapseLead: 'Свернуть переднюю панель',
+    expandLead: 'Развернуть переднюю панель',
+    collapseTrail: 'Свернуть заднюю панель',
+    expandTrail: 'Развернуть заднюю панель',
+  },
   sources: {
     label: 'Источники',
     expand: 'Показать отрывок',

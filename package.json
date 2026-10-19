@@ -176,7 +176,7 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "5.75 KB"
+      "limit": "5.85 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
@@ -205,11 +205,11 @@
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "26.25 KB"
+      "limit": "27 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "35 KB",
+      "limit": "36 KB",
       "gzip": true
     },
     {
@@ -239,7 +239,7 @@
     {
       "name": "CSS family ratchet: splitter",
       "path": "dist/css/splitter.css",
-      "limit": "0.7 KB",
+      "limit": "1 KB",
       "gzip": true
     },
     {

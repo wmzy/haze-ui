@@ -101,7 +101,7 @@ export const zh: DeepPartial<SiteStrings> = {
     ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',
     Sidebar: '应用侧栏外壳，折叠状态可控（aside 与轨道宽度令牌）。',
     Splitter:
-      'Splitter：多面板分栏布局（antd Splitter 语义）：分隔条隐式插入面板之间；sizes 以面板区百分比统一可控（ControlOrValue 数组），面板级 min/max 百分比约束，方向键 5% 步进与 Home/End，onSizesChange 实时回调；像素级面板请用 Resizable。',
+      'Splitter：多面板分栏布局（antd Splitter 语义）：分隔条隐式插入面板之间；sizes 以面板区百分比统一可控（ControlOrValue 数组），面板级 min/max 百分比约束，可选 collapsible 折叠面板（分隔条上的折叠/展开触发器，展开恢复折叠前占比），方向键 5% 步进与 Home/End，onSizesChange 实时回调；像素级面板请用 Resizable。',
     ActivityRail:
       'VSCode 式竖向图标轨道（nav）：44px 图标项带 label/badge/激活指示条，悬停提示，slot="end" 沉底。orientation="horizontal" 布局为横向条——rail 叠入侧栏顶部/底部时 Workbench 自动切换。',
     StatusBar:

@@ -232,6 +232,12 @@ const frFR: HazeStrings = {
   spinner: {
     loading: 'Chargement',
   },
+  splitter: {
+    collapseLead: 'Réduire le panneau précédent',
+    expandLead: 'Développer le panneau précédent',
+    collapseTrail: 'Réduire le panneau suivant',
+    expandTrail: 'Développer le panneau suivant',
+  },
   sources: {
     label: 'Sources',
     expand: 'Afficher l’extrait',

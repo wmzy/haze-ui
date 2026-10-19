@@ -230,6 +230,12 @@ const zhCN: HazeStrings = {
   spinner: {
     loading: '加载中',
   },
+  splitter: {
+    collapseLead: '收起前侧窗格',
+    expandLead: '展开前侧窗格',
+    collapseTrail: '收起后侧窗格',
+    expandTrail: '展开后侧窗格',
+  },
   sources: {
     label: '引用来源',
     expand: '展开摘录',

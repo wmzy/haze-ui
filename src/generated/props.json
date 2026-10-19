@@ -6679,6 +6679,11 @@
             "required": false
           },
           {
+            "name": "collapsible",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "children",
             "type": "ReactNode",
             "required": false

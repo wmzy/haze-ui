@@ -230,6 +230,12 @@ const jaJP: HazeStrings = {
   spinner: {
     loading: '読み込み中',
   },
+  splitter: {
+    collapseLead: '前のペインを折りたたむ',
+    expandLead: '前のペインを展開する',
+    collapseTrail: '後ろのペインを折りたたむ',
+    expandTrail: '後ろのペインを展開する',
+  },
   sources: {
     label: '引用元',
     expand: '抜粋を表示',

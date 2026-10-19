@@ -85,7 +85,7 @@ const DESCRIPTIONS = {
   Sidebar:
     'app sidebar shell with controllable collapsed state (`aside` + rail width tokens).',
   Splitter:
-    'multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.',
+    'multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, opt-in per-pane `collapsible` (divider collapse/expand triggers with pre-collapse restore, localized labels), keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.',
   ActivityRail:
     'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
   StatusBar:

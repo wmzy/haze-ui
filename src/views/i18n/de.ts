@@ -113,7 +113,7 @@ export const de: DeepPartial<SiteStrings> = {
     Sidebar:
       'App-Sidebar-Hülle mit steuerbarem Einklappzustand (aside + Rail-Breiten-Tokens).',
     Splitter:
-      'Splitter: mehrflächiges Split-Layout (AntD-Splitter-Semantik) mit impliziten ziehbaren Trennern; sizes als Prozent des Paneel-Bereichs über eine einzige ControlOrValue-Array-Prop, min/max-Prozent-Begrenzung pro Paneel, Pfeiltasten (5%-Schritte) und Home/End, live onSizesChange; für px-große Paneels siehe Resizable.',
+      'Splitter: mehrflächiges Split-Layout (AntD-Splitter-Semantik) mit impliziten ziehbaren Trennern; sizes als Prozent des Paneel-Bereichs über eine einzige ControlOrValue-Array-Prop, min/max-Prozent-Begrenzung pro Paneel, optionale einklappbare Paneels (Ein-/Ausklapp-Trigger am Trenner stellen die vorherige Aufteilung wieder her), Pfeiltasten (5%-Schritte) und Home/End, live onSizesChange; für px-große Paneels siehe Resizable.',
     ActivityRail:
       'VSCode-artige vertikale Icon-Leiste (nav): 44px-Einträge mit icon/label/badge und Aktiv-Indikator, Tooltip-Labels, slot="end" pinnt unten. orientation="horizontal" legt sie als Streifen aus — Workbench erledigt das automatisch, wenn die Rail in die Sidebar-Spalte gedockt wird.',
     StatusBar:

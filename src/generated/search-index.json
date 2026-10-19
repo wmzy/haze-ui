@@ -2170,6 +2170,12 @@
   },
   {
     "type": "section",
+    "label": "Collapsible panes",
+    "sublabel": "Splitter",
+    "route": "/components/splitter"
+  },
+  {
+    "type": "section",
     "label": "Splitter Props",
     "sublabel": "Splitter",
     "route": "/components/splitter"

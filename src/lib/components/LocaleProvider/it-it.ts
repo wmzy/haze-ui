@@ -232,6 +232,12 @@ const itIT: HazeStrings = {
   spinner: {
     loading: 'Caricamento',
   },
+  splitter: {
+    collapseLead: 'Comprimi il pannello precedente',
+    expandLead: 'Espandi il pannello precedente',
+    collapseTrail: 'Comprimi il pannello successivo',
+    expandTrail: 'Espandi il pannello successivo',
+  },
   sources: {
     label: 'Fonti',
     expand: 'Mostra stralcio',

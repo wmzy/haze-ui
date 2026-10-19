@@ -232,6 +232,12 @@ const esES: HazeStrings = {
   spinner: {
     loading: 'Cargando',
   },
+  splitter: {
+    collapseLead: 'Contraer el panel anterior',
+    expandLead: 'Expandir el panel anterior',
+    collapseTrail: 'Contraer el panel siguiente',
+    expandTrail: 'Expandir el panel siguiente',
+  },
   sources: {
     label: 'Fuentes',
     expand: 'Mostrar extracto',

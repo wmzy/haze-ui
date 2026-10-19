@@ -315,9 +315,38 @@ test.describe('forced-colors repairs', () => {
 
   test('keyboard focus renders a real outline', async ({ page }) => {
     await gotoAt(page, 'active');
-    // The ghost button is the page's first focusable element.
-    await page.keyboard.press('Tab');
-    const outline = await styleOf(page.locator('#fc-ghost-button'), [
+    // Under full-suite parallel load the fixture may not be interactive
+    // yet when a lone Tab lands (focus stays on body, and the outline
+    // sample then polls a terminal "none" for 5s — the flake this poll
+    // shape replaced). Instead the focus acquisition itself is the
+    // polled contract: each tick blurs whatever holds focus and re-issues
+    // the keyboard Tab until it lands on the ghost button — keyboard
+    // modality is what :focus-visible keys on, so the outline follows.
+    const ghost = page.locator('#fc-ghost-button');
+    await expect
+      .poll(
+        async () => {
+          await page.evaluate(() => {
+            const active = document.activeElement;
+            if (
+              active instanceof HTMLElement &&
+              active.id !== 'fc-ghost-button'
+            ) {
+              active.blur();
+            }
+          });
+          const focused = await page.evaluate(
+            () => document.activeElement?.id ?? ''
+          );
+          if (focused !== 'fc-ghost-button') {
+            await page.keyboard.press('Tab');
+          }
+          return page.evaluate(() => document.activeElement?.id ?? '');
+        },
+        { timeout: 10_000 }
+      )
+      .toBe('fc-ghost-button');
+    const outline = await styleOf(ghost, [
       'outline-style',
       'outline-width',
       'outline-color',
@@ -326,8 +355,14 @@ test.describe('forced-colors repairs', () => {
     expect(outline['outline-width']).toBe('2px');
     expect(alphaOf(outline['outline-color']!)).toBeGreaterThan(0);
 
+    // The ghost button holds keyboard modality, so the programmatic
+    // focus below still matches :focus-visible (spec heuristic).
     await page.locator('#fc-text-input').focus();
-    const inputOutline = await styleOf(page.locator('#fc-text-input'), [
+    const input = page.locator('#fc-text-input');
+    await expect
+      .poll(async () => (await styleOf(input, ['outline-style']))['outline-style'])
+      .toBe('solid');
+    const inputOutline = await styleOf(input, [
       'outline-style',
       'outline-width',
     ]);

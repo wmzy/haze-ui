@@ -114,7 +114,7 @@ export const fr: DeepPartial<SiteStrings> = {
     Sidebar:
       'Coque de barre latérale d’application avec état replié contrôlable (aside + tokens de largeur de rail).',
     Splitter:
-      'Splitter : disposition multi-panneaux avec séparateurs déplaçables implicites (sémantique AntD Splitter) ; sizes en pourcentage de la zone des panneaux via une unique prop ControlOrValue number[], contraintes min/max par panneau, flèches (pas de 5 %) et Home/End, onSizesChange en direct ; pour des panneaux en px, voir Resizable.',
+      'Splitter : disposition multi-panneaux avec séparateurs déplaçables implicites (sémantique AntD Splitter) ; sizes en pourcentage de la zone des panneaux via une unique prop ControlOrValue number[], contraintes min/max par panneau, panneaux repliables en option (déclencheurs replier/déplier sur le séparateur restaurant la répartition initiale), flèches (pas de 5 %) et Home/End, onSizesChange en direct ; pour des panneaux en px, voir Resizable.',
     ActivityRail:
       'Rail d’icônes vertical façon VSCode (nav) : entrées de 44px avec icon/label/badge et indicateur actif, libellés en info-bulle, slot="end" pour épingler en bas. orientation="horizontal" le dispose en bandeau — Workbench le fait automatiquement quand le rail s’ancre dans la colonne latérale.',
     StatusBar:

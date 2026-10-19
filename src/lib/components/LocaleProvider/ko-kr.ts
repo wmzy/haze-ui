@@ -232,6 +232,12 @@ const koKR: HazeStrings = {
   spinner: {
     loading: '불러오는 중',
   },
+  splitter: {
+    collapseLead: '앞쪽 창 접기',
+    expandLead: '앞쪽 창 펼치기',
+    collapseTrail: '뒤쪽 창 접기',
+    expandTrail: '뒤쪽 창 펼치기',
+  },
   sources: {
     label: '출처',
     expand: '발췌 보기',

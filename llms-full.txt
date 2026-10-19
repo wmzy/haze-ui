@@ -2632,6 +2632,7 @@ import { Splitter, SplitterPane } from 'haze-ui';
 | --- | --- | --- | --- |
 | `min` | `number` | — |  |
 | `max` | `number` | — |  |
+| `collapsible` | `boolean` | — |  |
 | `children` | `ReactNode` | — |  |
 | `className` | `string` | — |  |
 

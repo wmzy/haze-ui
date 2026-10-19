@@ -33,6 +33,7 @@ export default function SplitterDemo() {
   const [verticalSizes, setVerticalSizes] = useControl<number[]>(undefined, [
     60, 40,
   ]);
+  const [, , collapsibleSizes] = useControl<number[]>(undefined, [30, 70]);
 
   return (
     <>
@@ -108,6 +109,33 @@ export default function SplitterDemo() {
       </div>
 
       <div className={section}>
+        <h2>Collapsible panes</h2>
+        <p className={row}>
+          <code>collapsible</code> opts a pane into divider triggers:
+          hover a divider and the chevrons collapse the adjacent pane
+          (the partner absorbs its share); the same trigger expands it
+          back to its pre-collapse size. Dragging a collapsed divider
+          also grows the pane straight out of the collapsed state.
+        </p>
+        <div className={row} style={frame}>
+          <Splitter sizes={collapsibleSizes}>
+            <SplitterPane collapsible min={15}>
+              <div style={pane}>Sidebar — collapsible</div>
+            </SplitterPane>
+            <SplitterPane min={20}>
+              <div style={pane}>Content</div>
+            </SplitterPane>
+          </Splitter>
+        </div>
+        <pre className={codeBlock}>
+          {`<Splitter sizes={control}>
+  <SplitterPane collapsible min={15}>{sidebar}</SplitterPane>
+  <SplitterPane min={20}>{content}</SplitterPane>
+</Splitter>`}
+        </pre>
+      </div>
+
+      <div className={section}>
         <A11yNote>
           <strong>Keyboard &amp; screen readers</strong>
           <ul>
@@ -125,6 +153,12 @@ export default function SplitterDemo() {
             <li>
               The divider's hit strip is 24px (44px for coarse pointers) —
               WCAG 2.5.8 / 2.5.5.
+            </li>
+            <li>
+              Collapsible panes add real <code>button</code> triggers
+              beside the separator (a focusable separator is
+              children-presentational, so they must be siblings) with
+              localized labels and <code>aria-expanded</code>.
             </li>
           </ul>
         </A11yNote>

@@ -229,6 +229,12 @@ const defaultStrings = {
   spinner: {
     loading: 'Loading',
   },
+  splitter: {
+    collapseLead: 'Collapse leading pane',
+    expandLead: 'Expand leading pane',
+    collapseTrail: 'Collapse trailing pane',
+    expandTrail: 'Expand trailing pane',
+  },
   sources: {
     label: 'Sources',
     expand: 'Show excerpt',

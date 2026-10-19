@@ -109,7 +109,7 @@ export const ja: DeepPartial<SiteStrings> = {
     Sidebar:
       '折りたたみ状態を制御可能なアプリサイドバーのシェル（aside とレール幅トークン）。',
     Splitter:
-      'Splitter：マルチペイン分割レイアウト（antd Splitter 準拠）：ペイン間に暗黙のドラッグ可能な仕切りを挿入。sizes はペイン領域の割合を ControlOrValue 配列で一元制御、ペインごとの min/max パーセント制約、矢印キー 5% ステップと Home/End、onSizesChange のライブコールバック。px 単位のペインには Resizable を使用。',
+      'Splitter：マルチペイン分割レイアウト（antd Splitter 準拠）：ペイン間に暗黙のドラッグ可能な仕切りを挿入。sizes はペイン領域の割合を ControlOrValue 配列で一元制御、ペインごとの min/max パーセント制約、任意の collapsible ペイン（仕切りの折りたたみ/展開トリガーで折りたたみ前の比率を復元）、矢印キー 5% ステップと Home/End、onSizesChange のライブコールバック。px 単位のペインには Resizable を使用。',
     ActivityRail:
       'VSCode 風の縦型アイコンレール（nav）：44px 項目に icon/label/badge とアクティブインジケーター、ツールチップラベル、slot="end" で下部に固定。orientation="horizontal" で横帯として配置——レールをサイドバー列にドッキングすると Workbench が自動的に切り替えます。',
     StatusBar:
