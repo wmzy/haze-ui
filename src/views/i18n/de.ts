@@ -96,6 +96,21 @@ export const de: DeepPartial<SiteStrings> = {
       description:
         'Ein Tree wählt das Team, eine DataTable mit Toolbar und Dichte listet die Pipelines; Dialog + zod-FormItem-Bearbeitung, ConfirmDialog-Löschen und Toast-Feedback schließen die Schleife.',
     },
+    aiWorkbench: {
+      title: 'KI-Review-Workbench',
+      description:
+        'Die Workbench-Shell als zweispaltiger KI-Arbeitsplatz — Activity-Rail und ConversationList-Sidebar, in der Mitte eine gescriptete Review-Runde aus ThinkingIndicator → ToolCallCard → StreamingText, rechts ein angedocktes Sources-Zitierpanel, als Composer PromptInput + ModelPicker.',
+    },
+    dataTable: {
+      title: 'Datentabellen-Konsole',
+      description:
+        'Die TanStack-basierte DataTable als ganze Fleet-Seite — sortierbare und größenveränderliche Spalten, zeilenweise Spaltenfilter, Paginierung, Spaltensichtbarkeit, Dichte, CSV-Export und Checkbox-Mehrfachauswahl mit Aktionsleiste.',
+    },
+    kanban: {
+      title: 'Sprint-Kanban-Board',
+      description:
+        'Vier Spalten mit Issue-Karten samt Prioritäts-Badges, Labels, Assignee-Avataren und Fortschrittsbalken. Karten wandern über das ⋯-Menü — haze-ui liefert nur Single-Container-Sorting, kein spaltenübergreifendes Ziehen; das Board ist bewusst statisch.',
+    },
   },
   componentGroups: {
     General: 'Allgemein',
@@ -164,6 +179,8 @@ export const de: DeepPartial<SiteStrings> = {
     ColorPicker: 'Farbselektor mit steuerbarem Wert und vorgefertigten Swatches.',
     Combobox:
       'Autovervollständigungs-Eingabe mit filterbarer Optionsliste; onSearch überlässt das Filtern dem Host.',
+    DateField:
+      'Segmentierte Datumseingabe (Jahr/Monat/Tag) zum direkten Eintippen — ohne Kalender.',
     Datepicker:
       'Datumseingabe mit Popup-Kalender (YYYY-MM-DD-Wert); showTime ergänzt ein Uhrzeitfeld.',
     DateTimePicker:
@@ -196,6 +213,8 @@ export const de: DeepPartial<SiteStrings> = {
       'Token-Eingabe mit Enter-zum-Bestätigen über TagInputCore; sortable ermöglicht Drag-Sortierung (neue Reihenfolge via onChange).',
     Textarea: 'Mehrzeilige Texteingabe.',
     TimePicker: 'Uhrzeiteingabe mit steuerbarem Wert.',
+    TimeField:
+      'Segmentierte Zeiteingabe (Stunde/Minute/Sekunde, optional 12-Stunden-AM/PM).',
     Toggle:
       'Zustands-Drucktaste (aria-pressed) mit Größen und Quadrat-Icon-Modus; die ToolbarToggle-Variante reitet auf dem Roving Focus der Toolbar.',
     Transfer:
@@ -286,6 +305,8 @@ export const de: DeepPartial<SiteStrings> = {
     Banner:
       'Awayklickbare Top-Banner mit info/success/warning/danger-Varianten.',
     Empty: 'Leerzustands-Platzhalter mit Bild und Beschreibung.',
+    ErrorBoundary:
+      'Render-Fehlergrenze: fängt Exceptions des Teilbaums ab, Fallback (Node oder Render-Prop) mit Reset-Callback; resetKeys setzt bei flacher Änderung zurück.',
     Result:
       'Ergebnis-Feedbackseite: Status-Illustration (success/error/info/warning/403/404/500), title, subTitle und ein extra-Aktionsbereich; icon ersetzt die Standard-Illustration.',
     Skeleton: 'Schimmernder Lade-Platzhalter (text/circular/rectangular).',
@@ -388,6 +409,18 @@ export const de: DeepPartial<SiteStrings> = {
       accessible: {
         title: 'Barrierefrei',
         desc: 'Auf nativen HTML-Elementen wie <dialog> und <details> aufgebaut — a11y inklusive.',
+      },
+      nativeOverlays: {
+        title: 'Native Popover-Overlays',
+        desc: 'Floating-Layer nutzen die native popover-API und CSS anchor positioning — vom Browser-Engine positioniert, null JS-Mathematik.',
+      },
+      screenReaderCi: {
+        title: 'VoiceOver-CI-Gate',
+        desc: 'Echte VoiceOver-Ausgabe wird in der macOS-CI assertion-geprüft — ein echtes Screen-Reader-Gate jenseits von axe und e2e.',
+      },
+      aiDocs: {
+        title: 'KI-bereite Docs',
+        desc: 'Eingebauter MCP-Server (npx haze-ui-mcp) plus llms.txt — Agents lesen dieselbe Doku wie du.',
       },
       treeShakeable: {
         title: 'Tree-Shakeable',
@@ -661,6 +694,46 @@ export const de: DeepPartial<SiteStrings> = {
         ' verwenden. Eine bewusste Ausnahme von „alles landet im Server-HTML“: ',
         { code: 'StreamingText' },
         ' rendert auf dem Server absichtlich ein leeres Präfix plus Cursor und streamt den Text erst auf dem Client ein.',
+      ],
+    },
+    testing: {
+      title: 'Testen mit Jest / Vitest',
+      jestLead: [
+        'haze-ui ist ESM-only (',
+        { code: "type: 'module'" },
+        ') und liefert seine Styles über CSS-Subpaths, daher braucht ein Jest-Konsument drei Anpassungen: eine jsdom-Umgebung über ',
+        { code: 'jest-environment-jsdom' },
+        ' (seit Jest 28 ausgekoppelt), ',
+        { code: 'transformIgnorePatterns' },
+        ', die Babel haze-ui und seine ESM-only-Runtime-Abhängigkeiten transpilieren lassen, und ein ',
+        { code: '\\.css$' },
+        '-',
+        { code: 'moduleNameMapper' },
+        '-Stub, damit Style-Imports auf ein leeres Modul auflösen. Da Vite-Scaffolds ',
+        { code: '"type": "module"' },
+        ' mitbringen, nutzen die Konfigurationsdateien unten die Erweiterung ',
+        { code: '.cjs' },
+        ':',
+      ],
+      allowNote: [
+        'Die Allow-Liste ist das verifizierte Minimum: haze-ui selbst, ',
+        { code: 'react-use-control' },
+        ', und der ',
+        { code: '@tanstack' },
+        '-Scope (react-table zieht table-core und store, alle ESM). Alles andere im Dependency-Graph — react-f0rm, @dnd-kit, recharts, qrcode — liefert CommonJS und lädt ohne Transformation. Der Regex deckt beide Layouts ab: pnpm legt Pakete unter ',
+        { code: '.pnpm/<name>@<ver>/node_modules/<name>/' },
+        ' ab, mit Scope-Slashes als ',
+        { code: '+' },
+        ' kodiert, während npm und yarn ',
+        { code: 'node_modules/<name>/' },
+        ' verwenden. Wirf den CSS-Mapper weg und ',
+        { code: "import 'haze-ui/styles.css'" },
+        ' scheitert mit einem SyntaxError — das Stylesheet-Import oben testet genau diesen Stub.',
+      ],
+      vitestPara: [
+        'Vitest braucht nichts davon: Es konsumiert ESM nativ und lässt CSS-Processing standardmäßig aus (',
+        { code: 'css: false' },
+        '), einfache Imports funktionieren also direkt. Diese Dokumentationsseite testet haze-ui-Komponenten unter Vitest + jsdom ohne jegliche Transform-Konfiguration.',
       ],
     },
     typescript: {

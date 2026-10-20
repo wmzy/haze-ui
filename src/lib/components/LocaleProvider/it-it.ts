@@ -140,6 +140,10 @@ const itIT: HazeStrings = {
     expand: 'Mostra tutto',
     collapse: 'Mostra meno',
   },
+  errorBoundary: {
+    title: 'Si è verificato un errore',
+    reset: 'Riprova',
+  },
   fileInput: {
     label: 'Scegli file',
   },

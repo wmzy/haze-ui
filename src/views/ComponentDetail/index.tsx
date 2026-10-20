@@ -121,6 +121,7 @@ import DataTableDemo from './demos/DataTableDemo';
 import CarouselDemo from './demos/CarouselDemo';
 
 import DatepickerDemo from './demos/DatepickerDemo';
+import DateFieldDemo from './demos/DateFieldDemo';
 
 import TreeDemo from './demos/TreeDemo';
 
@@ -200,6 +201,7 @@ import ChipDemo from './demos/ChipDemo';
 import ScrollAreaDemo from './demos/ScrollAreaDemo';
 
 import TimePickerDemo from './demos/TimePickerDemo';
+import TimeFieldDemo from './demos/TimeFieldDemo';
 
 import DateRangePickerDemo from './demos/DateRangePickerDemo';
 
@@ -214,6 +216,8 @@ import MentionsDemo from './demos/MentionsDemo';
 import PromptInputDemo from './demos/PromptInputDemo';
 
 import AsyncSectionDemo from './demos/AsyncSectionDemo';
+
+import ErrorBoundaryDemo from './demos/ErrorBoundaryDemo';
 
 import InlineEditDemo from './demos/InlineEditDemo';
 
@@ -307,6 +311,7 @@ const demos: Record<string, () => ReactNode> = {
   'data-table': DataTableDemo,
   carousel: CarouselDemo,
   datepicker: DatepickerDemo,
+  'date-field': DateFieldDemo,
   tree: TreeDemo,
   divider: DividerDemo,
   spinner: SpinnerDemo,
@@ -332,6 +337,7 @@ const demos: Record<string, () => ReactNode> = {
   'diff-viewer': DiffViewerDemo,
   'log-viewer': LogViewerDemo,
   'async-section': AsyncSectionDemo,
+  'error-boundary': ErrorBoundaryDemo,
   command: CommandDemo,
   resizable: ResizableDemo,
   splitter: SplitterDemo,
@@ -351,6 +357,7 @@ const demos: Record<string, () => ReactNode> = {
   chip: ChipDemo,
   'scroll-area': ScrollAreaDemo,
   'time-picker': TimePickerDemo,
+  'time-field': TimeFieldDemo,
   'date-range-picker': DateRangePickerDemo,
   'otp-input': OTPInputDemo,
   'password-input': PasswordInputDemo,

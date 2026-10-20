@@ -1,0 +1,683 @@
+import type { ReactNode } from 'react';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useControl } from 'react-use-control';
+import {
+  MessagesSquare,
+  GitPullRequest,
+  FileSearch,
+  Settings,
+  PanelLeft,
+} from 'lucide-react';
+
+import {
+  ActivityRail,
+  ActivityRailItem,
+  Avatar,
+  Badge,
+  Button,
+  ChatContainer,
+  ChatMessage,
+  ConversationItem,
+  ConversationList,
+  Empty,
+  ModelPicker,
+  PromptInput,
+  Sources,
+  StatusBar,
+  StatusItem,
+  StreamingText,
+  TabBar,
+  TabBarItem,
+  ThinkingIndicator,
+  ToolCallCard,
+  Workbench,
+} from '@/lib';
+
+/*
+ * AI workbench block: the Workbench shell assembled as a double-column AI
+ * coding-review desk — activity rail + ConversationList sidebar on the left,
+ * the chat column (ChatContainer + scripted ThinkingIndicator → ToolCallCard
+ * → StreamingText turn) in the middle, a docked Sources citations panel on
+ * the right, PromptInput + ModelPicker as the composer and a StatusBar
+ * under everything. Same no-network script idea as the chat block, but the
+ * layout is the point here: resizable columns, collapsible sidebar, mobile
+ * overlays — all Workbench features, not local CSS.
+ */
+
+type Phase = 'idle' | 'thinking' | 'tool' | 'answering';
+
+type Entry =
+  | { id: number; kind: 'user'; text: string }
+  | { id: number; kind: 'thinking' }
+  | { id: number; kind: 'thought'; seconds: number }
+  | { id: number; kind: 'tool'; status: 'running' | 'done' }
+  | { id: number; kind: 'answer'; text: string; phase: 'streaming' | 'done' };
+
+type Conversation = { id: string; title: string; subtitle: string; time: string };
+
+type ToolScript = { thoughtSeconds: number; runMs: number };
+
+type TurnScript = { thinkMs: number; tool?: ToolScript; answer: string };
+
+type Model = {
+  value: string;
+  label: string;
+  contextLength: string;
+  /** Characters per StreamingText tick — the model card changes pacing. */
+  cps: number;
+};
+
+const AGENT_NAME = 'Nimbus Review Copilot';
+const USER_NAME = 'Dev';
+
+const MODELS: Model[] = [
+  { value: 'nimbus-4o', label: 'Nimbus 4o', contextLength: '128k', cps: 14 },
+  { value: 'nimbus-4o-mini', label: 'Nimbus 4o mini', contextLength: '32k', cps: 26 },
+  { value: 'nimbus-reasoner', label: 'Nimbus reasoner', contextLength: '200k', cps: 9 },
+];
+
+const REVIEWERS = ['Ana Petrova', 'Ben Okafor', 'Chen Wei', 'Dana Silva'];
+
+const TOUR_QUESTION = 'Review PR #482 — is the new retry loop safe to ship?';
+
+const TOOL_INPUT = `{ "repo": "nimbus-gateway",
+  "pull": 482,
+  "focus": "retry.go" }`;
+
+const TOOL_OUTPUT = `retry.go        +38 −4
+backoff cap     2s → 8s
+payload policy  unchanged (verbatim)
+tests           11 passed, 2 skipped`;
+
+const TOUR_ANSWER =
+  'Mostly safe, with one sharp edge. The doubled backoff cap is fine and the new jitter prevents thundering herds, but the webhook path still retries the 1.2 MB payload verbatim — exactly the failure mode from the week-42 incident. Key retries on the Idempotency-Key header and fall back to the batched format after two failures; that mirrors the fix that recovered Ferrite Labs. The two skipped tests are the webhook ones, so add coverage there before merge.';
+
+const FOLLOW_UP_ANSWER =
+  'Checked the CI history for this branch: the skipped webhook tests have been skipped for three weeks (imported flag), not flaked. I can draft the idempotency patch on a side branch and link it to the PR — want the diff posted here or as review comments?';
+
+const SOURCE_ITEMS = [
+  {
+    id: 'retry-go',
+    title: 'gateway/retry.go @ v2.3',
+    url: '#ai-workbench',
+    snippet: 'backoff := base * math.Pow(2, float64(attempt)); if backoff > cap { backoff = cap }',
+  },
+  {
+    id: 'postmortem',
+    title: 'postmortem/webhook-410.md',
+    url: '#ai-workbench',
+    snippet: 'The 1.2 MB body is rejected by the gateway before ingest; every retry re-sends it verbatim.',
+  },
+  {
+    id: 'runbook',
+    title: 'runbook/retries.md',
+    url: '#ai-workbench',
+    snippet: 'Retries must be idempotent — key them on Idempotency-Key, never on attempt count.',
+  },
+];
+
+const SEED_CONVERSATIONS: Conversation[] = [
+  { id: 'retry-loop', title: 'PR #482 · retry loop safety', subtitle: 'nimbus-gateway', time: '2m' },
+  { id: 'flaky-e2e', title: 'Flaky e2e: checkout spec', subtitle: 'nimbus-web', time: '1h' },
+  { id: 'migration-notes', title: 'Draft v2.3 migration notes', subtitle: 'docs', time: '3h' },
+  { id: 'secrets', title: 'Rotate leaked CI secrets', subtitle: 'infra', time: 'yesterday' },
+];
+
+const SEED_ENTRIES: Record<string, Entry[]> = {
+  'retry-loop': [{ id: 1, kind: 'user', text: TOUR_QUESTION }],
+  'flaky-e2e': [
+    { id: 1, kind: 'user', text: 'The checkout spec failed twice on main last night — same assertion?' },
+    {
+      id: 2,
+      kind: 'answer',
+      phase: 'done',
+      text: 'Different assertions, same cause: both runs raced the stubbed clock at midnight UTC. Freeze the clock fixture and the pair of failures collapses into one deterministic case.',
+    },
+  ],
+};
+
+const TOUR_SCRIPT: TurnScript = {
+  thinkMs: 900,
+  tool: { thoughtSeconds: 4, runMs: 1100 },
+  answer: TOUR_ANSWER,
+};
+
+const FOLLOW_UP_SCRIPT: TurnScript = {
+  thinkMs: 700,
+  tool: { thoughtSeconds: 3, runMs: 900 },
+  answer: FOLLOW_UP_ANSWER,
+};
+
+/** Deterministic fake clock (chat-block pattern): stable timestamps, no
+ * Date in the render. */
+function stamp(id: number): string {
+  return `14:${String(5 + (id % 50)).padStart(2, '0')}`;
+}
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+/** Async reviewer-mention source for PromptInput's @ trigger — stale
+ * responses are dropped by the component itself. */
+function suggestReviewer(trigger: string, query: string): Promise<string[]> {
+  return sleep(200).then(() => {
+    if (trigger !== '@') return [];
+    const q = query.toLowerCase();
+    return REVIEWERS.filter((name) => name.toLowerCase().startsWith(q));
+  });
+}
+
+function Mono({ children }: { children: ReactNode }) {
+  return (
+    <code
+      style={{
+        fontFamily: 'var(--haze-font-mono)',
+        fontSize: 'var(--haze-text-xs)',
+        whiteSpace: 'pre',
+        color: 'var(--haze-color-text-secondary)',
+      }}
+    >
+      {children}
+    </code>
+  );
+}
+
+export default function AiWorkbenchBlock() {
+  const [conversations, setConversations] = useState(SEED_CONVERSATIONS);
+  const [entries, setEntries] = useState(SEED_ENTRIES);
+  const [phases, setPhases] = useState<Record<string, Phase>>({});
+  // User-facing state, one Control each: active conversation, picked model,
+  // composer draft/tags, workbench chrome.
+  const [activeId, setActiveId] = useControl(undefined, 'retry-loop');
+  const [modelValue, , modelCtrl] = useControl(undefined, MODELS[0]!.value);
+  const [draft, , draftCtrl] = useControl(undefined, '');
+  const [, setTags, tagsCtrl] = useControl(undefined, ['repo: nimbus-gateway', 'PR #482']);
+  const [sidebarCollapsed, setSidebarCollapsed, sidebarCtrl] = useControl(undefined, false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useControl(undefined, false);
+
+  const model = MODELS.find((m) => m.value === modelValue) ?? MODELS[0]!;
+
+  const runRef = useRef(0);
+  const idRef = useRef(100);
+  const nextId = () => (idRef.current += 1);
+
+  // Invalidation guard (chat-block pattern): unmount / stop / new run bumps
+  // the counter so cancelled sleeps never mutate state.
+  useEffect(() => () => {
+    runRef.current += 1;
+  }, []);
+
+  const append = useCallback((conv: string, entry: Entry) => {
+    setEntries((prev) => ({ ...prev, [conv]: [...(prev[conv] ?? []), entry] }));
+  }, []);
+
+  const patch = useCallback(
+    (conv: string, id: number, updater: (entry: Entry) => Entry) => {
+      setEntries((prev) => ({
+        ...prev,
+        [conv]: (prev[conv] ?? []).map((entry) =>
+          entry.id === id ? updater(entry) : entry
+        ),
+      }));
+    },
+    []
+  );
+
+  const setPhaseFor = useCallback((conv: string, phase: Phase) => {
+    setPhases((prev) => ({ ...prev, [conv]: phase }));
+  }, []);
+
+  const playTurn = useCallback(
+    async (conv: string, script: TurnScript) => {
+      const run = (runRef.current += 1);
+      const alive = () => run === runRef.current;
+
+      setPhaseFor(conv, 'thinking');
+      const thinkingId = nextId();
+      append(conv, { id: thinkingId, kind: 'thinking' });
+      await sleep(script.thinkMs);
+      if (!alive()) return;
+
+      const thoughtSeconds = script.tool
+        ? script.tool.thoughtSeconds
+        : Math.max(1, Math.round(script.thinkMs / 1000));
+      patch(conv, thinkingId, () => ({
+        id: thinkingId,
+        kind: 'thought',
+        seconds: thoughtSeconds,
+      }));
+
+      if (script.tool) {
+        setPhaseFor(conv, 'tool');
+        const toolId = nextId();
+        append(conv, { id: toolId, kind: 'tool', status: 'running' });
+        await sleep(script.tool.runMs);
+        if (!alive()) return;
+        patch(conv, toolId, () => ({ id: toolId, kind: 'tool', status: 'done' }));
+      }
+
+      setPhaseFor(conv, 'answering');
+      append(conv, { id: nextId(), kind: 'answer', text: script.answer, phase: 'streaming' });
+    },
+    [append, patch, setPhaseFor]
+  );
+
+  // The scripted review plays once on mount in the seeded conversation —
+  // kicked from a timer so the effect body itself never writes state.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void playTurn('retry-loop', TOUR_SCRIPT);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [playTurn]);
+
+  const phase = phases[activeId] ?? 'idle';
+  const generating = phase !== 'idle';
+
+  const send = (text: string) => {
+    if (!text.trim()) return;
+    append(activeId, { id: nextId(), kind: 'user', text });
+    void playTurn(activeId, FOLLOW_UP_SCRIPT);
+  };
+
+  const stopGeneration = () => {
+    runRef.current += 1;
+    setPhaseFor(activeId, 'idle');
+    setEntries((prev) => {
+      const list = [...(prev[activeId] ?? [])];
+      while (list.length > 0) {
+        const last = list[list.length - 1]!;
+        const incomplete =
+          last.kind === 'thinking' ||
+          (last.kind === 'tool' && last.status === 'running') ||
+          (last.kind === 'answer' && last.phase === 'streaming');
+        if (!incomplete) break;
+        list.pop();
+      }
+      return { ...prev, [activeId]: list };
+    });
+  };
+
+  const newChat = () => {
+    const id = `review-${conversations.length + 1}`;
+    setConversations((prev) => [
+      { id, title: 'New review session', subtitle: 'no repo bound', time: 'now' },
+      ...prev,
+    ]);
+    setActiveId(id);
+  };
+
+  const markAnswerDone = (id: number) => {
+    patch(activeId, id, (entry) =>
+      entry.kind === 'answer' ? { ...entry, phase: 'done' } : entry
+    );
+    setPhaseFor(activeId, 'idle');
+  };
+
+  const renderEntry = (entry: Entry) => {
+    switch (entry.kind) {
+      case 'user':
+        return (
+          <ChatMessage
+            key={entry.id}
+            role='user'
+            name={USER_NAME}
+            status='sent'
+            timestamp={stamp(entry.id)}
+            avatar={<Avatar size='sm' fallback='DV' />}
+          >
+            <div style={{ fontSize: 'var(--haze-text-sm)' }}>{entry.text}</div>
+          </ChatMessage>
+        );
+      case 'thinking':
+        return <ThinkingIndicator key={entry.id} text='Reading the diff…' />;
+      case 'thought':
+        return (
+          <div
+            key={entry.id}
+            data-slot='workbench-thought'
+            style={{
+              padding: 'var(--haze-space-1) 0',
+              fontSize: 'var(--haze-text-xs)',
+              color: 'var(--haze-color-text-muted)',
+            }}
+          >
+            Thought for {entry.seconds}s
+          </div>
+        );
+      case 'tool':
+        return (
+          <ToolCallCard
+            key={entry.id}
+            name='read_diff'
+            status={entry.status}
+            input={<Mono>{TOOL_INPUT}</Mono>}
+            output={entry.status === 'done' ? <Mono>{TOOL_OUTPUT}</Mono> : undefined}
+          />
+        );
+      case 'answer':
+        return (
+          <ChatMessage
+            key={entry.id}
+            role='assistant'
+            name={AGENT_NAME}
+            timestamp={stamp(entry.id)}
+            copyable
+            avatar={<Avatar size='sm' fallback='RC' />}
+          >
+            {entry.phase === 'streaming' ? (
+              <StreamingText
+                text={entry.text}
+                speed={model.cps}
+                onComplete={() => markAnswerDone(entry.id)}
+              />
+            ) : (
+              <div style={{ fontSize: 'var(--haze-text-sm)' }}>{entry.text}</div>
+            )}
+            {entry.phase === 'done' && activeId === 'retry-loop' && (
+              <Sources
+                compact
+                items={SOURCE_ITEMS}
+                label='Citations for this review'
+                style={{ marginTop: 'var(--haze-space-2)' }}
+              />
+            )}
+          </ChatMessage>
+        );
+    }
+  };
+
+  const activeConversation =
+    conversations.find((conversation) => conversation.id === activeId) ?? conversations[0]!;
+
+  return (
+    <div
+      data-slot='ai-workbench-block'
+      style={{ height: '100%', fontFamily: 'var(--haze-font-sans)', color: 'var(--haze-color-text)' }}
+    >
+      <Workbench
+        style={{ height: '100%' }}
+        sidebarCollapsed={sidebarCtrl}
+        mobileSidebarOpen={mobileSidebarOpen}
+        activityBar={
+          <ActivityRail aria-label='Workbench views'>
+            <ActivityRailItem
+              icon={<MessagesSquare size={20} />}
+              label='Conversations'
+              active
+              badge={3}
+            />
+            <ActivityRailItem icon={<GitPullRequest size={20} />} label='Open reviews' badge={5} />
+            <ActivityRailItem icon={<FileSearch size={20} />} label='Code search' />
+            <ActivityRailItem slot='end' icon={<Settings size={20} />} label='Settings' />
+          </ActivityRail>
+        }
+        sidebar={
+          <div
+            data-slot='workbench-conversations'
+            style={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'var(--haze-color-bg)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--haze-space-2)',
+                padding: 'var(--haze-space-3) var(--haze-space-3) var(--haze-space-2)',
+              }}
+            >
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 'var(--haze-text-xs)',
+                  fontWeight: 'var(--haze-weight-semibold)',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                Conversations
+              </span>
+              <Button size='sm' variant='outline' onClick={newChat}>
+                New
+              </Button>
+            </div>
+            {/* ConversationList takes className only — the rail wraps it and
+                owns the overflow. */}
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                padding: '0 var(--haze-space-2)',
+              }}
+            >
+              <ConversationList>
+                {conversations.map((conversation) => (
+                  <ConversationItem
+                    key={conversation.id}
+                    title={conversation.title}
+                    subtitle={conversation.subtitle}
+                    active={conversation.id === activeId}
+                    onClick={() => setActiveId(conversation.id)}
+                    end={
+                      <span
+                        style={{
+                          fontSize: 'var(--haze-text-xs)',
+                          color: 'var(--haze-color-text-muted)',
+                        }}
+                      >
+                        {conversation.time}
+                      </span>
+                    }
+                  />
+                ))}
+              </ConversationList>
+            </div>
+          </div>
+        }
+        auxiliaryBar={
+          <div
+            data-slot='workbench-sources'
+            style={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'var(--haze-color-bg)',
+            }}
+          >
+            <div
+              style={{
+                padding: 'var(--haze-space-3)',
+                borderBottom: '1px solid var(--haze-color-border)',
+                fontSize: 'var(--haze-text-xs)',
+                fontWeight: 'var(--haze-weight-semibold)',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                color: 'var(--haze-color-text-muted)',
+              }}
+            >
+              Citations
+            </div>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--haze-space-3)' }}>
+              <Sources items={SOURCE_ITEMS} label='Sources cited by the copilot' />
+              <p
+                style={{
+                  margin: 'var(--haze-space-3) 0 0',
+                  fontSize: 'var(--haze-text-xs)',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                Drag the panel edge to resize; the handle collapses it entirely.
+              </p>
+            </div>
+          </div>
+        }
+        statusBar={
+          <StatusBar
+            left={
+              <>
+                <StatusItem priority>{model.label}</StatusItem>
+                <StatusItem>ctx {model.contextLength}</StatusItem>
+                <StatusItem>grounding: repo + docs</StatusItem>
+              </>
+            }
+            right={
+              <>
+                <StatusItem>main · clean</StatusItem>
+                <StatusItem priority>5 reviews open</StatusItem>
+              </>
+            }
+          />
+        }
+        tabBar={
+          <TabBar aria-label='Workbench navigation'>
+            <TabBarItem
+              icon={<MessagesSquare size={18} />}
+              label='Chats'
+              badge={3}
+              active={mobileSidebarOpen}
+              onSelect={() => setMobileSidebarOpen((v) => !v)}
+            />
+            <TabBarItem
+              icon={<GitPullRequest size={18} />}
+              label='Reviews'
+              badge={5}
+              onSelect={() => setMobileSidebarOpen(true)}
+            />
+          </TabBar>
+        }
+      >
+        <div
+          data-slot='workbench-chat'
+          style={{
+            height: '100%',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'var(--haze-color-bg-subtle)',
+          }}
+        >
+          <header
+            data-slot='workbench-chat-header'
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--haze-space-2)',
+              padding: 'var(--haze-space-2) var(--haze-space-3)',
+              borderBottom: '1px solid var(--haze-color-border)',
+              background: 'var(--haze-color-bg)',
+            }}
+          >
+            <Button
+              size='sm'
+              variant='ghost'
+              square
+              aria-label={sidebarCollapsed ? 'Show conversations' : 'Hide conversations'}
+              onClick={() => setSidebarCollapsed((v) => !v)}
+            >
+              <PanelLeft size={16} aria-hidden='true' />
+            </Button>
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 'var(--haze-text-sm)',
+                  fontWeight: 'var(--haze-weight-semibold)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {activeConversation.title}
+              </div>
+              <div
+                style={{
+                  fontSize: 'var(--haze-text-xs)',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                {activeConversation.subtitle} · scripted demo, no network
+              </div>
+            </div>
+            <span style={{ flex: 1 }} />
+            {generating ? (
+              <Badge variant='info'>Generating…</Badge>
+            ) : (
+              <Badge variant='success'>ready</Badge>
+            )}
+          </header>
+
+          <ChatContainer
+            role='log'
+            aria-label='Review conversation transcript'
+            style={{ flex: 1, minHeight: 0 }}
+          >
+            {(entries[activeId] ?? []).length === 0 ? (
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '240px',
+                }}
+              >
+                <Empty description='Ask about a pull request, a test or a runbook — replies are scripted, nothing leaves the page.' />
+              </div>
+            ) : (
+              (entries[activeId] ?? []).map(renderEntry)
+            )}
+          </ChatContainer>
+
+          <footer
+            data-slot='workbench-composer'
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--haze-space-2)',
+              padding: 'var(--haze-space-3)',
+              borderTop: '1px solid var(--haze-color-border)',
+              background: 'var(--haze-color-bg)',
+            }}
+          >
+            <div style={{ width: '180px', flexShrink: 0 }}>
+              <ModelPicker
+                value={modelCtrl}
+                options={MODELS.map(({ value, label, contextLength }) => ({
+                  value,
+                  label,
+                  contextLength,
+                }))}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <PromptInput
+                value={draftCtrl}
+                tags={tagsCtrl}
+                onTagsChange={setTags}
+                triggers={['@']}
+                getSuggestions={suggestReviewer}
+                onSubmit={() => send(draft)}
+                placeholder={generating ? 'Copilot is responding…' : 'Ask, or @ a reviewer…'}
+                disabled={generating}
+                maxRows={4}
+              />
+            </div>
+            {generating && (
+              <Button size='sm' variant='outline' onClick={stopGeneration}>
+                Stop
+              </Button>
+            )}
+          </footer>
+        </div>
+      </Workbench>
+    </div>
+  );
+}

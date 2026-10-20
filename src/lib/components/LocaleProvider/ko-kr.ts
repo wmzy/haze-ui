@@ -140,6 +140,10 @@ const koKR: HazeStrings = {
     expand: '더 보기',
     collapse: '접기',
   },
+  errorBoundary: {
+    title: '문제가 발생했습니다',
+    reset: '다시 시도',
+  },
   fileInput: {
     label: '파일 선택',
   },

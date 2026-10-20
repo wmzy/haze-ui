@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-16T15:33:45.568Z",
+  "generatedAt": "2026-10-20T14:41:24.209Z",
   "components": [
     {
       "component": "Accordion",
@@ -261,10 +261,20 @@
     },
     {
       "component": "Chart",
-      "roles": [],
-      "aria": [],
+      "roles": [
+        "cell",
+        "columnheader",
+        "img",
+        "row",
+        "rowheader",
+        "status",
+        "table"
+      ],
+      "aria": [
+        "aria-busy"
+      ],
       "keys": [],
-      "testCount": 38
+      "testCount": 48
     },
     {
       "component": "ChatContainer",
@@ -384,12 +394,14 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 78
+      "testCount": 81
     },
     {
       "component": "Command",
       "roles": [
-        "dialog"
+        "dialog",
+        "listbox",
+        "option"
       ],
       "aria": [],
       "keys": [
@@ -397,7 +409,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 27
+      "testCount": 46
     },
     {
       "component": "ConfigProvider",
@@ -486,19 +498,45 @@
         "aria-checked",
         "aria-controls",
         "aria-current",
+        "aria-describedby",
         "aria-expanded",
+        "aria-keyshortcuts",
         "aria-label",
         "aria-orientation",
         "aria-sort"
       ],
       "keys": [
+        "ArrowDown",
         "ArrowLeft",
         "ArrowRight",
+        "ArrowUp",
+        "End",
         "Enter",
         "Escape",
+        "Home",
+        "PageDown",
+        "PageUp",
         "Tab"
       ],
-      "testCount": 97
+      "testCount": 135
+    },
+    {
+      "component": "DateField",
+      "roles": [
+        "group",
+        "spinbutton"
+      ],
+      "aria": [
+        "aria-disabled",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow",
+        "aria-valuetext"
+      ],
+      "keys": [
+        "Tab"
+      ],
+      "testCount": 21
     },
     {
       "component": "Datepicker",
@@ -648,6 +686,16 @@
       "aria": [],
       "keys": [],
       "testCount": 6
+    },
+    {
+      "component": "ErrorBoundary",
+      "roles": [
+        "alert",
+        "button"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 17
     },
     {
       "component": "Fieldset",
@@ -1197,7 +1245,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 69
+      "testCount": 74
     },
     {
       "component": "Sidebar",
@@ -1445,7 +1493,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 42
+      "testCount": 58
     },
     {
       "component": "Tag",
@@ -1512,6 +1560,24 @@
       "aria": [],
       "keys": [],
       "testCount": 5
+    },
+    {
+      "component": "TimeField",
+      "roles": [
+        "group",
+        "spinbutton"
+      ],
+      "aria": [
+        "aria-disabled",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow",
+        "aria-valuetext"
+      ],
+      "keys": [
+        "Tab"
+      ],
+      "testCount": 20
     },
     {
       "component": "Timeline",

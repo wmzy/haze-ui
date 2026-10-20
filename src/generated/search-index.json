@@ -426,6 +426,12 @@
   },
   {
     "type": "component",
+    "label": "DateField",
+    "route": "/components/date-field",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Datepicker",
     "route": "/components/datepicker",
     "keywords": []
@@ -563,6 +569,12 @@
     "type": "component",
     "label": "Textarea",
     "route": "/components/textarea",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "TimeField",
+    "route": "/components/time-field",
     "keywords": []
   },
   {
@@ -935,6 +947,12 @@
     "type": "component",
     "label": "Empty",
     "route": "/components/empty",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "ErrorBoundary",
+    "route": "/components/error-boundary",
     "keywords": []
   },
   {
@@ -1794,6 +1812,18 @@
   },
   {
     "type": "section",
+    "label": "Column reorder",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
+    "label": "Infinite scroll",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
     "label": "Effect: fade",
     "sublabel": "Carousel",
     "route": "/components/carousel"
@@ -1845,6 +1875,24 @@
     "label": "cellRender",
     "sublabel": "Datepicker",
     "route": "/components/datepicker"
+  },
+  {
+    "type": "section",
+    "label": "Localization",
+    "sublabel": "DateField",
+    "route": "/components/date-field"
+  },
+  {
+    "type": "section",
+    "label": "In a form",
+    "sublabel": "DateField",
+    "route": "/components/date-field"
+  },
+  {
+    "type": "section",
+    "label": "Disabled",
+    "sublabel": "DateField",
+    "route": "/components/date-field"
   },
   {
     "type": "section",
@@ -2157,6 +2205,36 @@
     "label": "Custom copy",
     "sublabel": "AsyncSection",
     "route": "/components/async-section"
+  },
+  {
+    "type": "section",
+    "label": "Basic capture",
+    "sublabel": "ErrorBoundary",
+    "route": "/components/error-boundary"
+  },
+  {
+    "type": "section",
+    "label": "resetKeys reset",
+    "sublabel": "ErrorBoundary",
+    "route": "/components/error-boundary"
+  },
+  {
+    "type": "section",
+    "label": "Custom fallback (render prop)",
+    "sublabel": "ErrorBoundary",
+    "route": "/components/error-boundary"
+  },
+  {
+    "type": "section",
+    "label": "onError reporting",
+    "sublabel": "ErrorBoundary",
+    "route": "/components/error-boundary"
+  },
+  {
+    "type": "section",
+    "label": "Nested boundaries",
+    "sublabel": "ErrorBoundary",
+    "route": "/components/error-boundary"
   },
   {
     "type": "section",
@@ -2619,6 +2697,24 @@
     "label": "Native fallback",
     "sublabel": "TimePicker",
     "route": "/components/time-picker"
+  },
+  {
+    "type": "section",
+    "label": "Granularity and 12-hour",
+    "sublabel": "TimeField",
+    "route": "/components/time-field"
+  },
+  {
+    "type": "section",
+    "label": "In a form",
+    "sublabel": "TimeField",
+    "route": "/components/time-field"
+  },
+  {
+    "type": "section",
+    "label": "Disabled",
+    "sublabel": "TimeField",
+    "route": "/components/time-field"
   },
   {
     "type": "section",

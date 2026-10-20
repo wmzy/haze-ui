@@ -521,7 +521,30 @@ export default function Home() {
       })
     : t.home.compare.shippedFallback;
 
+  // Hard differentiators lead the grid: the four points that no other
+  // React library stacks together (native overlays, screen-reader CI,
+  // the Control<T> | T protocol, AI-first docs).
   const FEATURES = [
+    {
+      icon: '\ud83d\udcac',
+      title: t.home.features.nativeOverlays.title,
+      desc: t.home.features.nativeOverlays.desc,
+    },
+    {
+      icon: '\ud83c\udfa7',
+      title: t.home.features.screenReaderCi.title,
+      desc: t.home.features.screenReaderCi.desc,
+    },
+    {
+      icon: '\ud83d\udd27',
+      title: t.home.features.controlled.title,
+      desc: t.home.features.controlled.desc,
+    },
+    {
+      icon: '\ud83e\udd16',
+      title: t.home.features.aiDocs.title,
+      desc: t.home.features.aiDocs.desc,
+    },
     {
       icon: '\u26a1',
       title: t.home.features.zeroRuntime.title,
@@ -546,11 +569,6 @@ export default function Home() {
       icon: '\ud83d\udce6',
       title: t.home.features.treeShakeable.title,
       desc: t.home.features.treeShakeable.desc,
-    },
-    {
-      icon: '\ud83d\udd27',
-      title: t.home.features.controlled.title,
-      desc: t.home.features.controlled.desc,
     },
     {
       icon: '\ud83d\udcdd',

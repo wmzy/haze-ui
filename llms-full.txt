@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 139 Haze UI components in one
-> file (250 type tables), generated from the library source. Do not
+> Complete props reference for all 142 Haze UI components in one
+> file (256 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -473,6 +473,9 @@ import { Chart } from 'haze-ui';
 | `showLegend` | `boolean` | — |  |
 | `showGrid` | `boolean` | — |  |
 | `showTooltip` | `boolean` | — |  |
+| `fallbackTable` | `boolean` | — |  |
+| `loading` | `ReactNode` | — |  |
+| `empty` | `ReactNode` | — |  |
 
 ## ChatContainer
 
@@ -682,14 +685,14 @@ import { Combobox, ComboboxOption, ComboboxGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string` | — |  |
+| `value` | `T` | — |  |
 | `highlighted` | `boolean` | — |  |
 | `selected` | `boolean` | — |  |
 | `id` | `string` | — |  |
 | `ref` | `Ref<HTMLDivElement>` | — |  |
 | `setSize` | `number` | — |  |
 | `posInSet` | `number` | — |  |
-| `onSelect` | `(value: string) => void` | — |  |
+| `onSelect` | `(value: T) => void` | — |  |
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
 
@@ -697,11 +700,11 @@ import { Combobox, ComboboxOption, ComboboxGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `ControlOrValue<string \| string[]>` | — | Controlled value or control object |
+| `value` | `ControlOrValue<T \| T[]>` | — | Controlled value or control object |
 | `open` | `ControlOrValue<boolean>` | — | Dropdown open state (controllable) |
-| `options` | `ComboboxOptionData[]` | — | List of options |
+| `options` | `ComboboxOptionData<T>[]` | — | List of options |
 | `multiple` | `boolean` | — |  |
-| `onValuesChange` | `(value: string \| string[]) => void` | — |  |
+| `onValuesChange` | `(value: T \| T[]) => void` | — |  |
 | `creatable` | `boolean` | — |  |
 | `onCreate` | `(query: string) => void` | — |  |
 | `onSearch` | `(query: string) => void` | — |  |
@@ -775,6 +778,7 @@ import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandD
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | — |  |
 | `empty` | `ReactNode` | — |  |
+| `virtualized` | `boolean \| CommandListVirtualizedConfig` | — |  |
 | `className` | `string` | — |  |
 
 ### CommandProps
@@ -988,17 +992,69 @@ import { DataTable, dataTableToCsv, dataTableSum, dataTableAvg, dataTableCount }
 | `empty` | `ReactNode` | — |  |
 | `resizable` | `boolean` | `false` | Enable column resizing: drag (or focus + Arrow keys) the handle on resizable column headers; double-click resets |
 | `expanded` | `ControlOrValue<ExpandedState>` | — | Controlled expanded-row state (TanStack ExpandedState) |
-| `getRowCanExpand` | `(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>) => boolean` | — | Per-row switch for the expander column; defaults to expandable when only renderExpandedRow is given |
-| `renderExpandedRow` | `(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>) => ReactNode` | — | Renders an expansion panel row spanning all visible columns |
+| `getRowCanExpand` | `(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>) => boolean` | — | Per-row switch for the expander column; defaults to expandable when only renderExpandedRow is given |
+| `renderExpandedRow` | `(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>) => ReactNode` | — | Renders an expansion panel row spanning all visible columns |
 | `subRowsKey` | `string` | — |  |
 | `columnVisibility` | `ControlOrValue<ColumnVisibilityState>` | — | Controlled column visibility state (TanStack VisibilityState) |
 | `columnToggle` | `boolean` | `false` | Render the column settings menu (hideable columns only; meta.hideable === false pins a column) |
 | `filterable` | `boolean` | `false` | Render a filter row under the header; per-column opt-in/out via meta.filterable |
-| `summary` | `(rows: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>[]) => DataTableSummary<...>[]` | — |  |
+| `summary` | `(rows: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>[]) => DataTableSummary<...>[]` | — |  |
 | `stickyFooter` | `boolean` | — |  |
 | `editable` | `boolean` | — |  |
 | `onCellEdit` | `(rowId: string, columnId: string, nextValue: unknown, prevValue: unknown) => void` | — |  |
+| `toolbar` | `ReactNode` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `columnReorderable` | `boolean` | — |  |
+| `onColumnOrderChange` | `(order: ColumnOrderState) => void` | — |  |
+| `onEndReached` | `() => void` | — |  |
+| `endReachedThreshold` | `number` | — |  |
 | `className` | `string` | — |  |
+
+## DateField
+
+```jsx
+import { DateField, DateFieldCore } from 'haze-ui';
+```
+
+### DateFieldCoreProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `locale` | `string` | — |  |
+| `disabled` | `boolean` | — |  |
+| `placeholder` | `DatePlaceholder` | — |  |
+| `labels` | `DateLabels` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
+
+### DateFieldProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ControlOrValue<string>` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `locale` | `string` | — |  |
+| `disabled` | `boolean` | — |  |
+| `placeholder` | `DatePlaceholder` | — |  |
+| `labels` | `DateLabels` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
+
+### SegmentedFieldProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `segments` | `SegmentSpec[]` | — |  |
+| `separators` | `string[]` | — |  |
+| `values` | `(number \| null)[]` | — |  |
+| `value` | `string` | — |  |
+| `serialize` | `(values: (number \| null)[]) => string \| null` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `disabled` | `boolean` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
 
 ## DateRangePicker
 
@@ -1354,6 +1410,23 @@ import { Empty } from 'haze-ui';
 | `image` | `ReactNode` | — | Custom image/illustration (replaces default) |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Action content (e.g. a button) |
+
+## ErrorBoundary
+
+```jsx
+import { ErrorBoundary } from 'haze-ui';
+```
+
+### ErrorBoundaryProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — |  |
+| `fallback` | `ReactNode \| ((args: FallbackRenderArgs) => ReactNode)` | — |  |
+| `onError` | `(error: Error, info: ErrorInfo) => void` | — |  |
+| `resetKeys` | `readonly unknown[]` | — |  |
+| `onResetKeysChange` | `(prev: readonly unknown[] \| undefined, next: readonly unknown[] \| undefined) => void` | — |  |
+| `className` | `string` | — |  |
 
 ## Fieldset
 
@@ -2382,15 +2455,15 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string` | — |  |
+| `value` | `string \| number` | — |  |
 | `children` | `ReactNode` | — |  |
 
 ### SelectCoreProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string \| string[]` | — |  |
-| `onChange` | `(value: string \| string[]) => void` | — |  |
+| `value` | `T \| T[]` | — |  |
+| `onChange` | `(value: T \| T[]) => void` | — |  |
 | `onNativeChange` | `ChangeEventHandler<HTMLSelectElement, HTMLSelectElement> \| undefined` | — |  |
 | `placeholder` | `string` | — |  |
 | `multiple` | `boolean` | — |  |
@@ -2410,9 +2483,9 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string \| string[]` | — |  |
-| `onChange` | `(value: string \| string[]) => void` | — |  |
-| `entries` | `SelectEntryData[]` | — |  |
+| `value` | `T \| T[]` | — |  |
+| `onChange` | `(value: T \| T[]) => void` | — |  |
+| `entries` | `SelectEntryData<T>[]` | — |  |
 | `multiple` | `boolean` | — |  |
 | `placeholder` | `string` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
@@ -2430,7 +2503,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `ControlOrValue<string \| string[]>` | — | Controlled value or control object |
+| `value` | `ControlOrValue<T \| T[]>` | — | Controlled value or control object |
 | `multiple` | `boolean` | — |  |
 | `searchable` | `boolean` | — |  |
 | `clearable` | `boolean` | — |  |
@@ -2438,7 +2511,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `onSearch` | `(query: string) => void` | — |  |
 | `maxTagCount` | `number` | — |  |
 | `virtualized` | `boolean \| SelectVirtualizedConfig` | — | Multiple mode: window the option listbox with VirtualList for large option sets (single mode is a native select and ignores this) |
-| `onValuesChange` | `(value: string \| string[]) => void` | — |  |
+| `onValuesChange` | `(value: T \| T[]) => void` | — |  |
 | `placeholder` | `string` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the select |
 | `classNames` | `SelectClassNames` | — |  |
@@ -2930,6 +3003,7 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 | `icon` | `ReactNode` | — | Leading icon slot (aria-hidden — decorative) |
 | `status` | `TabStatus` | — | Status dot: dirty=neutral, error=danger, syncing=primary; the SR status word comes from the tabs locale pack unless statusLabel overrides it |
 | `statusLabel` | `ReactNode` | — | Overrides the status word appended to the accessible name (the i18n hook for SR users) |
+| `disabled` | `boolean` | — |  |
 | `closable` | `boolean` | `false` | Renders a close × (aria-label from the tabs locale pack, overridable via closeLabel); clicking or pressing Delete closes — unmounting the tab is the owner's job via onClose |
 | `closeLabel` | `string` | — | Overrides the close button's accessible label |
 | `onClose` | `(event: MouseEvent<HTMLSpanElement, MouseEvent> \| KeyboardEvent<HTMLDivElement>) => void` | — | Close notification — pure notification, the controlled tabs array is the owner's to mutate |
@@ -2941,6 +3015,10 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `ControlOrValue<string>` | — | Active tab value |
+| `variant` | `TabsVariant` | — |  |
+| `items` | `TabData[]` | — |  |
+| `destroyInactiveTabPane` | `boolean` | — |  |
+| `addable` | `TabsAddable` | — |  |
 | `classNames` | `TabsClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | TabList and TabPanel elements |
@@ -3101,6 +3179,40 @@ import { ThinkingIndicator } from 'haze-ui';
 | --- | --- | --- | --- |
 | `text` | `string` | `'Thinking'` | Label text shown before the dots |
 | `className` | `string` | — | Additional CSS class |
+
+## TimeField
+
+```jsx
+import { TimeField, TimeFieldCore } from 'haze-ui';
+```
+
+### TimeFieldCoreProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `format` | `TimePickerFormat` | — |  |
+| `use12Hours` | `boolean` | — |  |
+| `disabled` | `boolean` | — |  |
+| `placeholder` | `TimePlaceholder` | — |  |
+| `labels` | `TimeLabels` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
+
+### TimeFieldProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ControlOrValue<string>` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `format` | `TimePickerFormat` | — |  |
+| `use12Hours` | `boolean` | — |  |
+| `disabled` | `boolean` | — |  |
+| `placeholder` | `TimePlaceholder` | — |  |
+| `labels` | `TimeLabels` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
 
 ## TimePicker
 

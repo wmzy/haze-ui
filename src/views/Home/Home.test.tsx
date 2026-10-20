@@ -61,6 +61,22 @@ describe('Home', () => {
     expect(screen.queryByText(/32KB/)).not.toBeInTheDocument();
   });
 
+  it('pins the four hard differentiators on the feature grid', () => {
+    renderHome();
+    // a — native popover + CSS anchor positioning overlays
+    expect(screen.getByText('Native Popover Overlays')).toBeInTheDocument();
+    expect(screen.getByText(/CSS anchor positioning/)).toBeInTheDocument();
+    // b — real VoiceOver screen-reader CI gate
+    expect(screen.getByText('VoiceOver CI Gate')).toBeInTheDocument();
+    expect(screen.getByText(/macOS CI/)).toBeInTheDocument();
+    // c — Control<T> | T single-prop protocol (no defaultXxx twin API)
+    expect(screen.getByText(/Control<T> \| T/)).toBeInTheDocument();
+    expect(screen.getByText(/defaultValue twin API/)).toBeInTheDocument();
+    // d — MCP server + llms.txt AI-friendly docs
+    expect(screen.getByText(/npx haze-ui-mcp/)).toBeInTheDocument();
+    expect(screen.getByText(/llms\.txt/)).toBeInTheDocument();
+  });
+
   it('renders four stat cards sourced from props.json and size-report.json', () => {
     renderHome();
     expect(screen.getByText(String(componentCount))).toBeInTheDocument();

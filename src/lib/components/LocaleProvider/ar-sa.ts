@@ -147,6 +147,10 @@ const arSA: HazeStrings = {
     expand: 'توسيع',
     collapse: 'طي',
   },
+  errorBoundary: {
+    title: 'حدث خطأ ما',
+    reset: 'إعادة المحاولة',
+  },
   fileInput: {
     label: 'اختيار ملف',
   },

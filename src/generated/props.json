@@ -1035,6 +1035,21 @@
             "name": "showTooltip",
             "type": "boolean",
             "required": false
+          },
+          {
+            "name": "fallbackTable",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "loading",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "empty",
+            "type": "ReactNode",
+            "required": false
           }
         ]
       },
@@ -1549,7 +1564,7 @@
         "ComboboxOptionProps": [
           {
             "name": "value",
-            "type": "string",
+            "type": "T",
             "required": true
           },
           {
@@ -1584,7 +1599,7 @@
           },
           {
             "name": "onSelect",
-            "type": "(value: string) => void",
+            "type": "(value: T) => void",
             "required": false
           },
           {
@@ -1601,7 +1616,7 @@
         "ComboboxProps": [
           {
             "name": "value",
-            "type": "ControlOrValue<string | string[]>",
+            "type": "ControlOrValue<T | T[]>",
             "required": false
           },
           {
@@ -1611,7 +1626,7 @@
           },
           {
             "name": "options",
-            "type": "ComboboxOptionData[]",
+            "type": "ComboboxOptionData<T>[]",
             "required": true
           },
           {
@@ -1621,7 +1636,7 @@
           },
           {
             "name": "onValuesChange",
-            "type": "(value: string | string[]) => void",
+            "type": "(value: T | T[]) => void",
             "required": false
           },
           {
@@ -1834,6 +1849,11 @@
           {
             "name": "empty",
             "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "virtualized",
+            "type": "boolean | CommandListVirtualizedConfig",
             "required": false
           },
           {
@@ -2386,12 +2406,12 @@
           },
           {
             "name": "getRowCanExpand",
-            "type": "(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>) => boolean",
+            "type": "(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>) => boolean",
             "required": false
           },
           {
             "name": "renderExpandedRow",
-            "type": "(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>) => ReactNode",
+            "type": "(row: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>) => ReactNode",
             "required": false
           },
           {
@@ -2416,7 +2436,7 @@
           },
           {
             "name": "summary",
-            "type": "(rows: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 11 more ...; columnMeta: DataTableColumnMeta; }, TData>[]) => DataTableSummary<...>[]",
+            "type": "(rows: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>[]) => DataTableSummary<...>[]",
             "required": false
           },
           {
@@ -2435,8 +2455,180 @@
             "required": false
           },
           {
+            "name": "toolbar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "columnReorderable",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onColumnOrderChange",
+            "type": "(order: ColumnOrderState) => void",
+            "required": false
+          },
+          {
+            "name": "onEndReached",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "endReachedThreshold",
+            "type": "number",
+            "required": false
+          },
+          {
             "name": "className",
             "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "DateField": {
+      "routeKey": "date-field",
+      "cssFamily": "date-field",
+      "imports": [
+        "DateField",
+        "DateFieldCore"
+      ],
+      "propsTypes": {
+        "DateFieldCoreProps": [
+          {
+            "name": "value",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": true
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "DatePlaceholder",
+            "required": false
+          },
+          {
+            "name": "labels",
+            "type": "DateLabels",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
+          }
+        ],
+        "DateFieldProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": false
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "DatePlaceholder",
+            "required": false
+          },
+          {
+            "name": "labels",
+            "type": "DateLabels",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
+          }
+        ],
+        "SegmentedFieldProps": [
+          {
+            "name": "segments",
+            "type": "SegmentSpec[]",
+            "required": true
+          },
+          {
+            "name": "separators",
+            "type": "string[]",
+            "required": true
+          },
+          {
+            "name": "values",
+            "type": "(number | null)[]",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "serialize",
+            "type": "(values: (number | null)[]) => string | null",
+            "required": true
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": true
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
             "required": false
           }
         ]
@@ -3410,6 +3602,48 @@
           {
             "name": "children",
             "type": "ReactNode",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "ErrorBoundary": {
+      "routeKey": "error-boundary",
+      "cssFamily": "error-boundary",
+      "imports": [
+        "ErrorBoundary"
+      ],
+      "propsTypes": {
+        "ErrorBoundaryProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "fallback",
+            "type": "ReactNode | ((args: FallbackRenderArgs) => ReactNode)",
+            "required": false
+          },
+          {
+            "name": "onError",
+            "type": "(error: Error, info: ErrorInfo) => void",
+            "required": false
+          },
+          {
+            "name": "resetKeys",
+            "type": "readonly unknown[]",
+            "required": false
+          },
+          {
+            "name": "onResetKeysChange",
+            "type": "(prev: readonly unknown[] | undefined, next: readonly unknown[] | undefined) => void",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
             "required": false
           }
         ]
@@ -5980,7 +6214,7 @@
         "OptionProps": [
           {
             "name": "value",
-            "type": "string",
+            "type": "string | number",
             "required": true
           },
           {
@@ -5992,12 +6226,12 @@
         "SelectCoreProps": [
           {
             "name": "value",
-            "type": "string | string[]",
+            "type": "T | T[]",
             "required": true
           },
           {
             "name": "onChange",
-            "type": "(value: string | string[]) => void",
+            "type": "(value: T | T[]) => void",
             "required": true
           },
           {
@@ -6074,17 +6308,17 @@
         "SelectFloatingProps": [
           {
             "name": "value",
-            "type": "string | string[]",
+            "type": "T | T[]",
             "required": true
           },
           {
             "name": "onChange",
-            "type": "(value: string | string[]) => void",
+            "type": "(value: T | T[]) => void",
             "required": true
           },
           {
             "name": "entries",
-            "type": "SelectEntryData[]",
+            "type": "SelectEntryData<T>[]",
             "required": true
           },
           {
@@ -6151,7 +6385,7 @@
         "SelectProps": [
           {
             "name": "value",
-            "type": "ControlOrValue<string | string[]>",
+            "type": "ControlOrValue<T | T[]>",
             "required": false
           },
           {
@@ -6191,7 +6425,7 @@
           },
           {
             "name": "onValuesChange",
-            "type": "(value: string | string[]) => void",
+            "type": "(value: T | T[]) => void",
             "required": false
           },
           {
@@ -7348,6 +7582,11 @@
             "required": false
           },
           {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "closable",
             "type": "boolean",
             "required": false
@@ -7380,6 +7619,26 @@
             "required": false
           },
           {
+            "name": "variant",
+            "type": "TabsVariant",
+            "required": false
+          },
+          {
+            "name": "items",
+            "type": "TabData[]",
+            "required": false
+          },
+          {
+            "name": "destroyInactiveTabPane",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "addable",
+            "type": "TabsAddable",
+            "required": false
+          },
+          {
             "name": "classNames",
             "type": "TabsClassNames",
             "required": false
@@ -7392,7 +7651,7 @@
           {
             "name": "children",
             "type": "ReactNode",
-            "required": true
+            "required": false
           }
         ]
       },
@@ -7815,6 +8074,111 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "TimeField": {
+      "routeKey": "time-field",
+      "cssFamily": "time-field",
+      "imports": [
+        "TimeField",
+        "TimeFieldCore"
+      ],
+      "propsTypes": {
+        "TimeFieldCoreProps": [
+          {
+            "name": "value",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": true
+          },
+          {
+            "name": "format",
+            "type": "TimePickerFormat",
+            "required": false
+          },
+          {
+            "name": "use12Hours",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "TimePlaceholder",
+            "required": false
+          },
+          {
+            "name": "labels",
+            "type": "TimeLabels",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
+          }
+        ],
+        "TimeFieldProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": false
+          },
+          {
+            "name": "format",
+            "type": "TimePickerFormat",
+            "required": false
+          },
+          {
+            "name": "use12Hours",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "TimePlaceholder",
+            "required": false
+          },
+          {
+            "name": "labels",
+            "type": "TimeLabels",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
             "required": false
           }
         ]

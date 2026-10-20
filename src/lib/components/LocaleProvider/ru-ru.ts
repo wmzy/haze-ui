@@ -140,6 +140,10 @@ const ruRU: HazeStrings = {
     expand: 'Показать ещё',
     collapse: 'Свернуть',
   },
+  errorBoundary: {
+    title: 'Что-то пошло не так',
+    reset: 'Повторить',
+  },
   fileInput: {
     label: 'Выбрать файл',
   },

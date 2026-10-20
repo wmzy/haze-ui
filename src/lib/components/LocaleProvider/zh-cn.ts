@@ -138,6 +138,10 @@ const zhCN: HazeStrings = {
     expand: '展开',
     collapse: '收起',
   },
+  errorBoundary: {
+    title: '出错了',
+    reset: '重试',
+  },
   fileInput: {
     label: '选择文件',
   },

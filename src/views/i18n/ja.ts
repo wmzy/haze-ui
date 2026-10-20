@@ -93,6 +93,21 @@ export const ja: DeepPartial<SiteStrings> = {
       description:
         '左の Tree でチームを選び、ツールバーと密度切替付き DataTable がパイプラインを一覧。Dialog + zod フォーム編集、ConfirmDialog による削除確認、Toast フィードバックで一連の流れを完成。',
     },
+    aiWorkbench: {
+      title: 'AI レビューワークベンチ',
+      description:
+        'Workbench シェルを 2 段組の AI デスクに —— アクティビティレールと ConversationList サイドバー、中央に思考 → ツール呼び出し → ストリーミング回答のスクリプト化レビュー、右にドッキングした Sources 引用パネル、入力は PromptInput + ModelPicker。',
+    },
+    dataTable: {
+      title: 'データテーブルコンソール',
+      description:
+        'TanStack ベースの DataTable でフル fleet ページ —— ソート・リサイズ可能な列、列ごとのフィルター行、ページング、列表示、密度、CSV エクスポート、チェックボックスの一括選択とバルクアクションバー。',
+    },
+    kanban: {
+      title: 'スプリントかんばん',
+      description:
+        '優先度バッジ・ラベル・担当者アバター・進捗バー付きの issue カード 4 列。カードは ⋯ メニューで移動 —— haze-ui は単一コンテナのソートのみで列間ドラッグはないため、ボードは意図的に静的。',
+    },
   },
   componentGroups: {
     General: '全般',
@@ -160,6 +175,7 @@ export const ja: DeepPartial<SiteStrings> = {
     ColorPicker: '色セレクター：value を制御可能、プリセットスウォッチ付き。',
     Combobox:
       'オートコンプリート入力：絞り込み可能なオプションリスト。onSearch で絞り込みをホストに委譲。',
+    DateField: 'セグメント型の日付入力（年/月/日の各セグメントを直接入力）。カレンダーなし。',
     Datepicker:
       'ポップアップカレンダー付きの日付入力（YYYY-MM-DD 値）。showTime で時刻フィールドを追加。',
     DateTimePicker:
@@ -191,6 +207,7 @@ export const ja: DeepPartial<SiteStrings> = {
       'Enter で確定するトークン入力。TagInputCore ベース。sortable でドラッグ並べ替え（新しい順序は onChange で通知）。',
     Textarea: '複数行テキスト入力。',
     TimePicker: '時刻入力。value を制御可能。',
+    TimeField: 'セグメント型の時刻入力（時/分/秒、任意の 12 時間制 AM/PM）。',
     Toggle:
       '二状態の押下ボタン（aria-pressed）：サイズとスクエアアイコンモード。ToolbarToggle バリアントはツールバーの roving focus に連動。',
     Transfer: '二列シャトル：元リストと対象リストの間でオプションを移動。',
@@ -275,6 +292,8 @@ export const ja: DeepPartial<SiteStrings> = {
     AsyncSection: '非同期データのための宣言的な loading / error / コンテンツ状態。',
     Banner: '閉じられるトップバナー。info/success/warning/danger バリアント。',
     Empty: '空状態プレースホルダー：画像と説明。',
+    ErrorBoundary:
+      'レンダーエラー境界：サブツリーの例外を捕捉し、フォールバック（ノードまたは描画関数）にリセットコールバックを提供。resetKeys の浅い比較変化でリセット。',
     Result:
       '結果フィードバックページ：状態イラスト（success/error/info/warning/403/404/500）、title、subTitle、extra 操作エリア。icon で既定イラストを置き換え可能。',
     Skeleton: 'きらめくローディングプレースホルダー（text/circular/rectangular）。',
@@ -369,6 +388,18 @@ export const ja: DeepPartial<SiteStrings> = {
       accessible: {
         title: 'アクセシブル',
         desc: '<dialog> や <details> などのネイティブ要素の上に構築され、a11y を標準装備します。',
+      },
+      nativeOverlays: {
+        title: 'ネイティブ popover オーバーレイ',
+        desc: 'フローティングレイヤーはネイティブ popover API と CSS anchor positioning の上に載る——エンジンが配置を計算し、JS の算出はゼロ。',
+      },
+      screenReaderCi: {
+        title: 'VoiceOver CI ゲート',
+        desc: 'macOS CI で実際の VoiceOver 出力をアサート——axe と e2e を超える本物のスクリーンリーダーゲート。',
+      },
+      aiDocs: {
+        title: 'AI 対応ドキュメント',
+        desc: 'MCP サーバー（npx haze-ui-mcp）と llms.txt を同梱——エージェントもあなたと同じドキュメントを読む。',
       },
       treeShakeable: {
         title: 'ツリーシェイカブル',
@@ -640,6 +671,46 @@ export const ja: DeepPartial<SiteStrings> = {
         ' を使ってください。「すべてがサーバー HTML に含まれる」という原則への意図的な例外が 1 つあります：',
         { code: 'StreamingText' },
         ' はサーバーでは空のプレフィックスとカーソルのみを描画し、本文はクライアントでストリーミングされます。',
+      ],
+    },
+    testing: {
+      title: 'Jest / Vitest でテストする',
+      jestLead: [
+        'haze-ui は ESM-only（',
+        { code: "type: 'module'" },
+        '）で、スタイルは CSS サブパスから提供されます。Jest 利用者には 3 つの調整が必要です：',
+        { code: 'jest-environment-jsdom' },
+        ' による jsdom 環境（Jest 28 以降は同梱されません）、haze-ui と ESM-only のランタイム依存を Babel がトランスパイルできるようにする ',
+        { code: 'transformIgnorePatterns' },
+        '、そしてスタイルのインポートを空モジュールに解決させる ',
+        { code: '\\.css$' },
+        ' の ',
+        { code: 'moduleNameMapper' },
+        ' スタブ。Vite スキャフォールドは ',
+        { code: '"type": "module"' },
+        ' を持つため、以下の設定ファイルは ',
+        { code: '.cjs' },
+        ' 拡張子を使います：',
+      ],
+      allowNote: [
+        '許可リストは検証済みの最小セットです：haze-ui 本体、',
+        { code: 'react-use-control' },
+        '、そして ',
+        { code: '@tanstack' },
+        ' スコープ（react-table は table-core と store を引き込み、いずれも ESM）。依存グラフの残り——react-f0rm、@dnd-kit、recharts、qrcode——は CommonJS で、変換なしで読み込まれます。正規表現は両方のレイアウトをカバーします：pnpm は ',
+        { code: '.pnpm/<name>@<ver>/node_modules/<name>/' },
+        ' にスコープのスラッシュを ',
+        { code: '+' },
+        ' にエンコードして格納し、npm と yarn は ',
+        { code: 'node_modules/<name>/' },
+        ' を使います。CSS マッパーを外すと ',
+        { code: "import 'haze-ui/styles.css'" },
+        ' は SyntaxError で失敗します——上のスタイルシートインポートはまさにそのスタブを検証しています。',
+      ],
+      vitestPara: [
+        'Vitest にはこれらは不要です：ESM をネイティブに消費し、CSS 処理はデフォルトでオフ（',
+        { code: 'css: false' },
+        '）なので、プレーンなインポートはそのまま動きます。このドキュメントサイトは haze-ui コンポーネントをトランスフォーム設定ゼロの Vitest + jsdom でテストしています。',
       ],
     },
     typescript: {

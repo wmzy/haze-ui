@@ -87,6 +87,8 @@ const COMPONENT_BLURBS = {
   ColorPicker: 'Color selector with controllable value and preset swatches.',
   Combobox:
     'Autocomplete text input with filterable option list; onSearch defers filtering to the host.',
+  DateField:
+    'Segmented date input (year/month/day spinbuttons) typed directly — no calendar.',
   Datepicker:
     'Date input with popup calendar (YYYY-MM-DD value); showTime adds a time-of-day field.',
   DateTimePicker:
@@ -119,6 +121,8 @@ const COMPONENT_BLURBS = {
     'Enter-to-commit token input over TagInputCore; sortable enables drag reordering (new order via onChange).',
   Textarea: 'Multiline text input.',
   TimePicker: 'Time-of-day input with controllable value.',
+  TimeField:
+    'Segmented time input (hour/minute/second spinbuttons, optional 12-hour AM/PM).',
   Toggle:
     'Two-state pressed button (aria-pressed) with sizes and square icon mode; ToolbarToggle variant rides toolbar roving focus.',
   Transfer:
@@ -202,6 +206,8 @@ const COMPONENT_BLURBS = {
   AsyncSection: 'Declarative loading / error / content states for async data.',
   Banner: 'Dismissible top banner with info/success/warning/danger variants.',
   Empty: 'Empty-state placeholder with image and description.',
+  ErrorBoundary:
+    'Render-error boundary catching subtree throws: fallback node or render prop with a reset callback; resetKeys shallow-change resets.',
   Result:
     'Result feedback page: status illustration (success/error/info/warning/403/404/500), title, subTitle and an extra action area; icon replaces the default illustration.',
   Skeleton: 'Shimmering loading placeholder (text/circular/rectangular).',
@@ -353,6 +359,21 @@ export const en = {
       description:
         'A Tree picks the team, a DataTable with toolbar and density lists its pipelines, and Dialog + zod FormItem editing, ConfirmDialog deletes and Toast feedback close the loop.',
     },
+    aiWorkbench: {
+      title: 'AI review workbench',
+      description:
+        'The Workbench shell as a double-column AI desk — an activity rail and ConversationList sidebar, a scripted ThinkingIndicator → ToolCallCard → StreamingText review turn in the middle, a docked Sources citations panel, and PromptInput + ModelPicker as the composer.',
+    },
+    dataTable: {
+      title: 'Data table console',
+      description:
+        'The TanStack-backed DataTable as a full fleet page — sortable and resizable columns, a per-column filter row, pagination, column visibility, density, CSV export, and checkbox batch selection driving a bulk-action bar.',
+    },
+    kanban: {
+      title: 'Sprint kanban board',
+      description:
+        'Four columns of issue cards with priority badges, labels, assignee avatars and progress bars. Cards move through the ⋯ menu — haze-ui ships single-container sorting, not cross-column drag, so the board is static by design.',
+    },
   },
   /* Sidebar component-group display names; keys mirror component-groups.ts. */
   componentGroups: {
@@ -415,13 +436,25 @@ export const en = {
         title: 'Accessible',
         desc: 'Built on native HTML elements like <dialog> and <details> for built-in a11y.',
       },
+      nativeOverlays: {
+        title: 'Native Popover Overlays',
+        desc: 'Floating layers ride the native popover API + CSS anchor positioning — positioned by the engine, zero JS math.',
+      },
+      screenReaderCi: {
+        title: 'VoiceOver CI Gate',
+        desc: 'Real VoiceOver output is asserted on macOS CI — a true screen-reader gate beyond axe and e2e.',
+      },
       treeShakeable: {
         title: 'Tree-Shakeable',
         desc: 'ES module output with preserveModules. Import only what you use.',
       },
       controlled: {
         title: 'Controlled & Uncontrolled',
-        desc: 'Form components support both modes via react-use-control.',
+        desc: 'One prop, both modes: stateful components take Control<T> | T — no defaultValue twin API.',
+      },
+      aiDocs: {
+        title: 'AI-Ready Docs',
+        desc: 'Built-in MCP server (npx haze-ui-mcp) plus llms.txt — agents read the same docs you do.',
       },
       typescript: {
         title: 'TypeScript First',
@@ -687,6 +720,46 @@ export const en = {
         '. One deliberate exception to \u201ceverything ships in server HTML\u201d: ',
         { code: 'StreamingText' },
         ' intentionally renders an empty prefix plus cursor on the server and streams the text in on the client.',
+      ],
+    },
+    testing: {
+      title: 'Testing with Jest / Vitest',
+      jestLead: [
+        'haze-ui is ESM-only (',
+        { code: "type: 'module'" },
+        ') and serves its styles from CSS subpaths, so a Jest consumer needs three adjustments: a jsdom environment from ',
+        { code: 'jest-environment-jsdom' },
+        ' (unbundled since Jest 28), ',
+        { code: 'transformIgnorePatterns' },
+        ' that let Babel transpile haze-ui and its ESM-only runtime dependencies, and a ',
+        { code: '\\.css$' },
+        ' ',
+        { code: 'moduleNameMapper' },
+        ' stub so stylesheet imports resolve to an empty module. Because Vite scaffolds ship ',
+        { code: '"type": "module"' },
+        ', the config files below use the ',
+        { code: '.cjs' },
+        ' extension:',
+      ],
+      allowNote: [
+        'The allow-list is the verified minimum: haze-ui itself, ',
+        { code: 'react-use-control' },
+        ', and the ',
+        { code: '@tanstack' },
+        ' scope (react-table pulls in table-core and store, all ESM). Everything else in the dependency graph — react-f0rm, @dnd-kit, recharts, qrcode — ships CommonJS and loads without transformation. The regex covers both layouts: pnpm stores packages at ',
+        { code: '.pnpm/<name>@<ver>/node_modules/<name>/' },
+        ' with scope slashes encoded as ',
+        { code: '+' },
+        ', while npm and yarn use ',
+        { code: 'node_modules/<name>/' },
+        '. Drop the CSS mapper and ',
+        { code: "import 'haze-ui/styles.css'" },
+        ' fails with a SyntaxError — the stylesheet import above exercises exactly that stub.',
+      ],
+      vitestPara: [
+        'Vitest needs none of this: it consumes ESM natively and leaves CSS processing off by default (',
+        { code: 'css: false' },
+        '), so plain imports just work. This documentation site tests haze-ui components under Vitest + jsdom with zero transform configuration.',
       ],
     },
     typescript: {

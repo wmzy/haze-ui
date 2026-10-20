@@ -7,7 +7,7 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-140 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+143 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
 `'use client'` is pre-injected on interactive modules; 55 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
@@ -92,6 +92,7 @@ re-deriving file names.
 - **Checkbox** — checkbox input with controllable `checked` state.
 - **ColorPicker** — color selector with controllable value and preset swatches.
 - **Combobox** — autocomplete text input with filterable option list; `onSearch` defers filtering to the host.
+- **DateField** — segmented date input (year/month/day spinbuttons) typing `YYYY-MM-DD` directly — no calendar; `DateFieldCore` is the headless core.
 - **Datepicker** — date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.
 - **DateTimePicker** — date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".
 - **DateRangePicker** — picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).
@@ -114,6 +115,7 @@ re-deriving file names.
 - **Switch** — toggle switch (`role="switch"`) with controllable `checked`.
 - **TagInput** — enter-to-commit token input over `TagInputCore`; `sortable` enables dnd-kit drag reordering (new order via `onChange`).
 - **Textarea** — multiline text input.
+- **TimeField** — segmented time-of-day input (hour/minute/second spinbuttons, optional 12-hour AM/PM) typing `HH:mm[:ss]` directly.
 - **TimePicker** — time-of-day input with controllable value.
 - **Toggle** — two-state pressed button (`aria-pressed`) with sizes and `square` icon mode; `ToolbarToggle` variant rides toolbar roving focus.
 - **Transfer** — two-column shuttle moving options between source and target lists.
@@ -181,6 +183,7 @@ re-deriving file names.
 - **AsyncSection** — declarative loading / error / content states for async data.
 - **Banner** — dismissible top banner with info/success/warning/danger variants.
 - **Empty** — empty-state placeholder with image and description.
+- **ErrorBoundary** — render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.
 - **Result** — result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.
 - **Skeleton** — shimmering loading placeholder (`text`/`circular`/`rectangular`).
 - **Spinner** — loading spinner.

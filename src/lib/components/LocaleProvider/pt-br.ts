@@ -141,6 +141,10 @@ const ptBR: HazeStrings = {
     expand: 'Mostrar mais',
     collapse: 'Mostrar menos',
   },
+  errorBoundary: {
+    title: 'Algo deu errado',
+    reset: 'Tentar novamente',
+  },
   fileInput: {
     label: 'Escolher arquivo',
   },

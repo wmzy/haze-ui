@@ -71,6 +71,8 @@ export default function Home() {
           custom properties.
         </p>
 
+        <a href='/per-component-css'>Per-component CSS variant of this page →</a>
+
         <ToastActions />
 
         <label style={row}>

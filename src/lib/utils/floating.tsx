@@ -13,7 +13,7 @@ import type {
 import type { CollisionStrategy } from './collision';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 
 import { computeFloatingPosition, mirrorPlacement, resolvePadding } from './collision';
 import { getDirection } from './direction';
@@ -409,6 +409,15 @@ export type FloatingPlacement = AnchorablePlacement | 'point';
 // Behavior hook
 // ---------------------------------------------------------------------------
 
+/**
+ * Never fires: the "mounted" snapshot is constant, so there is nothing to
+ * subscribe to — `useSyncExternalStore` only needs its server/client
+ * snapshot seam (below).
+ */
+const subscribeNever = () => (): void => undefined;
+const snapshotMounted = () => true;
+const snapshotUnmounted = () => false;
+
 type UseFloatingOptions = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -502,8 +511,25 @@ export function useFloating({
   // useId() contains ":" which is invalid in a CSS dashed-ident; strip it.
   const anchorName = `--haze-floating-${id.replace(/[^a-zA-Z0-9]/g, '')}`;
 
-  const native = supportsNativePopover();
-  const anchored = supportsAnchorPositioning();
+  // Engine capabilities cannot be probed without a DOM. The server — and
+  // the hydration pass that must attribute-match it — renders the
+  // conservative fallback tier; `useSyncExternalStore`'s server snapshot
+  // is exactly that seam (false on the server AND during hydration's
+  // matching pass). After hydration the client snapshot flips it and
+  // React re-renders, changing the tier-dependent props (classes, anchor
+  // styles) and thereby writing them into the DOM — React 19 does not
+  // patch attribute mismatches itself, so prop churn is what repairs a
+  // hydrated panel. Client-only renders (createRoot) read the client
+  // snapshot from the very first render: no extra pass, no behavior
+  // change there.
+  const engineKnown = useSyncExternalStore(
+    subscribeNever,
+    snapshotMounted,
+    snapshotUnmounted
+  );
+
+  const native = engineKnown && supportsNativePopover();
+  const anchored = engineKnown && supportsAnchorPositioning();
 
   // Animated bookkeeping: `exited` starts matching `!open` (never opened
   // ⇒ already exited) and flips false the moment `open` does. Returning
@@ -736,7 +762,16 @@ export function useFloating({
     onTriggerPointerDown,
     onTriggerClick,
     panelAttrs: {
-      popover: native ? 'auto' : undefined,
+      // The attribute ships even while the tier is unknown (server +
+      // hydration pass): it is pure progressive enhancement — real
+      // browsers support the API, and an engine without it ignores the
+      // attribute. React 19 never patches attribute mismatches, so the
+      // server markup MUST already carry it for a hydrated native-tier
+      // panel to be openable at all. Once mounted on an engine that
+      // positively lacks the API it is taken back off: UA stylesheets
+      // hide [popover] elements that are not :popover-open, which would
+      // defeat the fallback tier's open state.
+      popover: native || !engineKnown ? 'auto' : undefined,
       style: anchored
         ? ({ '--haze-floating-anchor': anchorName } as CSSProperties)
         : undefined,

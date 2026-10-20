@@ -398,6 +398,8 @@ const descriptions = {
     'Date+time picker (Mantine DateTimePicker niche): Datepicker with the time row always on, `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
   'date-range-picker':
     'Picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
+  'date-field':
+    'Segmented date input: year/month/day spinbuttons typed directly (`YYYY-MM-DD` value); `DateFieldCore` is the headless core.',
   datepicker:
     'Date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field. `DatepickerCore` is the headless core.',
   dialog: 'Modal dialog with focus trapping.',
@@ -408,6 +410,8 @@ const descriptions = {
   'dropdown-menu':
     'Click-triggered floating menu with `DropdownMenuTrigger`/`Content`/`Item`/`Separator` parts.',
   empty: 'Empty-state placeholder with image and description.',
+  'error-boundary':
+    'Render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop) with a reset callback; `resetKeys` shallow-change resets.',
   ellipsis:
     'Interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse; Typography also ships a pure-CSS `ellipsis` prop.',
   'file-input': 'Trigger element that opens a hidden native file input.',
@@ -489,6 +493,8 @@ const descriptions = {
   textarea: 'Multiline text input.',
   'thinking-indicator': 'Animated bouncing-dots indicator that the agent is processing.',
   'time-picker': 'Time-of-day input with controllable value.',
+  'time-field':
+    'Segmented time-of-day input: hour/minute/second spinbuttons with optional 12-hour AM/PM (`HH:mm[:ss]` value).',
   timeline: 'Vertical timeline container for `TimelineItem` children.',
   toast: 'Toast notifications via `useToast` + `ToastContainer`, with the imperative `toast()` helper.',
   toggle: 'Two-state pressed button (`aria-pressed`) with sizes and `square` icon mode.',
@@ -551,12 +557,15 @@ const CATEGORY_GROUPS = {
     'status-bar', 'tab-bar', 'workbench',
   ],
   form: [
-    'cascader', 'checkbox', 'color-picker', 'combobox', 'datepicker',
+    'cascader', 'checkbox', 'color-picker', 'combobox', 'date-field',
+    'datepicker',
     'date-range-picker', 'fieldset', 'file-input',
     'form', 'image-crop', 'inline-edit', 'input', 'mentions',
     'number-input', 'otp-input',
     'password-input', 'radio', 'rating', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
+    // 'time-field' 无独立 css family——其样式并入 date-field（segmented-field
+    // 引擎在 DateField 目录）+ time-picker 闭包，见 dist/css-manifest.json
     'time-picker', 'toggle', 'transfer', 'tree-select', 'upload',
   ],
   overlay: [
@@ -576,7 +585,8 @@ const CATEGORY_GROUPS = {
     'toolbar', 'tour',
   ],
   feedback: [
-    'alert', 'async-section', 'banner', 'empty', 'loading-overlay',
+    'alert', 'async-section', 'banner', 'empty', 'error-boundary',
+    'loading-overlay',
     'result', 'skeleton', 'spinner', 'toast',
   ],
   agent: [

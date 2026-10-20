@@ -91,6 +91,41 @@ special jobs described below. A red CI is a blocked merge, not a warning.
 
   On Linux the suite is skipped (guidepup cannot import there) — do not
   weaken its assertions to make local runs greener.
+- **NVDA smoke suite** (`e2e/screen-reader-nvda.spec.ts`) mirrors the
+  VoiceOver contracts on a Windows CI job (`screen-reader-nvda`) — same
+  guidepup fixture isolation, `nvdaTest` from `@guidepup/playwright`.
+  Local reproduction needs Windows with the same two `@guidepup/setup`
+  steps; on Linux/macOS the spec skips.
+
+### Packaging gates
+
+After `pnpm build`, the build job runs two packaging linters against the
+packed tarball:
+
+- `publint` — exports map vs. actually packed files (it caught a dead
+  `design-tokens/*/*` pattern once).
+- `@arethetypeswrong/cli --pack . --profile esm-only
+  --exclude-entrypoints './styles.css'` — every entrypoint's `.d.ts` must
+  resolve under Node ESM and bundler resolution. `./styles.css` is a
+  side-effect subpath with no types by design; node10 cannot read exports
+  maps and is out of scope for an ESM-only package. The unscoped `attw`
+  package on npm is a dependency-confusion placeholder — always use
+  `@arethetypeswrong/cli`.
+
+Node-ESM resolution requires extensions on relative imports inside `.d.ts`;
+the build chain appends them with `scripts/fix-dts-extensions.mjs` (after
+`tsc` + `tsc-alias`). If you change the build pipeline, keep that step last
+among the type-emitting steps.
+
+### React Compiler readiness
+
+The React Compiler analysis rules (`react-hooks/set-state-in-effect`,
+`react-hooks/refs`, `react-hooks/immutability`) run at **warn** — a
+deliberate progressive-adoption stance: ~91 legacy warnings sit in
+DOM-driven internals (VirtualList measurement caches, streaming chunk
+refs, toast channel). **New code must be warning-free** — check with
+`pnpm exec eslint <your files>`; the count only ever goes down. The rules
+flip to error once the legacy count reaches zero.
 
 ### Size budgets
 
@@ -127,8 +162,8 @@ build/test gates — CI will name the missing one:
    `scripts/generate-registry.mjs` (`pnpm build` gate)
 4. sidebar entry: `src/views/Layout/component-groups.ts`
 5. demos map + demo file: `src/views/ComponentDetail/index.tsx`
-6. one-line blurb in both `src/views/i18n/en.ts` and `src/views/i18n/zh.ts`
-   (the i18n coverage test fails without it)
+6. one-line blurb in all five docs-site packs — `src/views/i18n/{en,zh,fr,de,ja}.ts`
+   (the i18n coverage test fails without them)
 
 Styled components also join the box-sizing contract
 (`src/lib/css-box-sizing.test.ts`) and may need a size-limit budget bump.

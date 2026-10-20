@@ -373,6 +373,78 @@ export default function Page() {
       </div>
 
       <div className={section}>
+        <h2>{gs.testing.title}</h2>
+        <p className={paragraph}>
+          <Rich text={gs.testing.jestLead} codeClass={inlineCode} />
+        </p>
+        <pre className={codeBlock}>{`pnpm add -D jest jest-environment-jsdom babel-jest \\
+  @babel/preset-env @babel/preset-react \\
+  @testing-library/react @testing-library/user-event`}</pre>
+        <pre className={codeBlock}>{`// babel.config.cjs — ".cjs" because Vite scaffolds set "type": "module"
+module.exports = {
+  presets: [
+    ['@babel/preset-env', { targets: { node: 'current' } }],
+    ['@babel/preset-react', { runtime: 'automatic' }],
+  ],
+};`}</pre>
+        <pre className={codeBlock}>{`// style-mock.js — moduleNameMapper target for CSS imports
+module.exports = {};`}</pre>
+        <pre
+          className={codeBlock}
+        >{`// jest.config.cjs — verified against a real throwaway Jest consumer
+// ESM-only packages that must pass through Babel. pnpm stores packages at
+// node_modules/.pnpm/<name>@<ver>/node_modules/<name>/ (scope '/' -> '+'),
+// npm/yarn use node_modules/<name>/ — allow-list both shapes.
+const esmOnly = ['haze-ui', 'react-use-control']; // exact names
+const esmScopes = ['@tanstack']; // react-table pulls table-core + store, all ESM
+const pnpmStore = [
+  ...esmOnly.map((n) => n.replace('/', '\\\\+')),
+  ...esmScopes.map((s) => s.replace('/', '\\\\+') + '[^/]*'),
+].join('|');
+const flat = [
+  ...esmOnly,
+  ...esmScopes.map((s) => s + '/[^/]*'),
+].join('|');
+
+module.exports = {
+  testEnvironment: 'jsdom',
+  moduleNameMapper: {
+    '\\\\.css$': '<rootDir>/style-mock.js',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(?:\\\\.pnpm/(?:' + pnpmStore + ')@|(?:' + flat + ')/))',
+  ],
+};`}</pre>
+        <p className={paragraph}>
+          <Rich text={gs.testing.allowNote} codeClass={inlineCode} />
+        </p>
+        <pre
+          className={codeBlock}
+        >{`// haze-ui.test.js — the styles.css import exercises the mapper stub
+import 'haze-ui/styles.css';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Button, Switch } from 'haze-ui';
+
+test('Button renders children into a native button', () => {
+  render(<Button>Save changes</Button>);
+  expect(screen.getByRole('button', { name: 'Save changes' })).toBeTruthy();
+});
+
+test('Switch toggles aria-checked on click', async () => {
+  const user = userEvent.setup();
+  render(<Switch aria-label='Dark mode' />);
+  const sw = screen.getByRole('switch', { name: 'Dark mode' });
+  expect(sw.getAttribute('aria-checked')).toBe('false');
+  await user.click(sw);
+  expect(sw.getAttribute('aria-checked')).toBe('true');
+});`}</pre>
+        <p className={paragraph}>
+          <Rich text={gs.testing.vitestPara} codeClass={inlineCode} />
+        </p>
+      </div>
+
+      <div className={section}>
         <h2>{gs.typescript.title}</h2>
         <p className={paragraph}>
           <Rich text={gs.typescript.para} codeClass={inlineCode} />

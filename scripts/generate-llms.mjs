@@ -106,6 +106,8 @@ const DESCRIPTIONS = {
     'autocomplete text input with filterable option list; `onSearch` defers filtering to the host.',
   Datepicker:
     'date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.',
+  DateField:
+    'segmented date input (year/month/day spinbuttons) typing `YYYY-MM-DD` directly — no calendar; `DateFieldCore` is the headless core.',
   DateTimePicker:
     'date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
   DateRangePicker:
@@ -143,6 +145,8 @@ const DESCRIPTIONS = {
     'enter-to-commit token input over `TagInputCore`; `sortable` enables dnd-kit drag reordering (new order via `onChange`).',
   Textarea: 'multiline text input.',
   TimePicker: 'time-of-day input with controllable value.',
+  TimeField:
+    'segmented time-of-day input (hour/minute/second spinbuttons, optional 12-hour AM/PM) typing `HH:mm[:ss]` directly.',
   Toggle:
     'two-state pressed button (`aria-pressed`) with sizes and `square` icon mode; `ToolbarToggle` variant rides toolbar roving focus.',
   Transfer:
@@ -228,6 +232,8 @@ const DESCRIPTIONS = {
   Banner:
     'dismissible top banner with info/success/warning/danger variants.',
   Empty: 'empty-state placeholder with image and description.',
+  ErrorBoundary:
+    'render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.',
   Result:
     'result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.',
   Skeleton:

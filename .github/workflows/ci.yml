@@ -24,6 +24,18 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
       - run: npm run size
+      # Packaging/type-resolution gates: publint checks the exports map
+      # against actually packed files (caught the dead design-tokens/*/*
+      # pattern once already); arethetypeswrong verifies every entrypoint's
+      # .d.ts resolves under Node ESM + bundler — node10 is dead config for
+      # an ESM-only package, hence --profile esm-only. The real CLI package
+      # is @arethetypeswrong/cli: the unscoped "attw" name on npm is a
+      # dependency-confusion placeholder, never install it.
+      - run: npx -y publint
+      - run: npx -y @arethetypeswrong/cli --pack . --profile esm-only --exclude-entrypoints './styles.css'
+      # ./styles.css is a bundler side-effect subpath with no types by
+      # design (the JS entry imports no stylesheet); node10 rows render as
+      # "(ignored) 💀" but do not fail — node10 cannot read exports maps.
       # Read-only dist health check: top modules by size, appended to the
       # job summary (no extra tooling — find/sort/numfmt only, nothing is
       # installed and the build config is untouched; complements
@@ -112,6 +124,56 @@ jobs:
         if: failure()
         with:
           name: screen-reader-results
+          path: e2e/test-results
+          retention-days: 14
+
+  # Real NVDA screen reader smoke (Windows only, via guidepup): the
+  # Windows half of the AT matrix the macOS VoiceOver job above
+  # covers — same announcement contracts (dialog accessible name,
+  # focused menu item, polite toast), driven through NVDA's own
+  # command channel (act/next/press) rather than CDP dispatches, per
+  # guidepup's official playwright-nvda workflow. Runs headed on a
+  # windows runner (screen readers cannot drive headless browsers;
+  # Windows needs no xvfb). Environment prep mirrors the macOS job's
+  # two-step: `@guidepup/setup setup --ci` then `install` — on
+  # Windows the install step downloads the NVDA assets
+  # (guidepup.gg/docs CI guide). On every other platform — including
+  # the Linux e2e job, which collects the spec as part of the full
+  # suite, and the macOS VoiceOver job above, whose `screen-reader`
+  # filter also matches the file — the spec skips cleanly.
+  # Local reproduction (Windows only):
+  #   1. npx @guidepup/setup setup && npx @guidepup/setup install
+  #   2. pnpm exec playwright test screen-reader-nvda --config e2e/playwright.config.ts
+  # Env note: PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS is set via
+  # the step's env map because pwsh (the default Windows shell) does
+  # not support the inline `VAR=1 cmd` prefix the macOS job uses.
+  # First-run risk: this job's first green run is the spec's first
+  # real execution — announcement phrasing may need calibration
+  # there (failure artifacts are uploaded for remote diagnosis).
+  screen-reader-nvda:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - name: Prepare NVDA automation
+        run: npx -y @guidepup/setup setup --ci
+      - name: Install guidepup screen reader assets
+        run: npx -y @guidepup/setup install
+      - run: npx playwright install chromium
+      - run: pnpm exec playwright test screen-reader-nvda --config e2e/playwright.config.ts
+        env:
+          PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS: 1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screen-reader-nvda-results
           path: e2e/test-results
           retention-days: 14
 

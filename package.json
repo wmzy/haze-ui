@@ -34,7 +34,7 @@
     },
     "./design-tokens/light.json": "./dist/design-tokens/light.json",
     "./design-tokens/dark.json": "./dist/design-tokens/dark.json",
-    "./design-tokens/*/*": "./dist/design-tokens/*/*",
+    "./design-tokens/*": "./dist/design-tokens/*",
     "./mcp-docs.json": "./dist/mcp-docs.json",
     "./styles.css": "./dist/haze-ui.css",
     "./css/*": "./dist/css/*",
@@ -64,7 +64,7 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json",
+    "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json && node scripts/fix-dts-extensions.mjs",
     "build:demo": "node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
@@ -97,7 +97,13 @@
     "linaria",
     "zero-runtime",
     "controlled-components",
-    "dark-mode"
+    "dark-mode",
+    "date-picker",
+    "data-table",
+    "virtual-list",
+    "command-palette",
+    "form",
+    "error-boundary"
   ],
   "author": "wmzy",
   "license": "MIT",
@@ -205,11 +211,11 @@
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "27.25 KB"
+      "limit": "27.5 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "36.5 KB",
+      "limit": "36.75 KB",
       "gzip": true
     },
     {
@@ -372,6 +378,18 @@
       "name": "CSS family ratchet: signature",
       "path": "dist/css/signature.css",
       "limit": "1 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: date-field",
+      "path": "dist/css/date-field.css",
+      "limit": "0.6 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: error-boundary",
+      "path": "dist/css/error-boundary.css",
+      "limit": "0.7 KB",
       "gzip": true
     }
   ]

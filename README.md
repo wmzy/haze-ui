@@ -9,7 +9,7 @@ English | [简体中文](./README-zh_CN.md)
 [![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
 
 haze-ui is a React 19 component library styled with Linaria (zero-runtime
-CSS-in-JS) against `--haze-*` design tokens: 140 components in 9 groups,
+CSS-in-JS) against `--haze-*` design tokens: 143 components in 9 groups,
 ESM-only with a tree-shakeable `preserveModules` dist, RTL by construction,
 and an RSC-aware split (`'use client'` is pre-injected only on interactive
 modules, so the static subset renders as React Server Components). Every

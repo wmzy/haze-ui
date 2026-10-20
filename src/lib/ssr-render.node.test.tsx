@@ -176,7 +176,10 @@ const CASES: [name: string, element: ReactElement, expects: string[]][] = [
   [
     'Popover (closed)',
     <Popover content="Popover body">Trigger</Popover>,
-    ['Trigger', 'Popover body', 'aria-expanded="false"'],
+    // The panel must ship as popover="auto": React 19 does not patch
+    // attribute mismatches after hydration, so a server render without
+    // the attribute leaves showPopover() throwing in real browsers.
+    ['Trigger', 'Popover body', 'aria-expanded="false"', 'popover="auto"'],
   ],
   [
     'Tooltip (closed)',
@@ -185,17 +188,17 @@ const CASES: [name: string, element: ReactElement, expects: string[]][] = [
         <button>Hover me</button>
       </Tooltip>
     ),
-    ['Hover me', 'Help text', 'role="tooltip"'],
+    ['Hover me', 'Help text', 'role="tooltip"', 'popover="auto"'],
   ],
   [
     'Datepicker (closed)',
     <Datepicker />,
-    ['Select date'],
+    ['Select date', 'popover="auto"'],
   ],
   [
     'Combobox',
     <Combobox options={COMBOBOX_OPTIONS} placeholder="Search fruit" />,
-    ['role="combobox"', 'Search fruit', 'Apple'],
+    ['role="combobox"', 'Search fruit', 'Apple', 'popover="auto"'],
   ],
   [
     'Tree',

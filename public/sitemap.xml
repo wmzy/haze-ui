@@ -3,6 +3,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/getting-started</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/recipes</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/blocks</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/dark-mode</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/density</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/a11y</loc></url>
@@ -10,6 +11,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/guides/migration</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/streaming-a11y</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/motion</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/guides/figma-tokens</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/tokens</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/button</loc></url>
@@ -46,6 +48,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/data-table</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/carousel</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/datepicker</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/date-field</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/tree</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/divider</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/spinner</loc></url>
@@ -71,6 +74,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/diff-viewer</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/log-viewer</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/async-section</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/error-boundary</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/command</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/resizable</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/splitter</loc></url>
@@ -90,6 +94,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/chip</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/scroll-area</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/time-picker</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/time-field</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/date-range-picker</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/otp-input</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/password-input</loc></url>

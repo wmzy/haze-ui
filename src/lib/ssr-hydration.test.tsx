@@ -273,3 +273,212 @@ describe('SSR hydration (jsdom)', () => {
     container.remove();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Floating panels across SSR + hydration. React 19 does not patch
+// attribute mismatches after hydration: whatever attributes the server
+// shipped are what the hydrated DOM keeps until a prop change rewrites
+// them. The popover attribute is therefore a server-render contract —
+// a panel that ships without it can never call showPopover in a real
+// browser, no matter what the client render computes.
+// ---------------------------------------------------------------------------
+
+// jsdom implements neither the Popover API nor ToggleEvent; patch the
+// prototype surface (same approach as Popover.test.tsx / Dialog's
+// showModal mocks). showPopover is browser-faithful: calling it on an
+// element without the popover attribute throws, exactly like a real
+// engine's "Not supported on elements that are not popovers".
+class ToggleEventPolyfill extends Event {
+  newState: string;
+  constructor(type: string, init: { newState: string }) {
+    super(type);
+    this.newState = init.newState;
+  }
+}
+
+const showPopoverMock = vi.fn(function (this: HTMLElement) {
+  if (!this.hasAttribute('popover')) {
+    throw new DOMException(
+      'Not supported on elements that are not popovers',
+      'NotSupportedError'
+    );
+  }
+  this.setAttribute('data-popover-open', '');
+  this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
+});
+
+const hidePopoverMock = vi.fn(function (this: HTMLElement) {
+  if (!this.hasAttribute('data-popover-open')) return;
+  this.removeAttribute('data-popover-open');
+  this.dispatchEvent(
+    new ToggleEventPolyfill('toggle', { newState: 'closed' })
+  );
+});
+
+type PopoverProtoPatch = {
+  popover?: unknown;
+  showPopover?: () => void;
+  hidePopover?: () => void;
+};
+
+function installNativePopover() {
+  Object.defineProperty(HTMLElement.prototype, 'popover', {
+    configurable: true,
+    value: 'manual',
+  });
+  HTMLElement.prototype.showPopover = showPopoverMock;
+  HTMLElement.prototype.hidePopover = hidePopoverMock;
+}
+
+function removeNativePopover() {
+  const proto = HTMLElement.prototype as PopoverProtoPatch;
+  delete proto.popover;
+  delete proto.showPopover;
+  delete proto.hidePopover;
+}
+
+describe('SSR hydration — floating panels', () => {
+  afterEach(() => {
+    showPopoverMock.mockClear();
+    hidePopoverMock.mockClear();
+  });
+
+  it('ships the panel as popover=auto in server HTML', () => {
+    // renderToString in jsdom probes the same "no engine" path node SSR
+    // takes: the capability detection must not strip the attribute.
+    const html = renderToString(
+      <Popover content="Popover body">Trigger</Popover>
+    );
+    const reference = document.createElement('div');
+    reference.innerHTML = html;
+    const panel = reference.querySelector("[data-slot='content']");
+    expect(panel).toHaveAttribute('popover', 'auto');
+  });
+
+  it('removes the attribute after hydration when the engine lacks the API', async () => {
+    // jsdom-tier client (no popover API): the attribute ships from the
+    // server but must not linger — UA stylesheets hide [popover] elements
+    // that are not :popover-open, which would defeat the fallback tier's
+    // open state on any engine that styles the attribute without the API.
+    const html = renderToString(
+      <Popover content="Popover body">Trigger</Popover>
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container);
+
+    const panel = () => {
+      const trigger = container.querySelector('[role="button"]')!;
+      return document.getElementById(trigger.getAttribute('aria-controls')!)!;
+    };
+    // Server markup carries the progressive-enhancement attribute...
+    expect(panel()).toHaveAttribute('popover', 'auto');
+
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(async () => {
+        root = hydrateRoot(
+          container,
+          <Popover content="Popover body">Trigger</Popover>
+        );
+        await Promise.resolve();
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+      // ...and the client that positively lacks the API takes it back off.
+      expect(panel()).not.toHaveAttribute('popover');
+    } finally {
+      if (root) {
+        await act(async () => {
+          root!.unmount();
+          await Promise.resolve();
+        });
+      }
+      container.remove();
+    }
+  });
+
+  it('hydrates into a working native-tier pair without mismatches', async () => {
+    // 1. Server render with NO engine installed — mirrors node SSR,
+    //    where capabilities cannot be probed.
+    const html = renderToString(
+      <Popover content="Popover body">Trigger</Popover>
+    );
+
+    // 2. The browser arrives: install the popover API, then hydrate the
+    //    server markup with the same tree.
+    installNativePopover();
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container);
+
+    const messages: string[] = [];
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation((...args: unknown[]) => {
+        messages.push(`error: ${args.join(' ')}`);
+      });
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation((...args: unknown[]) => {
+        messages.push(`warn: ${args.join(' ')}`);
+      });
+    const recoverable: string[] = [];
+    const onRecoverableError = (
+      err: unknown,
+      info: { componentStack?: string } = {}
+    ) => {
+      recoverable.push(`${String(err)}${info.componentStack ?? ''}`);
+    };
+
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      await act(async () => {
+        root = hydrateRoot(
+          container,
+          <Popover content="Popover body">Trigger</Popover>,
+          { onRecoverableError }
+        );
+        await Promise.resolve();
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // No hydration mismatch: the server markup and the hydration pass
+      // must agree attribute-for-attribute.
+      expect(messages).toEqual([]);
+      expect(recoverable).toEqual([]);
+
+      const trigger = container.querySelector<HTMLElement>('[role="button"]')!;
+      const panel = document.getElementById(
+        trigger.getAttribute('aria-controls')!
+      )!;
+      // The attribute survived hydration — React 19 keeps the server DOM
+      // for attributes, so only a matching server render keeps it there.
+      expect(panel).toHaveAttribute('popover', 'auto');
+
+      // Interaction reaches the engine: without the shipped attribute
+      // this click throws NotSupportedError from inside the open effect
+      // (the bug this suite pins).
+      await act(async () => {
+        trigger.click();
+        await Promise.resolve();
+      });
+      expect(showPopoverMock).toHaveBeenCalledTimes(1);
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    } finally {
+      errorSpy.mockRestore();
+      warnSpy.mockRestore();
+      removeNativePopover();
+      if (root) {
+        await act(async () => {
+          root!.unmount();
+          await Promise.resolve();
+        });
+      }
+      container.remove();
+    }
+  });
+});

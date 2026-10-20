@@ -138,6 +138,10 @@ const jaJP: HazeStrings = {
     expand: '展開',
     collapse: '折りたたむ',
   },
+  errorBoundary: {
+    title: '問題が発生しました',
+    reset: '再試行',
+  },
   fileInput: {
     label: 'ファイルを選択',
   },

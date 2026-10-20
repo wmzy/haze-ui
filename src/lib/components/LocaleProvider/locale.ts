@@ -137,6 +137,10 @@ const defaultStrings = {
     expand: 'Expand',
     collapse: 'Collapse',
   },
+  errorBoundary: {
+    title: 'Something went wrong',
+    reset: 'Try again',
+  },
   fileInput: {
     label: 'Choose file',
   },

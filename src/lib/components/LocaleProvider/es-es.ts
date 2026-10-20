@@ -140,6 +140,10 @@ const esES: HazeStrings = {
     expand: 'Mostrar más',
     collapse: 'Mostrar menos',
   },
+  errorBoundary: {
+    title: 'Algo salió mal',
+    reset: 'Reintentar',
+  },
   fileInput: {
     label: 'Elegir archivo',
   },

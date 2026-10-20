@@ -80,6 +80,11 @@ export type {
 } from './components/Accordion';
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
+export { ErrorBoundary } from './components/ErrorBoundary';
+export type {
+  ErrorBoundaryProps,
+  FallbackRenderArgs,
+} from './components/ErrorBoundary';
 export { Avatar } from './components/Avatar';
 export type { AvatarProps } from './components/Avatar';
 export { Tag } from './components/Tag';
@@ -129,6 +134,8 @@ export { Carousel, CarouselSlide } from './components/Carousel';
 export type { CarouselProps, CarouselSlideProps } from './components/Carousel';
 export { Datepicker, DatepickerCore } from './components/Datepicker';
 export type { DatepickerProps, DatepickerCoreProps, DatepickerPreset } from './components/Datepicker';
+export { DateField, DateFieldCore } from './components/DateField';
+export type { DateFieldProps, DateFieldCoreProps, DatePlaceholder, DateLabels } from './components/DateField';
 export { Tree, SortableTree } from './components/Tree';
 export type { TreeProps, TreeNodeData, SortableTreeProps, SortableTreeMoveInfo } from './components/Tree';
 export { TreeSelect } from './components/TreeSelect';
@@ -192,6 +199,8 @@ export { ScrollArea } from './components/ScrollArea';
 export type { ScrollAreaProps } from './components/ScrollArea';
 export { TimePicker, TimePickerCore } from './components/TimePicker';
 export type { TimePickerProps, TimePickerCoreProps, TimeParts, TimePickerFormat } from './components/TimePicker';
+export { TimeField, TimeFieldCore } from './components/TimeField';
+export type { TimeFieldProps, TimeFieldCoreProps, TimePlaceholder, TimeLabels } from './components/TimeField';
 export { DateRangePicker, DateRangePickerCore } from './components/DateRangePicker';
 export type { DateRangePickerProps, DateRangePickerCoreProps, DateRangePickerPreset, DateRangePickerPresets } from './components/DateRangePicker';
 export { OTPInput, OTPInputCore } from './components/OTPInput';

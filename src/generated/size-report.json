@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-16T15:33:45.589Z",
+  "generatedAt": "2026-10-20T14:41:24.256Z",
   "distAvailable": true,
   "families": [
     {
@@ -114,8 +114,8 @@
     },
     {
       "family": "chart",
-      "cssBytes": 118,
-      "cssGzipBytes": 130
+      "cssBytes": 876,
+      "cssGzipBytes": 429
     },
     {
       "family": "chat-container",
@@ -164,8 +164,8 @@
     },
     {
       "family": "command",
-      "cssBytes": 2754,
-      "cssGzipBytes": 776
+      "cssBytes": 2908,
+      "cssGzipBytes": 825
     },
     {
       "family": "confirm-dialog",
@@ -199,8 +199,13 @@
     },
     {
       "family": "data-table",
-      "cssBytes": 5431,
-      "cssGzipBytes": 1350
+      "cssBytes": 6694,
+      "cssGzipBytes": 1524
+    },
+    {
+      "family": "date-field",
+      "cssBytes": 1395,
+      "cssGzipBytes": 534
     },
     {
       "family": "date-range-picker",
@@ -256,6 +261,11 @@
       "family": "empty",
       "cssBytes": 468,
       "cssGzipBytes": 273
+    },
+    {
+      "family": "error-boundary",
+      "cssBytes": 1882,
+      "cssGzipBytes": 631
     },
     {
       "family": "fieldset",
@@ -559,8 +569,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 4568,
-      "cssGzipBytes": 1185
+      "cssBytes": 6155,
+      "cssGzipBytes": 1399
     },
     {
       "family": "tag-group",
@@ -680,7 +690,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 342605,
-    "cssGzipBytes": 35880
+    "cssBytes": 349488,
+    "cssGzipBytes": 36689
   }
 }

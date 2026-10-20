@@ -17,9 +17,12 @@ import { buildStackblitzProject } from '@/views/ComponentDetail/stackblitz';
 import { intro, page } from '@/views/ComponentDetail/styles';
 import { useSiteLocale } from '@/views/i18n';
 
+import AiWorkbenchBlock from './blocks/AiWorkbenchBlock';
 import ChatBlock from './blocks/ChatBlock';
 import CrudBlock from './blocks/CrudBlock';
 import DashboardBlock from './blocks/DashboardBlock';
+import DataTableBlock from './blocks/DataTableBlock';
+import KanbanBlock from './blocks/KanbanBlock';
 import LoginBlock from './blocks/LoginBlock';
 import SettingsBlock from './blocks/SettingsBlock';
 import { resolveBlockSource } from './block-sources';
@@ -32,7 +35,15 @@ import { resolveBlockSource } from './block-sources';
  * StackBlitz 跑的是同一份文件。
  */
 
-type BlockId = 'dashboard' | 'login' | 'settings' | 'chat' | 'crud';
+type BlockId =
+  | 'dashboard'
+  | 'login'
+  | 'settings'
+  | 'chat'
+  | 'crud'
+  | 'aiWorkbench'
+  | 'dataTable'
+  | 'kanban';
 
 type BlockDef = {
   id: BlockId;
@@ -88,6 +99,38 @@ const BLOCKS: BlockDef[] = [
       'tree', 'data-table', 'dialog', 'confirm-dialog', 'toast', 'form',
       'input', 'select', 'button', 'badge', 'segmented', 'kbd', 'checkbox',
       'dropdown-menu', 'empty', 'pagination', 'skeleton', 'spinner', 'table',
+      'virtual-list', 'visually-hidden',
+    ],
+  },
+  {
+    id: 'aiWorkbench',
+    Component: AiWorkbenchBlock,
+    overflow: 'hidden',
+    cssFamilies: [
+      'workbench', 'resizable', 'activity-rail', 'status-bar', 'tab-bar',
+      'conversation-list', 'chat-container', 'chat-message', 'streaming-text',
+      'thinking-indicator', 'tool-call-card', 'prompt-input', 'model-picker',
+      'sources', 'avatar', 'badge', 'button', 'empty', 'spinner', 'tooltip',
+    ],
+  },
+  {
+    id: 'dataTable',
+    Component: DataTableBlock,
+    overflow: 'auto',
+    cssFamilies: [
+      'data-table', 'checkbox', 'dropdown-menu', 'empty', 'input',
+      'pagination', 'progress', 'segmented', 'select', 'skeleton', 'spinner',
+      'table', 'virtual-list', 'visually-hidden', 'avatar', 'badge', 'button',
+      'chip',
+    ],
+  },
+  {
+    id: 'kanban',
+    Component: KanbanBlock,
+    overflow: 'hidden',
+    cssFamilies: [
+      'avatar', 'avatar-group', 'badge', 'button', 'chip', 'dropdown-menu',
+      'empty', 'input', 'progress', 'select', 'spinner', 'tooltip',
       'virtual-list', 'visually-hidden',
     ],
   },

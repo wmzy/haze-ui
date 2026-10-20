@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { lightTheme, spacing, typography } from 'haze-ui/tokens';
 
 // Global CSS belongs in the root layout in the App Router. Use the full
-// bundle here; swap for 'haze-ui/css/tokens.css' plus per-component
-// subpaths ('haze-ui/css/button.css', ...) to ship less CSS.
+// bundle here; app/per-component-css/page.tsx demonstrates the per-component
+// alternative ('haze-ui/css/tokens.css' + 'haze-ui/css/button.css', ...).
 import 'haze-ui/styles.css';
 
 export const metadata: Metadata = {

@@ -140,6 +140,10 @@ const deDE: HazeStrings = {
     expand: 'Mehr anzeigen',
     collapse: 'Weniger anzeigen',
   },
+  errorBoundary: {
+    title: 'Etwas ist schiefgelaufen',
+    reset: 'Erneut versuchen',
+  },
   fileInput: {
     label: 'Datei auswählen',
   },

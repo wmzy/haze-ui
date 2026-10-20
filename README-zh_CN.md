@@ -9,7 +9,7 @@
 [![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
 
 haze-ui 是一个 React 19 组件库：Linaria（零运行时 CSS-in-JS）+ `--haze-*`
-设计令牌；140 个组件、9 大分组；ESM-only、`preserveModules` 可摇树产物；
+设计令牌；143 个组件、9 大分组；ESM-only、`preserveModules` 可摇树产物；
 RTL 与生俱来；RSC 感知拆分（仅交互模块预注入 `'use client'`，静态子集可直接
 作为 React Server Components 渲染）。每个有状态组件都讲同一套
 `ControlOrValue<T>` 协议——一个 prop（如 `checked?: Control<T> | T`）同时覆盖

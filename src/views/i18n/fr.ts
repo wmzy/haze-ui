@@ -97,6 +97,21 @@ export const fr: DeepPartial<SiteStrings> = {
       description:
         'Un Tree choisit l’équipe, une DataTable avec toolbar et densité liste les pipelines ; l’édition Dialog + FormItem zod, la suppression ConfirmDialog et le retour Toast bouclent la boucle.',
     },
+    aiWorkbench: {
+      title: 'Atelier de revue IA',
+      description:
+        'La coquille Workbench en bureau IA à deux colonnes — rail d’activité et sidebar ConversationList, au centre un tour de revue scripté ThinkingIndicator → ToolCallCard → StreamingText, à droite un panneau de citations Sources ancré, et PromptInput + ModelPicker en compositeur.',
+    },
+    dataTable: {
+      title: 'Console de table de données',
+      description:
+        'La DataTable fondée sur TanStack en page fleet complète — colonnes triables et redimensionnables, ligne de filtre par colonne, pagination, visibilité des colonnes, densité, export CSV et sélection multiple à cases à cocher avec barre d’actions groupées.',
+    },
+    kanban: {
+      title: 'Kanban de sprint',
+      description:
+        'Quatre colonnes de cartes d’issues avec badges de priorité, labels, avatars d’assignés et barres de progression. Les cartes bougent via le menu ⋯ — haze-ui n’offre que le tri mono-conteneur, pas le glisser entre colonnes ; le plateau est donc statique par design.',
+    },
   },
   componentGroups: {
     General: 'Général',
@@ -165,6 +180,8 @@ export const fr: DeepPartial<SiteStrings> = {
     ColorPicker: 'Sélecteur de couleur avec valeur contrôlable et nuanciers prédéfinis.',
     Combobox:
       'Champ de complétion automatique avec liste d’options filtrable ; onSearch délègue le filtrage à l’hôte.',
+    DateField:
+      'Saisie de date segmentée (année/mois/jour) tapée directement — sans calendrier.',
     Datepicker:
       'Saisie de date avec calendrier popup (valeur YYYY-MM-DD) ; showTime ajoute un champ horaire.',
     DateTimePicker:
@@ -197,6 +214,8 @@ export const fr: DeepPartial<SiteStrings> = {
       'Saisie de jetons validée par Entrée sur TagInputCore ; sortable active le tri par glisser (nouvel ordre via onChange).',
     Textarea: 'Saisie texte multiligne.',
     TimePicker: 'Saisie d’horaire avec valeur contrôlable.',
+    TimeField:
+      'Saisie d’horaire segmentée (heure/minute/seconde, format 12 heures AM/PM en option).',
     Toggle:
       'Bouton pressoir à deux états (aria-pressed) avec tailles et mode icône carrée ; la variante ToolbarToggle chevauche le roving focus de la barre d’outils.',
     Transfer:
@@ -286,6 +305,8 @@ export const fr: DeepPartial<SiteStrings> = {
       'États déclaratifs loading / error / contenu pour les données asynchrones.',
     Banner: 'Bandeau supérieur déplaçable avec variantes info/success/warning/danger.',
     Empty: 'Placeholder d’état vide avec image et description.',
+    ErrorBoundary:
+      'Frontière d’erreur de rendu : intercepte les exceptions du sous-arbre, fallback (nœud ou render prop) avec rappel de réinitialisation ; resetKeys réinitialise sur changement superficiel.',
     Result:
       'Page de retour de résultat : illustration d’état (success/error/info/warning/403/404/500), title, subTitle et zone d’action extra ; icon remplace l’illustration par défaut.',
     Skeleton: 'Placeholder de chargement scintillant (text/circular/rectangular).',
@@ -388,6 +409,18 @@ export const fr: DeepPartial<SiteStrings> = {
       accessible: {
         title: 'Accessible',
         desc: 'Bâti sur des éléments HTML natifs comme <dialog> et <details> pour une a11y intégrée.',
+      },
+      nativeOverlays: {
+        title: 'Overlays popover natifs',
+        desc: 'Les couches flottantes s’appuient sur l’API popover native et le CSS anchor positioning — positionnées par le moteur, zéro calcul JS.',
+      },
+      screenReaderCi: {
+        title: 'Gate CI VoiceOver',
+        desc: 'La sortie réelle de VoiceOver est vérifiée sur la CI macOS — une véritable porte screen-reader au-delà d’axe et de l’e2e.',
+      },
+      aiDocs: {
+        title: 'Docs prêtes pour l’IA',
+        desc: 'Serveur MCP intégré (npx haze-ui-mcp) et llms.txt — les agents lisent la même doc que vous.',
       },
       treeShakeable: {
         title: 'Élagable (tree-shakeable)',
@@ -661,6 +694,46 @@ export const fr: DeepPartial<SiteStrings> = {
         '. Une exception délibérée au principe « tout arrive dans le HTML serveur » : ',
         { code: 'StreamingText' },
         ' rend volontairement un préfixe vide plus le curseur côté serveur et streame le texte côté client.',
+      ],
+    },
+    testing: {
+      title: 'Tester avec Jest / Vitest',
+      jestLead: [
+        'haze-ui est ESM-only (',
+        { code: "type: 'module'" },
+        ') et sert ses styles depuis des sous-chemins CSS : un consommateur Jest a besoin de trois ajustements — un environnement jsdom via ',
+        { code: 'jest-environment-jsdom' },
+        ' (détaché depuis Jest 28), des ',
+        { code: 'transformIgnorePatterns' },
+        ' qui laissent Babel transpiler haze-ui et ses dépendances runtime ESM-only, et un stub ',
+        { code: '\\.css$' },
+        ' en ',
+        { code: 'moduleNameMapper' },
+        ' pour que les imports de styles résolvent vers un module vide. Les scaffolds Vite embarquant ',
+        { code: '"type": "module"' },
+        ', les fichiers de configuration ci-dessous utilisent l’extension ',
+        { code: '.cjs' },
+        ' :',
+      ],
+      allowNote: [
+        'La liste blanche est le minimum vérifié : haze-ui lui-même, ',
+        { code: 'react-use-control' },
+        ', et le scope ',
+        { code: '@tanstack' },
+        ' (react-table tire table-core et store, tous ESM). Tout le reste du graphe — react-f0rm, @dnd-kit, recharts, qrcode — est en CommonJS et se charge sans transformation. La regex couvre les deux layouts : pnpm stocke à ',
+        { code: '.pnpm/<name>@<ver>/node_modules/<name>/' },
+        ' avec les slashes de scope encodés ',
+        { code: '+' },
+        ', tandis que npm et yarn utilisent ',
+        { code: 'node_modules/<name>/' },
+        '. Retirez le mapper CSS et ',
+        { code: "import 'haze-ui/styles.css'" },
+        ' échoue avec une SyntaxError — l’import de stylesheet ci-dessus exerce exactement ce stub.',
+      ],
+      vitestPara: [
+        'Vitest n’a besoin de rien de tout cela : il consomme l’ESM nativement et laisse le traitement CSS désactivé par défaut (',
+        { code: 'css: false' },
+        '), donc les imports simples fonctionnent. Ce site de documentation teste les composants haze-ui sous Vitest + jsdom sans aucune configuration de transform.',
       ],
     },
     typescript: {

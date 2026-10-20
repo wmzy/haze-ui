@@ -91,6 +91,21 @@ export const zh: DeepPartial<SiteStrings> = {
       description:
         '左侧 Tree 选团队，右侧 DataTable 带工具栏与密度切换列出流水线，Dialog + zod 表单编辑、ConfirmDialog 删除确认、Toast 反馈串起完整闭环。',
     },
+    aiWorkbench: {
+      title: 'AI 评审工作台',
+      description:
+        'Workbench 骨架拼成双栏 AI 工作台 —— 活动栏 + ConversationList 会话侧栏，中间一段脚本化思考 → 工具调用 → 流式回答的评审回合，右侧停靠 Sources 引用面板，PromptInput + ModelPicker 组成输入区。',
+    },
+    dataTable: {
+      title: '数据表格控制台',
+      description:
+        'TanStack 内核的 DataTable 撑起完整 fleet 页 —— 可排序、可调宽的列，逐列筛选行，分页、列显隐、密度切换、CSV 导出，复选批量选择驱动批量操作条。',
+    },
+    kanban: {
+      title: '冲刺看板',
+      description:
+        '四列 issue 卡片带优先级徽标、标签、负责人头像与进度条。卡片经 ⋯ 菜单流转 —— haze-ui 只提供单容器排序、无跨列拖拽，看板因此有意做成静态。',
+    },
   },
   componentGroups: {
     General: '通用',
@@ -151,6 +166,7 @@ export const zh: DeepPartial<SiteStrings> = {
     Checkbox: '复选框，选中状态可控。',
     ColorPicker: '颜色选择器：取值可控，带预设色板。',
     Combobox: '自动补全输入框：可筛选的选项列表，onSearch 可将筛选交由宿主。',
+    DateField: '分段式日期输入：年/月/日三段直接键入，无日历面板。',
     Datepicker:
       '日期输入：弹出日历（YYYY-MM-DD 取值），showTime 附加时刻选择。',
     DateTimePicker:
@@ -181,6 +197,7 @@ export const zh: DeepPartial<SiteStrings> = {
       '标签输入框：回车提交，基于 TagInputCore；sortable 开启拖拽排序（新顺序经 onChange 给出）。',
     Textarea: '多行文本输入。',
     TimePicker: '时刻输入框，取值可控。',
+    TimeField: '分段式时间输入：时/分/秒三段，可选 12 小时制 AM/PM 段。',
     Toggle:
       '两态按压按钮（aria-pressed）：多种尺寸与方形图标模式；ToolbarToggle 变体接入工具栏 roving focus。',
     Transfer: '双栏穿梭框：在源与目标列表间移动选项。',
@@ -258,6 +275,8 @@ export const zh: DeepPartial<SiteStrings> = {
     AsyncSection: '声明式异步状态：loading / error / 内容三态。',
     Banner: '可关闭的顶部横幅：info/success/warning/danger 变体。',
     Empty: '空状态占位：插画与描述。',
+    ErrorBoundary:
+      '渲染错误边界：捕获子树抛错，fallback 节点或渲染函数带重置回调；resetKeys 浅比较变化即重置。',
     Result:
       '结果反馈页：状态插画（success/error/info/warning/403/404/500）、title、subTitle 与 extra 操作区；icon 可替换默认插画。',
     Skeleton: '闪烁加载占位（text/circular/rectangular）。',
@@ -341,13 +360,25 @@ export const zh: DeepPartial<SiteStrings> = {
         title: '无障碍',
         desc: '基于 <dialog>、<details> 等原生元素，天然具备可访问性。',
       },
+      nativeOverlays: {
+        title: '原生 popover 浮层',
+        desc: '浮层基于原生 popover API 与 CSS anchor positioning，由浏览器引擎定位，零 JS 计算。',
+      },
+      screenReaderCi: {
+        title: 'VoiceOver CI 门禁',
+        desc: 'macOS CI 上断言真实 VoiceOver 读屏输出——axe 与 e2e 之外的真实读屏门禁。',
+      },
       treeShakeable: {
         title: '可摇树',
         desc: 'ESM 输出 + preserveModules，只引入你用到的部分。',
       },
       controlled: {
         title: '受控与非受控',
-        desc: '表单组件经 react-use-control 同时支持两种模式。',
+        desc: '单一 prop 双模式：有状态组件接受 Control<T> | T——没有 defaultValue 双轨 API。',
+      },
+      aiDocs: {
+        title: 'AI 友好文档',
+        desc: '自带 MCP server（npx haze-ui-mcp）与 llms.txt——AI 与你读到同一份文档。',
       },
       typescript: {
         title: 'TypeScript 优先',
@@ -602,6 +633,46 @@ export const zh: DeepPartial<SiteStrings> = {
         '。“所有内容都进服务端 HTML”有一个刻意的例外：',
         { code: 'StreamingText' },
         ' 有意在服务端渲染空前缀加光标，把文本留到客户端流式补齐。',
+      ],
+    },
+    testing: {
+      title: '在 Jest / Vitest 中测试',
+      jestLead: [
+        'haze-ui 只发 ESM（',
+        { code: "type: 'module'" },
+        '）且样式走 CSS 子路径，Jest 消费者需要三处调整：用 ',
+        { code: 'jest-environment-jsdom' },
+        ' 提供 jsdom 环境（Jest 28 起不再内置）；用 ',
+        { code: 'transformIgnorePatterns' },
+        ' 放行 haze-ui 及其 ESM 运行时依赖交给 Babel 转译；用 ',
+        { code: '\\.css$' },
+        ' 的 ',
+        { code: 'moduleNameMapper' },
+        ' 把样式导入映射到空模块。Vite 脚手架的工程自带 ',
+        { code: '"type": "module"' },
+        '，因此下面的配置文件用 ',
+        { code: '.cjs' },
+        ' 扩展名：',
+      ],
+      allowNote: [
+        '放行清单是实测最小集：haze-ui 本体、',
+        { code: 'react-use-control' },
+        '，以及 ',
+        { code: '@tanstack' },
+        ' 整个 scope（react-table 会连带 table-core 与 store，全部是 ESM）。依赖图里其余的 react-f0rm、@dnd-kit、recharts、qrcode 都带 CommonJS 产物，无需转译即可加载。正则同时覆盖两种布局：pnpm 把包放在 ',
+        { code: '.pnpm/<name>@<ver>/node_modules/<name>/' },
+        '（scope 斜杠编码成 ',
+        { code: '+' },
+        '），npm 与 yarn 则是 ',
+        { code: 'node_modules/<name>/' },
+        '。去掉 CSS 映射后 ',
+        { code: "import 'haze-ui/styles.css'" },
+        ' 会直接抛 SyntaxError——上面示例里的样式导入走的就是这个 stub。',
+      ],
+      vitestPara: [
+        'Vitest 无需以上任何配置：它原生消费 ESM，CSS 处理默认关闭（',
+        { code: 'css: false' },
+        '），直接写普通 import 即可。本文档站自身就在 Vitest + jsdom 下零转译配置地测试 haze-ui 组件。',
       ],
     },
     typescript: {
