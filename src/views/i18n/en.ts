@@ -18,8 +18,13 @@
  *    (backticks stripped for HTML rendering).
  */
 
-/** One run of a rich paragraph: plain text, inline code, or bold text. */
-export type RichSeg = string | { code: string } | { strong: string };
+/** One run of a rich paragraph: plain text, inline code, bold, italic or a link. */
+export type RichSeg =
+  | string
+  | { code: string }
+  | { strong: string }
+  | { em: string }
+  | { link: string; href: string };
 
 /** A paragraph rendered by `Rich` (./index.tsx). */
 export type RichText = readonly RichSeg[];
@@ -280,6 +285,7 @@ export const en = {
     home: 'Home',
     gettingStarted: 'Getting Started',
     recipes: 'Recipes',
+    blocks: 'Blocks',
     guides: 'Guides',
     tokens: 'Tokens',
     components: 'Components',
@@ -298,6 +304,7 @@ export const en = {
     migration: 'Migrating from AntD / shadcn',
     streamingA11y: 'Streaming a11y',
     motion: 'Motion presets',
+    figmaTokens: 'Tokens in Figma',
   },
   /* One-line summaries shown under the guide links (zh mode only for now;
    * the strings exist for both locales so any surface can adopt them). */
@@ -313,6 +320,39 @@ export const en = {
       'Accessible streamed AI output: live regions, announcements and reduced motion.',
     motion:
       'data-state-driven enter/exit animation presets over the motion tokens.',
+    figmaTokens:
+      'The W3C DTF token exports into Tokens Studio and Figma Variables — workflow and limits.',
+  },
+  /* Blocks page (/blocks): full-page compositions gallery. */
+  blocks: {
+    title: 'Blocks',
+    intro:
+      'Full-page compositions built entirely from haze-ui components. Preview each block live, read its source, or open it in StackBlitz as a runnable Vite project.',
+    dashboard: {
+      title: 'Analytics dashboard',
+      description:
+        'AppShell with Sidebar navigation, a Breadcrumb trail, a Stat metric row and a DataTable with toolbar export, density control and pagination.',
+    },
+    login: {
+      title: 'Sign-in page',
+      description:
+        'A brand panel beside a centered Card holding a complete Form loop — zod-validated fields with per-field error rendering.',
+    },
+    settings: {
+      title: 'Workspace settings',
+      description:
+        'Card-variant Tabs with three sections of live Switch, RadioGroup, Select and Combobox controls, all in the controllable-state pattern.',
+    },
+    chat: {
+      title: 'AI chat workspace',
+      description:
+        'The AI conversation family in one screen — a role="log" ChatContainer of ChatMessages, a scripted ThinkingIndicator → ToolCallCard → StreamingText turn, a ChatInput whose send flips to stop, and a ConversationList rail.',
+    },
+    crud: {
+      title: 'Master–detail CRUD',
+      description:
+        'A Tree picks the team, a DataTable with toolbar and density lists its pipelines, and Dialog + zod FormItem editing, ConfirmDialog deletes and Toast feedback close the loop.',
+    },
   },
   /* Sidebar component-group display names; keys mirror component-groups.ts. */
   componentGroups: {
@@ -457,6 +497,58 @@ export const en = {
         ' as peer dependencies.',
       ],
       orOtherManagers: 'Or with other package managers:',
+    },
+    frameworks: {
+      title: 'Frameworks',
+      switchLabel: 'Framework',
+      intro: [
+        'The install is the same everywhere — only where the CSS import lives differs. The mode names match the README quickstart: ',
+        { strong: 'A' },
+        ' is one full stylesheet, ',
+        { strong: 'B' },
+        ' is per-component CSS.',
+      ],
+      vite: {
+        lead: 'Scaffold a Vite app (React 19, TypeScript) and add the library:',
+        modeA: [
+          { strong: 'Mode A — one full stylesheet (simplest).' },
+          ' A single import in the entry module covers every component:',
+        ],
+        modeB: [
+          { strong: 'Mode B — per-component CSS.' },
+          ' The official Vite plugin reads each ',
+          { code: "import { … } from 'haze-ui'" },
+          ' statement and injects the matching ',
+          { code: 'css/*.css' },
+          ' files (tokens included; the module graph deduplicates):',
+        ],
+        pluginNote: [
+          { code: 'vite-plugin-haze-ui' },
+          ' is on npm — install it with ',
+          { code: 'npm i -D vite-plugin-haze-ui' },
+          '. Prefer picking files yourself? Import ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus the family files you use and skip the plugin entirely — the Setup section above shows the manual form.',
+        ],
+      },
+      next: {
+        lead: 'Scaffold an App Router project (Next.js 15+ ships React 19) and add the library:',
+        modeA: [
+          { strong: 'Mode A — one full stylesheet (simplest).' },
+          ' Global CSS belongs in the root layout:',
+        ],
+        modeB: [
+          { strong: 'Mode B — per-component CSS.' },
+          ' No plugin involved — list ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus the family files you actually render, still in the root layout:',
+        ],
+        note: [
+          'Apply the theme classes to ',
+          { code: '<body>' },
+          ' as shown in the Server rendering section below — every route inherits them.',
+        ],
+      },
     },
     setup: {
       title: 'Setup',
@@ -611,6 +703,19 @@ export const en = {
         ' element:',
       ],
       browsers: ['Chrome / Edge 84+', 'Firefox 98+', 'Safari 15.4+'],
+    },
+    cdn: {
+      title: 'Try it from a CDN',
+      para: [
+        'No install needed for a quick experiment: the stylesheet from unpkg, the components from esm.sh, and a single React copy kept stable through the import map:',
+      ],
+      note: [
+        'Pin a real version — ',
+        { code: '1.33.0' },
+        ' here; check npm for the latest. The ',
+        { code: '?external=react,react-dom' },
+        ' flag keeps haze-ui on the import map’s single React copy — two React instances break hooks. CDN mode trades tooling correctness for zero setup; switch to a real install before building an app.',
+      ],
     },
   },
   componentDetail: {

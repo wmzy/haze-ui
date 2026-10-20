@@ -1295,3 +1295,112 @@ describe('Select ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Select generics', () => {
+  type Fruit = 'apple' | 'banana' | 'cherry';
+
+  // An array, not a fragment: option extraction walks Children.toArray
+  // output, which does not recurse into fragments (same shape as the
+  // FRUITS fixture above).
+  const UNION_FRUITS = [
+    <Option key="apple" value="apple">Apple</Option>,
+    <Option key="banana" value="banana">Banana</Option>,
+    <Option key="cherry" value="cherry">Cherry</Option>,
+  ];
+
+  it('keeps the union value type through the native single-mode path', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: Fruit | Fruit[]) => void>();
+    render(
+      <Select<Fruit>
+        onValuesChange={onValuesChange}
+        aria-label="fruit"
+      >
+        {UNION_FRUITS}
+      </Select>
+    );
+    await user.selectOptions(screen.getByRole('combobox'), 'banana');
+    expect(onValuesChange).toHaveBeenCalledWith('banana');
+    expect(screen.getByRole('combobox')).toHaveValue('banana');
+  });
+
+  it('keeps the union value type through the floating multiple path', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: Fruit | Fruit[]) => void>();
+    render(
+      <Select<Fruit>
+        multiple
+        value={['apple']}
+        onValuesChange={onValuesChange}
+        aria-label="fruit"
+      >
+        {UNION_FRUITS}
+      </Select>
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Banana' }));
+    expect(onValuesChange).toHaveBeenCalledWith(['apple', 'banana']);
+  });
+
+  it('rejects out-of-union values at compile time', () => {
+    render(
+      <Select<Fruit>
+        // @ts-expect-error — 'kiwi' is not assignable to the
+        // 'apple' | 'banana' | 'cherry' value union
+        value="kiwi"
+        aria-label="fruit"
+      >
+        {UNION_FRUITS}
+      </Select>
+    );
+    // Runtime mirrors the type: the stray value matches no option, so
+    // the select stays on its (empty) value.
+    expect(screen.getAllByRole('option')).toHaveLength(3);
+  });
+
+  const YEARS = [2023, 2024, 2025];
+
+  it('maps the DOM-stringified report back to raw number values (native path)', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: number | number[]) => void>();
+    render(
+      <Select<number> onValuesChange={onValuesChange} aria-label="year">
+        {YEARS.map((year) => (
+          <Option key={year} value={year}>
+            Year {year}
+          </Option>
+        ))}
+      </Select>
+    );
+    await user.selectOptions(screen.getByRole('combobox'), '2024');
+    // The DOM reports '2024'; the callback receives the raw 2024 —
+    // strict equality separates the two.
+    expect(onValuesChange).toHaveBeenCalledWith(2024);
+    expect(screen.getByRole('combobox')).toHaveValue('2024');
+  });
+
+  it('keeps number values through the searchable floating path', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: number | number[]) => void>();
+    render(
+      <Select<number>
+        searchable
+        onValuesChange={onValuesChange}
+        aria-label="year"
+      >
+        {YEARS.map((year) => (
+          <Option key={year} value={year}>
+            Year {year}
+          </Option>
+        ))}
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('2025');
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith(2025);
+    expect(within(trigger).getByText('Year 2025')).toBeInTheDocument();
+  });
+});

@@ -6,8 +6,10 @@ import {Link} from '@native-router/react';
 
 import {Input} from '@/lib';
 import {COMPONENT_GROUPS} from '@/views/Layout/component-groups';
-import {intro, page, section} from '@/views/ComponentDetail/styles';
+import {page, section} from '@/views/ComponentDetail/styles';
+import {GuideDocView, useGuideDoc} from '@/views/Guides/guide-content';
 import rawContracts from '@/generated/a11y-contracts.json';
+import {fill, useSiteLocale} from '@/views/i18n';
 
 /*
  * /guides/a11y-contracts — 每组件「键盘 + ARIA 契约」总览。
@@ -18,6 +20,9 @@ import rawContracts from '@/generated/a11y-contracts.json';
  * it( 计数 → testCount）。契约的真实来源始终是组件测试——本页只是它的
  * 生成视图：测试新增断言，这里自动跟进；某列为空说明该套件尚未钉住
  * 这一面（展示为 —），而不是组件没有该行为。
+ *
+ * 文案（标题/导语/表头/过滤 chrome）来自 ./guide-content 的结构化
+ * content（en/zh）；分组标题走 locale 字典的 componentGroups。
  */
 
 type A11yContract = {
@@ -33,7 +38,7 @@ type A11yContractsData = {
   components: A11yContract[];
 };
 
-const contractsData = rawContracts;
+const contractsData: A11yContractsData = rawContracts;
 
 const CONTRACT_BY_NAME = new Map<string, A11yContract>(
   contractsData.components.map((entry) => [entry.component, entry])
@@ -46,14 +51,6 @@ const EMPTY_CONTRACT: A11yContract = {
   keys: [],
   testCount: 0,
 };
-
-const paragraph = css`
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-base);
-  color: var(--haze-color-text);
-  line-height: var(--haze-leading-relaxed);
-  margin: 0 0 var(--haze-space-4);
-`;
 
 const filterBar = css`
   display: flex;
@@ -172,6 +169,12 @@ const noMatch = css`
  * the table labels it like a keycap. */
 const keyLabel = (key: string): string => (key === ' ' ? 'Space' : key);
 
+/* Localized group title: locale overrides sit in the dictionary keyed by
+ * the canonical English group name; unknown groups fall back to it. */
+function groupLabel(groups: Record<string, string>, name: string): string {
+  return groups[name] ?? name;
+}
+
 function contractMatches(contract: A11yContract, name: string, q: string): boolean {
   if (name.toLowerCase().includes(q)) return true;
   const haystack = [...contract.roles, ...contract.aria, ...contract.keys.map(keyLabel)];
@@ -193,6 +196,22 @@ function Chips({values}: {values: string[]}) {
 
 export default function A11yContracts() {
   const [filter, setFilter] = useState('');
+  const {t} = useSiteLocale();
+  const doc = useGuideDoc('a11yContracts');
+
+  const {
+    filterPlaceholder,
+    filterLabel,
+    countTemplate = '',
+    extractedTemplate = '',
+    noMatchTemplate = '',
+    headerComponent,
+    headerRoles,
+    headerAria,
+    headerKeys,
+    headerTests,
+  } = doc.ui ?? {};
+
   const q = filter.trim().toLowerCase();
 
   const groups = useMemo(
@@ -216,42 +235,32 @@ export default function A11yContracts() {
 
   return (
     <div className={page}>
-      <h1>Keyboard &amp; ARIA contracts</h1>
-      <p className={intro}>
-        Every interactive component in Haze UI pins its accessibility
-        surface in its own test suite: the roles it renders, the{' '}
-        <code>aria-*</code> attributes it asserts, and the keys it
-        handles. This page is a generated view of those suites —{' '}
-        <code>scripts/generate-a11y-contracts.mjs</code> extracts each
-        table row from the component&rsquo;s co-located tests, so the
-        contract shown here can never drift from the contract that is
-        actually enforced. An empty cell (—) means the suite does not
-        pin that facet yet, not that the component lacks it; the tests
-        remain the source of truth.
-      </p>
+      <h1>{doc.title}</h1>
+      <GuideDocView doc={doc} />
 
       <div className={filterBar} data-slot='filter-bar'>
         <Input
           size='sm'
           className={filterInput}
-          placeholder='Filter by component, role, aria attribute or key…'
-          aria-label='Filter contracts'
+          placeholder={filterPlaceholder}
+          aria-label={filterLabel}
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
         />
         <span className={countText}>
-          {matched} / {total} components
+          {fill(countTemplate, {matched, total})}
         </span>
       </div>
       <p className={generatedText}>
-        extracted {contractsData.generatedAt.slice(0, 10)} ·{' '}
-        {contractsData.components.reduce((sum, c) => sum + c.testCount, 0)}{' '}
-        tests
+        {fill(extractedTemplate, {
+          date: contractsData.generatedAt.slice(0, 10),
+          tests: contractsData.components.reduce((sum, c) => sum + c.testCount, 0),
+        })}
       </p>
 
       {matched === 0 && q !== '' ? (
         <p className={noMatch}>
-          No components match &ldquo;{filter.trim()}&rdquo;.
+          {fill(noMatchTemplate, {query: filter.trim()})}
         </p>
       ) : (
         groups.map((group) => {
@@ -259,18 +268,18 @@ export default function A11yContracts() {
           return (
             <div key={group.group} className={section}>
               <h2>
-                {group.group}
+                {groupLabel(t.componentGroups, group.group)}
                 <span className={sectionCount}>{group.items.length}</span>
               </h2>
               <div className={tableWrap} data-slot='contract-table'>
                 <table className={table}>
                   <thead>
                     <tr>
-                      <th>Component</th>
-                      <th>Roles</th>
-                      <th>ARIA attributes</th>
-                      <th>Keys</th>
-                      <th>Tests</th>
+                      <th>{headerComponent}</th>
+                      <th>{headerRoles}</th>
+                      <th>{headerAria}</th>
+                      <th>{headerKeys}</th>
+                      <th>{headerTests}</th>
                     </tr>
                   </thead>
                   <tbody>

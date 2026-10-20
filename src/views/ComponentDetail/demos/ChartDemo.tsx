@@ -322,6 +322,43 @@ export default function ChartDemo() {
       </div>
 
       <div className={section}>
+        <h2>Screen-reader fallback table</h2>
+        <p className={row}>
+          A chart is an informative graphic: the plot renders as{' '}
+          <code>role='img'</code> carrying an <code>aria-label</code> that
+          names the chart type and its series (pass your own{' '}
+          <code>aria-label</code> to override it), while a visually hidden
+          table — caption, the <code>xKey</code> header plus one column per
+          series label, one row per datum — carries the actual numbers to
+          screen readers. It is on by default; pass{' '}
+          <code>{"fallbackTable={false}"}</code> when the page already
+          tabulates the same data. The <code>loading</code> and{' '}
+          <code>empty</code> props replace the plot with a centered Spinner
+          or Empty state (or your own node) and skip the table.
+        </p>
+        <div className={row}>
+          <Chart
+            type='bar'
+            data={revenue}
+            xKey='month'
+            series={[{ key: 'saas', label: 'SaaS' }]}
+            height={220}
+          />
+        </div>
+        <pre className={codeBlock}>
+          {`<Chart
+  type='bar'
+  data={revenue}
+  xKey='month'
+  series={[{ key: 'saas', label: 'SaaS' }]}
+  // the sr-only table renders by default; opt out with:
+  // fallbackTable={false}
+  // loading={true} or empty={<CustomEmpty />} swap the plot for a state
+/>`}
+        </pre>
+      </div>
+
+      <div className={section}>
         <h2>Chart Props</h2>
         <PropsTable of='ChartProps' />
       </div>
@@ -331,9 +368,10 @@ export default function ChartDemo() {
         <A11yNote>
           <ul>
             <li>
-              Charts are informative graphics — pair them with a text or table
-              alternative for screen-reader users (the demo data tables are a
-              good pattern)
+              The plot is a named <code>role='img'</code> (chart type +
+              series, overridable via <code>aria-label</code>) and ships
+              with a screen-reader fallback table mirroring the data — see
+              the section above
             </li>
             <li>
               Colors default to semantic tokens that meet contrast rules on

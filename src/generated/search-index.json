@@ -27,6 +27,22 @@
   },
   {
     "type": "page",
+    "label": "Blocks",
+    "sublabel": "Demo",
+    "route": "/blocks",
+    "keywords": [
+      "blocks",
+      "page templates",
+      "dashboard",
+      "login",
+      "settings",
+      "composition",
+      "stackblitz",
+      "页面区块"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Dark mode",
     "sublabel": "Guide",
     "route": "/guides/dark-mode",
@@ -122,6 +138,22 @@
       "data-state",
       "presence",
       "动效预设"
+    ]
+  },
+  {
+    "type": "page",
+    "label": "Tokens in Figma",
+    "sublabel": "Guide",
+    "route": "/guides/figma-tokens",
+    "keywords": [
+      "figma",
+      "tokens studio",
+      "w3c",
+      "dtf",
+      "design tokens",
+      "variables",
+      "oklch",
+      "Figma 中的设计令牌"
     ]
   },
   {
@@ -1204,6 +1236,12 @@
   },
   {
     "type": "section",
+    "label": "Number values",
+    "sublabel": "Select",
+    "route": "/components/select"
+  },
+  {
+    "type": "section",
     "label": "Default",
     "sublabel": "Checkbox",
     "route": "/components/checkbox"
@@ -1324,7 +1362,25 @@
   },
   {
     "type": "section",
+    "label": "Variants — line / card / pill",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
     "label": "classNames slots",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "items — data-driven tabs",
+    "sublabel": "Tabs",
+    "route": "/components/tabs"
+  },
+  {
+    "type": "section",
+    "label": "destroyInactiveTabPane + addable",
     "sublabel": "Tabs",
     "route": "/components/tabs"
   },
@@ -1642,6 +1698,12 @@
   },
   {
     "type": "section",
+    "label": "Number values",
+    "sublabel": "Combobox",
+    "route": "/components/combobox"
+  },
+  {
+    "type": "section",
     "label": "Default",
     "sublabel": "Table",
     "route": "/components/table"
@@ -1697,6 +1759,24 @@
   {
     "type": "section",
     "label": "Editable cells",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
+    "label": "Toolbar slot",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
+    "label": "Density (size)",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
+    "label": "Keyboard navigation",
     "sublabel": "DataTable",
     "route": "/components/data-table"
   },
@@ -2077,6 +2157,18 @@
     "label": "Custom copy",
     "sublabel": "AsyncSection",
     "route": "/components/async-section"
+  },
+  {
+    "type": "section",
+    "label": "Fuzzy matching",
+    "sublabel": "Command",
+    "route": "/components/command"
+  },
+  {
+    "type": "section",
+    "label": "Long lists (virtualized)",
+    "sublabel": "Command",
+    "route": "/components/command"
   },
   {
     "type": "section",
@@ -3407,6 +3499,12 @@
   {
     "type": "section",
     "label": "Scatter chart",
+    "sublabel": "Chart",
+    "route": "/components/chart"
+  },
+  {
+    "type": "section",
+    "label": "Screen-reader fallback table",
     "sublabel": "Chart",
     "route": "/components/chart"
   },

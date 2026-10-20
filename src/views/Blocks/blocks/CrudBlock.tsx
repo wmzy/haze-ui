@@ -1,0 +1,526 @@
+import type { DataTableColumnDef, TreeNodeData } from '@/lib';
+
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useControl } from 'react-use-control';
+import { z } from 'zod';
+
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  Dialog,
+  Form,
+  FormItem,
+  InputCore,
+  Kbd,
+  Option,
+  Segmented,
+  SelectCore,
+  ToastContainer,
+  Tree,
+  useForm,
+  standardSchemaFormValidator,
+  useToast,
+} from '@/lib';
+
+/*
+ * CRUD block: the master–detail pattern over local state — a Tree picks
+ * the team (group nodes filter to their subtree), the DataTable lists
+ * that team's pipelines with the toolbar strip (New + density Segmented
+ * + keyboard-nav copy) and the `size` density prop, Dialog hosts a
+ * zod-validated Form for create/edit (remounted per open so
+ * initialValues reload the record), ConfirmDialog guards deletes and
+ * useToast reports every mutation. ToastContainer wraps the block so
+ * toasts land in the demo viewport. Layout glue is inline styles over
+ * --haze-* tokens only.
+ */
+
+type Schedule = '15m' | 'hourly' | 'daily';
+type PipelineStatus = 'healthy' | 'degraded' | 'paused';
+
+type Pipeline = {
+  id: string;
+  name: string;
+  team: string;
+  owner: string;
+  schedule: Schedule;
+  status: PipelineStatus;
+};
+
+type PipelineFormValues = {
+  name: string;
+  owner: string;
+  schedule: Schedule | '';
+};
+
+const TEAM_TREE: TreeNodeData[] = [
+  {
+    key: 'all',
+    title: 'All teams',
+    children: [
+      {
+        key: 'eng',
+        title: 'Engineering',
+        children: [
+          { key: 'eng-fe', title: 'Frontend' },
+          { key: 'eng-plat', title: 'Platform' },
+          { key: 'eng-data', title: 'Data' },
+        ],
+      },
+      {
+        key: 'growth',
+        title: 'Growth',
+        children: [
+          { key: 'growth-lifecycle', title: 'Lifecycle' },
+          { key: 'growth-ads', title: 'Ads' },
+        ],
+      },
+      {
+        key: 'ops',
+        title: 'Operations',
+        children: [
+          { key: 'ops-alerts', title: 'Alerting' },
+          { key: 'ops-freight', title: 'Freight' },
+        ],
+      },
+    ],
+  },
+];
+
+/** node key → leaf keys in its subtree ('eng' → its three teams). */
+function leafKeysOf(nodes: TreeNodeData[], into: string[]): string[] {
+  for (const node of nodes) {
+    if (node.children && node.children.length > 0) {
+      leafKeysOf(node.children, into);
+    } else {
+      into.push(node.key);
+    }
+  }
+  return into;
+}
+
+const TEAM_SCOPE: Record<string, string[]> = {
+  all: leafKeysOf(TEAM_TREE, []),
+};
+function collectScopes(nodes: TreeNodeData[]): void {
+  for (const node of nodes) {
+    TEAM_SCOPE[node.key] =
+      node.children && node.children.length > 0
+        ? leafKeysOf(node.children, [])
+        : [node.key];
+    if (node.children) collectScopes(node.children);
+  }
+}
+collectScopes(TEAM_TREE);
+
+const INITIAL_PIPELINES: Pipeline[] = [
+  { id: 'p-01', name: 'Checkout event tap', team: 'eng-fe', owner: 'ada@nimbus.dev', schedule: '15m', status: 'healthy' },
+  { id: 'p-02', name: 'Funnel pageviews', team: 'eng-fe', owner: 'grace@nimbus.dev', schedule: 'hourly', status: 'healthy' },
+  { id: 'p-03', name: 'Gateway request log', team: 'eng-plat', owner: 'kwame@nimbus.dev', schedule: '15m', status: 'degraded' },
+  { id: 'p-04', name: 'Deploy markers', team: 'eng-plat', owner: 'rina@nimbus.dev', schedule: 'hourly', status: 'healthy' },
+  { id: 'p-05', name: 'Warehouse sync', team: 'eng-data', owner: 'tomas@nimbus.dev', schedule: 'daily', status: 'healthy' },
+  { id: 'p-06', name: 'Backfill queue', team: 'eng-data', owner: 'tomas@nimbus.dev', schedule: 'hourly', status: 'paused' },
+  { id: 'p-07', name: 'Trial activation', team: 'growth-lifecycle', owner: 'yuki@nimbus.dev', schedule: 'daily', status: 'healthy' },
+  { id: 'p-08', name: 'Attribution joins', team: 'growth-ads', owner: 'omar@nimbus.dev', schedule: 'hourly', status: 'degraded' },
+  { id: 'p-09', name: 'Anomaly detector', team: 'ops-alerts', owner: 'rina@nimbus.dev', schedule: '15m', status: 'healthy' },
+  { id: 'p-10', name: 'Shipment tracker', team: 'ops-freight', owner: 'leo@nimbus.dev', schedule: 'hourly', status: 'healthy' },
+];
+
+const pipelineSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  owner: z.email('Enter a valid email address'),
+  schedule: z.enum(['15m', 'hourly', 'daily'], { message: 'Pick a schedule' }),
+});
+
+const pipelineValidator =
+  standardSchemaFormValidator<PipelineFormValues>(pipelineSchema);
+
+function statusBadge(status: PipelineStatus) {
+  const variant =
+    status === 'healthy' ? 'success' : status === 'degraded' ? 'warning' : 'default';
+  return <Badge variant={variant}>{status}</Badge>;
+}
+
+function scheduleBadge(schedule: Schedule) {
+  return <Badge variant={schedule === '15m' ? 'info' : 'default'}>{schedule}</Badge>;
+}
+
+/**
+ * One dialog form, fresh per open: the parent remounts it (key=session),
+ * so `initialValues` alone loads the record being edited.
+ */
+function PipelineForm({
+  pipeline,
+  onCancel,
+  onSubmit,
+}: {
+  pipeline: Pipeline | null;
+  onCancel: () => void;
+  onSubmit: (values: PipelineFormValues) => void;
+}) {
+  const form = useForm<PipelineFormValues>({
+    initialValues: pipeline
+      ? { name: pipeline.name, owner: pipeline.owner, schedule: pipeline.schedule }
+      : { name: '', owner: '', schedule: '' },
+    validate: pipelineValidator,
+    validateDeps: ['name', 'owner', 'schedule'],
+  });
+
+  return (
+    <Form form={form} onValidSubmit={onSubmit}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--haze-space-4)',
+        }}
+      >
+        <FormItem
+          form={form}
+          name='name'
+          label='Pipeline name'
+          rules={{ required: true }}
+          input={InputCore}
+          placeholder='Checkout event tap'
+        />
+        <FormItem
+          form={form}
+          name='owner'
+          label='Owner email'
+          rules={{ required: true }}
+          input={InputCore}
+          type='email'
+          placeholder='owner@nimbus.dev'
+        />
+        <FormItem
+          form={form}
+          name='schedule'
+          label='Schedule'
+          rules={{ required: true }}
+          input={SelectCore}
+        >
+          <Option value=''>Pick a schedule…</Option>
+          <Option value='15m'>Every 15 minutes</Option>
+          <Option value='hourly'>Hourly</Option>
+          <Option value='daily'>Daily</Option>
+        </FormItem>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 'var(--haze-space-2)',
+          }}
+        >
+          {/* Button's native `type` is pinned to 'button' — submit through
+              the owning form so the zod chain runs first. */}
+          <Button onClick={(e) => e.currentTarget.form?.requestSubmit()}>
+            Save pipeline
+          </Button>
+          <Button variant='ghost' onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Form>
+  );
+}
+
+function CrudScreen() {
+  const toast = useToast();
+
+  // Master selection, dialog/confirm open and density are user-facing —
+  // Controls all the way down.
+  const [selectedKeys, setSelectedKeys, selectedCtrl] = useControl<string[]>(
+    undefined,
+    ['all']
+  );
+  const [density, setDensity, densityCtrl] = useControl(undefined, 'md');
+  const [, setDialogOpen, dialogOpenCtrl] = useControl(undefined, false);
+  const [, setConfirmOpen, confirmOpenCtrl] = useControl(undefined, false);
+  // Uncontrolled-with-default: seeds the initial expansion, then the
+  // tree owns the toggling.
+  const [, , expandedCtrl] = useControl<string[]>(undefined, ['all']);
+
+  const [pipelines, setPipelines] = useState(INITIAL_PIPELINES);
+  const [editing, setEditing] = useState<Pipeline | null>(null);
+  const [session, setSession] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<Pipeline | null>(null);
+  const nextIdRef = useRef(INITIAL_PIPELINES.length + 1);
+
+  const scope = useMemo(
+    () => TEAM_SCOPE[selectedKeys[0] ?? 'all'] ?? [],
+    [selectedKeys]
+  );
+  const rows = useMemo(
+    () => pipelines.filter((pipeline) => scope.includes(pipeline.team)),
+    [pipelines, scope]
+  );
+
+  const openCreate = useCallback(() => {
+    setEditing(null);
+    setSession((s) => s + 1);
+    setDialogOpen(true);
+  }, [setDialogOpen]);
+
+  const openEdit = useCallback(
+    (pipeline: Pipeline) => {
+      setEditing(pipeline);
+      setSession((s) => s + 1);
+      setDialogOpen(true);
+    },
+    [setDialogOpen]
+  );
+
+  const closeDialog = useCallback(() => setDialogOpen(false), [setDialogOpen]);
+
+  const handleSubmit = (values: PipelineFormValues) => {
+    // onValidSubmit implies the zod schema passed — schedule is a Schedule.
+    if (editing) {
+      setPipelines((prev) =>
+        prev.map((pipeline) =>
+          pipeline.id === editing.id
+            ? { ...pipeline, ...values, schedule: values.schedule as Schedule }
+            : pipeline
+        )
+      );
+      toast(`Updated ${values.name}`, { variant: 'success' });
+    } else {
+      const id = `p-${String(nextIdRef.current).padStart(2, '0')}`;
+      nextIdRef.current += 1;
+      setPipelines((prev) => [
+        ...prev,
+        {
+          id,
+          team: scope[0] ?? 'eng-fe',
+          owner: values.owner,
+          name: values.name,
+          schedule: values.schedule as Schedule,
+          status: 'healthy',
+        },
+      ]);
+      toast(`Created ${values.name}`, { variant: 'success' });
+    }
+    closeDialog();
+  };
+
+  const askDelete = useCallback(
+    (pipeline: Pipeline) => {
+      setPendingDelete(pipeline);
+      setConfirmOpen(true);
+    },
+    [setConfirmOpen]
+  );
+
+  const closeConfirm = useCallback(() => {
+    setConfirmOpen(false);
+    setPendingDelete(null);
+  }, [setConfirmOpen]);
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    setPipelines((prev) => prev.filter((p) => p.id !== pendingDelete.id));
+    toast(`Deleted ${pendingDelete.name}`, { variant: 'success' });
+    setPendingDelete(null);
+  };
+
+  const columns = useMemo<DataTableColumnDef<Pipeline>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Pipeline',
+        cell: (info) => <strong>{info.getValue() as string}</strong>,
+      },
+      { accessorKey: 'owner', header: 'Owner' },
+      {
+        accessorKey: 'schedule',
+        header: 'Schedule',
+        cell: (info) => scheduleBadge(info.getValue() as Schedule),
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: (info) => statusBadge(info.getValue() as PipelineStatus),
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) => (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 'var(--haze-space-1)',
+            }}
+          >
+            <Button size='sm' variant='ghost' onClick={() => openEdit(row.original)}>
+              Edit
+            </Button>
+            <Button size='sm' variant='ghost' onClick={() => askDelete(row.original)}>
+              Delete
+            </Button>
+          </div>
+        ),
+        meta: { sortable: false },
+      },
+    ],
+    [openEdit, askDelete]
+  );
+
+  return (
+    <div
+      data-slot='crud-block'
+      style={{
+        display: 'flex',
+        height: '100%',
+        minHeight: '480px',
+        fontFamily: 'var(--haze-font-sans)',
+        color: 'var(--haze-color-text)',
+      }}
+    >
+      <aside
+        data-slot='crud-tree'
+        aria-label='Pipelines by team'
+        style={{
+          width: '232px',
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 'var(--haze-space-3)',
+          borderInlineEnd: '1px solid var(--haze-color-border)',
+          background: 'var(--haze-color-bg-subtle)',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 'var(--haze-text-xs)',
+            fontWeight: 'var(--haze-weight-semibold)',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: 'var(--haze-color-text-muted)',
+            margin: '0 0 var(--haze-space-2) var(--haze-space-2)',
+          }}
+        >
+          Teams
+        </div>
+        <Tree
+          treeData={TEAM_TREE}
+          selectedKeys={selectedCtrl}
+          expandedKeys={expandedCtrl}
+          onSelect={(keys) =>
+            setSelectedKeys(keys.length > 0 ? [keys[keys.length - 1]!] : [])
+          }
+          blockNode
+        />
+      </aside>
+
+      <main
+        data-slot='crud-detail'
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--haze-space-3)',
+          padding: 'var(--haze-space-4)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--haze-space-3)' }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 'var(--haze-text-lg)',
+              fontWeight: 'var(--haze-weight-semibold)',
+            }}
+          >
+            Event pipelines
+          </h2>
+          <Badge variant='info'>{rows.length}</Badge>
+          <span style={{ flex: 1 }} />
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--haze-space-1)',
+              fontSize: 'var(--haze-text-xs)',
+              color: 'var(--haze-color-text-muted)',
+            }}
+          >
+            Keyboard: <Kbd size='sm'>Tab</Kbd> reaches a cell,
+            <Kbd size='sm'>←</Kbd>
+            <Kbd size='sm'>↑</Kbd>
+            <Kbd size='sm'>↓</Kbd>
+            <Kbd size='sm'>→</Kbd> roam,
+            <Kbd size='sm'>Enter</Kbd> sorts a header
+          </span>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+          sortable
+          size={density as 'sm' | 'md' | 'lg'}
+          toolbar={
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--haze-space-2)',
+                flexWrap: 'wrap',
+              }}
+            >
+              <Button size='sm' onClick={openCreate}>
+                New pipeline
+              </Button>
+              <Segmented
+                size='sm'
+                options={[
+                  { value: 'sm', label: 'S' },
+                  { value: 'md', label: 'M' },
+                  { value: 'lg', label: 'L' },
+                ]}
+                value={densityCtrl}
+                onChange={setDensity}
+                aria-label='Table density'
+              />
+            </div>
+          }
+        />
+      </main>
+
+      <Dialog
+        open={dialogOpenCtrl}
+        onClose={closeDialog}
+        title={editing ? 'Edit pipeline' : 'New pipeline'}
+      >
+        <PipelineForm
+          key={session}
+          pipeline={editing}
+          onCancel={closeDialog}
+          onSubmit={handleSubmit}
+        />
+      </Dialog>
+      <ConfirmDialog
+        open={confirmOpenCtrl}
+        title='Delete pipeline'
+        confirmText='Delete'
+        variant='danger'
+        onConfirm={confirmDelete}
+        onCancel={closeConfirm}
+        onClose={closeConfirm}
+      >
+        Delete {pendingDelete?.name}? Its collectors stop ingesting immediately —
+        there is no undo.
+      </ConfirmDialog>
+    </div>
+  );
+}
+
+export default function CrudBlock() {
+  return (
+    <ToastContainer>
+      <CrudScreen />
+    </ToastContainer>
+  );
+}

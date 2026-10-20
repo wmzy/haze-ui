@@ -336,6 +336,11 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
         </Link>
       </ListItem>
       <ListItem>
+        <Link className={navLink} to='/blocks' onClick={onNavigate}>
+          {t.nav.blocks}
+        </Link>
+      </ListItem>
+      <ListItem>
         <Disclosure
           open={true}
           summary={t.nav.guides}
@@ -403,6 +408,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
                 {t.guides.motion}
               </Link>
               {guideSummary(t.guideSummaries.motion)}
+            </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
+                to='/guides/figma-tokens'
+                onClick={onNavigate}
+              >
+                {t.guides.figmaTokens}
+              </Link>
+              {guideSummary(t.guideSummaries.figmaTokens)}
             </ListItem>
           </List>
         </Disclosure>

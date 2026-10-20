@@ -35,8 +35,8 @@ type ComboboxVirtualizedConfig = {
 };
 
 /** One entry of the `options` prop. */
-type ComboboxOptionData = {
-  value: string;
+type ComboboxOptionData<T extends string | number = string> = {
+  value: T;
   label: string;
   /**
    * Optional group heading: consecutive options carrying the same
@@ -59,15 +59,15 @@ type ComboboxClassNames = {
   empty?: string;
 };
 
-type ComboboxProps = {
+type ComboboxProps<T extends string | number = string> = {
   /**
-   * `string` in single mode, `string[]` when `multiple` is set. The
-   * uncontrolled empty value is `''` in single mode, `[]` in multiple
-   * mode.
+   * The option value type: `T` in single mode, `T[]` when `multiple`
+   * is set (defaults to `string`). The uncontrolled empty value is `''`
+   * in single mode, `[]` in multiple mode.
    */
-  value?: ControlOrValue<string | string[]>;
+  value?: ControlOrValue<T | T[]>;
   open?: ControlOrValue<boolean>;
-  options: ComboboxOptionData[];
+  options: ComboboxOptionData<T>[];
   /**
    * Multiple-selection mode: selected values render as chips inside
    * the trigger, Enter toggles the highlighted option without closing
@@ -76,10 +76,10 @@ type ComboboxProps = {
    */
   multiple?: boolean;
   /**
-   * Value callback for both modes — `string` in single mode,
-   * `string[]` when `multiple` is set — fired after the value updates.
+   * Value callback for both modes — `T` in single mode, `T[]` when
+   * `multiple` is set — fired after the value updates.
    */
-  onValuesChange?: (value: string | string[]) => void;
+  onValuesChange?: (value: T | T[]) => void;
   /**
    * Offer the current query as a creatable option: when nothing
    * matches a non-blank query, a localized `Create "…"` row renders at
@@ -353,16 +353,19 @@ function highlightLabel(label: string, query: string): ReactNode {
 }
 
 /** One flat option row plus its index in the navigable item list. */
-type IndexedOption = { option: ComboboxOptionData; index: number };
-
-/** A labelled group section, or a run of groupless direct rows. */
-type OptionSection = {
-  key: string;
-  label: string | undefined;
-  rows: IndexedOption[];
+type IndexedOption<T extends string | number = string> = {
+  option: ComboboxOptionData<T>;
+  index: number;
 };
 
-export default function Combobox({
+/** A labelled group section, or a run of groupless direct rows. */
+type OptionSection<T extends string | number = string> = {
+  key: string;
+  label: string | undefined;
+  rows: IndexedOption<T>[];
+};
+
+export default function Combobox<T extends string | number = string>({
   value: valueControl,
   open: openControl,
   options,
@@ -381,14 +384,14 @@ export default function Combobox({
   className,
   classNames,
   ref,
-}: ComboboxProps) {
+}: ComboboxProps<T>) {
   // ConfigProvider `Combobox.classNames` merges under the prop, per key.
   const comboboxConfig = useConfigDefaults('Combobox');
   const resolvedClassNames = comboboxConfig.classNames
     ? { ...comboboxConfig.classNames, ...classNames }
     : classNames;
   const strings = useStrings('combobox');
-  const [value, setValue] = useControl(valueControl, multiple ? [] : '');
+  const [value, setValue] = useControl(valueControl, multiple ? ([] as T[]) : ('' as T));
   // Locally created options (creatable) layered on top of `options` —
   // see the `creatable` prop doc for the lifetime contract.
   const [created, setCreated] = useState<string[]>([]);
@@ -425,13 +428,15 @@ export default function Combobox({
 
   // Creatable appends live until unmount — `options` itself is never
   // mutated (it is a controlled prop), and additions dedupe against it
-  // by value.
+  // by value. Created values are the typed query (a string): for a
+  // non-string T the consumer receives it through `onCreate` and owns
+  // promoting it into `options`.
   const effectiveOptions = useMemo(() => {
     if (created.length === 0) return options;
-    const existing = new Set(options.map((o) => o.value));
+    const existing = new Set<unknown>(options.map((o) => o.value));
     const additions = created
       .filter((v) => !existing.has(v))
-      .map((v) => ({ value: v, label: v }));
+      .map((v) => ({ value: v as T, label: v }));
     return additions.length > 0 ? [...options, ...additions] : options;
   }, [options, created]);
 
@@ -452,8 +457,10 @@ export default function Combobox({
     creatable && !loading && query.trim() !== '' && filtered.length === 0;
   const trimmedQuery = query.trim();
   const createText = formatString(strings.create, { query: trimmedQuery });
-  const listItems: ComboboxOptionData[] = showCreateItem
-    ? [{ value: trimmedQuery, label: trimmedQuery }, ...filtered]
+  const listItems: ComboboxOptionData<T>[] = showCreateItem
+    ? // The creatable row's value is the raw string query layered on
+      // top of T-typed options (see the creatable note above).
+      [{ value: trimmedQuery as T, label: trimmedQuery }, ...filtered]
     : filtered;
 
   // Explicit `virtualized` override: object config enables at any
@@ -486,7 +493,7 @@ export default function Combobox({
   // a `group` label fall under one heading; groupless items stay direct
   // listbox children. Keyboard order stays the flat order, so arrows
   // cross group boundaries continuously.
-  const sections: OptionSection[] = [];
+  const sections: OptionSection<T>[] = [];
   for (let i = 0; i < listItems.length; i++) {
     const option = listItems[i];
     if (option === undefined) continue;
@@ -554,18 +561,18 @@ export default function Combobox({
     setHighlightIndex(-1);
   }
 
-  const isSelected = (val: string) =>
+  const isSelected = (val: T) =>
     multiple ? selected.includes(val) : value === val;
 
-  const labelFor = (optionValue: string): ReactNode =>
+  const labelFor = (optionValue: T): ReactNode =>
     effectiveOptions.find((o) => o.value === optionValue)?.label ??
     optionValue;
 
-  const selectOption = (val: string, labelOverride?: string) => {
+  const selectOption = (val: T, labelOverride?: string) => {
     const label =
       labelOverride ??
       effectiveOptions.find((o) => o.value === val)?.label ??
-      val;
+      String(val);
     if (multiple) {
       // Toggle in place; the panel stays open for the next pick and the
       // query clears so the full list is reachable again.
@@ -589,13 +596,15 @@ export default function Combobox({
     setCreated((prev) =>
       prev.includes(trimmedQuery) ? prev : [...prev, trimmedQuery]
     );
-    selectOption(trimmedQuery, trimmedQuery);
+    selectOption(trimmedQuery as T, trimmedQuery);
   };
 
   // Click and Enter funnel through one path: the create row commits a
   // creation; anything else selects/toggles the option.
-  const handleSelect = (val: string) => {
-    if (showCreateItem && val === trimmedQuery) {
+  const handleSelect = (val: T) => {
+    // The create row (when shown) leads the list and carries the raw
+    // string query as its value.
+    if (showCreateItem && val === (trimmedQuery as T)) {
       commitCreate();
       return;
     }
@@ -640,7 +649,7 @@ export default function Combobox({
   // One option row, shared by the plain sections and the virtualized
   // renderItem so both paths stay in lockstep (aria ids, set semantics,
   // highlight, matching-mark children).
-  const renderRow = (o: ComboboxOptionData, i: number, virtual: boolean) => (
+  const renderRow = (o: ComboboxOptionData<T>, i: number, virtual: boolean) => (
     <ComboboxOption
       key={o.value}
       ref={!virtual && i === highlightIndex ? activeRowRef : undefined}

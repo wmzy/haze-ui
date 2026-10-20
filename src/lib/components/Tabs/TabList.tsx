@@ -6,6 +6,7 @@ import type {
 import type { MenuDataItem } from '../Menu';
 
 import type { TabMeta } from './tab-metas';
+import type { TabsVariant } from './TabsContext';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -18,7 +19,7 @@ import { useStrings } from '../LocaleProvider';
 
 
 import { collectTabMetas } from './tab-metas';
-import Tab, { TabStatusDot } from './Tab';
+import { TabStatusDot } from './Tab';
 
 import { useTabsContext } from './TabsContext';
 
@@ -44,14 +45,13 @@ type TabListProps = {
 const base = css`
   position: relative;
   display: flex;
-  gap: 0;
-  border-bottom: 1px solid var(--haze-color-border);
   overflow-x: auto;
-  /* Tab boxes measure 1px taller than the border-adjusted
-   * content box (border-bottom: 1px). overflow-y: hidden is a
-   * legal pairing with overflow-x: auto (unlike visible, which
-   * computes to auto) and swallows that sliver — otherwise a
-   * phantom vertical scrollbar flickers in next to the strip. */
+  /* Line-variant tab boxes measure 1px taller than the border-adjusted
+   * content box (their underline overlaps the strip's border-bottom by
+   * -1px). overflow-y: hidden is a legal pairing with overflow-x: auto
+   * (unlike visible, which computes to auto) and swallows that sliver —
+   * otherwise a phantom vertical scrollbar flickers in next to the
+   * strip. */
   overflow-y: hidden;
   /* Chrome-style strip: the scrollbar never shows. Compression
    * (Tab min-widths) is the first resort; this hidden viewport
@@ -79,17 +79,47 @@ const bar = css`
   align-items: stretch;
 `;
 
+/** Per-variant strip chrome — the tabs carry the matching skins (see
+ * Tab's `tabVariants`). `variant` rides the Tabs context. */
+const listVariants: Record<TabsVariant, string> = {
+  /* line: the classic underline strip — the full-width separator the
+   * active tab's underline pierces (Tab overlaps it by -1px). */
+  line: css`
+    border-bottom: 1px solid var(--haze-color-border);
+  `,
+  /* card: flat cards with breathing room — no strip separator; the
+   * selected tab's own surface + stroke is the selection signal. */
+  card: css`
+    gap: var(--haze-space-2);
+  `,
+  /* pill: the Segmented-style capsule — a muted trough the selected
+   * pill lifts out of. The 2px chrome mirrors SegmentedCore's
+   * container (no 2px step exists in the spacing scale). */
+  pill: css`
+    gap: 2px;
+    padding: 2px;
+    background: var(--haze-color-bg-muted);
+    border-radius: var(--haze-radius-full);
+  `,
+};
+
 const overflowArea = css`
   display: flex;
   align-items: center;
   flex: none;
   padding-inline: var(--haze-space-1);
-  /* Continues the strip's rule under the trigger so the bottom
-   * border reads as one line. */
+`;
+
+/* Line variant only: continues the strip's rule under the trigger (and
+ * the + button) so the bottom border reads as one line. */
+const overflowAreaLine = css`
   border-bottom: 1px solid var(--haze-color-border);
 `;
 
-const overflowButton = css`
+/** The strip's square ghost buttons — the ⋯ overflow trigger and the +
+ * add button share one shape (24px target, focus ring, forced-colors
+ * inset outline). */
+const stripButton = css`
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -133,8 +163,10 @@ const menuTabLabel = css`
   gap: var(--haze-space-2);
 `;
 
-/** Enabled tabs in DOM order (roving tabindex keeps exactly one stop). */
-const TAB_SELECTOR = '[role="tab"]:not([disabled])';
+/** Enabled tabs in DOM order (roving tabindex keeps exactly one stop).
+ * The closable div form carries `aria-disabled` instead of the button
+ * `disabled` attribute, so both exclusion clauses are needed. */
+const TAB_SELECTOR = '[role="tab"]:not([disabled]):not([aria-disabled="true"])';
 
 /**
  * The tab strip: a roving-tabindex list per the WAI-ARIA tabs pattern —
@@ -159,7 +191,7 @@ export default function TabList({
   children,
   tabMetas,
 }: TabListProps) {
-  const { value, setValue, classNames } = useTabsContext();
+  const { value, setValue, variant, addable, classNames } = useTabsContext();
   const strings = useStrings('tabs');
   const internalListRef = useRef<HTMLDivElement>(null);
   const listRef = listRefProp ?? internalListRef;
@@ -192,6 +224,7 @@ export default function TabList({
           key: meta.value,
           value: meta.value,
           icon: meta.icon,
+          disabled: meta.disabled,
           label: meta.status ? (
             <span x-class={menuTabLabel}>
               <TabStatusDot status={meta.status} />
@@ -277,27 +310,69 @@ export default function TabList({
       <div
         ref={listRef}
         data-slot='tab-list'
+        data-variant={variant}
         role='tablist'
         onKeyDown={handleKeyDown}
-        x-class={[base, grow, className, classNames?.list]}
+        x-class={[
+          base,
+          /* The pill capsule shrink-wraps like Segmented (flex 0 1 auto,
+           * no grow) — line/card keep the full-width strip so the
+           * separator spans and the overflow measurement stays
+           * meaningful. */
+          variant !== 'pill' && grow,
+          listVariants[variant],
+          className,
+          classNames?.list,
+        ]}
       >
         {children}
       </div>
       {overflowing && tabMetasResolved.length > 0 && (
-        <div data-slot='tab-overflow' x-class={overflowArea}>
+        <div
+          data-slot='tab-overflow'
+          x-class={[overflowArea, variant === 'line' && overflowAreaLine]}
+        >
           <Menu
             open={menuOpenControl}
             trigger={
               <button
                 type='button'
                 aria-label={overflowLabel ?? strings.moreTabs}
-                x-class={overflowButton}
+                x-class={stripButton}
               >
                 <span aria-hidden='true'>⋯</span>
               </button>
             }
             items={overflowItems}
           />
+        </div>
+      )}
+      {addable && (
+        <div
+          data-slot='tab-add'
+          x-class={[overflowArea, variant === 'line' && overflowAreaLine]}
+        >
+          {/* Outside the tablist on purpose: the strip's owned children
+           * must be nothing but tabs (axe aria-required-children), and
+           * the + is not a tab — it is a plain button with its own tab
+           * stop (Enter/Space activate natively).
+           *
+           * The default name is component-internal English: the `tabs`
+           * locale pack carries no add key yet, and adding one means
+           * re-syncing all eleven built-in packs (the strings
+           * key-for-key contract) — out of this component's file
+           * domain. `addable.addLabel` is the i18n hook. The library
+           * ships no icon set of its own (Icon wraps consumer glyphs),
+           * so the + is a styled text glyph — same idiom as the strip's
+           * ⋯ and the tab's ×. */}
+          <button
+            type='button'
+            aria-label={addable.addLabel ?? 'Add tab'}
+            onClick={() => addable.onAdd?.()}
+            x-class={stripButton}
+          >
+            <span aria-hidden='true'>+</span>
+          </button>
         </div>
       )}
     </div>

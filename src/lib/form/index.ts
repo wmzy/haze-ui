@@ -17,13 +17,28 @@ export type {FormInstance, PathValueOf} from 'react-f0rm';
  * react-f0rm 是 haze-ui 的普通依赖，从这里 import 即可，无需再直接
  * 依赖 react-f0rm。`<FormProvider value={form}>` 挂 context 后，子树里的
  * `FormItem`/`FormList` 可以省略 `form` prop。
+ *
+ * - `Form`：react-f0rm 的 `<form>` 组件封装 —— 挂 context、串提交链
+ *   （onSubmit/onValidSubmit/onInvalidSubmit）与 native validation 开关。
+ * - `useForm`：antd 风格命名的表单实例 hook。react-f0rm 自带组件生命周期
+ *   绑定版的 `useForm`，直接透传即可 —— 不做 `useForm = createForm`
+ *   别名，那会用生命周期语义不同的工厂版遮蔽同名 hook。
+ * - `createForm`：手动生命周期的实例工厂（模块级单例、测试、桥接层等
+ *   非 hook 场景）。
+ * - `useValue`/`useValues`：字段级订阅 hook（响应式读取单个/整个表单值）
+ *   ——同样透传，消费者无需直接依赖 react-f0rm。
  */
 export {
+  Form,
+  useForm,
+  createForm,
   FormProvider,
   useFormContext,
   useFieldArray,
   useFieldArrayItem,
   useWatch,
+  useValue,
+  useValues,
   trigger,
   setFocus,
   setServerErrors,

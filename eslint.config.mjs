@@ -1,3 +1,4 @@
+import compat from 'eslint-plugin-compat';
 import config from 'tools-config/eslint/type-checked';
 
 export default [
@@ -11,6 +12,21 @@ export default [
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/refs': 'warn',
       'react-hooks/immutability': 'warn',
+    },
+  },
+  {
+    // JS API 面门禁：compat/compat 按 package.json 的 browserslist 字段
+    // （chrome/edge 119+、safari 16.4+、firefox 128+）标红未达标的现代 API。
+    // 只管 JS —— CSS（OKLCH/relative color/popover/anchor）有意直出不转译，不经此门。
+    // lintAllEsApis：根 babel.config.mjs 只挂 JSX 转换插件、无 preset-env/polyfill，
+    // 必须显式声明，否则插件误判「已转译」跳过全部 ES 内建 API 检查。
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { compat },
+    settings: {
+      lintAllEsApis: true,
+    },
+    rules: {
+      'compat/compat': 'error',
     },
   },
   {

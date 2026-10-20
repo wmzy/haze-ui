@@ -4,7 +4,7 @@ import type { ChartTooltipPayload } from './chart-elements';
 
 import { expect } from 'vitest';
 
-import { render } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import {
   Area,
@@ -906,6 +906,193 @@ describe('Chart', () => {
     expect(container.querySelector('[data-tooltip]')).toHaveTextContent(
       'Jan / Revenue=12'
     );
+  });
+
+  it('labels the graphic as an image describing type and series', () => {
+    render(
+      <Chart
+        type='bar'
+        data={DATA}
+        series={[{ key: 'sales', label: 'Revenue' }]}
+        xKey='month'
+      />
+    );
+    expect(
+      screen.getByRole('img', { name: 'Bar chart: Revenue' })
+    ).toBeInTheDocument();
+  });
+
+  it('renders a screen-reader fallback table mirroring the plotted data', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[
+          { key: 'sales', label: 'Revenue' },
+          { key: 'costs', label: 'Costs' },
+        ]}
+        xKey='month'
+      />
+    );
+    const table = screen.getByRole('table');
+    // wrapped in the sr-only container, as a sibling of the role='img'
+    // graphic so the image role cannot swallow it
+    expect(
+      table.closest("[data-slot='fallback-table']")
+    ).toBeInTheDocument();
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe(
+      'Line chart: Revenue, Costs'
+    );
+    expect(table.querySelector('caption')).toHaveTextContent(
+      'Line chart: Revenue, Costs'
+    );
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((cell) => cell.textContent)
+    ).toEqual(['month', 'Revenue', 'Costs']);
+    expect(within(table).getAllByRole('row')).toHaveLength(4);
+    expect(
+      within(table)
+        .getAllByRole('rowheader')
+        .map((cell) => cell.textContent)
+    ).toEqual(['Jan', 'Feb', 'Mar']);
+    expect(
+      within(table)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent)
+    ).toEqual(['12', '8', '18', '10', '9', '7']);
+  });
+
+  it('honors a consumer aria-label for the graphic and the caption', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        aria-label='Quarterly revenue'
+      />
+    );
+    expect(
+      screen.getByRole('img', { name: 'Quarterly revenue' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('table').querySelector('caption')).toHaveTextContent(
+      'Quarterly revenue'
+    );
+  });
+
+  it('omits the fallback table when fallbackTable is false', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        fallbackTable={false}
+      />
+    );
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    // the graphic itself stays named
+    expect(screen.getByRole('img', { name: 'Line chart: sales' })).toBeInTheDocument();
+  });
+
+  it('renders the default empty state when data is empty', () => {
+    const { container } = render(
+      <Chart type='line' data={[]} series={[{ key: 'sales' }]} xKey='month' />
+    );
+    expect(
+      container.querySelector("[data-slot='chart-empty']")
+    ).toBeInTheDocument();
+    expect(screen.getByText('No data')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(ResponsiveContainer).not.toHaveBeenCalled();
+  });
+
+  it('renders a custom empty node over the default', () => {
+    render(
+      <Chart
+        type='line'
+        data={[]}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        empty={<p>Nothing plotted yet</p>}
+      />
+    );
+    expect(screen.getByText('Nothing plotted yet')).toBeInTheDocument();
+    expect(screen.queryByText('No data')).not.toBeInTheDocument();
+  });
+
+  it('opts out of the empty state with empty={false}', () => {
+    const { container } = render(
+      <Chart
+        type='line'
+        data={[]}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        empty={false}
+      />
+    );
+    expect(
+      container.querySelector("[data-slot='chart-empty']")
+    ).not.toBeInTheDocument();
+    // the chart branch renders: recharts mounts, and the (row-less)
+    // fallback table still exposes the headers
+    expect(ResponsiveContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ width: '100%', height: '100%' }),
+      undefined
+    );
+    expect(screen.getByRole('table')).toBeInTheDocument();
+  });
+
+  it('renders the default spinner while loading, suppressing chart and table', () => {
+    const { container } = render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        loading
+      />
+    );
+    expect(
+      container.querySelector("[data-slot='chart-loading']")
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(container.firstElementChild).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(ResponsiveContainer).not.toHaveBeenCalled();
+    expect(LineChart).not.toHaveBeenCalled();
+  });
+
+  it('renders a custom loading node over the default spinner', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        loading={<span>Fetching figures…</span>}
+      />
+    );
+    expect(screen.getByText('Fetching figures…')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('prefers loading over the empty state', () => {
+    render(
+      <Chart
+        type='line'
+        data={[]}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        loading
+      />
+    );
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.queryByText('No data')).not.toBeInTheDocument();
   });
 
   it('has no axe violations', async () => {

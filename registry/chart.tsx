@@ -20,6 +20,8 @@ import { Chart } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/chart.css';
+import 'haze-ui/css/empty.css';
+import 'haze-ui/css/spinner.css';
 
 export { Chart };
 export type { ChartProps, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry } from 'haze-ui';

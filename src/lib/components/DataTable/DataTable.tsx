@@ -1,8 +1,15 @@
-import type { ComponentPropsWithoutRef, MouseEvent, ReactNode } from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEventHandler,
+  ReactNode,
+} from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type {
   Column,
   ColumnDef,
+  ColumnOrderState,
   ColumnVisibilityState,
   ExpandedState,
   Header,
@@ -13,6 +20,7 @@ import type {
 } from '@tanstack/react-table';
 
 import type { DataTableCellEditorProps, DataTableColumnMeta } from './features';
+import type { VirtualListHandle } from '../VirtualList';
 
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTable } from '@tanstack/react-table';
@@ -20,6 +28,7 @@ import { css } from '@linaria/core';
 import { useControl, useThru, watch, isControl } from 'react-use-control';
 
 import { getDirection, useDirection } from '../../utils/direction';
+import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
 
 import { CheckboxCore } from '../Checkbox';
 import {
@@ -33,6 +42,7 @@ import { useStrings } from '../LocaleProvider';
 import { Pagination } from '../Pagination';
 import { Skeleton } from '../Skeleton';
 import { TableBody, TableCell, TableHead } from '../Table';
+import { VisuallyHidden } from '../VisuallyHidden';
 import { VirtualList } from '../VirtualList';
 
 import CellEditor from './CellEditor';
@@ -141,9 +151,11 @@ type DataTableProps<TData extends RowData> = {
    * height; an object pins it explicitly (plus an optional `overscan`,
    * default 5).
    *
-   * The default height is `34px` — the natural single-line row of the
-   * default cell styles: 2 × `--haze-space-2` padding (16px) + a 14px
-   * (`--haze-text-sm`) line box + the 1px row border.
+   * The default height follows the `size` density step — `34px` at `md`,
+   * the natural single-line row of the default cell styles: 2 ×
+   * `--haze-space-2` padding (16px) + a 14px (`--haze-text-sm`) line box +
+   * the 1px row border. `sm` tightens it to `23px`, `lg` loosens it to
+   * `39px`.
    *
    * Limitations and tradeoffs (evaluated against keeping `<tr>`s in one
    * shared table): `VirtualList` positions rows through absolutely
@@ -301,8 +313,140 @@ type DataTableProps<TData extends RowData> = {
     nextValue: unknown,
     prevValue: unknown
   ) => void;
+  /**
+   * Custom actions rendered in the toolbar strip at the table's inline-end
+   * corner — the same container as the `columnToggle` trigger (flex row,
+   * content first, trigger last). Renders above the table whether or not
+   * `pageSize` is set; the strip only appears when this slot or
+   * `columnToggle` contributes something (`null`/`undefined` render
+   * nothing). Available in every mode — `loading` swaps the body for the
+   * skeleton and leaves the strip untouched.
+   */
+  toolbar?: ReactNode;
+  /**
+   * Cell density across header, body and summary footer: `sm` tightens the
+   * cell padding to `--haze-space-1/--haze-space-2`, `lg` loosens it to
+   * `--haze-space-3/--haze-space-4`, `md` (the default) keeps the Table
+   * primitives' `--haze-space-2/--haze-space-3`. Padding comes from spacing
+   * tokens, so the global `compact` density class composes — it shrinks the
+   * tokens these rules consume rather than fighting them (compact + `sm`
+   * stacks). Font size stays `--haze-text-sm` in every step; when
+   * `virtualized` without an explicit `rowHeight`, the default height
+   * follows the step (23/34/39px).
+   */
+  size?: 'sm' | 'md' | 'lg';
+  /**
+   * Enable column reordering: every leaf header cell grows a drag grip
+   * (an inline-start ⠿ affordance) that can be dragged with the pointer —
+   * via `@dnd-kit`, loaded lazily the first time this prop is on, so
+   * tables that never opt in carry none of the drag runtime — or moved
+   * with the keyboard: the grip is a focusable button (its own tab stop,
+   * the resize-handle precedent) and Alt+ArrowLeft / Alt+ArrowRight move
+   * the column one slot (mirrored under RTL). The order lives in
+   * TanStack's `columnOrder` state and every reorder reports through
+   * `onColumnOrderChange`. The selection column stays pinned out of the
+   * reordering set, as do hidden columns (they simply have no grip);
+   * tree-expandable rows keep their expander inside the first content
+   * column, which reorders like any other. Composes with sorting,
+   * resizing (grip inline-start, resize handle inline-end), fixed
+   * columns, filtering and `virtualized` — the mirrored colgroup follows
+   * the new order. Grouped (nested) headers disable reordering: the prop
+   * is ignored and a dev-mode `console.warn` explains why, because a
+   * group header spans several leaves and has no single slot to move.
+   */
+  columnReorderable?: boolean;
+  /**
+   * Reports the next column order — the ids of every visible leaf column,
+   * in their new sequence — after a completed reorder, whether it came
+   * from a pointer drag or the Alt+Arrow keys. Purely observational: the
+   * order itself is owned by the table's internal state, so persisting a
+   * preferred order means seeding `columns` in that sequence next mount.
+   */
+  onColumnOrderChange?: (order: ColumnOrderState) => void;
+  /**
+   * Infinite-scroll trigger: fires when the table's scroll position comes
+   * within `endReachedThreshold` px of the last rendered row — the "load
+   * the next page" signal. In `virtualized` mode this is VirtualList's
+   * own end-reached channel (content shorter than the window fires
+   * immediately, and the trigger re-arms after content grows); otherwise
+   * a zero-footprint sentinel after the body is watched through an
+   * IntersectionObserver rooted at the table's own scroll container when
+   * it scrolls vertically (`stickyHeader`), falling back to the viewport —
+   * which still respects consumer scroll containers, since intersection
+   * is computed through every scrollable clipper between the sentinel
+   * and the viewport. Coexists with `manual` pagination on purpose:
+   * `onEndReached` keeps firing and the consumer decides whether to
+   * append rows or let the pager turn pages.
+   */
+  onEndReached?: () => void;
+  /**
+   * Distance in px from the end of the content that arms `onEndReached`.
+   * Defaults to `200`.
+   */
+  endReachedThreshold?: number;
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'table'>, 'children' | 'summary'>;
+
+/** The lazily loaded drag kit behind `columnReorderable` — see
+ * `column-reorder.tsx`. Typed through the dynamic import so DataTable's
+ * static import graph never touches `@dnd-kit`. */
+type ColumnReorderKit = typeof import('./column-reorder');
+
+/** Moves one entry of an array to another index (the `@dnd-kit` helper,
+ * inlined so this dnd-free module need not depend on it). */
+function arrayMove<T>(array: readonly T[], from: number, to: number): T[] {
+  const next = array.slice();
+  const [moved] = next.splice(from, 1);
+  if (moved === undefined) return next;
+  next.splice(to, 0, moved);
+  return next;
+}
+
+/** The reorder grip inside a header cell: a focusable button carrying the
+ * keyboard reorder model — Alt+ArrowLeft/ArrowRight move the column one
+ * slot, mirrored under RTL (read from the DOM at event time, the resize
+ * handle's contract). Pointer dragging arms through the SortableItem
+ * wrapper once the lazily loaded column-reorder kit arrives: the grip
+ * consumes its activator seam, which is null until then, so the keyboard
+ * model works even before (or without) that chunk. */
+function ReorderGrip({
+  columnId,
+  label,
+  onMove,
+}: {
+  columnId: string;
+  label: string;
+  onMove: (forward: boolean) => void;
+}) {
+  const handle = useSortableHandle();
+  return (
+    <button
+      type='button'
+      data-slot='reorder-grip'
+      data-reorder-handle={columnId}
+      onPointerDown={
+        handle?.listeners?.onPointerDown as
+          | PointerEventHandler<HTMLButtonElement>
+          | undefined
+      }
+      onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.defaultPrevented) return;
+        if (!event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        onMove(
+          (event.key === 'ArrowRight') !==
+            (getDirection(event.currentTarget) === 'rtl')
+        );
+      }}
+      aria-label={`Reorder ${label}`}
+      aria-keyshortcuts='Alt+ArrowLeft Alt+ArrowRight'
+      x-class={[sortableHandle, reorderGripClass]}
+    >
+      <span aria-hidden='true'>⠿</span>
+    </button>
+  );
+}
 
 /** Per-column feature switches resolved from the table-level props. */
 type ColumnFlags = {
@@ -377,6 +521,10 @@ type FixedCellSpec = {
   edge: boolean;
 };
 
+/** One tbody cell in the roving-tabindex navigation model, keyed by row id
+ * and column id (the selection column uses `SELECTION_NAV_ID`). */
+type NavCell = { rowId: string; columnId: string };
+
 /** Sums CSS length fragments into a single length expression. Fragments are
  * plain lengths (`'120px'`) or parenthesized expressions (the selection
  * column's token math), so anything non-trivial is wrapped in `calc()`. */
@@ -409,9 +557,24 @@ const SELECTION_COL_WIDTH =
 const SELECTION_WIDTH_PART =
   '(var(--haze-space-3) * 2 + var(--haze-space-5))';
 
-/** Default `virtualized` row height: 2 × `--haze-space-2` cell padding
- * (16px) + one `--haze-text-sm` (14px) line box + the 1px row border. */
-const VIRTUAL_DEFAULT_ROW_HEIGHT = 34;
+/** Default `virtualized` row height per density step: 2 × the step's block
+ * cell padding + one `--haze-text-sm` (14px) line box + the 1px row
+ * border — sm 2×4, md 2×8, lg 2×12. */
+const VIRTUAL_ROW_HEIGHTS = { sm: 23, md: 34, lg: 39 } as const;
+
+/** Pseudo column id of the selection column inside the navigation model —
+ * a string no accessor column can produce (ids derive from accessor keys). */
+const SELECTION_NAV_ID = '__selection__';
+
+/** Keyboard model description for the sr-only hint (English default —
+ * like the generated cell/row labels, not routed through locale packs).
+ * The edit sentence is appended only while `editable`. */
+const KEYBOARD_HINT =
+  'Use the arrow keys to move between cells. Home and End go to the start or end of the row; PageUp and PageDown go to the first or last row.';
+const KEYBOARD_HINT_EDIT =
+  ' Press Enter or F2 to edit the focused cell; Escape cancels and returns to navigation.';
+const KEYBOARD_HINT_REORDER =
+  ' Focus a column reorder grip and press Alt with the left or right arrow key to move its column.';
 
 const root = css`
   display: flex;
@@ -590,11 +753,15 @@ const footer = css`
   margin-top: var(--haze-space-3);
 `;
 
-/* Column-settings toolbar (no pagination): a right-aligned strip above the
- * table. */
+/* Toolbar strip above the table's inline-end corner: custom actions (the
+ * `toolbar` slot) plus, when not paginating, the column-settings trigger.
+ * Wrap keeps long toolbars from overflowing narrow tables. */
 const toolbar = css`
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--haze-space-2);
   margin-bottom: var(--haze-space-3);
 `;
 
@@ -682,6 +849,53 @@ const resizeHandle = css`
   }
 `;
 
+/* Reorder grip at the header cell's inline-start edge: a focusable
+ * button with its own tab stop (the resize-handle precedent) carrying an
+ * aria-hidden glyph — the accessible name is the English aria-label, like
+ * the resize handles' "Resize …". 24×24 keeps the WCAG 2.5.8 target
+ * floor. */
+const reorderGripClass = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
+  margin-inline-end: var(--haze-space-1);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--haze-text-xs);
+  line-height: 1;
+  color: var(--haze-color-text-muted);
+  vertical-align: middle;
+  border-radius: var(--haze-radius-sm);
+
+  &:hover {
+    color: var(--haze-color-primary);
+    background: var(--haze-color-bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/* The sortable wrapper span around a grip, present once the drag kit has
+ * loaded: inline and middle-aligned so wrapping the grip changes no
+ * header metrics between the pre- and post-load renders. */
+const reorderItemClass = css`
+  display: inline-flex;
+  vertical-align: middle;
+`;
+
+/* Zero-footprint sentinel after the body — an IntersectionObserver target
+ * only. 1px tall so engines that skip zero-area targets still report it. */
+const endSentinelClass = css`
+  height: 1px;
+`;
+
 const expander = css`
   display: inline-flex;
   align-items: center;
@@ -755,14 +969,45 @@ const stickyFoot = css`
   }
 `;
 
-/* Editable cell, at rest: hints at the affordance and carries the focus
- * ring for the Enter-to-edit path (the td is the tab stop). */
+/* Editable cell, at rest: hints at the affordance. The focus ring itself
+ * lives on the shared navigable-cell class below — every tbody cell is a
+ * roving-tabindex stop, editable or not. */
 const editableCell = css`
   cursor: text;
+`;
 
+/* Navigable cell focus ring: inset so it stays inside the cell borders
+ * under sticky headers and fixed columns. Every tbody data/selection cell
+ * carries it (the resize handles and interactive cell content keep their
+ * own rings). */
+const navCell = css`
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--haze-color-primary);
+    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
+  }
+`;
+
+/* Density steps, applied on every rendered table (header, body/row and
+ * summary tables alike). The child-combinator chain outranks the Table
+ * primitives' own cell padding regardless of per-component css emission
+ * order, the :not()s keep the expansion panel and empty-state cells'
+ * own padding, and spacing tokens (not literals) keep the global compact
+ * density class composing — compact shrinks the tokens these rules read,
+ * so compact and size stack instead of colliding. md is the Table
+ * primitives' own padding — no class, no override. */
+const sizeSm = css`
+  & > thead > tr > th,
+  & > tbody > tr > td:not([data-slot='panel-cell']):not([data-slot='empty-cell']),
+  & > tfoot > tr > td {
+    padding: var(--haze-space-1) var(--haze-space-2);
+  }
+`;
+
+const sizeLg = css`
+  & > thead > tr > th,
+  & > tbody > tr > td:not([data-slot='panel-cell']):not([data-slot='empty-cell']),
+  & > tfoot > tr > td {
+    padding: var(--haze-space-3) var(--haze-space-4);
   }
 `;
 
@@ -797,6 +1042,12 @@ export default function DataTable<TData extends RowData>({
   stickyFooter = false,
   editable = false,
   onCellEdit,
+  toolbar: toolbarSlot,
+  size: density = 'md',
+  columnReorderable = false,
+  onColumnOrderChange,
+  onEndReached,
+  endReachedThreshold,
   className,
   ...rest
 }: DataTableProps<TData>) {
@@ -832,12 +1083,31 @@ export default function DataTable<TData extends RowData>({
   );
   const [columnVisibility, setColumnVisibility] =
     useControl<ColumnVisibilityState>(columnVisibilityControl, {});
+  // Column order follows the same watch-layer contract: internal state
+  // (TanStack's columnOrder — an empty array means the natural
+  // column-def order), with every mutation reported through
+  // onColumnOrderChange from outside the state updater.
+  const [columnOrder, setColumnOrder] = useControl<ColumnOrderState>(
+    useThru(undefined, watch((next) => onColumnOrderChange?.(next))),
+    []
+  );
   // Which cell is being edited, if any — purely internal UI state, keyed by
   // row/column id so it survives reorders and the virtualized window.
   const [editingCell, setEditingCell] = useState<{
     rowId: string;
     columnId: string;
   } | null>(null);
+  // Roving-tabindex cursor: the single tbody cell carrying tabindex=0.
+  // Purely internal UI state (like hover tracking) keyed by row/column id,
+  // so it survives reorders and the virtualized window; null defers to the
+  // first rendered cell until the first focus/keypress.
+  const [activeCell, setActiveCell] = useState<NavCell | null>(null);
+  // Focus request for a virtualized navigation target whose row is outside
+  // the window — satisfied (and cleared) by the pending-focus effect once
+  // scrollToIndex mounts the row.
+  const pendingFocusRef = useRef<NavCell | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const virtualListRef = useRef<VirtualListHandle | null>(null);
 
   // Declared intent (LocaleProvider chain → document) for the drag math,
   // which TanStack resolves as a render-time option; keyboard nudges read
@@ -850,14 +1120,18 @@ export default function DataTable<TData extends RowData>({
   const rowHeight =
     typeof virtualized === 'object'
       ? virtualized.rowHeight
-      : VIRTUAL_DEFAULT_ROW_HEIGHT;
+      : VIRTUAL_ROW_HEIGHTS[density];
   const overscan =
     typeof virtualized === 'object' ? virtualized.overscan : undefined;
+
+  // Density class per size step — md keeps the Table primitives' padding.
+  const densityClass =
+    density === 'sm' ? sizeSm : density === 'lg' ? sizeLg : undefined;
 
   // Without `pageSize` the table renders one page holding every row, so
   // the paginated row model never slices anything — Infinity (not
   // `data.length`) because expanded tree children can outnumber the roots.
-  const size = pageSize ?? Number.POSITIVE_INFINITY;
+  const resolvedPageSize = pageSize ?? Number.POSITIVE_INFINITY;
 
   // Custom-panel expansion is possible only when the consumer opts in; it
   // also switches the virtualized window to measured (dynamic) row
@@ -902,14 +1176,16 @@ export default function DataTable<TData extends RowData>({
     state: {
       sorting,
       rowSelection,
-      pagination: { pageIndex: page - 1, pageSize: size },
+      pagination: { pageIndex: page - 1, pageSize: resolvedPageSize },
       expanded,
       columnVisibility,
+      columnOrder,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnOrderChange: setColumnOrder,
     // Server-driven mode: TanStack skips the local sort and the local
     // page slice — `data` renders exactly as received while the sorting
     // and page state keep flowing (the consumer refetches off
@@ -937,7 +1213,7 @@ export default function DataTable<TData extends RowData>({
     onPaginationChange: (updater) => {
       const next =
         typeof updater === 'function'
-          ? updater({ pageIndex: page - 1, pageSize: size })
+          ? updater({ pageIndex: page - 1, pageSize: resolvedPageSize })
           : updater;
       setPage(Math.max(1, next.pageIndex + 1));
     },
@@ -981,6 +1257,94 @@ export default function DataTable<TData extends RowData>({
   const columnCount = leafHeaders.length + (selectable ? 1 : 0);
   const rows = table.getRowModel().rows;
   const columnSizing = table.state.columnSizing;
+
+  // ── Column reordering ────────────────────────────────────────────────
+  // Nested (grouped) headers have no single slot to move — a group spans
+  // several leaves — so reordering switches itself off with a dev warning.
+  const reorderActive = columnReorderable && headerGroups.length === 1;
+  useEffect(() => {
+    if (!columnReorderable || headerGroups.length <= 1) return;
+    console.warn(
+      'DataTable: columnReorderable does not support grouped (nested) headers — rendering without column reordering.'
+    );
+  }, [columnReorderable, headerGroups.length]);
+
+  // The drag wiring loads lazily the first time reordering is active, so
+  // DataTable's static import graph (and every consumer that never opts
+  // in) stays free of the @dnd-kit runtime — the dist-esm contract's
+  // engine-import rules. The grips themselves render dnd-free from this
+  // module: only pointer dragging waits for the kit.
+  const [reorderKit, setReorderKit] = useState<ColumnReorderKit | null>(null);
+  useEffect(() => {
+    if (!reorderActive) return;
+    let cancelled = false;
+    void import('./column-reorder').then(
+      (kit) => {
+        if (!cancelled) setReorderKit(kit);
+      },
+      // A failed chunk load only costs the pointer drag — the grips and
+      // their Alt+Arrow model never depended on it.
+      () => undefined
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [reorderActive]);
+
+  // Visible leaf ids in current order — the reordering set. The selection
+  // column is not a leaf (no grip, never moves), hidden columns are simply
+  // absent, and tree/custom expansion lives inside the first content
+  // column, which reorders like any other.
+  const leafIds = leafHeaders.map((header) => header.column.id);
+
+  const moveColumn = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0 || to >= leafIds.length) return;
+    setColumnOrder(arrayMove(leafIds, from, to));
+  };
+
+  // A keyboard move should not strand focus when the cell (and its grip)
+  // travel under the keyed reconciliation — re-land it on the same grip
+  // if the browser dropped it. Only the keyboard path marks the request;
+  // pointer drags keep dnd-kit's own focus restoration.
+  const reorderFocusRef = useRef<string | null>(null);
+  useEffect(() => {
+    const columnId = reorderFocusRef.current;
+    if (!columnId) return;
+    reorderFocusRef.current = null;
+    const grip = rootRef.current?.querySelector(
+      `[data-reorder-handle="${CSS.escape(columnId)}"]`
+    );
+    if (grip instanceof HTMLElement && document.activeElement !== grip) {
+      grip.focus();
+    }
+  });
+
+  // ── Infinite scroll (non-virtualized) ───────────────────────────────
+  // A sentinel after the body, watched through an IntersectionObserver.
+  // Rooted at the component's own vertical scroller when it has one
+  // (sticky mode), else at the viewport — which still honors consumer
+  // scroll containers, since intersection is computed through every
+  // scrollable clipper above the sentinel. The rootMargin pre-arms the
+  // trigger by the threshold, matching VirtualList's end-reached
+  // semantics; re-observing after content growth re-delivers the initial
+  // notification, which is what chains short pages into the next load.
+  const endSentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (virtual || onEndReached === undefined) return;
+    const sentinel = endSentinelRef.current;
+    if (!sentinel) return;
+    const root = stickyHeader
+      ? sentinel.closest<HTMLElement>('[data-slot="scroll-area"]')
+      : null;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) onEndReached();
+      },
+      { root, rootMargin: `${endReachedThreshold ?? 200}px 0px` }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [virtual, onEndReached, endReachedThreshold, stickyHeader, loading, rows.length]);
 
   // Per-column widths: a committed resize wins, then `meta.width`, then the
   // native `size`. In normal mode a colgroup is only emitted once some
@@ -1050,6 +1414,169 @@ export default function DataTable<TData extends RowData>({
       if (width) rightParts.push(width);
     }
   }
+
+  // ── Cell keyboard navigation (roving tabindex) ────────────────────────
+  // Every tbody cell participates: exactly one carries tabindex=0 (the
+  // active cell, or the first rendered cell before any interaction), the
+  // rest -1. Arrow keys move the active cell, Enter/F2 enter edit mode on
+  // editable cells, and Tab is never intercepted — interactive cell content
+  // and the resize handles keep their own independent tab stops.
+  const navColumnIds = [
+    ...(selectable ? [SELECTION_NAV_ID] : []),
+    ...leafHeaders.map((header) => header.column.id),
+  ];
+  const navRowIds = rows.map((row) => row.id);
+
+  // The active cell must still resolve against the current model — hidden
+  // columns and swapped pages quietly invalidate it, falling back to the
+  // first rendered cell.
+  const activeNavCell =
+    activeCell !== null &&
+    navRowIds.includes(activeCell.rowId) &&
+    navColumnIds.includes(activeCell.columnId)
+      ? activeCell
+      : null;
+  const firstNavRowId = navRowIds[0];
+  const firstNavColumnId = navColumnIds[0];
+  const isNavCellActive = (rowId: string, columnId: string) =>
+    activeNavCell !== null
+      ? activeNavCell.rowId === rowId && activeNavCell.columnId === columnId
+      : rowId === firstNavRowId && columnId === firstNavColumnId;
+
+  const findNavCell = (cell: NavCell) => {
+    const candidates = rootRef.current?.querySelectorAll<HTMLElement>(
+      '[data-nav-row]'
+    );
+    if (!candidates) return undefined;
+    for (const candidate of candidates) {
+      if (
+        candidate.dataset.navRow === cell.rowId &&
+        candidate.dataset.navCol === cell.columnId
+      ) {
+        return candidate;
+      }
+    }
+    return undefined;
+  };
+
+  // Focus a navigation target: cells inside the rendered tree (normal mode,
+  // or within the virtualized window) focus directly; a virtualized target
+  // outside the window is scrolled in through VirtualList's scrollToIndex
+  // and focused by the pending-focus effect once its row mounts.
+  const focusNavCell = (cell: NavCell) => {
+    const target = findNavCell(cell);
+    if (target) {
+      target.focus();
+      return;
+    }
+    if (!virtual) return;
+    const index = navRowIds.indexOf(cell.rowId);
+    if (index >= 0) {
+      virtualListRef.current?.scrollToIndex(index);
+      pendingFocusRef.current = cell;
+    }
+  };
+
+  // Virtualized targets mount one commit after scrollToIndex — focus them
+  // as soon as they appear, then clear the request.
+  useEffect(() => {
+    const pending = pendingFocusRef.current;
+    if (!pending) return;
+    const target = findNavCell(pending);
+    if (target) {
+      pendingFocusRef.current = null;
+      target.focus();
+    }
+  });
+
+  const handleNavKeyDown = (
+    event: KeyboardEvent<HTMLElement>,
+    cell: NavCell,
+    canEditTarget: boolean
+  ) => {
+    if (event.defaultPrevented) return;
+    // Modified keys stay with the browser (page shortcuts).
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    // Inner widgets (editors, expanders, checkboxes) own their keys.
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'Enter' || event.key === 'F2') {
+      if (!canEditTarget) return;
+      event.preventDefault();
+      setActiveCell(cell);
+      setEditingCell(cell);
+      return;
+    }
+    const rowIndex = navRowIds.indexOf(cell.rowId);
+    const columnIndex = navColumnIds.indexOf(cell.columnId);
+    if (rowIndex < 0 || columnIndex < 0) return;
+    const lastRowIndex = navRowIds.length - 1;
+    const lastColumnIndex = navColumnIds.length - 1;
+    const at = (r: number, c: number): NavCell | undefined => {
+      const rowId = navRowIds[r];
+      const columnId = navColumnIds[c];
+      return rowId !== undefined && columnId !== undefined
+        ? { rowId, columnId }
+        : undefined;
+    };
+    // Horizontal moves wrap through rows — right off the last column lands
+    // on the next row's first cell and vice versa — while vertical moves
+    // stop at the grid edges: the header is not part of the roving set.
+    const horizontal = (dir: 1 | -1): NavCell | undefined => {
+      let c = columnIndex + dir;
+      let r = rowIndex;
+      if (c > lastColumnIndex) {
+        if (r >= lastRowIndex) return undefined;
+        c = 0;
+        r += 1;
+      } else if (c < 0) {
+        if (r <= 0) return undefined;
+        c = lastColumnIndex;
+        r -= 1;
+      }
+      return at(r, c);
+    };
+    let next: NavCell | undefined;
+    switch (event.key) {
+      case 'ArrowUp':
+        next = rowIndex > 0 ? at(rowIndex - 1, columnIndex) : undefined;
+        break;
+      case 'ArrowDown':
+        next = rowIndex < lastRowIndex ? at(rowIndex + 1, columnIndex) : undefined;
+        break;
+      case 'ArrowLeft':
+        // Horizontal keys mirror under RTL, read from the DOM at event
+        // time (same contract as the resize handles).
+        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? 1 : -1);
+        break;
+      case 'ArrowRight':
+        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? -1 : 1);
+        break;
+      case 'Home':
+        next = at(rowIndex, 0);
+        break;
+      case 'End':
+        next = at(rowIndex, lastColumnIndex);
+        break;
+      case 'PageUp':
+        next = rowIndex > 0 ? at(0, columnIndex) : undefined;
+        break;
+      case 'PageDown':
+        next =
+          rowIndex < lastRowIndex ? at(lastRowIndex, columnIndex) : undefined;
+        break;
+      default:
+        return;
+    }
+    if (
+      next === undefined ||
+      (next.rowId === cell.rowId && next.columnId === cell.columnId)
+    ) {
+      return;
+    }
+    event.preventDefault();
+    setActiveCell(next);
+    focusNavCell(next);
+  };
 
   const colgroup =
     virtual || hasColumnWidths || resizable ? (
@@ -1138,6 +1665,35 @@ export default function DataTable<TData extends RowData>({
               resizable &&
               header.subHeaders.length === 0 &&
               header.column.getCanResize();
+            // Reorder grip on leaf columns while reordering is active. The
+            // drag wrapper (a sortable item) appears once the lazily loaded
+            // kit arrives — until then the bare grip still carries the
+            // Alt+Arrow keyboard model.
+            const reorderGrip =
+              reorderActive && header.subHeaders.length === 0 ? (
+                <ReorderGrip
+                  columnId={header.column.id}
+                  label={columnLabel(header.column)}
+                  onMove={(forward) => {
+                    const from = leafIds.indexOf(header.column.id);
+                    const to = forward ? from + 1 : from - 1;
+                    if (from < 0) return;
+                    reorderFocusRef.current = header.column.id;
+                    moveColumn(from, to);
+                  }}
+                />
+              ) : null;
+            const reorderGripSlot =
+              reorderGrip !== null && reorderKit !== null ? (
+                <reorderKit.ColumnReorderItem
+                  id={header.column.id}
+                  className={reorderItemClass}
+                >
+                  {reorderGrip}
+                </reorderKit.ColumnReorderItem>
+              ) : (
+                reorderGrip
+              );
             return (
               <TableCell
                 as='th'
@@ -1159,6 +1715,7 @@ export default function DataTable<TData extends RowData>({
                       : undefined
                 }
               >
+                {reorderGripSlot}
                 {header.column.getCanSort() ? (
                   <button
                     type='button'
@@ -1238,13 +1795,28 @@ export default function DataTable<TData extends RowData>({
         {selectable && (
           <TableCell
             data-slot="select-cell"
+            data-nav-row={row.id}
+            data-nav-col={SELECTION_NAV_ID}
             x-class={[
               checkCellStyle,
               selectionFixedSpec && fixedCell,
               selectionFixedSpec?.edge && fixedLeftEdge,
               row.getIsSelected() && fixedCellSelected,
+              navCell,
             ]}
             style={fixedOffsetStyle(selectionFixedSpec)}
+            tabIndex={isNavCellActive(row.id, SELECTION_NAV_ID) ? 0 : -1}
+            onFocus={(event) => {
+              if (event.target !== event.currentTarget) return;
+              setActiveCell({ rowId: row.id, columnId: SELECTION_NAV_ID });
+            }}
+            onKeyDown={(event) =>
+              handleNavKeyDown(
+                event,
+                { rowId: row.id, columnId: SELECTION_NAV_ID },
+                false
+              )
+            }
           >
             <CheckboxCore
               checked={row.getIsSelected()}
@@ -1277,35 +1849,44 @@ export default function DataTable<TData extends RowData>({
             <TableCell
               key={cell.id}
               data-slot="cell"
+              data-nav-row={row.id}
+              data-nav-col={cell.column.id}
               x-class={[
                 fixedSpec && fixedCell,
                 fixedSpec?.edge &&
                   (fixedSpec.side === 'left' ? fixedLeftEdge : fixedRightEdge),
                 row.getIsSelected() && fixedCellSelected,
                 canEdit && editableCell,
+                navCell,
               ]}
               style={fixedOffsetStyle(fixedSpec)}
-              tabIndex={canEdit ? 0 : undefined}
+              tabIndex={
+                isNavCellActive(row.id, cell.column.id) ? 0 : -1
+              }
+              onFocus={(event) => {
+                if (event.target !== event.currentTarget) return;
+                setActiveCell({ rowId: row.id, columnId: cell.column.id });
+              }}
               onDoubleClick={
                 canEdit && !isEditing
-                  ? () =>
-                      setEditingCell({
+                  ? () => {
+                      setActiveCell({
                         rowId: row.id,
                         columnId: cell.column.id,
-                      })
-                  : undefined
-              }
-              onKeyDown={
-                canEdit && !isEditing
-                  ? (event) => {
-                      if (event.key !== 'Enter') return;
-                      event.preventDefault();
+                      });
                       setEditingCell({
                         rowId: row.id,
                         columnId: cell.column.id,
                       });
                     }
                   : undefined
+              }
+              onKeyDown={(event) =>
+                handleNavKeyDown(
+                  event,
+                  { rowId: row.id, columnId: cell.column.id },
+                  canEdit && !isEditing
+                )
               }
             >
               {isEditing && canEdit ? (
@@ -1424,7 +2005,11 @@ export default function DataTable<TData extends RowData>({
 
   const emptyRow = (
     <tr data-slot="row">
-      <TableCell colSpan={columnCount} data-slot="cell" x-class={[emptyCell]}>
+      <TableCell
+        colSpan={columnCount}
+        data-slot="empty-cell"
+        x-class={[emptyCell]}
+      >
         {empty ?? <Empty />}
       </TableCell>
     </tr>
@@ -1519,48 +2104,77 @@ export default function DataTable<TData extends RowData>({
     </DropdownMenu>
   ) : undefined;
 
-  return (
-    <div data-slot="data-table" x-class={[root, className]}>
-      {columnMenu && pageSize === undefined && (
-        <div data-slot="toolbar" x-class={[toolbar]}>{columnMenu}</div>
+  // The toolbar strip renders above the table whenever the slot or the
+  // column-toggle trigger contributes something; while paginating the
+  // trigger moves into the footer row, so the strip carries the slot alone.
+  const showToolbar =
+    toolbarSlot != null || (columnMenu !== undefined && pageSize === undefined);
+  const keyboardHintId = `${instanceId}-keyboard-nav`;
+
+  // The table's content, optionally wrapped in the drag region once the
+  // reorder kit has loaded. The region renders no DOM of its own except
+  // dnd-kit's screen-reader live regions, which land here — inside the
+  // root div but outside the `<table>`, where a stray `<div>` would be
+  // invalid markup (SortableTabList keeps them out of its tablist for
+  // the same reason).
+  const tableContent = (
+    <>
+      <VisuallyHidden id={keyboardHintId}>
+        {KEYBOARD_HINT +
+          (reorderActive ? KEYBOARD_HINT_REORDER : '') +
+          (editable ? KEYBOARD_HINT_EDIT : '')}
+      </VisuallyHidden>
+      {showToolbar && (
+        <div data-slot="toolbar" x-class={[toolbar]}>
+          {toolbarSlot}
+          {columnMenu !== undefined && pageSize === undefined
+            ? columnMenu
+            : null}
+        </div>
       )}
       {virtual ? (
         <div ref={virtualAreaRef} data-slot="scroll-area" x-class={[virtualArea]}>
-          <table data-slot="table" x-class={[tableBase, fixedLayout]} {...rest}>
+          <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]} {...rest}>
             {colgroup}
             {header}
             {filterBody}
           </table>
           {loading ? (
-            <table data-slot="table" x-class={[tableBase, fixedLayout]}>
+            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
               {colgroup}
               <TableBody>{skeletonRows}</TableBody>
             </table>
           ) : rows.length > 0 ? (
             <VirtualList
+              ref={virtualListRef}
               items={rows}
               height={viewportHeight}
               itemHeight={rowHeight}
+              // Infinite scroll rides VirtualList's own end-reached
+              // channel in this mode; the threshold passes through with
+              // its 200px default matching ours.
+              onEndReached={onEndReached}
+              endReachedThreshold={endReachedThreshold}
               // Expansion panels are taller than the fixed row height, so
               // switch the window to measured heights once expanding is
               // possible; plain rows measure back to `rowHeight`.
               estimatedItemHeight={expandable ? rowHeight : undefined}
               overscan={overscan}
               renderItem={(row) => (
-                <table data-slot="table" x-class={[tableBase, fixedLayout, virtualRowTable]}>
+                <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout, virtualRowTable]}>
                   {colgroup}
                   <TableBody>{renderRow(row)}</TableBody>
                 </table>
               )}
             />
           ) : (
-            <table data-slot="table" x-class={[tableBase, fixedLayout]}>
+            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
               {colgroup}
               <TableBody>{emptyRow}</TableBody>
             </table>
           )}
           {summaryTfoot !== undefined && (
-            <table data-slot="table" x-class={[tableBase, fixedLayout]}>
+            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
               {colgroup}
               {summaryTfoot}
             </table>
@@ -1568,7 +2182,7 @@ export default function DataTable<TData extends RowData>({
         </div>
       ) : (
         <div data-slot="scroll-area" x-class={[stickyHeader ? stickyScrollArea : scrollArea]}>
-          <table data-slot="table" x-class={[tableBase]} {...rest}>
+          <table data-slot="table" x-class={[tableBase, densityClass]} {...rest}>
             {colgroup}
             {header}
             {filterBody}
@@ -1584,6 +2198,17 @@ export default function DataTable<TData extends RowData>({
             </TableBody>
             {summaryTfoot}
           </table>
+          {/* End-of-rows sentinel for the IntersectionObserver — present
+           * only while rows can actually be reached (no skeleton, no
+           * empty state), so it never signals past a dead end. */}
+          {onEndReached !== undefined && !loading && rows.length > 0 && (
+            <div
+              ref={endSentinelRef}
+              data-slot="end-sentinel"
+              aria-hidden="true"
+              x-class={[endSentinelClass]}
+            />
+          )}
         </div>
       )}
       {pageSize !== undefined && (
@@ -1604,6 +2229,23 @@ export default function DataTable<TData extends RowData>({
             size='sm'
           />
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div
+      ref={rootRef}
+      data-slot="data-table"
+      aria-describedby={keyboardHintId}
+      x-class={[root, className]}
+    >
+      {reorderKit !== null && reorderActive ? (
+        <reorderKit.ColumnReorderRegion ids={leafIds} onMove={moveColumn}>
+          {tableContent}
+        </reorderKit.ColumnReorderRegion>
+      ) : (
+        tableContent
       )}
     </div>
   );

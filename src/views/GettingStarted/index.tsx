@@ -1,7 +1,14 @@
 import { css } from '@linaria/core';
+import { useControl } from 'react-use-control';
 
+import { Segmented } from '@/lib';
 import { Rich, useSiteLocale } from '@/views/i18n';
 import { page, intro, section } from '@/views/ComponentDetail/styles';
+
+const FRAMEWORKS = [
+  { value: 'vite', label: 'Vite' },
+  { value: 'next', label: 'Next.js' },
+] as const;
 
 const codeBlock = css`
   background: var(--haze-color-bg-muted);
@@ -79,9 +86,14 @@ const note = css`
   line-height: var(--haze-leading-normal);
 `;
 
+const frameworkPanel = css`
+  margin-top: var(--haze-space-4);
+`;
+
 export default function GettingStarted() {
   const { t } = useSiteLocale();
   const gs = t.gettingStarted;
+  const [framework, , frameworkCtrl] = useControl(undefined, 'vite');
 
   return (
     <div className={page}>
@@ -100,6 +112,73 @@ pnpm add haze-ui @linaria/core
 
 # yarn
 yarn add haze-ui @linaria/core`}</pre>
+      </div>
+
+      <div className={section}>
+        <h2>{gs.frameworks.title}</h2>
+        <p className={paragraph}>
+          <Rich text={gs.frameworks.intro} codeClass={inlineCode} />
+        </p>
+        <Segmented
+          options={[...FRAMEWORKS]}
+          value={frameworkCtrl}
+          aria-label={gs.frameworks.switchLabel}
+        />
+        {framework === 'vite' ? (
+          <div className={frameworkPanel}>
+            <p className={paragraph}>{gs.frameworks.vite.lead}</p>
+            <pre className={codeBlock}>{`npm create vite@latest my-app -- --template react-ts
+cd my-app
+npm i haze-ui @linaria/core`}</pre>
+            <p className={paragraph}>
+              <Rich text={gs.frameworks.vite.modeA} codeClass={inlineCode} />
+            </p>
+            <pre
+              className={codeBlock}
+            >{`// src/main.tsx — mode A: one full stylesheet (simplest)
+import 'haze-ui/styles.css';`}</pre>
+            <p className={paragraph}>
+              <Rich text={gs.frameworks.vite.modeB} codeClass={inlineCode} />
+            </p>
+            <pre
+              className={codeBlock}
+            >{`// vite.config.ts — mode B: the plugin injects per-component CSS
+import react from '@vitejs/plugin-react';
+import hazeCss from 'vite-plugin-haze-ui';
+
+export default {
+  plugins: [react(), hazeCss()],
+};`}</pre>
+            <div className={note}>
+              <Rich text={gs.frameworks.vite.pluginNote} codeClass={inlineCode} />
+            </div>
+          </div>
+        ) : (
+          <div className={frameworkPanel}>
+            <p className={paragraph}>{gs.frameworks.next.lead}</p>
+            <pre className={codeBlock}>{`npx create-next-app@latest my-app --app --ts
+cd my-app
+npm i haze-ui @linaria/core`}</pre>
+            <p className={paragraph}>
+              <Rich text={gs.frameworks.next.modeA} codeClass={inlineCode} />
+            </p>
+            <pre
+              className={codeBlock}
+            >{`// app/layout.tsx — mode A: one full stylesheet (simplest)
+import 'haze-ui/styles.css';`}</pre>
+            <p className={paragraph}>
+              <Rich text={gs.frameworks.next.modeB} codeClass={inlineCode} />
+            </p>
+            <pre
+              className={codeBlock}
+            >{`// app/layout.tsx — mode B: tokens once + each component family
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css'; // OTPInput -> 'haze-ui/css/otp-input.css'`}</pre>
+            <div className={note}>
+              <Rich text={gs.frameworks.next.note} codeClass={inlineCode} />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={section}>
@@ -313,6 +392,46 @@ export default function Page() {
             <li key={browser}>{browser}</li>
           ))}
         </ul>
+      </div>
+
+      <div className={section}>
+        <h2>{gs.cdn.title}</h2>
+        <p className={paragraph}>
+          <Rich text={gs.cdn.para} codeClass={inlineCode} />
+        </p>
+        <pre className={codeBlock}>{`<!doctype html>
+<html>
+  <head>
+    <!-- tokens + styles: one stylesheet, pinned to a real version -->
+    <link rel="stylesheet" href="https://unpkg.com/haze-ui@1.33.0/styles.css" />
+    <!-- components: esm.sh, with React kept external to the import map -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.1.0",
+          "react-dom/client": "https://esm.sh/react-dom@19.1.0/client",
+          "haze-ui": "https://esm.sh/haze-ui@1.33.0?external=react,react-dom"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import { createRoot } from 'react-dom/client';
+      import { lightTheme, spacing, typography, Button } from 'haze-ui';
+
+      createRoot(document.getElementById('root')).render(
+        <main className={\`\${lightTheme} \${spacing} \${typography}\`}>
+          <Button>haze!</Button>
+        </main>
+      );
+    </script>
+  </body>
+</html>`}</pre>
+        <div className={note}>
+          <Rich text={gs.cdn.note} codeClass={inlineCode} />
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 import { FileCode, FileJson, FileText } from 'lucide-react';
 
-import { Tabs, TabList, Tab, TabPanel, SortableTabList } from '@/lib';
+import { Tabs, TabList, Tab, TabPanel, SortableTabList, Segmented } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
@@ -123,6 +123,86 @@ function DocumentTabs({
 }
 
 // ─── Tabs ──────────────────────────────────────────────────────
+/** Variant switcher: one control drives `variant` on <Tabs> — the
+ * strip chrome and every tab re-skin through context. */
+function VariantTabs() {
+  const [variant, setVariant, variantCtrl] = useControl(undefined, 'line');
+  const [, , tabCtrl] = useControl(undefined, 'tab1');
+
+  return (
+    <>
+      <Segmented
+        options={[
+          { value: 'line', label: 'line' },
+          { value: 'card', label: 'card' },
+          { value: 'pill', label: 'pill' },
+        ]}
+        value={variantCtrl}
+        onChange={setVariant}
+      />
+      {/* Segmented speaks plain strings; Tabs narrows to the variant union. */}
+      <Tabs value={tabCtrl} variant={variant as 'line' | 'card' | 'pill'}>
+        <TabList>
+          <Tab value='tab1'>Tab One</Tab>
+          <Tab value='tab2'>Tab Two</Tab>
+          <Tab value='tab3'>Tab Three</Tab>
+        </TabList>
+        <TabPanel value='tab1'>Content for Tab One.</TabPanel>
+        <TabPanel value='tab2'>Content for Tab Two.</TabPanel>
+        <TabPanel value='tab3'>Content for Tab Three.</TabPanel>
+      </Tabs>
+    </>
+  );
+}
+
+/** Data-driven + addable + destroy: the whole "closable editor" shape
+ * without writing a single compound child — items render the strip
+ * and the panels, `addable` grows the array, and inactive panels
+ * unmount (the input below resets when you switch away and back). */
+function DraftPanel({ name }: { name: string }) {
+  return (
+    <p style={{ margin: 0 }}>
+      {name} — type a note, then switch tabs and back: the field comes
+      back empty because{' '}
+      <code>destroyInactiveTabPane</code> unmounted the panel.
+      <input
+        aria-label={`${name} note`}
+        placeholder='type, then switch tabs'
+        style={{ display: 'block', marginTop: 'var(--haze-space-2)' }}
+      />
+    </p>
+  );
+}
+
+function AddableItemsTabs() {
+  const [items, setItems] = useControl(undefined, [
+    { value: 'draft-1', label: 'Draft 1', panel: <DraftPanel name='Draft 1' /> },
+    { value: 'draft-2', label: 'Draft 2', panel: <DraftPanel name='Draft 2' /> },
+  ]);
+  const [, , activeCtrl] = useControl(undefined, 'draft-1');
+
+  const add = () => {
+    const n = items.length + 1;
+    setItems([
+      ...items,
+      {
+        value: `draft-${n}`,
+        label: `Draft ${n}`,
+        panel: <DraftPanel name={`Draft ${n}`} />,
+      },
+    ]);
+  };
+
+  return (
+    <Tabs
+      value={activeCtrl}
+      items={items}
+      addable={{ onAdd: add, addLabel: 'New draft' }}
+      destroyInactiveTabPane
+    />
+  );
+}
+
 /** Reorders a list by the index permutation SortableTabList reports. */
 function applyOrder<T>(list: T[], order: number[]): T[] {
   return order.flatMap((index) => {
@@ -185,6 +265,27 @@ export default function TabsDemo() {
       </div>
 
       <div className={section}>
+        <h2>Variants — line / card / pill</h2>
+        <p className={row}>
+          One <code>variant</code> prop on the <code>&lt;Tabs&gt;</code> root
+          re-skins the whole strip through context:{' '}
+          <code>line</code> (default — the underline strip with its
+          full-width separator), <code>card</code> (flat antd-style cards;
+          the selected tab raises onto a bordered surface, no strip
+          separator) and <code>pill</code> (the Segmented-style capsule —
+          a muted trough the selected pill lifts out of). The overflow
+          folding, roving keyboard and compression machinery are
+          identical in all three.
+        </p>
+        <VariantTabs />
+        <pre className={codeBlock}>
+          {`<Tabs value={tabCtrl} variant='card'>
+  <TabList>…</TabList>
+</Tabs>`}
+        </pre>
+      </div>
+
+      <div className={section}>
         <h2>classNames slots</h2>
         <p
           style={{
@@ -209,6 +310,77 @@ export default function TabsDemo() {
           <TabPanel value='tab1'>Content for Tab One.</TabPanel>
           <TabPanel value='tab2'>Content for Tab Two.</TabPanel>
         </Tabs>
+      </div>
+
+      <div className={section}>
+        <h2>items — data-driven tabs</h2>
+        <p className={row}>
+          Pass <code>items</code> instead of compound children and{' '}
+          <code>&lt;Tabs&gt;</code> renders the whole strip for you —
+          one <code>&lt;Tab&gt;</code> per record plus every{' '}
+          <code>&lt;TabPanel&gt;</code> from <code>panel</code>. It is
+          the same <code>&lt;TabList&gt;</code> underneath, so overflow
+          folding, the roving keyboard model and ResizeObserver
+          compression all keep working. <code>icon</code>,{' '}
+          <code>status</code>, <code>closable</code> and{' '}
+          <code>disabled</code> flow straight through to the tabs.
+          Giving both <code>items</code> and children is a contract
+          breach — the console names it and <code>items</code> wins.
+        </p>
+        <Tabs
+          value='overview'
+          items={[
+            {
+              value: 'overview',
+              label: 'Overview',
+              panel: <p style={{ margin: 0 }}>Everything, at a glance.</p>,
+            },
+            {
+              value: 'activity',
+              label: 'Activity',
+              icon: <FileText size={14} />,
+              status: 'syncing',
+              panel: <p style={{ margin: 0 }}>Syncing your activity…</p>,
+            },
+            {
+              value: 'settings',
+              label: 'Settings',
+              icon: <FileJson size={14} />,
+              disabled: true,
+              panel: <p style={{ margin: 0 }}>Settings for this workspace.</p>,
+            },
+          ]}
+        />
+        <pre className={codeBlock}>
+          {`<Tabs value='overview' items={[
+  { value: 'overview', label: 'Overview', panel: <p>…</p> },
+  { value: 'activity', label: 'Activity', status: 'syncing', panel: <p>…</p> },
+  { value: 'settings', label: 'Settings', disabled: true, panel: <p>…</p> },
+]} />`}
+        </pre>
+      </div>
+
+      <div className={section}>
+        <h2>destroyInactiveTabPane + addable</h2>
+        <p className={row}>
+          By default inactive panels stay mounted and hidden — panel
+          state survives tab switches.{' '}
+          <code>destroyInactiveTabPane</code> unmounts them instead
+          (type into a draft below, switch away and back — the field
+          resets). <code>addable</code> renders the <code>+</code> at
+          the tail of the bar: a real button outside the tablist (its
+          own tab stop, Enter/Space activate) that only notifies —
+          growing the array is your job, which is exactly what the
+          fixture does.
+        </p>
+        <AddableItemsTabs />
+        <pre className={codeBlock}>
+          {`const [items, setItems] = useControl(undefined, initialDrafts);
+
+<Tabs value={activeCtrl} items={items} destroyInactiveTabPane
+  addable={{ onAdd: () => setItems([...items, newDraft]),
+             addLabel: 'New draft' }} />`}
+        </pre>
       </div>
 
       <div className={section}>
@@ -333,6 +505,15 @@ export default function TabsDemo() {
             <li>
               Folded overflow tabs stay reachable through the{' '}
               <code>⋯</code> menu button
+            </li>
+            <li>
+              Disabled tabs are inert but visible — no click selection,
+              skipped by the roving arrows and by the overflow menu
+            </li>
+            <li>
+              The <code>addable</code> <code>+</code> sits outside the
+              tablist (the strip owns nothing but tabs) as a real
+              button — its own tab stop, Enter/Space activate
             </li>
           </ul>
         </A11yNote>

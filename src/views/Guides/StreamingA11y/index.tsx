@@ -4,60 +4,18 @@ import { css } from '@linaria/core';
 import {
   Button,
   ChatMessage,
-  CodeBlock,
   MarkdownRenderer,
   StreamingText,
 } from '@/lib';
-import { intro, page, section } from '@/views/ComponentDetail/styles';
+import { page } from '@/views/ComponentDetail/styles';
+import { GuideDocView, useGuideDoc } from '@/views/Guides/guide-content';
 
 /*
- * Screen-reader support for streaming AI output: why token-by-token
- * rendering is silent without a live region, the announcement pattern
- * StreamingText and ChatMessage ship (cue + throttled snapshots +
- * final text, aria-busy on the content area), and how to reuse the
- * pattern in custom streaming UIs. The same live-region semantics
- * govern every transient state, so the guide also collects the
- * interruption tiers (Toast's liveRoles), async option loading
- * (Select / Combobox / Cascader) and lazy tree node aria-busy.
+ * Screen-reader support for streaming AI output. Prose, code samples
+ * and the strategy table live in guide-content.tsx; this shell owns the
+ * two live demos (StreamingText replay and markdown ChatMessage) and
+ * injects them as slots. Demo copy arrives via doc.ui.
  */
-
-const paragraph = css`
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-base);
-  color: var(--haze-color-text);
-  line-height: var(--haze-leading-relaxed);
-  margin: 0 0 var(--haze-space-4);
-`;
-
-const inlineCode = css`
-  background: var(--haze-color-bg-muted);
-  border-radius: var(--haze-radius-sm);
-  padding: 0.15em 0.4em;
-  font-family: var(--haze-font-mono);
-  font-size: 0.9em;
-`;
-
-const codeMargin = css`
-  margin: var(--haze-space-2) 0 var(--haze-space-4);
-`;
-
-const note = css`
-  background: var(--haze-color-primary-subtle);
-  border-left: 3px solid var(--haze-color-primary);
-  border-radius: 0 var(--haze-radius-md) var(--haze-radius-md) 0;
-  padding: var(--haze-space-3) var(--haze-space-4);
-  margin: var(--haze-space-4) 0;
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  line-height: var(--haze-leading-normal);
-`;
-
-const demoCaption = css`
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-muted);
-  margin: 0 0 var(--haze-space-6);
-`;
 
 const demoFrame = css`
   border: 1px solid var(--haze-color-border);
@@ -77,75 +35,29 @@ const demoBar = css`
   align-items: center;
 `;
 
-const tableWrap = css`
-  overflow-x: auto;
-  margin: var(--haze-space-2) 0 var(--haze-space-4);
-`;
-
-const strategyTable = css`
-  border-collapse: collapse;
-  width: 100%;
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-
-  th,
-  td {
-    border: 1px solid var(--haze-color-border);
-    padding: var(--haze-space-2) var(--haze-space-3);
-    text-align: start;
-    vertical-align: top;
-  }
-
-  th {
-    background: var(--haze-color-bg-subtle);
-    font-weight: var(--haze-weight-medium);
-  }
-
-  code {
-    font-family: var(--haze-font-mono);
-    font-size: 0.9em;
-  }
-`;
-
-/** Demo copy: replayable, long enough for several announce intervals. */
-const DEMO_STREAM =
-  'A live region is a plain element you promise to update. ' +
-  'Screen readers do not watch DOM text by default, so a growing ' +
-  'answer is just pixels moving — unless the element says otherwise.';
-
-const DEMO_MARKDOWN_SOURCE = [
-  '### Markdown while streaming',
-  '',
-  'Blocks finalize at **blank lines**, so only the tail block re-renders as tokens arrive.',
-  '',
-  '- the parser is memoized per block',
-  '- code and lists stream in like any other block',
-].join('\n');
+type DemoUi = {
+  replayLabel: string;
+  generateLabel: string;
+  waitingHint: string;
+  streamText: string;
+  markdownSource: string;
+};
 
 /**
  * StreamingText demo: a replay button restarts the stream (a key bump
  * remounts the component, which resets both the visible text and the
  * announcement lifecycle).
  */
-function StreamingDemo() {
+function StreamingDemo({ replayLabel, streamText }: { replayLabel: string; streamText: string }) {
   const [runId, setRunId] = useState(0);
   return (
     <div className={demoFrame}>
       <div className={demoBar}>
         <Button size='sm' variant='outline' onClick={() => setRunId((n) => n + 1)}>
-          Replay stream
+          {replayLabel}
         </Button>
       </div>
-      <StreamingText key={runId} text={DEMO_STREAM} speed={18} />
-      <p className={demoCaption}>
-        With a screen reader running you hear: the{' '}
-        <em>Generating</em> cue, a fresh snapshot of the text roughly every
-        1.2&nbsp;seconds while it grows, and the complete sentence once when
-        the stream ends. Sighted users see the same text appear character by
-        character — the announcements are a parallel channel, not a
-        replacement.
-      </p>
+      <StreamingText key={runId} text={streamText} speed={18} />
     </div>
   );
 }
@@ -155,7 +67,15 @@ function StreamingDemo() {
  * generation state, flips `streaming`, and lets ChatMessage handle
  * aria-busy plus the announcement lifecycle over whatever is rendered.
  */
-function ChatStreamingDemo() {
+function ChatStreamingDemo({
+  generateLabel,
+  waitingHint,
+  markdownSource,
+}: {
+  generateLabel: string;
+  waitingHint: string;
+  markdownSource: string;
+}) {
   const [streaming, setStreaming] = useState(false);
   const [source, setSource] = useState('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -169,7 +89,7 @@ function ChatStreamingDemo() {
 
   const generate = () => {
     if (streaming) return;
-    const words = DEMO_MARKDOWN_SOURCE.split(/(\s+)/);
+    const words = markdownSource.split(/(\s+)/);
     let index = 0;
     setSource('');
     setStreaming(true);
@@ -188,463 +108,53 @@ function ChatStreamingDemo() {
     <div className={demoFrame}>
       <div className={demoBar}>
         <Button size='sm' variant='outline' onClick={generate} disabled={streaming}>
-          Generate reply
+          {generateLabel}
         </Button>
       </div>
       <ChatMessage role="assistant" name="haze-bot" streaming={streaming}>
-        {source ? <MarkdownRenderer content={source} /> : <em>waiting…</em>}
+        {source ? <MarkdownRenderer content={source} /> : <em>{waitingHint}</em>}
       </ChatMessage>
-      <p className={demoCaption}>
-        The bubble carries <code className={inlineCode}>aria-busy</code> while{' '}
-        <code className={inlineCode}>streaming</code> is set; the hidden live
-        region snapshots the rendered markdown text (headers, emphasis and
-        list markers become plain announced text) and speaks the finished
-        message when the flag clears.
-      </p>
     </div>
   );
 }
 
 export default function StreamingA11yGuide() {
+  const doc = useGuideDoc('streamingA11y');
+
+  const {
+    replayLabel = 'Replay stream',
+    generateLabel = 'Generate reply',
+    waitingHint = 'waiting…',
+    streamText = '',
+    markdownSource = '',
+  } = doc.ui ?? {};
+
+  const demoUi: DemoUi = {
+    replayLabel,
+    generateLabel,
+    waitingHint,
+    streamText,
+    markdownSource,
+  };
+
   return (
     <div className={page}>
-      <h1>Screen readers &amp; streaming AI output</h1>
-      <p className={intro}>
-        Streaming answers arrive token by token: the DOM text grows dozens of
-        times per second. Sighted users perceive that as text being typed.
-        To a screen reader it is <strong>silence</strong> — and this guide is
-        about why, and about the announcement pattern haze-ui ships in{' '}
-        <code className={inlineCode}>StreamingText</code> and{' '}
-        <code className={inlineCode}>ChatMessage</code> to fix it. The
-        same live-region semantics govern every transient state —
-        toasts, async-loaded option lists, lazily expanding tree nodes —
-        and the later sections collect those patterns too.
-      </p>
-
-      <div className={section}>
-        <h2>Why streaming output is silent</h2>
-        <p className={paragraph}>
-          Screen readers announce what they are made aware of. Editing text
-          inside a normal element is not something they are made aware of:
-          there is no event, no semantic difference between &ldquo;the author
-          wrote more&rdquo; and &ldquo;a script is mutating this node&rdquo;.
-          Browsers only forward text changes to assistive technology when the
-          element declares itself a <strong>live region</strong> —{' '}
-          <code className={inlineCode}>aria-live</code> or a role that implies
-          it, such as <code className={inlineCode}>role=&quot;status&quot;</code>{' '}
-          (polite) or <code className={inlineCode}>role=&quot;alert&quot;</code>{' '}
-          (assertive). Three rules matter for streaming:
-        </p>
-        <ul className={paragraph}>
-          <li>
-            <strong>Only changes announce.</strong> Content that is already
-            inside the region when it appears is treated as page content, not
-            as news. The region must exist <em>before</em> the text starts
-            growing — mounting it pre-filled announces nothing reliably.
-          </li>
-          <li>
-            <strong>Every mutation is an utterance.</strong> Appending one
-            character restarts what the reader is saying. A 300-token answer
-            streamed per-token into a live region is 300 interruptions, each
-            starting the utterance over from wherever the reader&apos;s
-            heuristics decide.
-          </li>
-          <li>
-            <strong>Politeness queues.</strong>{' '}
-            <code className={inlineCode}>role=&quot;status&quot;</code> waits
-            for the current utterance;{' '}
-            <code className={inlineCode}>role=&quot;alert&quot;</code> barges
-            in. Generated prose is never urgent enough to barge — assertive
-            live regions are for &ldquo;your session expired&rdquo;, not for
-            paragraphs.
-          </li>
-        </ul>
-        <p className={paragraph}>
-          So the requirements pull in opposite directions: the reader must
-          hear the stream (needs a live region) but must not be interrupted
-          per token (needs restraint in how often the region changes).
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>The haze pattern</h2>
-        <p className={paragraph}>
-          <code className={inlineCode}>StreamingText</code> renders exactly
-          what it always did — memoized chunk spans and a blinking caret —
-          and adds a visually hidden{' '}
-          <code className={inlineCode}>role=&quot;status&quot;</code> region
-          that mirrors the stream on a <strong>throttle</strong>:
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`<StreamingText
-  text={answer}            // the full (still growing) answer
-  speed={20}               // ms per visible character — unchanged
-  announceInterval={1200}  // live-region cadence (default 1200ms)
-/>`}
-        </CodeBlock>
-        <p className={paragraph}>
-          The announcement lifecycle has three stages. On stream start the
-          region receives a <em>Generating</em> cue (a real mutation, so it is
-          announced — the region mounts empty). While the text grows, a
-          snapshot of the current text replaces the region&apos;s content at
-          most once per <code className={inlineCode}>announceInterval</code>{' '}
-          — the reader hears the answer so far, as a whole utterance, about
-          once per second. When the stream completes, the pending snapshot is
-          cancelled and the complete final text is announced once; the region
-          then settles and stays silent. Tune the cadence with{' '}
-          <code className={inlineCode}>announceInterval</code>: shorter means
-          fresher progress and more interruptions, longer the reverse. The
-          default of 1200&nbsp;ms sits where most readers finish a sentence.
-        </p>
-        <StreamingDemo />
-        <div className={note}>
-          <strong>aria-busy marks the content, not the root.</strong> While
-          streaming, the content area carries{' '}
-          <code className={inlineCode}>aria-busy=&quot;true&quot;</code> so
-          assistive tech knows the subtree is still mutating. The live region
-          deliberately lives <em>outside</em> that subtree: announcements
-          coming from inside an aria-busy element may be deferred until the
-          flag clears, which would silence the very snapshots the region
-          exists to deliver. Busy marks what is changing; the announcer sits
-          beside it.
-        </div>
-      </div>
-
-      <div className={section}>
-        <h2>Why not announce every character</h2>
-        <p className={paragraph}>
-          The naive fix — pouring the stream into a live region as it
-          arrives — is worse than the silence it replaces. Each mutation
-          makes the reader stop and restart; users hear fragments of
-          beginnings (&ldquo;The an&hellip; The ans&hellip; The answer
-          is&hellip;&rdquo;), lose their place, and often disable live
-          regions for the site altogether. The strategies compare like this:
-        </p>
-        <div className={tableWrap}>
-          <table className={strategyTable}>
-            <thead>
-              <tr>
-                <th>strategy</th>
-                <th>what the reader hears</th>
-                <th>verdict</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>per-token mutation of a live region</td>
-                <td>hundreds of restarted fragments</td>
-                <td>harmful — interruption churn</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>role=&quot;status&quot;</code> + throttled snapshots
-                </td>
-                <td>cue, then the text so far ~once per interval, then the
-                  finished answer</td>
-                <td>haze&apos;s default</td>
-              </tr>
-              <tr>
-                <td>announce only on completion</td>
-                <td>one long utterance at the end</td>
-                <td>calm, but a 30&nbsp;s stream is 30&nbsp;s of silence
-                  first — set a large <code>announceInterval</code> if your
-                  users prefer this</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p className={paragraph}>
-          A detail that makes snapshots usable: the region re-announces the{' '}
-          <em>whole</em> text so far, not the delta (the{' '}
-          <code className={inlineCode}>status</code> role implies{' '}
-          <code className={inlineCode}>aria-atomic</code>). The reader never
-          has to reconstruct &ldquo;what came before the last 30
-          characters&rdquo;.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>ChatMessage: streaming with your own renderer</h2>
-        <p className={paragraph}>
-          <code className={inlineCode}>StreamingText</code> owns its
-          typewriter effect. When you render the growing content yourself —
-          plain text state, your own markdown pipeline — pass{' '}
-          <code className={inlineCode}>streaming</code> to{' '}
-          <code className={inlineCode}>ChatMessage</code> and it applies the
-          same pattern to whatever the bubble contains: the bubble is marked{' '}
-          <code className={inlineCode}>aria-busy</code>, and a hidden status
-          region snapshots the <em>rendered</em> text on the same 1200&nbsp;ms
-          cadence, announcing the complete message when you flip the flag
-          off. User and system messages never get a region.
-        </p>
-        <ChatStreamingDemo />
-        <div className={note}>
-          <strong>Do not double up.</strong> If the bubble&apos;s children
-          already announce themselves — <code>StreamingText</code> inside a{' '}
-          <code>ChatMessage</code> — leave{' '}
-          <code>streaming</code> false. Two live regions saying the same text
-          twice is its own kind of interruption churn. Pick exactly one
-          announcer per message.
-        </div>
-        <p className={paragraph}>
-          One contract rides along: the copy action and the snapshots read
-          the bubble&apos;s <em>visible</em> text. Any descendant marked{' '}
-          <code className={inlineCode}>data-slot=&quot;live-region&quot;</code>{' '}
-          is excluded, so announcements never leak into the clipboard and
-          copied text is never doubled. Mark your own mirrors with the same
-          attribute to opt into the exclusion.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>Markdown + streaming</h2>
-        <p className={paragraph}>
-          <code className={inlineCode}>MarkdownRenderer</code> is a pure
-          renderer — no timers, no announcement logic of its own; it stays
-          silent and fast (blocks are memoized, so streaming re-parses only
-          the growing tail block). Compose it under an announcer:
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`// streaming markdown: the renderer re-parses only the tail
-// block while ChatMessage handles aria-busy + announcements
-<ChatMessage role="assistant" streaming={isGenerating}>
-  <MarkdownRenderer content={partialMarkdown} />
-</ChatMessage>
-
-// typewriter-then-markdown: plain text streams in (announced by
-// StreamingText), the formatted view replaces it once complete
-{done
-  ? <MarkdownRenderer content={answer} />
-  : <StreamingText text={answer} speed={20} onComplete={() => setDone(true)} />}`}
-        </CodeBlock>
-        <p className={paragraph}>
-          Either shape works. The first announces snapshots of the rendered
-          text (headers and emphasis flatten to plain speech); the second
-          announces the raw text while streaming and swaps in formatting
-          silently at the end.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>Interruption tiers: status vs alert (Toast)</h2>
-        <p className={paragraph}>
-          Streaming prose is never urgent — but not every transient
-          message is so polite, and an error toast may legitimately need
-          to interrupt. The distinction is mechanical, not a matter of
-          taste: <code className={inlineCode}>role=&quot;status&quot;</code>{' '}
-          is implicitly <code className={inlineCode}>aria-live=&quot;polite&quot;</code>{' '}
-          (it queues behind whatever is being said), while{' '}
-          <code className={inlineCode}>role=&quot;alert&quot;</code> is
-          implicitly assertive (it barges in). haze-ui draws that line
-          at exactly one variant: <code className={inlineCode}>Toast</code>{' '}
-          maps every variant to <code>status</code> except{' '}
-          <code>danger</code>, which becomes <code>alert</code> — the
-          only tier allowed to interrupt the reader.
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`const liveRoles = {
-  info: 'status',
-  success: 'status',
-  warning: 'status',
-  danger: 'alert',   // the only assertive tier
-  loading: 'status',
-} as const;
-
-// the toast root carries the role — each toast is its own live region
-<div role={liveRoles[variant]} data-slot="toast">…</div>`}
-        </CodeBlock>
-        <p className={paragraph}>
-          Two structural rules keep announcements single. First, each
-          toast element is its own live region, so the fixed stack{' '}
-          <code className={inlineCode}>ToastContainer</code> renders
-          must not add <code className={inlineCode}>aria-live</code> or
-          a live role of its own — a region wrapping a region announces
-          the same toast twice, once per mutation. Second, the{' '}
-          <code>loading</code> variant&rsquo;s spinner glyph is{' '}
-          <code className={inlineCode}>aria-hidden</code> art: the toast
-          root already speaks, so a nested{' '}
-          <code className={inlineCode}>role=&quot;status&quot;</code>{' '}
-          glyph would add a second voice saying &ldquo;loading&rdquo; on
-          top of the message. The Accessibility guide&rsquo;s ARIA
-          pattern table summarizes this family as its Alert / Status
-          row.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>
-          Async option loading: busy, never a lie (Select, Combobox,
-          Cascader)
-        </h2>
-        <p className={paragraph}>
-          Remote option lists put a picker panel in the same transient
-          state a stream does: the data is not there yet and what is on
-          screen is stale. The contract haze-ui applies across the three
-          remote-capable pickers: the mutating surface carries{' '}
-          <code className={inlineCode}>aria-busy</code>, a{' '}
-          <code className={inlineCode}>Spinner</code> (itself{' '}
-          <code className={inlineCode}>role=&quot;status&quot;</code>)
-          stands in for the list, and local filtering is{' '}
-          <em>suspended</em> while loading — filtering the stale options
-          against the just-typed query and showing &ldquo;no
-          results&rdquo; would be a lie. The honest answer is
-          &ldquo;not here yet&rdquo;.
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`<Select loading={isSearching} onSearch={(q) => search(q)}>
-  {remoteOptions.map((o) => (
-    <Option key={o.value} value={o.value}>{o.label}</Option>
-  ))}
-</Select>
-
-// while loading: panel is busy, the spinner replaces the list, and the
-// list's semantic role is suppressed — a Spinner block inside a
-// role="listbox" would be an aria-required-children violation
-<FloatingPanel aria-busy={loading || undefined}>
-  {hasVisibleOptions ? optionsList : <Spinner size="sm" />}
-</FloatingPanel>`}
-        </CodeBlock>
-        <p className={paragraph}>
-          Where <code className={inlineCode}>aria-busy</code> lands is
-          per-component honesty:{' '}
-          <code className={inlineCode}>Combobox</code> puts it on the
-          combobox input itself (the input&rsquo;s list is what is
-          pending); <code className={inlineCode}>Select</code> and{' '}
-          <code className={inlineCode}>Cascader</code> put it on the
-          floating panel, and while it is set the list&rsquo;s semantic
-          role is suppressed so the panel says &ldquo;busy&rdquo;, not
-          &ldquo;here is a list of one spinner&rdquo;. Keyboard
-          navigation stays inert until loading clears — there is nothing
-          to navigate yet, and arrow keys waking a half-populated list
-          read as a bug, not progress.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>Lazy tree nodes: busy at the node (Tree)</h2>
-        <p className={paragraph}>
-          A lazily loaded tree node is the same pattern at its smallest
-          unit. When <code className={inlineCode}>loadData</code> is
-          fetching a node&rsquo;s children, the{' '}
-          <code className={inlineCode}>aria-busy</code> flag goes on that
-          node&rsquo;s <code>treeitem</code> — not on the tree — so the
-          rest of the tree stays readable and navigable while the one
-          expanding node waits.{' '}
-          <code className={inlineCode}>aria-expanded</code> already
-          reports the requested state; <code>aria-busy</code> adds
-          &ldquo;and the children are not there yet&rdquo;.
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`<Tree
-  loadData={(node) => fetchChildren(node.key)}
-  treeData={lazyRoot}
-/>
-
-// the expanding treeitem while its children are in flight
-<div
-  role="treeitem"
-  aria-expanded={expanded}
-  aria-busy={loading || undefined}
-/>`}
-        </CodeBlock>
-        <div className={note}>
-          <strong>Busy marks the smallest mutating scope.</strong> That
-          is the shared shape of all five patterns: aria-busy on the
-          thing that is actually changing (the content area, the toast,
-          the panel, the node), never on a container large enough to
-          silence siblings that are already fine.
-        </div>
-      </div>
-
-      <div className={section}>
-        <h2>Rolling your own</h2>
-        <p className={paragraph}>
-          The pattern is four moves and works in any stack — a hidden status
-          region mounted empty before the stream starts, a throttled mirror
-          of the visible text, aria-busy on the changing content only, and a
-          final full announcement:
-        </p>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`const srOnly = \`position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0, 0, 0, 0); clip-path: inset(50%);
-  white-space: nowrap; border: 0;\`;
-
-function StreamedAnswer({ text, done }: { text: string; done: boolean }) {
-  const [announced, setAnnounced] = useState('');
-
-  useEffect(() => {
-    if (done) {
-      // final utterance: the complete text, exactly once
-      setAnnounced(text);
-      return;
-    }
-    setAnnounced('Generating');               // cue = a real mutation
-    const id = setInterval(                   // trailing-edge throttle
-      () => setAnnounced(text),
-      1200,
-    );
-    return () => clearInterval(id);
-  }, [done, text]);
-
-  return (
-    <>
-      <span role="status" data-slot="live-region" style={srOnly}>
-        {announced}
-      </span>
-      <div aria-busy={done ? undefined : true}>{text}</div>
-    </>
-  );
-}`}
-        </CodeBlock>
-        <p className={paragraph}>
-          The details that separate a working version from a broken one: the
-          region exists before the first token (never mounted
-          pre-filled), its mutations happen <em>outside</em> the{' '}
-          <code className={inlineCode}>aria-busy</code> subtree, the cue and
-          the snapshots are separate mutations so both are spoken, and the
-          completion write cancels any pending snapshot so nothing is said
-          twice. Mirror the{' '}
-          <code className={inlineCode}>data-slot=&quot;live-region&quot;</code>{' '}
-          attribute so text-extraction helpers can skip your announcer.
-        </p>
-      </div>
-
-      <div className={section}>
-        <h2>Edge notes</h2>
-        <ul className={paragraph}>
-          <li>
-            <strong>Reduced motion does not apply — but check it anyway.</strong>{' '}
-            <code className={inlineCode}>prefers-reduced-motion</code> governs
-            animation; speech cadence is not motion, and StreamingText
-            announces identically with it set (the blinking caret itself
-            already collapses under reduced motion). What reduced-motion
-            users may still want is a <em>calmer</em> cadence — expose your{' '}
-            <code className={inlineCode}>announceInterval</code> and let app
-            code widen it from a{' '}
-            <code className={inlineCode}>matchMedia</code> check if you like.
-          </li>
-          <li>
-            <strong>Spoilers.</strong> A live region reads text the moment it
-            arrives — glanceable UIs (quiz answers, surprise reveals,
-            spoiler-tagged chat) should not stream into announcements at
-            all. Announce a neutral summary on completion instead, and keep
-            the revealing text out of live regions entirely.
-          </li>
-          <li>
-            <strong>The cue is localized.</strong> The{' '}
-            <em>Generating</em> hint comes from the{' '}
-            <code className={inlineCode}>streamingText</code> section of the
-            locale packs — override or translate it like any other copy:
-          </li>
-        </ul>
-        <CodeBlock language='tsx' className={codeMargin}>
-          {`<LocaleProvider
-  locale="fr-FR"
-  strings={{ streamingText: { generating: 'Réponse en préparation' } }}
-/>`}
-        </CodeBlock>
-      </div>
+      <h1>{doc.title}</h1>
+      <GuideDocView
+        doc={doc}
+        slots={{
+          'streaming-demo': (
+            <StreamingDemo replayLabel={demoUi.replayLabel} streamText={demoUi.streamText} />
+          ),
+          'chat-demo': (
+            <ChatStreamingDemo
+              generateLabel={demoUi.generateLabel}
+              waitingHint={demoUi.waitingHint}
+              markdownSource={demoUi.markdownSource}
+            />
+          ),
+        }}
+      />
     </div>
   );
 }

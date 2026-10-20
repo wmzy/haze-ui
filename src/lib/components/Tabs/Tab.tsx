@@ -3,6 +3,7 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from 'react';
+import type { TabsVariant } from './TabsContext';
 
 import { css } from '@linaria/core';
 
@@ -35,6 +36,14 @@ type TabProps = {
    * (Unsaved changes / Error / Syncing).
    */
   statusLabel?: ReactNode;
+  /**
+   * Inert tab: not clickable, excluded from the strip's roving
+   * keyboard model (the `disabled` attribute on the plain button, plus
+   * `aria-disabled` on the closable div form), and skipped by the ⋯
+   * overflow menu's radios. Purely visual on the tab itself — why a
+   * tab is disabled stays the consumer's story to tell.
+   */
+  disabled?: boolean;
   /**
    * Renders the × close affordance. Purely notifying: activating it
    * calls `onClose` and nothing else — removing the tab from the
@@ -77,11 +86,11 @@ const base = css`
   font-size: var(--haze-text-sm);
   font-weight: var(--haze-weight-medium);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
   transition:
     color var(--haze-duration-fast),
-    border-color var(--haze-duration-fast);
+    border-color var(--haze-duration-fast),
+    background-color var(--haze-duration-fast),
+    box-shadow var(--haze-duration-fast);
 
   /* Chrome-style strip sizing: tabs size to their content and
    * COMPRESS when the strip runs short (flex-shrink) instead of
@@ -126,14 +135,26 @@ const base = css`
   }
 `;
 
-const active = css`
+/** The selected tab's raised compression floor — every variant: roughly
+ * 1.5× the sibling minimum, so the active tab keeps a readable label
+ * while the strip squeezes everything else first. */
+const activeFloor = css`
+  min-width: calc(var(--haze-space-10) * 3);
+`;
+
+/* ─── line (default): the classic underline strip ─────────────────── */
+
+/** Line chrome: the transparent 2px underline slot (the selection
+ * fills it) overlapping the strip's separator by its own 1px — the
+ * active underline reads as piercing the rule. */
+const lineTab = css`
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+`;
+
+const lineTabActive = css`
   color: var(--haze-color-primary);
   border-bottom-color: var(--haze-color-primary);
-
-  /* The selected tab's compression floor: roughly 1.5× the
-   * sibling minimum, so the active tab keeps a readable label
-   * while the strip squeezes everything else first. */
-  min-width: calc(var(--haze-space-10) * 3);
 
   /* Forced-colors: the primary underline and text flatten onto
      CanvasText — the selected tab would be indistinguishable.
@@ -143,6 +164,104 @@ const active = css`
     background: Highlight;
     color: HighlightText;
     border-bottom-color: Highlight;
+  }
+`;
+
+/* ─── card: flat antd-style cards ─────────────────────────────────── */
+
+/** Card chrome: a transparent full border reserves the selected card's
+ * stroke (border-box — activating never reflows the row), rounded top
+ * corners where the card would meet the panel below. */
+const cardTab = css`
+  border: 1px solid transparent;
+  border-radius: var(--haze-radius-md) var(--haze-radius-md) var(--haze-radius-none) var(--haze-radius-none);
+
+  &:hover {
+    background: var(--haze-color-bg-subtle);
+  }
+
+  /* Forced-colors: a transparent border does not survive — an inset
+     1px CanvasText outline bounds each card (keyboard focus still
+     upgrades to the base class's Highlight ring). */
+  @media (forced-colors: active) {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+`;
+
+/** The raised flat card: the selection signal is the tab's own surface
+ * + stroke, not an underline (the strip carries no separator in this
+ * variant). */
+const cardTabActive = css`
+  background: var(--haze-color-bg);
+  border-color: var(--haze-color-border);
+  color: var(--haze-color-text);
+
+  /* Forced-colors: the bg-surface selection flattens to Canvas — the
+     Windows-native Highlight chip renders instead. */
+  @media (forced-colors: active) {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+`;
+
+/* ─── pill: the Segmented-style capsule ───────────────────────────── */
+
+/** Pill chrome: fully rounded tabs riding in the strip's muted trough
+ * (TabList's pill skin paints the trough). */
+const pillTab = css`
+  border-radius: var(--haze-radius-full);
+
+  /* Forced-colors: an unselected pill is a transparent no-border
+     button — an inset 1px CanvasText outline bounds it inside the
+     trough (the Segmented button precedent). */
+  @media (forced-colors: active) {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+`;
+
+/** The lifted capsule — mirrors SegmentedCore's active segment: onto
+ * the bg surface with the small elevation shadow. */
+const pillTabActive = css`
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  box-shadow: var(--haze-shadow-sm);
+
+  /* Forced-colors: the white-on-muted selection flattens with the
+     shadow dropped — the Windows-native Highlight chip renders
+     instead. */
+  @media (forced-colors: active) {
+    background: Highlight;
+    color: HighlightText;
+  }
+`;
+
+/** Per-variant skin pair — `idle` rides every tab of the variant,
+ * `active` only the selected one (after the shared `activeFloor`). */
+const tabVariants: Record<TabsVariant, { idle: string; active: string }> = {
+  line: { idle: lineTab, active: lineTabActive },
+  card: { idle: cardTab, active: cardTabActive },
+  pill: { idle: pillTab, active: pillTabActive },
+};
+
+/** Disabled tabs stay visible but inert: pointer and keyboard
+ * selection is blocked (the click handler and the roving model both
+ * skip them) and the hover tint is pinned to the resting color. The
+ * compound selectors outrank every variant's `:hover` regardless of
+ * stylesheet emission order. */
+const disabledClass = css`
+  cursor: not-allowed;
+
+  &[disabled],
+  &[aria-disabled='true'] {
+    color: var(--haze-color-text-muted);
+  }
+
+  &:hover:disabled,
+  &:hover[aria-disabled='true'] {
+    color: var(--haze-color-text-muted);
   }
 `;
 
@@ -293,12 +412,14 @@ export default function Tab({
   closable = false,
   closeLabel,
   onClose,
+  disabled = false,
   className,
   children,
 }: TabProps) {
-  const { value: current, setValue, classNames } = useTabsContext();
+  const { value: current, setValue, variant, classNames } = useTabsContext();
   const strings = useStrings('tabs');
   const isActive = current === value;
+  const skin = tabVariants[variant];
 
   const handleClose = (event: ReactMouseEvent<HTMLSpanElement>) => {
     // Notify only: the click must never select the tab. Stopping
@@ -306,6 +427,10 @@ export default function Tab({
     // above the strip) out of the close gesture.
     event.stopPropagation();
     onClose?.(event);
+  };
+
+  const select = () => {
+    if (!disabled) setValue(value);
   };
 
   const content = (
@@ -339,6 +464,7 @@ export default function Tab({
       <button
         type='button'
         data-slot='tab'
+        data-variant={variant}
         role='tab'
         aria-selected={isActive}
         aria-controls={`tabpanel-${value}`}
@@ -347,8 +473,17 @@ export default function Tab({
         // page tab order.
         tabIndex={isActive ? 0 : -1}
         data-haze-tab-value={value}
-        x-class={[base, isActive && active, className, classNames?.tab]}
-        onClick={() => setValue(value)}
+        disabled={disabled}
+        x-class={[
+          base,
+          skin.idle,
+          isActive && activeFloor,
+          isActive && skin.active,
+          disabled && disabledClass,
+          className,
+          classNames?.tab,
+        ]}
+        onClick={select}
       >
         {content}
       </button>
@@ -356,6 +491,7 @@ export default function Tab({
   }
 
   const handleTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       setValue(value);
@@ -372,16 +508,27 @@ export default function Tab({
   return (
     <div
       data-slot='tab'
+      data-variant={variant}
       role='tab'
       aria-selected={isActive}
+      aria-disabled={disabled || undefined}
       aria-controls={`tabpanel-${value}`}
       tabIndex={isActive ? 0 : -1}
       data-haze-tab-value={value}
-      x-class={[base, isActive && active, closablePad, className, classNames?.tab]}
+      x-class={[
+        base,
+        skin.idle,
+        isActive && activeFloor,
+        isActive && skin.active,
+        disabled && disabledClass,
+        closablePad,
+        className,
+        classNames?.tab,
+      ]}
       onKeyDown={handleTabKeyDown}
       // The × stops its own propagation, so everything else on the tab
       // (label, chrome padding) selects.
-      onClick={() => setValue(value)}
+      onClick={select}
     >
       <span data-slot='tab-label' x-class={labelContent}>
         {content}

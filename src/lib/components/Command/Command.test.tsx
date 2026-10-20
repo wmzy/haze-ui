@@ -1,9 +1,12 @@
+import type { ComponentProps } from 'react';
+
 import { expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 
 import { Command, CommandInput, CommandList, CommandItem, CommandGroup } from './index';
+import { commandItemScore, fuzzyMatch } from './command-filter';
 
 describe('Command', () => {
   it('renders children', () => {
@@ -172,6 +175,95 @@ describe('Command', () => {
     expect(screen.queryByText('Editor')).not.toBeInTheDocument();
   });
 
+  it('orders matching items best fuzzy score first', async () => {
+    const user = userEvent.setup();
+    render(
+      <Command>
+        <CommandInput placeholder='Search' />
+        <CommandList>
+          <CommandItem>Mesa</CommandItem>
+          <CommandItem>Banana</CommandItem>
+          <CommandItem>Save</CommandItem>
+        </CommandList>
+      </Command>
+    );
+    await user.type(screen.getByPlaceholderText('Search'), 'sa');
+    // Prefix hit (Save) outranks the middle hit (Mesa); the miss (Banana) drops.
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['Save', 'Mesa']);
+  });
+
+  it('ranks contiguous runs ahead of scattered matches', async () => {
+    const user = userEvent.setup();
+    render(
+      <Command>
+        <CommandInput placeholder='Search' />
+        <CommandList>
+          <CommandItem>Status</CommandItem>
+          <CommandItem>User</CommandItem>
+        </CommandList>
+      </Command>
+    );
+    await user.type(screen.getByPlaceholderText('Search'), 'us');
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['User', 'Status']);
+  });
+
+  it('matches and orders case-insensitively', async () => {
+    const user = userEvent.setup();
+    render(
+      <Command>
+        <CommandInput placeholder='Search' />
+        <CommandList>
+          <CommandItem>Mesa</CommandItem>
+          <CommandItem>Save</CommandItem>
+        </CommandList>
+      </Command>
+    );
+    await user.type(screen.getByPlaceholderText('Search'), 'SA');
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['Save', 'Mesa']);
+  });
+
+  it('keeps source order while the query is empty', () => {
+    render(
+      <Command>
+        <CommandInput />
+        <CommandList>
+          <CommandItem>Save</CommandItem>
+          <CommandItem>Mesa</CommandItem>
+          <CommandItem>Banana</CommandItem>
+        </CommandList>
+      </Command>
+    );
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['Save', 'Mesa', 'Banana']);
+  });
+
+  it('orders matching items within a group by score', async () => {
+    const user = userEvent.setup();
+    render(
+      <Command>
+        <CommandInput placeholder='Search' />
+        <CommandList>
+          <CommandGroup heading='Recent'>
+            <CommandItem>Mesa</CommandItem>
+            <CommandItem>Save</CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    );
+    await user.type(screen.getByPlaceholderText('Search'), 'sa');
+    expect(screen.getByText('Recent')).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['Save', 'Mesa']);
+  });
+
   it('shows all items and no empty row when shouldFilter is false', () => {
     render(
       <Command query='zzz' shouldFilter={false}>
@@ -182,8 +274,9 @@ describe('Command', () => {
         </CommandList>
       </Command>
     );
-    expect(screen.getByText('Apple')).toBeInTheDocument();
-    expect(screen.getByText('Banana')).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent)
+    ).toEqual(['Apple', 'Banana']);
     expect(screen.queryByText('No results')).not.toBeInTheDocument();
   });
 
@@ -315,5 +408,158 @@ describe('Command', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('CommandList virtualized', () => {
+  const manyItems = Array.from({ length: 300 }, (_, index) => `Command ${index + 1}`);
+
+  function renderMany(listProps?: Partial<ComponentProps<typeof CommandList>>) {
+    return render(
+      <Command>
+        <CommandInput placeholder='Search' />
+        <CommandList virtualized {...listProps}>
+          {manyItems.map((label) => (
+            <CommandItem key={label}>{label}</CommandItem>
+          ))}
+        </CommandList>
+      </Command>
+    );
+  }
+
+  it('renders only the visible window of a long flat list', () => {
+    renderMany();
+    const options = screen.getAllByRole('option');
+    expect(options.length).toBeGreaterThan(0);
+    // 300 mounted rows would defeat the point of virtualization.
+    expect(options.length).toBeLessThan(50);
+    expect(screen.getByText('Command 1')).toBeInTheDocument();
+    expect(screen.queryByText('Command 300')).not.toBeInTheDocument();
+  });
+
+  it('windows the list as the scrollport scrolls', () => {
+    const { container } = renderMany();
+    const port = container.querySelector<HTMLElement>('[data-virtualized]');
+    expect(port).not.toBeNull();
+    if (!port) throw new Error('virtualized scrollport missing');
+    // Row height 37 × item 250 — deep in the list.
+    port.scrollTop = 37 * 250;
+    fireEvent.scroll(port);
+    expect(screen.getByText('Command 251')).toBeInTheDocument();
+    expect(screen.queryByText('Command 1')).not.toBeInTheDocument();
+  });
+
+  it('filters and ranks through the virtual path', async () => {
+    const user = userEvent.setup();
+    renderMany();
+    await user.type(screen.getByPlaceholderText('Search'), 'Command 29');
+    const options = screen.getAllByRole('option');
+    expect(options.length).toBeLessThan(50);
+    // Best score first: the contiguous 'Command 29' outranks 'Command 209'
+    // (scattered digits); ties keep source order.
+    expect(options[0]?.textContent).toBe('Command 29');
+    expect(screen.queryByText('Command 5')).not.toBeInTheDocument();
+  });
+
+  it('shows the empty state when nothing matches', async () => {
+    const user = userEvent.setup();
+    renderMany();
+    await user.type(screen.getByPlaceholderText('Search'), 'zzz');
+    expect(screen.getByText('No results')).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Command 1' })).not.toBeInTheDocument();
+  });
+
+  it('keeps windows unfiltered when shouldFilter is false', () => {
+    render(
+      <Command query='zzz' shouldFilter={false}>
+        <CommandInput />
+        <CommandList virtualized>
+          {manyItems.map((label) => (
+            <CommandItem key={label}>{label}</CommandItem>
+          ))}
+        </CommandList>
+      </Command>
+    );
+    const options = screen.getAllByRole('option');
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.length).toBeLessThan(50);
+    expect(screen.queryByText('No results')).not.toBeInTheDocument();
+  });
+
+  it('moves focus into the virtual window with ArrowDown', async () => {
+    const user = userEvent.setup();
+    renderMany();
+    await user.click(screen.getByPlaceholderText('Search'));
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByText('Command 1')).toHaveFocus();
+  });
+
+  it('warns and falls back to plain rendering for grouped children', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    render(
+      <Command>
+        <CommandInput />
+        <CommandList virtualized>
+          <CommandGroup heading='Fruit'>
+            <CommandItem>Apple</CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('virtualized'));
+    expect(screen.getByText('Fruit')).toBeInTheDocument();
+    expect(screen.getByText('Apple')).toBeInTheDocument();
+    // Plain path: no VirtualList port mounted.
+    expect(
+      screen.getByRole('listbox').querySelector('[data-virtualized]')
+    ).toBeNull();
+    warn.mockRestore();
+  });
+});
+
+describe('command-filter fuzzy scoring', () => {
+  it('matches empty queries and rejects misses', () => {
+    expect(fuzzyMatch('', 'anything')).toEqual({ matched: true, score: 0 });
+    expect(fuzzyMatch('zzz', 'Apple').matched).toBe(false);
+  });
+
+  it('scores prefix hits above middle hits', () => {
+    expect(fuzzyMatch('sa', 'Save').score).toBeGreaterThan(
+      fuzzyMatch('sa', 'Mesa').score
+    );
+  });
+
+  it('scores contiguous runs above scattered matches', () => {
+    expect(fuzzyMatch('us', 'User').score).toBeGreaterThan(
+      fuzzyMatch('us', 'Status').score
+    );
+  });
+
+  it('scores word starts and camelCase humps above word middles', () => {
+    expect(fuzzyMatch('fb', 'fooBar').score).toBeGreaterThan(
+      fuzzyMatch('fb', 'foobar').score
+    );
+    expect(fuzzyMatch('fb', 'foo-bar').score).toBeGreaterThan(
+      fuzzyMatch('fb', 'foobar').score
+    );
+  });
+
+  it('scores earlier matches above later ones', () => {
+    expect(fuzzyMatch('z', 'za').score).toBeGreaterThan(
+      fuzzyMatch('z', 'az').score
+    );
+  });
+
+  it('matches case-insensitively at equal scores', () => {
+    expect(fuzzyMatch('APP', 'apple').matched).toBe(true);
+    expect(fuzzyMatch('app', 'Apple').score).toBe(fuzzyMatch('app', 'apple').score);
+  });
+
+  it('scores items through value, children text and keywords', () => {
+    expect(commandItemScore({ value: 'cherry' }, 'cher')).not.toBeNull();
+    expect(commandItemScore({ children: ['🍒', ' Cherry'] }, 'cher')).not.toBeNull();
+    expect(commandItemScore({ keywords: ['preferences'] }, 'pref')).not.toBeNull();
+    expect(commandItemScore({ value: 'Settings' }, 'zzz')).toBeNull();
+    expect(commandItemScore({}, '')).toBe(0);
   });
 });

@@ -2,21 +2,21 @@ import type { ReactNode, Ref, RefObject } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { Children, createContext, useContext, useId, useMemo, useRef } from 'react';
+import { Children, createContext, useContext, useEffect, useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import {
-  getEnabledMenuItems,
-  useMenuKeyboard,
-  useRovingTabindex,
-} from '../../utils/menuKeyboard';
+import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { mergeRefs } from '../../utils/refs';
-import { useStrings } from '../LocaleProvider';
 import Kbd from '../Kbd/Kbd';
+import { useStrings } from '../LocaleProvider';
+import { VirtualList } from '../VirtualList';
 
 import {
   collectCommandItems,
-  commandItemMatches,
+  commandItemScore,
+  flattenCommandChildren,
+  isCommandItemElement,
+  orderCommandChildren,
 } from './command-filter';
 
 type CommandContextValue = {
@@ -61,9 +61,10 @@ type CommandProps = {
   query?: ControlOrValue<string>;
   /**
    * Whether items filter themselves against `query` (case-insensitive
-   * substring over the item's `value`/children text and `keywords`).
-   * Default `true` — the palette's historical behavior; pass `false`
-   * when the consumer filters externally (e.g. server-side search).
+   * fuzzy subsequence match over the item's `value`/children text and
+   * `keywords`, ranked best-first while a query is active). Default
+   * `true` — the palette's historical behavior; pass `false` when the
+   * consumer filters externally (e.g. server-side search).
    */
   shouldFilter?: boolean;
   /**
@@ -192,6 +193,23 @@ export function CommandInput({ placeholder, className, ref }: CommandInputProps)
 }
 
 // CommandList
+/** Metrics override for CommandList's `virtualized` prop. */
+type CommandListVirtualizedConfig = {
+  /**
+   * Row height in px of one item row. Defaults to 37 — CommandItem's
+   * natural single-line box (space-2 padding top+bottom + text-sm at
+   * leading-normal = 8 + 21 + 8, the same math as Combobox's virtual
+   * rows). Items are stretched to fill it, so the two cannot drift.
+   */
+  itemHeight?: number;
+  /** Extra rows kept mounted around the visible window. Defaults to
+   * VirtualList's 5. */
+  overscan?: number;
+  /** Scrollport height cap in px. Defaults to 300 — the plain list's
+   * `max-height`, so both modes are equally tall at the limit. */
+  height?: number;
+};
+
 type CommandListProps = {
   children: ReactNode;
   /**
@@ -199,13 +217,52 @@ type CommandListProps = {
    * the `command.noResults` locale string.
    */
   empty?: ReactNode;
+  /**
+   * Render the list through VirtualList — explicit opt-in for long
+   * flat lists (hundreds+ items) where plain DOM rendering gets slow.
+   * `true` uses the default metrics; an object customizes them.
+   *
+   * Flat `<CommandItem>` children only (fragments dissolve): grouped
+   * or wrapped content has no stable row shape to virtualize, so it
+   * logs a dev warning and renders the plain path instead. The empty
+   * state and `shouldFilter={false}` work through the virtual path
+   * like through the plain one; keyboard navigation reaches the
+   * mounted window (focusing an option scrolls it into view, which
+   * re-windows the list).
+   */
+  virtualized?: boolean | CommandListVirtualizedConfig;
   className?: string;
 };
+
+/** Fixed row height for the virtualized path (see CommandListVirtualizedConfig.itemHeight). */
+const ITEM_ROW_HEIGHT = 37;
+
+/** Scrollport height cap for the virtualized path — mirrors listStyle's max-height. */
+const LIST_MAX_HEIGHT = 300;
 
 const listStyle = css`
   max-height: 300px;
   overflow-y: auto;
   padding: var(--haze-space-1);
+`;
+
+/**
+ * Virtualized list port: same padding as the plain list, but the
+ * VirtualList scrollport owns scrolling (Combobox's listboxVirtual
+ * pattern — a second scroll box here could grow a second scrollbar).
+ * The descendant rule stretches each CommandItem over its fixed-height
+ * virtual row so hover/focus paint the full row (Combobox's
+ * `virtualRow`, expressed as a selector so consumer items keep their
+ * own `className` untouched; `[data-index]` matches only VirtualList's
+ * row wrappers, never the items themselves).
+ */
+const listVirtualPort = css`
+  padding: var(--haze-space-1);
+
+  [data-index] > [data-slot='item'] {
+    height: 100%;
+    box-sizing: border-box;
+  }
 `;
 
 const emptyStyle = css`
@@ -218,7 +275,12 @@ const emptyStyle = css`
   cursor: default;
 `;
 
-export function CommandList({ children, empty, className }: CommandListProps) {
+export function CommandList({
+  children,
+  empty,
+  virtualized,
+  className,
+}: CommandListProps) {
   const { inputRef, listRef, listId, shouldFilter, query } = useCommandContext();
   const strings = useStrings('command');
 
@@ -238,7 +300,77 @@ export function CommandList({ children, empty, className }: CommandListProps) {
   const showEmpty =
     shouldFilter &&
     items.length > 0 &&
-    !items.some((item) => commandItemMatches(item.props, query));
+    !items.some((item) => commandItemScore(item.props, query) !== null);
+
+  // Flat item run: fragments dissolve, every remaining node must be an
+  // item — the virtualized contract.
+  const flat = useMemo(
+    () => flattenCommandChildren(children),
+    [children]
+  );
+  const virtualEligible = flat.every((child) =>
+    isCommandItemElement(child, CommandItem)
+  );
+
+  useEffect(() => {
+    if (virtualized && !virtualEligible) {
+      console.warn(
+        "CommandList: `virtualized` supports flat <CommandItem> children only — rendering the list without virtualization."
+      );
+    }
+  }, [virtualized, virtualEligible]);
+
+  // Matching items refill item slots best-score-first; non-item children
+  // and the empty-query case keep source order (orderCommandChildren).
+  const ordered = useMemo(
+    () => orderCommandChildren(flat, CommandItem, shouldFilter, query),
+    [flat, shouldFilter, query]
+  );
+
+  const emptyRow = showEmpty && (
+    // Same shape as Combobox's empty row: a disabled option keeps
+    // the listbox non-empty for assistive tech.
+    <div data-slot='empty' role="option" aria-selected={false} aria-disabled="true" x-class={[emptyStyle]}>
+      {empty ?? strings.noResults}
+    </div>
+  );
+
+  if (virtualized && virtualEligible) {
+    const config = typeof virtualized === 'object' ? virtualized : undefined;
+    const rowHeight = config?.itemHeight ?? ITEM_ROW_HEIGHT;
+    const virtualItems = ordered.filter((child) =>
+      isCommandItemElement(child, CommandItem)
+    );
+    return (
+      <div
+        ref={listRef}
+        data-slot='list'
+        x-class={[className]}
+        role="listbox"
+        id={listId}
+        onKeyDown={handleKeyDown}
+      >
+        {virtualItems.length > 0 ? (
+          <VirtualList
+            data-virtualized
+            items={virtualItems}
+            // Short lists size to their rows, matching the plain path's
+            // content-driven height (Combobox's Math.min shape).
+            height={Math.min(
+              config?.height ?? LIST_MAX_HEIGHT,
+              virtualItems.length * rowHeight
+            )}
+            itemHeight={rowHeight}
+            overscan={config?.overscan}
+            renderItem={(item) => item}
+            className={listVirtualPort}
+          />
+        ) : (
+          emptyRow
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -249,14 +381,8 @@ export function CommandList({ children, empty, className }: CommandListProps) {
       id={listId}
       onKeyDown={handleKeyDown}
     >
-      {children}
-      {showEmpty && (
-        // Same shape as Combobox's empty row: a disabled option keeps
-        // the listbox non-empty for assistive tech.
-        <div data-slot='empty' role="option" aria-selected={false} aria-disabled="true" x-class={[emptyStyle]}>
-          {empty ?? strings.noResults}
-        </div>
-      )}
+      {ordered}
+      {emptyRow}
     </div>
   );
 }
@@ -303,8 +429,18 @@ export function CommandGroup({ heading, children, className }: CommandGroupProps
   const visible =
     items.length === 0
       ? Children.count(children) > 0
-      : !shouldFilter || items.some((item) => commandItemMatches(item.props, query));
+      : !shouldFilter || items.some((item) => commandItemScore(item.props, query) !== null);
   if (!visible) return null;
+
+  // Same relevance ordering as a flat CommandList run: matching items
+  // refill the group's item slots best-score-first, non-item children
+  // keep their slots.
+  const ordered = orderCommandChildren(
+    flattenCommandChildren(children),
+    CommandItem,
+    shouldFilter,
+    query
+  );
 
   return (
     <div
@@ -318,7 +454,7 @@ export function CommandGroup({ heading, children, className }: CommandGroupProps
           {heading}
         </div>
       )}
-      {children}
+      {ordered}
     </div>
   );
 }
@@ -387,7 +523,7 @@ export function CommandItem({
 }: CommandItemProps) {
   const { shouldFilter, query, onItemSelect } = useCommandContext();
   const visible =
-    !shouldFilter || commandItemMatches({ value, keywords, children }, query);
+    !shouldFilter || commandItemScore({ value, keywords, children }, query) !== null;
 
   if (!visible) return null;
 
@@ -420,6 +556,7 @@ export type {
   CommandProps,
   CommandInputProps,
   CommandListProps,
+  CommandListVirtualizedConfig,
   CommandGroupProps,
   CommandItemProps,
 };

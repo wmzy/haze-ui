@@ -10,14 +10,15 @@ import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
 import SelectFloating from './SelectFloating';
-import { extractSelectEntries } from './select-options';
+import { extractSelectEntries, extractSelectOptions } from './select-options';
 
-type SelectCoreProps = {
-  /** `string` in single mode, `string[]` when `multiple` is set. */
-  value: string | string[];
-  /** Notifies the next value: `string` in single mode, `string[]` when
+type SelectCoreProps<T extends string | number = string> = {
+  /** The option value type: `T` in single mode, `T[]` when `multiple`
+   * is set. */
+  value: T | T[];
+  /** Notifies the next value: `T` in single mode, `T[]` when
    * `multiple` is set. */
-  onChange: (value: string | string[]) => void;
+  onChange: (value: T | T[]) => void;
   /** Native change event passthrough — invoked with the DOM event after
    * `onChange`, so a spread can never override the controlled callback.
    * Single mode only; the floating paths have no native select element. */
@@ -208,7 +209,7 @@ const nativeClear = css`
   }
 `;
 
-export default function SelectCore({
+export default function SelectCore<T extends string | number = string>({
   value,
   onChange,
   onNativeChange,
@@ -226,7 +227,7 @@ export default function SelectCore({
   children,
   ref,
   ...rest
-}: SelectCoreProps) {
+}: SelectCoreProps<T>) {
   const strings = useStrings('select');
   const selectRef = useRef<HTMLSelectElement>(null);
   // The consumer's ref merges onto the native select in the clearable
@@ -239,11 +240,11 @@ export default function SelectCore({
 
   if (multiple || searchable) {
     return (
-      <SelectFloating
+      <SelectFloating<T>
         ref={ref as Ref<HTMLButtonElement> | undefined}
         value={value}
         onChange={onChange}
-        entries={extractSelectEntries(children)}
+        entries={extractSelectEntries<T>(children)}
         multiple={multiple}
         searchable={searchable}
         clearable={clearable}
@@ -269,7 +270,24 @@ export default function SelectCore({
     );
   }
 
-  const selectedValue = typeof value === 'string' ? value : '';
+  // Single mode's value is the raw T (the empty sentinel stays '' for
+  // every T — the uncontrolled default in ./Select); a stray array is
+  // normalized to empty, the same contract as the floating path. (The
+  // multiple||searchable early return above already narrowed multiple
+  // away, so only the array check remains.)
+  const selectedValue = (!Array.isArray(value) ? value : '') as T;
+
+  // The DOM stringifies <option> values, so the native single-mode path
+  // reports the stringified form: map it back to the raw option value
+  // (extraction reads the JSX props, which keep it) so a number-valued
+  // Select keeps its type. An unmatched DOM value (no such option)
+  // falls back to the string verbatim.
+  const valueFromDom = (dom: string): T => {
+    const raw = extractSelectOptions<T>(children).find(
+      (o) => String(o.value) === dom
+    )?.value;
+    return raw !== undefined ? raw : (dom as T);
+  };
 
   // Clearable single select without searchable: keep the native element
   // and overlay the affordance. The consumer's onKeyDown (still inside
@@ -287,9 +305,9 @@ export default function SelectCore({
           ref={setNativeSelectRef}
           data-slot='trigger'
           x-class={[base, sizes[size], className, classNames?.trigger]}
-          value={value}
+          value={selectedValue}
           onChange={(e) => {
-            onChange(e.target.value);
+            onChange(valueFromDom(e.target.value));
             onNativeChange?.(e);
           }}
           onKeyDown={(e: ReactKeyboardEvent<HTMLSelectElement>) => {
@@ -297,7 +315,7 @@ export default function SelectCore({
             // rationale as the floating trigger's Backspace clear).
             if (e.key === 'Backspace' && selectedValue !== '') {
               e.preventDefault();
-              onChange('');
+              onChange('' as T);
               return;
             }
             consumerKeyDown?.(e);
@@ -318,7 +336,7 @@ export default function SelectCore({
               // restored explicitly: clicking a non-focusable span
               // would otherwise drop it to body.
               e.stopPropagation();
-              onChange('');
+              onChange('' as T);
               selectRef.current?.focus();
             }}
           >
@@ -334,9 +352,9 @@ export default function SelectCore({
       ref={ref as Ref<HTMLSelectElement> | undefined}
       data-slot='trigger'
       x-class={[base, sizes[size], className, classNames?.trigger]}
-      value={value}
+      value={selectedValue}
       onChange={(e) => {
-        onChange(e.target.value);
+        onChange(valueFromDom(e.target.value));
         onNativeChange?.(e);
       }}
       {...rest}

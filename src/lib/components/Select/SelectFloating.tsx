@@ -35,21 +35,21 @@ type SelectVirtualizedConfig = {
   overscan?: number;
 };
 
-type SelectFloatingProps = {
+type SelectFloatingProps<T extends string | number = string> = {
   /**
-   * Current selection — `string[]` in multiple mode, `string` in single
-   * mode. A stray value of the other shape is normalized (empty
-   * selection / empty value) rather than crashing.
+   * Current selection — `T[]` in multiple mode, `T` in single mode. A
+   * stray value of the other shape is normalized (empty selection /
+   * empty value) rather than crashing.
    */
-  value: string | string[];
+  value: T | T[];
   /**
-   * Notifies the next value: `string[]` in multiple mode, `string` in
-   * single mode — the single-mode option pick also closes the panel.
+   * Notifies the next value: `T[]` in multiple mode, `T` in single
+   * mode — the single-mode option pick also closes the panel.
    */
-  onChange: (value: string | string[]) => void;
+  onChange: (value: T | T[]) => void;
   /** Extracted <Option>/<option>/<OptionGroup> children of the owning
    * Select, grouping structure preserved. */
-  entries: SelectEntryData[];
+  entries: SelectEntryData<T>[];
   /** Multiple selection mode: chips in the trigger, toggling options,
    * panel stays open across picks. Single mode closes on pick. */
   multiple: boolean;
@@ -539,7 +539,7 @@ const ChevronDown = () => (
   </svg>
 );
 
-export default function SelectFloating({
+export default function SelectFloating<T extends string | number = string>({
   value,
   onChange,
   entries,
@@ -556,10 +556,12 @@ export default function SelectFloating({
   classNames,
   ref,
   ...rest
-}: SelectFloatingProps) {
+}: SelectFloatingProps<T>) {
   const strings = useStrings('select');
-  const selected = multiple && Array.isArray(value) ? value : [];
-  const selectedValue = !multiple && typeof value === 'string' ? value : '';
+  const selected: T[] = multiple && Array.isArray(value) ? value : [];
+  // Single mode's raw value; '' is the empty sentinel for every T (the
+  // uncontrolled default in ./Select) — 0 stays a real selection.
+  const selectedValue: T = !multiple && !Array.isArray(value) ? value : ('' as T);
   // Panel visibility stays internal to the trigger — the pointer-safe
   // open path lives in floating's onTriggerPointerDown/onTriggerClick.
   const [open, setOpen] = useControl(undefined, false);
@@ -699,7 +701,7 @@ export default function SelectFloating({
     setActiveIndex(visibleOptions.length > 0 ? 0 : -1);
   }
 
-  const toggleOption = (optionValue: string) => {
+  const toggleOption = (optionValue: T) => {
     onChange(
       selected.includes(optionValue)
         ? selected.filter((v) => v !== optionValue)
@@ -707,21 +709,21 @@ export default function SelectFloating({
     );
   };
 
-  const removeValue = (optionValue: string) => {
+  const removeValue = (optionValue: T) => {
     onChange(selected.filter((v) => v !== optionValue));
   };
 
-  const labelFor = (optionValue: string): ReactNode =>
+  const labelFor = (optionValue: T): ReactNode =>
     allOptions.find((o) => o.value === optionValue)?.label ?? optionValue;
 
   const clearValue = () => {
-    onChange(multiple ? [] : '');
+    onChange(multiple ? [] : ('' as T));
   };
 
   /** Pick one option: multiple toggles and keeps the panel open, single
    * commits the value, closes the panel and returns focus to the
    * trigger. */
-  const choose = (optionValue: string) => {
+  const choose = (optionValue: T) => {
     if (multiple) {
       toggleOption(optionValue);
       return;
@@ -815,7 +817,7 @@ export default function SelectFloating({
   // renderItem so both paths stay in lockstep (aria ids, set semantics,
   // active styling, choosing). `i` is the flat index across groups —
   // the same coordinate aria-activedescendant and the keyboard use.
-  const renderOption = (option: SelectOptionData, i: number) => {
+  const renderOption = (option: SelectOptionData<T>, i: number) => {
     const isSelected = multiple
       ? selected.includes(option.value)
       : option.value === selectedValue;

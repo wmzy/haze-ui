@@ -187,7 +187,7 @@ export function fill(
   });
 }
 
-/** Render a RichText paragraph: strings pass through, code/strong get tags. */
+/** Render a RichText paragraph: strings pass through, code/strong/em/link get tags. */
 export function Rich({
   text,
   codeClass,
@@ -206,7 +206,13 @@ export function Rich({
             </code>
           );
         }
-        return <strong key={i}>{seg.strong}</strong>;
+        if ('strong' in seg) return <strong key={i}>{seg.strong}</strong>;
+        if ('em' in seg) return <em key={i}>{seg.em}</em>;
+        return (
+          <a key={i} href={seg.href} target='_blank' rel='noreferrer'>
+            {seg.link}
+          </a>
+        );
       })}
     </>
   );

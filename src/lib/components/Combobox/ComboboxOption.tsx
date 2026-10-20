@@ -2,8 +2,8 @@ import type { ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
-type ComboboxOptionProps = {
-  value: string;
+type ComboboxOptionProps<T extends string | number = string> = {
+  value: T;
   highlighted?: boolean;
   selected?: boolean;
   /**
@@ -23,7 +23,7 @@ type ComboboxOptionProps = {
   setSize?: number;
   /** 1-based position of this option in the set, per aria-posinset. */
   posInSet?: number;
-  onSelect?: (value: string) => void;
+  onSelect?: (value: T) => void;
   className?: string;
   children: ReactNode;
 };
@@ -56,7 +56,7 @@ const selectedStyle = css`
   color: var(--haze-color-primary);
 `;
 
-export default function ComboboxOption({
+export default function ComboboxOption<T extends string | number = string>({
   value,
   highlighted = false,
   selected = false,
@@ -67,7 +67,7 @@ export default function ComboboxOption({
   onSelect,
   className,
   children,
-}: ComboboxOptionProps) {
+}: ComboboxOptionProps<T>) {
   return (
     <div
       ref={ref}

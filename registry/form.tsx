@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { FormItem, FormList, FormProvider, useFormContext, useFieldArray, useFieldArrayItem, useWatch, trigger, setFocus, setServerErrors, setValue, getValue, getValues, reset, hasStandardProps, standardSchemaFormValidator, standardSchemaResolver, zodResolver } from 'haze-ui';
+import { Form, FormItem, FormList, FormProvider, useFormContext, useFieldArray, useFieldArrayItem, useWatch, useValue, useValues, useForm, createForm, trigger, setFocus, setServerErrors, setValue, getValue, getValues, reset, hasStandardProps, standardSchemaFormValidator, standardSchemaResolver, zodResolver } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/form.css';
 
-export { FormItem, FormList, FormProvider, useFormContext, useFieldArray, useFieldArrayItem, useWatch, trigger, setFocus, setServerErrors, setValue, getValue, getValues, reset, hasStandardProps, standardSchemaFormValidator, standardSchemaResolver, zodResolver };
+export { Form, FormItem, FormList, FormProvider, useFormContext, useFieldArray, useFieldArrayItem, useWatch, useValue, useValues, useForm, createForm, trigger, setFocus, setServerErrors, setValue, getValue, getValues, reset, hasStandardProps, standardSchemaFormValidator, standardSchemaResolver, zodResolver };
 export type { FieldValidator, FormItemAsProps, FormItemBinding, FormItemOwnProps, FormItemProps, FormItemRawElement, FormItemRawElementBinding, FormInstance, FormListProps, FormListBinding, FormListField, PathValueOf, StandardSchemaV1 } from 'haze-ui';

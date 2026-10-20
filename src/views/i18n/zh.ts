@@ -30,6 +30,7 @@ export const zh: DeepPartial<SiteStrings> = {
     home: '首页',
     gettingStarted: '快速上手',
     recipes: '实战示例',
+    blocks: '页面区块',
     guides: '指南',
     tokens: '设计令牌',
     components: '组件',
@@ -48,6 +49,7 @@ export const zh: DeepPartial<SiteStrings> = {
     migration: '从 AntD / shadcn 迁移',
     streamingA11y: '流式无障碍',
     motion: '动效预设',
+    figmaTokens: 'Figma 中的设计令牌',
   },
   guideSummaries: {
     darkMode: '明暗两套 token 类、useDarkMode 钩子与运行时品牌主题。',
@@ -57,6 +59,38 @@ export const zh: DeepPartial<SiteStrings> = {
     migration: '从 AntD / shadcn/ui 迁移到 haze-ui 的对照与步骤。',
     streamingA11y: '流式 AI 输出的无障碍：实时区域、播报与减少动效。',
     motion: '基于 data-state 的进出场动画预设，挂在动效 token 之上。',
+    figmaTokens:
+      '把 W3C DTF 令牌导出接进 Tokens Studio 与 Figma Variables：流程与局限。',
+  },
+  blocks: {
+    title: '页面区块',
+    intro:
+      '完全由 haze-ui 组件拼装的整页组合。每个区块可页内实时预览、查看源码，或作为可运行的 Vite 工程在 StackBlitz 打开。',
+    dashboard: {
+      title: '数据看板',
+      description:
+        'AppShell 承载 Sidebar 导航与 Breadcrumb 面包屑，Stat 指标卡一行，DataTable 带工具栏导出、密度切换与分页。',
+    },
+    login: {
+      title: '登录页',
+      description:
+        '品牌侧栏旁一张居中 Card 承载完整表单闭环 —— zod 校验，错误逐字段渲染。',
+    },
+    settings: {
+      title: '工作区设置',
+      description:
+        'card 变体 Tabs 分三个设置区，Switch、RadioGroup、Select 与 Combobox 全部走可控状态模式。',
+    },
+    chat: {
+      title: 'AI 聊天工作台',
+      description:
+        'AI 对话组件族拼成整屏 —— role="log" 的 ChatContainer 承载消息流，一段脚本化思考 → 工具调用 → 流式回答的完整回合，ChatInput 发送键可变停止键，右侧 ConversationList 会话栏。',
+    },
+    crud: {
+      title: '主从 CRUD',
+      description:
+        '左侧 Tree 选团队，右侧 DataTable 带工具栏与密度切换列出流水线，Dialog + zod 表单编辑、ConfirmDialog 删除确认、Toast 反馈串起完整闭环。',
+    },
   },
   componentGroups: {
     General: '通用',
@@ -385,6 +419,58 @@ export const zh: DeepPartial<SiteStrings> = {
       ],
       orOtherManagers: '或使用其他包管理器：',
     },
+    frameworks: {
+      title: '框架接入',
+      switchLabel: '框架',
+      intro: [
+        '各框架的安装方式一致，差别只在 CSS 引入的位置。模式命名与 README 快速上手保持一致：',
+        { strong: 'A' },
+        ' 为单一完整样式表，',
+        { strong: 'B' },
+        ' 为按组件拆分的 CSS。',
+      ],
+      vite: {
+        lead: '创建一个 Vite 应用（React 19、TypeScript）并安装本库：',
+        modeA: [
+          { strong: '模式 A —— 单一完整样式表（最简单）。' },
+          ' 在入口模块一次导入，覆盖所有组件：',
+        ],
+        modeB: [
+          { strong: '模式 B —— 按组件 CSS。' },
+          '官方 Vite 插件读取每条 ',
+          { code: "import { … } from 'haze-ui'" },
+          ' 语句，自动注入对应的 ',
+          { code: 'css/*.css' },
+          ' 文件（含 tokens，由模块图去重）：',
+        ],
+        pluginNote: [
+          { code: 'vite-plugin-haze-ui' },
+          ' 已发布到 npm，用 ',
+          { code: 'npm i -D vite-plugin-haze-ui' },
+          ' 安装。想自己挑文件？导入 ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' 加上你用到的家族文件、完全不用插件——上文「初始化」一节展示了手动写法。',
+        ],
+      },
+      next: {
+        lead: '创建一个 App Router 项目（Next.js 15+ 自带 React 19）并安装本库：',
+        modeA: [
+          { strong: '模式 A —— 单一完整样式表（最简单）。' },
+          ' 全局 CSS 放在根布局里：',
+        ],
+        modeB: [
+          { strong: '模式 B —— 按组件 CSS。' },
+          '不依赖插件——在根布局中列出 ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' 加上实际渲染的家族文件：',
+        ],
+        note: [
+          '按下方「服务端渲染」一节的写法把主题类挂到 ',
+          { code: '<body>' },
+          ' 上——所有路由都会继承。',
+        ],
+      },
+    },
     setup: {
       title: '初始化',
       steps: [
@@ -530,6 +616,19 @@ export const zh: DeepPartial<SiteStrings> = {
         'Haze UI 面向支持 CSS 自定义属性与 ',
         { code: '<dialog>' },
         ' 元素的现代浏览器：',
+      ],
+    },
+    cdn: {
+      title: '从 CDN 尝鲜',
+      para: [
+        '快速试验无需安装：样式表来自 unpkg，组件来自 esm.sh，并用 import map 钉住唯一的 React 副本：',
+      ],
+      note: [
+        '请固定真实版本——这里用 ',
+        { code: '1.33.0' },
+        '，最新版以 npm 为准。',
+        { code: '?external=react,react-dom' },
+        ' 参数让 haze-ui 复用 import map 里的那份 React——两份 React 会让 hooks 报错。CDN 模式用零配置换取工具链保障，正式建应用前请改回真实安装。',
       ],
     },
   },

@@ -31,6 +31,7 @@ export const ja: DeepPartial<SiteStrings> = {
     home: 'ホーム',
     gettingStarted: 'はじめに',
     recipes: 'レシピ',
+    blocks: 'ブロック',
     guides: 'ガイド',
     tokens: 'デザインイントークン',
     components: 'コンポーネント',
@@ -49,6 +50,7 @@ export const ja: DeepPartial<SiteStrings> = {
     migration: 'AntD / shadcn からの移行',
     streamingA11y: 'ストリーミングのアクセシビリティ',
     motion: 'モーションプリセット',
+    figmaTokens: 'Figma のデザイントークン',
   },
   guideSummaries: {
     darkMode: '明暗両方のトークンクラス、useDarkMode フック、実行時ブランドテーマ。',
@@ -59,6 +61,38 @@ export const ja: DeepPartial<SiteStrings> = {
     streamingA11y:
       'ストリーミング AI 出力のアクセシビリティ：ライブリージョン、アナウンス、モーションの抑制。',
     motion: 'モーショントークンの上に築いた data-state 駆動の登場/退場アニメーションプリセット。',
+    figmaTokens:
+      'W3C DTF トークンエクスポートを Tokens Studio と Figma Variables に接続する：手順と限界。',
+  },
+  blocks: {
+    title: 'ブロック',
+    intro:
+      'haze-ui コンポーネントだけ組み合わせたページ単位の構成。各ブロックはその場でプレビューし、ソースを読み、StackBlitz の実行可能な Vite プロジェクトとして開けます。',
+    dashboard: {
+      title: '分析ダッシュボード',
+      description:
+        'AppShell に Sidebar ナビゲーションと Breadcrumb、Stat 指標カードの行、ツールバーのエクスポート・密度切替・ページング付き DataTable。',
+    },
+    login: {
+      title: 'サインインページ',
+      description:
+        'ブランドパネルの隣に中央揃えの Card でフォーム一式 —— zod 検証、フィールドごとのエラー表示。',
+    },
+    settings: {
+      title: 'ワークスペース設定',
+      description:
+        'card バリアントの Tabs で 3 つの設定セクション。Switch・RadioGroup・Select・Combobox すべて制御可能状態パターン。',
+    },
+    chat: {
+      title: 'AI チャットワークスペース',
+      description:
+        'AI 会話ファミリーを 1 画面に —— role="log" の ChatContainer、思考 → ツール呼び出し → ストリーミング回答のスクリプト化ターン、送信ボタンが停止に切り替わる ChatInput、右側に ConversationList。',
+    },
+    crud: {
+      title: 'マスター–詳細 CRUD',
+      description:
+        '左の Tree でチームを選び、ツールバーと密度切替付き DataTable がパイプラインを一覧。Dialog + zod フォーム編集、ConfirmDialog による削除確認、Toast フィードバックで一連の流れを完成。',
+    },
   },
   componentGroups: {
     General: '全般',
@@ -417,6 +451,58 @@ export const ja: DeepPartial<SiteStrings> = {
       ],
       orOtherManagers: '他のパッケージマネージャーを使う場合：',
     },
+    frameworks: {
+      title: 'フレームワーク連携',
+      switchLabel: 'フレームワーク',
+      intro: [
+        'インストール方法はどこでも同じで、違うのは CSS の読み込み位置だけです。モード名は README のクイックスタートと対応します：',
+        { strong: 'A' },
+        ' は単一の完全スタイルシート、',
+        { strong: 'B' },
+        ' はコンポーネント単位の CSS です。',
+      ],
+      vite: {
+        lead: 'Vite アプリ（React 19・TypeScript）を作成してライブラリを追加します：',
+        modeA: [
+          { strong: 'モード A —— 単一の完全スタイルシート（最もシンプル）。' },
+          ' エントリモジュールで 1 回 import するだけで全コンポーネントをカバーします：',
+        ],
+        modeB: [
+          { strong: 'モード B —— コポーネント単位の CSS。' },
+          '公式 Vite プラグインが各 ',
+          { code: "import { … } from 'haze-ui'" },
+          ' 文を読み、対応する ',
+          { code: 'css/*.css' },
+          ' ファイルを自動注入します（tokens を含む。モジュールグラフが重複を排除）：',
+        ],
+        pluginNote: [
+          { code: 'vite-plugin-haze-ui' },
+          ' は npm で公開済みです。',
+          { code: 'npm i -D vite-plugin-haze-ui' },
+          ' でインストールしてください。自分でファイルを選びたい場合は、',
+          { code: 'haze-ui/css/tokens.css' },
+          ' と使用するファミリーのファイルを import してプラグインを省略できます——手動の書式は上の「セットアップ」節にあります。',
+        ],
+      },
+      next: {
+        lead: 'App Router プロジェクト（Next.js 15+ は React 19 同梱）を作成してライブラリを追加します：',
+        modeA: [
+          { strong: 'モード A —— 単一の完全スタイルシート（最もシンプル）。' },
+          ' グローバル CSS はルートレイアウトに置きます：',
+        ],
+        modeB: [
+          { strong: 'モード B —— コンポーネント単位の CSS。' },
+          'プラグインは不要——',
+          { code: 'haze-ui/css/tokens.css' },
+          ' と実際に描画するファミリーのファイルをルートレイアウトで列挙します：',
+        ],
+        note: [
+          '下の「サーバーサイドレンダリング」節の通り、テーマクラスを ',
+          { code: '<body>' },
+          ' に適用すると全ルートに継承されます。',
+        ],
+      },
+    },
     setup: {
       title: 'セットアップ',
       steps: [
@@ -568,6 +654,19 @@ export const ja: DeepPartial<SiteStrings> = {
         'Haze UI は CSS カスタムプロパティと ',
         { code: '<dialog>' },
         ' 要素をサポートするモダンブラウザを対象としています：',
+      ],
+    },
+    cdn: {
+      title: 'CDN から試す',
+      para: [
+        'ちょっとした実験ならインストール不要です：スタイルシートは unpkg、コンポーネントは esm.sh から読み込み、import map で React を 1 つに固定します：',
+      ],
+      note: [
+        '実際のバージョンを固定してください——ここでは ',
+        { code: '1.33.0' },
+        '。最新は npm で確認します。',
+        { code: '?external=react,react-dom' },
+        ' フラグにより haze-ui は import map の 1 つの React を再利用します——React が 2 つあると hooks が壊れます。CDN モードはツールチェーンの保証と引き換えにゼロ設定を得るものです。アプリを本格的に構築する前に通常のインストールへ切り替えてください。',
       ],
     },
   },

@@ -1265,6 +1265,54 @@ describe('DataTable virtualization', () => {
     });
     expect(results.violations).toEqual([]);
   });
+
+  it('applies the density class to every virtualized sibling table', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={many}
+        size="sm"
+        virtualized
+        getRowId={rowId}
+      />
+    );
+
+    // Header table + every windowed row table share the density class.
+    const tables = container.querySelectorAll('[data-slot="table"]');
+    expect(tables.length).toBeGreaterThan(2);
+    for (const table of tables) {
+      expect(table.className).toContain('sizeSm');
+    }
+  });
+
+  it('scrolls rows into view when navigation reaches the window edge', async () => {
+    const user = userEvent.setup();
+    render(<DataTable columns={columns} data={many} virtualized getRowId={rowId} />);
+
+    // jsdom reports no scrollHeight — feed the spacer height so the
+    // VirtualList's scrollToIndex can compute a real offset (1000 × 34).
+    Object.defineProperty(getScrollport(), 'scrollHeight', {
+      configurable: true,
+      value: 34000,
+    });
+
+    // Rows 0–15 are mounted; the first cell holds the default tab stop.
+    const first = screen.getByText('Person 0').closest('td')!;
+    expect(first).toHaveAttribute('tabindex', '0');
+    first.focus();
+
+    // The 16th ArrowDown targets row 16, outside the window — the table
+    // scrolls it in through scrollToIndex and focuses it once mounted.
+    for (let step = 0; step < 16; step += 1) {
+      await user.keyboard('{ArrowDown}');
+    }
+
+    const active = document.activeElement as HTMLElement;
+    expect(active.dataset.navRow).toBe('u16');
+    expect(active.dataset.navCol).toBe('name');
+    expect(screen.getByText('Person 16')).toBeInTheDocument();
+    expect(active).toHaveAttribute('tabindex', '0');
+  });
 });
 
 // ─── Tree data (subRows) ───────────────────────────────────────
@@ -1582,12 +1630,18 @@ describe('DataTable summary', () => {
 // ─── Editable cells ────────────────────────────────────────────
 
 describe('DataTable cell editing', () => {
-  it('leaves cells inert unless editable', () => {
+  it('leaves cells non-editable unless editable', async () => {
+    const user = userEvent.setup();
     render(<DataTable columns={columns} data={people} getRowId={rowId} />);
 
-    expect(screen.getByText('Charlie').closest('td')).not.toHaveAttribute(
-      'tabindex'
+    // Cells still join the roving tabindex (one stop on the first cell),
+    // but no editor ever opens — not on double-click, not on Enter.
+    expect(screen.getByText('Charlie').closest('td')).toHaveAttribute(
+      'tabindex',
+      '0'
     );
+    await user.dblClick(screen.getByText('Charlie').closest('td') as HTMLElement);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('enters edit mode on double-click with a labeled focused input', async () => {
@@ -1762,16 +1816,21 @@ describe('DataTable cell editing', () => {
       <DataTable columns={mixedColumns} data={people} getRowId={rowId} editable />
     );
 
-    expect(screen.getByText('Charlie').closest('td')).not.toHaveAttribute(
-      'tabindex'
-    );
-    expect(screen.getByText('35').closest('td')).toHaveAttribute(
+    // Opted-out cells sit in the roving order like any other — the first
+    // cell keeps the tab stop — but never open an editor.
+    expect(screen.getByText('Charlie').closest('td')).toHaveAttribute(
       'tabindex',
       '0'
     );
+    expect(screen.getByText('35').closest('td')).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
 
-    // Opted-out cells ignore double-clicks.
+    // Opted-out cells ignore double-clicks and Enter.
     await user.dblClick(screen.getByText('Charlie').closest('td') as HTMLElement);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.keyboard('{Enter}');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
@@ -1819,6 +1878,281 @@ describe('DataTable cell editing', () => {
     await user.click(screen.getByRole('button', { name: 'Bump' }));
     expect(onCellEdit).toHaveBeenCalledWith('u1', 'age', 36, 35);
     expect(screen.getByText('35')).toBeInTheDocument();
+  });
+});
+
+describe('DataTable toolbar slot', () => {
+  it('renders no toolbar strip without a slot or columnToggle', () => {
+    render(<DataTable columns={columns} data={people} />);
+
+    expect(
+      document.querySelector('[data-slot="toolbar"]')
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the slot alone in the toolbar strip', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        toolbar={<button type="button">Export CSV</button>}
+      />
+    );
+
+    const strip = document.querySelector('[data-slot="toolbar"]')!;
+    expect(strip).toContainElement(
+      screen.getByRole('button', { name: 'Export CSV' })
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Columns' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the slot beside the column-toggle trigger, also while loading', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnToggle
+        loading
+        toolbar={<button type="button">Export CSV</button>}
+      />
+    );
+
+    const strip = document.querySelector('[data-slot="toolbar"]')!;
+    expect(strip).toContainElement(
+      screen.getByRole('button', { name: 'Export CSV' })
+    );
+    expect(strip).toContainElement(
+      screen.getByRole('button', { name: 'Columns' })
+    );
+    // The skeleton body replaces rows only — the strip stays usable.
+    expect(screen.getAllByRole('row').length).toBeGreaterThan(0);
+  });
+
+  it('keeps the strip above the table while paginating, with the trigger in the footer', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        pageSize={5}
+        columnToggle
+        toolbar={<button type="button">Export CSV</button>}
+      />
+    );
+
+    const strip = document.querySelector('[data-slot="toolbar"]')!;
+    expect(strip).toContainElement(
+      screen.getByRole('button', { name: 'Export CSV' })
+    );
+    expect(strip).not.toContainElement(
+      screen.getByRole('button', { name: 'Columns' })
+    );
+    // The trigger shares the pagination row instead.
+    const footerRow = screen.getByRole('button', { name: 'Next' }).closest('div');
+    expect(footerRow).toContainElement(
+      screen.getByRole('button', { name: 'Columns' })
+    );
+  });
+});
+
+describe('DataTable size density', () => {
+  it('renders no density class by default (md keeps the Table padding)', () => {
+    const { container } = render(
+      <DataTable columns={columns} data={people} />
+    );
+
+    const className = container.querySelector('[data-slot="table"]')!.className;
+    expect(className).not.toContain('sizeSm');
+    expect(className).not.toContain('sizeLg');
+  });
+
+  it('applies the sm density class to the rendered table', () => {
+    const { container } = render(
+      <DataTable columns={columns} data={people} size="sm" />
+    );
+
+    expect(
+      container.querySelector('[data-slot="table"]')!.className
+    ).toContain('sizeSm');
+  });
+
+  it('applies the lg density class to the rendered table', () => {
+    const { container } = render(
+      <DataTable columns={columns} data={people} size="lg" />
+    );
+
+    expect(
+      container.querySelector('[data-slot="table"]')!.className
+    ).toContain('sizeLg');
+  });
+});
+
+describe('DataTable cell keyboard navigation', () => {
+  it('keeps one roving tab stop on the first cell until interaction', () => {
+    render(<DataTable columns={columns} data={people} getRowId={rowId} />);
+
+    expect(screen.getByText('Charlie').closest('td')).toHaveAttribute(
+      'tabindex',
+      '0'
+    );
+    expect(screen.getByText('Alice').closest('td')).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
+    expect(screen.getByText('28').closest('td')).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
+  });
+
+  it('moves the active cell with the arrow keys, wrapping across rows and stopping at the header', async () => {
+    const user = userEvent.setup();
+    render(<DataTable columns={columns} data={people} getRowId={rowId} />);
+
+    const u1Name = screen.getByText('Charlie').closest('td')!;
+    u1Name.focus();
+
+    await user.keyboard('{ArrowDown}');
+    const u2Name = screen.getByText('Alice').closest('td')!;
+    expect(u2Name).toHaveFocus();
+    expect(u2Name).toHaveAttribute('tabindex', '0');
+    expect(u1Name).toHaveAttribute('tabindex', '-1');
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('28').closest('td')).toHaveFocus();
+
+    // Horizontal wrap: right off the row end lands on the next row's first cell.
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('Bob').closest('td')).toHaveFocus();
+
+    // ...and left off the row start lands on the previous row's last cell.
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByText('28').closest('td')).toHaveFocus();
+
+    // Vertical moves stop at the grid edge — the header is never entered.
+    await user.keyboard('{ArrowUp}{ArrowUp}');
+    expect(screen.getByText('35').closest('td')).toHaveFocus();
+  });
+
+  it('jumps with Home, End, PageUp and PageDown', async () => {
+    const user = userEvent.setup();
+    render(<DataTable columns={columns} data={people} getRowId={rowId} />);
+
+    screen.getByText('Charlie').closest('td')!.focus();
+
+    await user.keyboard('{End}');
+    expect(screen.getByText('35').closest('td')).toHaveFocus();
+
+    await user.keyboard('{PageDown}');
+    expect(screen.getByText('24').closest('td')).toHaveFocus();
+
+    await user.keyboard('{Home}');
+    expect(screen.getByText('Evan').closest('td')).toHaveFocus();
+
+    await user.keyboard('{PageUp}');
+    expect(screen.getByText('Charlie').closest('td')).toHaveFocus();
+  });
+
+  it('navigates the selection column like any other cell', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={columns} data={people} getRowId={rowId} selectable />
+    );
+
+    // The selection cell of the first row holds the default tab stop.
+    const firstSelection = screen.getByRole('checkbox', {
+      name: 'Select row u1',
+    }).closest('td')!;
+    expect(firstSelection).toHaveAttribute('tabindex', '0');
+    firstSelection.focus();
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('Charlie').closest('td')).toHaveFocus();
+
+    await user.keyboard('{ArrowLeft}');
+    expect(firstSelection).toHaveFocus();
+  });
+
+  it('mirrors the horizontal keys under RTL, reading the DOM direction', async () => {
+    const user = userEvent.setup();
+    render(
+      <div dir="rtl">
+        <DataTable columns={columns} data={people} getRowId={rowId} />
+      </div>
+    );
+
+    screen.getByText('Bob').closest('td')!.focus();
+    // In RTL, ArrowRight moves visually left — off the row start, wrapping
+    // to the previous row's last cell.
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('28').closest('td')).toHaveFocus();
+  });
+
+  it('keeps Tab in native order: one stop in the body, none hijacked', async () => {
+    const user = userEvent.setup();
+    render(<DataTable columns={columns} data={people} getRowId={rowId} />);
+
+    screen.getByText('Charlie').closest('td')!.focus();
+    await user.tab();
+
+    // No other cell joined the tab order — focus falls through to the body.
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('describes the keyboard model through an sr-only hint on the container', () => {
+    render(<DataTable columns={columns} data={people} getRowId={rowId} editable />);
+
+    const root = document.querySelector('[data-slot="data-table"]')!;
+    expect(root).toHaveAttribute('aria-describedby');
+    const hint = document.getElementById(
+      root.getAttribute('aria-describedby')!
+    );
+    expect(hint).not.toBeNull();
+    expect(hint).toHaveTextContent(/arrow keys/i);
+    expect(hint).toHaveTextContent(/Enter or F2/);
+  });
+
+  it('enters editing with F2 and returns to navigation on Escape', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        getRowId={rowId}
+        editable
+        onCellEdit={onCellEdit}
+      />
+    );
+
+    const cell = screen.getByText('Alice').closest('td')!;
+    cell.focus();
+
+    await user.keyboard('{F2}');
+    const input = screen.getByRole('textbox', {
+      name: 'Edit Name in row u2',
+    });
+    expect(input).toHaveFocus();
+
+    // Arrow keys belong to the editor while it is open — no navigation.
+    await user.keyboard('{ArrowRight}');
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('textbox', { name: 'Edit Name in row u2' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(onCellEdit).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(cell).toHaveFocus();
+    expect(cell).toHaveAttribute('tabindex', '0');
+
+    // Enter from navigation mode opens the same editor on the active cell.
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByText('Bob').closest('td')).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(
+      screen.getByRole('textbox', { name: 'Edit Name in row u3' })
+    ).toBeInTheDocument();
   });
 });
 
@@ -2334,5 +2668,619 @@ describe('DataTable strings', () => {
     expect(
       screen.getByRole('checkbox', { name: 'Select all rows' })
     ).toBeInTheDocument();
+  });
+});
+
+describe('DataTable column reorder', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** Header labels in render order (the grip's ⠿ glyph is aria-hidden
+   * content — strip it to read the pure sequence). */
+  function headerLabels() {
+    return screen
+      .getAllByRole('columnheader')
+      .map((cell) => cell.textContent.replace('⠿', ''));
+  }
+
+  it('renders no reorder grips unless columnReorderable', () => {
+    render(<DataTable columns={columns} data={people} />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Reorder Name' })
+    ).not.toBeInTheDocument();
+    expect(
+      document.querySelector('[data-reorder-handle]')
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders a labeled focusable grip per leaf column, excluding the selection column', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        selectable
+      />
+    );
+
+    const grip = screen.getByRole('button', { name: 'Reorder Name' });
+    expect(grip).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowLeft Alt+ArrowRight');
+    expect(
+      screen.getByRole('button', { name: 'Reorder Age' })
+    ).toBeInTheDocument();
+    // Exactly one grip per leaf column — the selection column, hidden
+    // columns and any expansion affordance stay out of the set.
+    expect(screen.getAllByRole('button', { name: /Reorder/ })).toHaveLength(
+      2
+    );
+  });
+
+  it('excludes hidden columns from the reorder set', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        columnVisibility={{ age: false }}
+      />
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Reorder Name' })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Reorder Age' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('moves a column with Alt+ArrowRight and reports onColumnOrderChange', () => {
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+
+    expect(headerLabels()).toEqual(['Age', 'Name']);
+    // The row body follows the new order: Charlie's age renders first.
+    expect(within(bodyRows()[0]!).getAllByRole('cell')[0]).toHaveTextContent(
+      '35'
+    );
+    expect(onColumnOrderChange).toHaveBeenCalledWith(['age', 'name']);
+  });
+
+  it('moves a column with Alt+ArrowLeft and stops at the row edges', () => {
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    // Right edge: the last column cannot move further right.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Age' }), {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+
+    // Left edge: the first column cannot move further left.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
+
+    // Moving Name right, then Name left again, round-trips the order.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+    expect(onColumnOrderChange).toHaveBeenNthCalledWith(1, ['age', 'name']);
+    expect(onColumnOrderChange).toHaveBeenNthCalledWith(2, ['name', 'age']);
+  });
+
+  it('ignores plain arrows and other modifiers on the grip', () => {
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    const grip = screen.getByRole('button', { name: 'Reorder Name' });
+    fireEvent.keyDown(grip, { key: 'ArrowRight' });
+    fireEvent.keyDown(grip, { key: 'ArrowRight', ctrlKey: true });
+    fireEvent.keyDown(grip, { key: 'ArrowRight', metaKey: true });
+    fireEvent.keyDown(grip, { key: 'Enter', altKey: true });
+
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+  });
+
+  it('mirrors the Alt+arrows under RTL, reading the DOM direction at event time', () => {
+    render(
+      <div dir='rtl'>
+        <DataTable columns={columns} data={people} columnReorderable />
+      </div>
+    );
+
+    // In RTL the mirrored key moves Name toward the row's inline end
+    // (visually left, index-wise right stays right… ArrowLeft grows the
+    // index): ArrowLeft moves Name after Age.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowLeft',
+      altKey: true,
+    });
+    expect(headerLabels()).toEqual(['Age', 'Name']);
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+  });
+
+  it('keeps focus on the moved column\u2019s grip after a keyboard move', () => {
+    render(<DataTable columns={columns} data={people} columnReorderable />);
+
+    const grip = screen.getByRole('button', { name: 'Reorder Name' });
+    grip.focus();
+    fireEvent.keyDown(grip, { key: 'ArrowRight', altKey: true });
+
+    expect(headerLabels()).toEqual(['Age', 'Name']);
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Reorder Name' })
+    );
+  });
+
+  it('warns and renders no grips for grouped (nested) headers', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const grouped: DataTableColumnDef<Person>[] = [
+      {
+        header: 'Identity',
+        columns: [
+          { accessorKey: 'name', header: 'Name' },
+          { accessorKey: 'age', header: 'Age' },
+        ],
+      },
+    ];
+
+    render(<DataTable columns={grouped} data={people} columnReorderable />);
+
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('columnReorderable'));
+    expect(
+      screen.queryByRole('button', { name: /Reorder/ })
+    ).not.toBeInTheDocument();
+    warnSpy.mockRestore();
+  });
+
+  it('describes the Alt+arrow model in the sr-only keyboard hint', () => {
+    render(<DataTable columns={columns} data={people} columnReorderable />);
+
+    const root = document.querySelector('[data-slot="data-table"]')!;
+    const hint = document.getElementById(
+      root.getAttribute('aria-describedby')!
+    );
+    expect(hint).toHaveTextContent(/reorder grip/i);
+    expect(hint).toHaveTextContent(/Alt with the left or right arrow/i);
+  });
+
+  it('arms pointer dragging through the lazily loaded dnd wiring', async () => {
+    render(<DataTable columns={columns} data={people} columnReorderable />);
+
+    // The grips render synchronously (keyboard model, no dnd); the drag
+    // wiring arrives when the column-reorder chunk loads and wraps each
+    // grip in a sortable item — re-query after the wait, the wrap
+    // remounts the grip inside its new sortable-item span.
+    expect(
+      document
+        .querySelector('[data-reorder-handle="name"]')
+        ?.closest('[data-slot="sortable-item"]')
+    ).toBeNull();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const grip = screen.getByRole('button', { name: 'Reorder Name' });
+    expect(grip.closest('[data-slot="sortable-item"]')).not.toBeNull();
+
+    // A pointer press on the grip reaches dnd-kit's activator without
+    // starting a drag by itself (the 8px distance constraint).
+    fireEvent.pointerDown(grip, {
+      pointerType: 'mouse',
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.pointerUp(grip, { pointerType: 'mouse', button: 0 });
+    expect(headerLabels()).toEqual(['Name', 'Age']);
+  });
+
+  it('reorders through a completed pointer drag', async () => {
+    // dnd-kit's collision detection needs geometry; jsdom has none, so
+    // the sortable items get pinned rects — Name 0..100, Age 100..200 —
+    // and the pointer trail carries the dragged Name center past Age's
+    // center, making closestCenter resolve the drop over Age.
+    vi.spyOn(
+      HTMLElement.prototype,
+      'getBoundingClientRect'
+    ).mockImplementation(function (this: HTMLElement) {
+      const id = this.querySelector('[data-reorder-handle]')?.getAttribute(
+        'data-reorder-handle'
+      );
+      if (id === 'name') {
+        return { left: 0, top: 0, width: 100, height: 24 } as DOMRect;
+      }
+      if (id === 'age') {
+        return { left: 100, top: 0, width: 100, height: 24 } as DOMRect;
+      }
+      return { left: 0, top: 0, width: 0, height: 0 } as DOMRect;
+    });
+
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        columnReorderable
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    const grip = screen.getByRole('button', { name: 'Reorder Name' });
+    const pointerInit = {
+      pointerType: 'mouse',
+      buttons: 1,
+      pointerId: 1,
+      isPrimary: true,
+      bubbles: true,
+      cancelable: true,
+    } as const;
+
+    act(() => {
+      fireEvent.pointerDown(grip, { ...pointerInit, button: 0, clientX: 10, clientY: 10 });
+      // 22px clears the 8px activation distance and starts the drag…
+      fireEvent.pointerMove(document, { ...pointerInit, clientX: 32, clientY: 10 });
+    });
+    act(() => {
+      // …then the delta move (dnd-kit ignores the activation move's own
+      // coordinates) carries Name past Age's center.
+      fireEvent.pointerMove(document, { ...pointerInit, clientX: 105, clientY: 10 });
+    });
+    act(() => {
+      fireEvent.pointerUp(document, { ...pointerInit, button: 0 });
+    });
+
+    expect(headerLabels()).toEqual(['Age', 'Name']);
+    expect(onColumnOrderChange).toHaveBeenCalledWith(['age', 'name']);
+  });
+
+  it('reorders the colgroup with the header cells (widths follow the columns)', () => {
+    const sizedColumns: DataTableColumnDef<Person>[] = [
+      { accessorKey: 'name', header: 'Name', meta: { width: 120 } },
+      { accessorKey: 'age', header: 'Age', meta: { width: 90 } },
+    ];
+    const { container } = render(
+      <DataTable columns={sizedColumns} data={people} columnReorderable />
+    );
+
+    const cols = () =>
+      Array.from(container.querySelectorAll('col')).map(
+        (col) => col.style.width
+      );
+    expect(cols()).toEqual(['120px', '90px']);
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Reorder Name' }), {
+      key: 'ArrowRight',
+      altKey: true,
+    });
+    expect(cols()).toEqual(['90px', '120px']);
+  });
+});
+
+describe('DataTable infinite scroll', () => {
+  type ObserveCallback = (entries: IntersectionObserverEntry[]) => void;
+
+  const observerInstances: {
+    callback: ObserveCallback;
+    options: IntersectionObserverInit | undefined;
+    lastState: boolean | null;
+  }[] = [];
+
+  class MockIntersectionObserver {
+    constructor(
+      callback: ObserveCallback,
+      options?: IntersectionObserverInit
+    ) {
+      observerInstances.push({ callback, options, lastState: null });
+    }
+
+    observed = new Set<Element>();
+
+    observe(target: Element) {
+      this.observed.add(target);
+    }
+
+    unobserve(target: Element) {
+      this.observed.delete(target);
+    }
+
+    disconnect() {
+      this.observed.clear();
+    }
+
+    takeRecords() {
+      return [];
+    }
+  }
+
+  const intersect = (index: number, isIntersecting: boolean) => {
+    const instance = observerInstances[index];
+    if (!instance) throw new Error(`no observer instance ${index}`);
+    // The real observer notifies on changes only — repeated identical
+    // states never re-invoke the callback.
+    if (instance.lastState === isIntersecting) return;
+    instance.lastState = isIntersecting;
+    act(() => {
+      instance.callback([{ isIntersecting } as IntersectionObserverEntry]);
+    });
+  };
+
+  beforeEach(() => {
+    observerInstances.length = 0;
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('renders no sentinel or observer without onEndReached', () => {
+    render(<DataTable columns={columns} data={people} />);
+
+    expect(
+      document.querySelector('[data-slot="end-sentinel"]')
+    ).not.toBeInTheDocument();
+    expect(observerInstances).toHaveLength(0);
+  });
+
+  it('watches the sentinel against the viewport with the default threshold and fires once per intersection', () => {
+    const onEndReached = vi.fn();
+    render(<DataTable columns={columns} data={people} onEndReached={onEndReached} />);
+
+    expect(
+      document.querySelector('[data-slot="end-sentinel"]')
+    ).toBeInTheDocument();
+    expect(observerInstances).toHaveLength(1);
+    expect(observerInstances[0]!.options?.root).toBeNull();
+    expect(observerInstances[0]!.options?.rootMargin).toBe('200px 0px');
+
+    intersect(0, true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+
+    // Staying intersected does not re-fire; re-entering after leaving does.
+    intersect(0, true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+    intersect(0, false);
+    intersect(0, true);
+    expect(onEndReached).toHaveBeenCalledTimes(2);
+  });
+
+  it('honors a custom endReachedThreshold in the root margin', () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        onEndReached={() => undefined}
+        endReachedThreshold={120}
+      />
+    );
+
+    expect(observerInstances[0]!.options?.rootMargin).toBe('120px 0px');
+  });
+
+  it('roots the observer at the table scroll container when sticky', () => {
+    render(
+      <DataTable columns={columns} data={people} stickyHeader onEndReached={() => undefined} />
+    );
+
+    const root = observerInstances[0]!.options?.root;
+    expect(root).toBeInstanceOf(HTMLElement);
+    expect(root).toHaveAttribute('data-slot', 'scroll-area');
+    // The sticky scroll area is the sentinel's ancestor.
+    const sentinel = document.querySelector('[data-slot="end-sentinel"]')!;
+    expect(root).toContain(sentinel);
+  });
+
+  it('skips the sentinel while loading or empty', () => {
+    const { rerender } = render(
+      <DataTable columns={columns} data={people} loading onEndReached={() => undefined} />
+    );
+    expect(
+      document.querySelector('[data-slot="end-sentinel"]')
+    ).not.toBeInTheDocument();
+    expect(observerInstances).toHaveLength(0);
+
+    rerender(
+      <DataTable columns={columns} data={[]} onEndReached={() => undefined} />
+    );
+    expect(
+      document.querySelector('[data-slot="end-sentinel"]')
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps firing alongside manual pagination', () => {
+    const onEndReached = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={people}
+        manual
+        pageSize={2}
+        pageCount={3}
+        onEndReached={onEndReached}
+      />
+    );
+
+    intersect(0, true);
+    expect(onEndReached).toHaveBeenCalledTimes(1);
+  });
+
+  describe('virtualized', () => {
+    // jsdom 30 has no layout and no ResizeObserver — both mocked after
+    // the virtualization suite's pattern (see above).
+    type ObserveCallback = (entries: ResizeObserverEntry[]) => void;
+
+    class MockResizeObserver {
+      observed = new Set<Element>();
+
+      constructor(private callback: ObserveCallback) {}
+
+      report(target: Element) {
+        this.callback([{ target } as ResizeObserverEntry]);
+      }
+
+      observe(target: Element) {
+        if (this.observed.has(target)) return;
+        this.observed.add(target);
+        this.report(target);
+      }
+
+      unobserve(target: Element) {
+        this.observed.delete(target);
+      }
+
+      disconnect() {
+        this.observed.clear();
+      }
+    }
+
+    let rectSpy: MockInstance;
+    let scrollHeightSpy: MockInstance;
+
+    beforeEach(() => {
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+      rectSpy = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          if (this.tagName === 'THEAD') {
+            return { height: 40 } as DOMRect;
+          }
+          if (this.tagName === 'DIV') {
+            return { height: 400 } as DOMRect;
+          }
+          return { height: 0 } as DOMRect;
+        });
+      // jsdom has no layout: the scrollport's scrollHeight reads 0 and
+      // VirtualList's end-reached mount check would treat every table as
+      // short content. Pin the content extent: 1000 rows × 34px.
+      scrollHeightSpy = vi
+        .spyOn(Element.prototype, 'scrollHeight', 'get')
+        .mockReturnValue(34000);
+    });
+
+    afterEach(() => {
+      rectSpy.mockRestore();
+      scrollHeightSpy.mockRestore();
+      vi.unstubAllGlobals();
+    });
+
+    const many: Person[] = Array.from({ length: 1000 }, (_, i) => ({
+      id: `u${i}`,
+      name: `Person ${i}`,
+      age: 20 + i,
+    }));
+
+    it('rides VirtualList\u2019s end-reached channel when scrolling near the end', () => {
+      const onEndReached = vi.fn();
+      render(
+        <DataTable
+          columns={columns}
+          data={many}
+          virtualized
+          getRowId={rowId}
+          onEndReached={onEndReached}
+        />
+      );
+
+      const wrapper = document.querySelector<HTMLElement>('[data-index]');
+      const port = wrapper?.parentElement?.parentElement;
+      if (!port) throw new Error('no virtualized rows rendered');
+
+      // Far from the end: silent.
+      act(() => {
+        port.scrollTop = 0;
+        port.dispatchEvent(new Event('scroll'));
+      });
+      expect(onEndReached).not.toHaveBeenCalled();
+
+      // 1000 rows × 34px − 360px viewport = 33640px of scroll range; the
+      // default 200px threshold arms from 33440.
+      act(() => {
+        port.scrollTop = 33500;
+        port.dispatchEvent(new Event('scroll'));
+      });
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes a custom threshold through to the window', () => {
+      const onEndReached = vi.fn();
+      render(
+        <DataTable
+          columns={columns}
+          data={many}
+          virtualized
+          getRowId={rowId}
+          onEndReached={onEndReached}
+          endReachedThreshold={2000}
+        />
+      );
+
+      const wrapper = document.querySelector<HTMLElement>('[data-index]');
+      const port = wrapper?.parentElement?.parentElement;
+      if (!port) throw new Error('no virtualized rows rendered');
+
+      // 34000 − 360 − 2000 = 31640 arms the widened zone from there;
+      // 31639 is 1px short.
+      act(() => {
+        port.scrollTop = 31639;
+        port.dispatchEvent(new Event('scroll'));
+      });
+      expect(onEndReached).not.toHaveBeenCalled();
+
+      act(() => {
+        port.scrollTop = 32000;
+        port.dispatchEvent(new Event('scroll'));
+      });
+      expect(onEndReached).toHaveBeenCalledTimes(1);
+    });
   });
 });

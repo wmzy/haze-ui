@@ -51,12 +51,17 @@ function CommandPaletteExample() {
   );
 }
 
+/** Long-list section dataset: 500 generated commands for the virtualized path. */
+const MANY_COMMANDS = Array.from({ length: 500 }, (_, index) =>
+  `Command ${String(index + 1).padStart(3, '0')}`
+);
+
 // ─── Command ────────────────────────────────────────────────────
 export default function CommandDemo() {
   return (
     <>
       <h1>Command</h1>
-      <p className={intro}>Command palette with filterable list of items.</p>
+      <p className={intro}>Command palette with fuzzy filterable list of items.</p>
 
       <div className={section}>
         <h2>Demo</h2>
@@ -65,12 +70,56 @@ export default function CommandDemo() {
           <CommandList>
             <CommandGroup heading='File'>
               <CommandItem shortcut='⌘N'>New File</CommandItem>
-              <CommandItem shortcut='⌘O'>Open File</CommandItem>
+              <CommandItem shortcut='⌘O'>Open File…</CommandItem>
               <CommandItem shortcut='⌘S'>Save</CommandItem>
             </CommandGroup>
             <CommandGroup heading='Other'>
               <CommandItem>Settings</CommandItem>
             </CommandGroup>
+          </CommandList>
+        </Command>
+      </div>
+
+      <div className={section}>
+        <h2>Fuzzy matching</h2>
+        <p>
+          Filtering is fuzzy by default: every query character must appear in an item's{' '}
+          <code>value</code> / children text / <code>keywords</code> in order
+          (case-insensitive), and hits are ranked best-first — prefix matches beat middle
+          matches, contiguous runs beat scattered ones, word starts and camelCase humps get a
+          boost, and earlier matches win ties. Try <code>sa</code> below: <em>Save</em>{' '}
+          (prefix, contiguous) outranks <em>Mesa</em> (middle hit); <code>fb</code> ranks{' '}
+          <em>fooBar</em> above <em>foobar</em>; <code>pref</code> surfaces Settings through
+          its keyword.
+        </p>
+        <Command>
+          <CommandInput placeholder='Try "sa", "fb" or "pref"...' />
+          <CommandList>
+            <CommandItem>Mesa</CommandItem>
+            <CommandItem>Save</CommandItem>
+            <CommandItem>fooBar</CommandItem>
+            <CommandItem>foobar</CommandItem>
+            <CommandItem keywords={['preferences']}>Settings</CommandItem>
+          </CommandList>
+        </Command>
+      </div>
+
+      <div className={section}>
+        <h2>Long lists (virtualized)</h2>
+        <p>
+          Pass <code>virtualized</code> to <code>CommandList</code> to render long flat lists
+          through VirtualList — only the visible window stays mounted, so the 500 items below
+          cost about a dozen DOM rows no matter how the query filters them (ranking works
+          through the virtual path too). Flat <code>CommandItem</code> children only:{' '}
+          <code>virtualized</code> with grouped or wrapped content logs a dev warning and
+          falls back to the plain path.
+        </p>
+        <Command>
+          <CommandInput placeholder='Search 500 commands...' />
+          <CommandList virtualized>
+            {MANY_COMMANDS.map((label) => (
+              <CommandItem key={label}>{label}</CommandItem>
+            ))}
           </CommandList>
         </Command>
       </div>
@@ -123,7 +172,7 @@ export default function CommandDemo() {
           <ul>
             <li>Uses <strong>role=&quot;combobox&quot;</strong> on the container</li>
             <li>Items use <strong>role=&quot;option&quot;</strong>, groups <strong>role=&quot;group&quot;</strong> named by their heading</li>
-            <li>Typing in the input filters items by <code>value</code> / children text / <code>keywords</code></li>
+            <li>Typing in the input fuzzy-matches items by <code>value</code> / children text / <code>keywords</code> and ranks hits best-first</li>
             <li>Groups whose every item was filtered out hide entirely; keyboard focus stays continuous across groups</li>
             <li>CommandDialog traps focus in the native modal dialog and returns it on close</li>
           </ul>

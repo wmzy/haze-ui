@@ -29,6 +29,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { RSC_SAFE_MODULES } from './rsc-safe.mjs';
+
 const defaultRoot = () =>
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -347,7 +349,7 @@ function renderComponents(groups) {
   return lines.join('\n');
 }
 
-const preamble = (componentCount) => `# Haze UI
+const preamble = (componentCount, rscSafeCount) => `# Haze UI
 
 > React 19 UI component library built on the \`ControlOrValue<T>\` protocol: every stateful
 > component accepts one state prop (\`checked?: Control<T> | T\`) that works controlled *and*
@@ -358,7 +360,7 @@ const preamble = (componentCount) => `# Haze UI
 
 ${componentCount} components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against \`--haze-*\` design tokens. ESM-only, \`preserveModules\` dist, tree-shakeable.
-\`'use client'\` is pre-injected on interactive modules; 36 static, hook-free modules
+\`'use client'\` is pre-injected on interactive modules; ${rscSafeCount} static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under \`dir="rtl"\`. Peer range
@@ -409,9 +411,11 @@ states (hover/active/subtle/focus-ring/border-hover) are **CSS relative-color fo
 runtime, no rebuild. Themes ship as classes: apply \`lightTheme\` (or \`darkTheme\`) plus
 \`spacing\` and \`typography\` to a root element. Browser baseline: Chrome/Edge 119+,
 Safari 16.4+, Firefox 128+ (relative-color syntax, no hex fallbacks).
-\`toDesignTokens()\` (from \`haze-ui/tokens\`) exports the registry as a
-[W3C Design Tokens](https://tr.designtokens.org/) JSON file for Figma Tokens /
-Tokens Studio. All tokens are plain CSS custom properties prefixed \`--haze-*\`.
+The registry also ships as [W3C Design Tokens](https://tr.designtokens.org/) JSON —
+\`haze-ui/design-tokens/light.json\` and \`dark.json\`, plus five brand archives
+(\`violet\`/\`teal\`/\`cyan\`/\`orange\`/\`rose\` × light/dark) — for Tokens Studio /
+Style Dictionary pipelines; the [Tokens in Figma guide](https://wmzy.github.io/haze-ui/guides/figma-tokens)
+walks the import. All tokens are plain CSS custom properties prefixed \`--haze-*\`.
 
 ## Floating overlays: three tiers
 
@@ -445,7 +449,14 @@ haze-ui ships controlled cores — \`InputCore\`, \`SelectCore\`, \`SwitchCore\`
 \`{value, onChange}\` pair its headless \`useField\` hook emits, with zero adapters.
 \`FormItem\` wraps the hook's state in label, error and aria wiring, with declarative
 binding via \`as\`/\`input\` props. The sugar components (\`Input\`, \`Select\`, …) keep the
-\`ControlOrValue<T>\` API for standalone use outside forms.
+\`ControlOrValue<T>\` API for standalone use outside forms. The whole form surface is
+re-exported from the haze-ui barrel — \`FormItem\`, \`FormList\`, the instance factories
+\`Form\`/\`useForm()\`/\`createForm()\`, \`FormProvider\`/\`useFormContext\`, the imperative
+APIs (\`useFieldArray\`, \`useWatch\`, \`setValue\`/\`getValue\`/\`getValues\`/\`reset\`,
+\`trigger\`, \`setFocus\`) and the schema resolvers (\`zodResolver\`,
+\`standardSchemaResolver\`, …) — so app code never needs react-f0rm as a direct
+dependency: import everything from \`haze-ui\` and let the regular dependency resolve
+underneath.
 
 ## AI-friendly distribution
 
@@ -526,7 +537,9 @@ maintained by hand.
 export function generateLlms(rootDir = defaultRoot()) {
   const groups = parseGroups(rootDir);
   const componentCount = groups.reduce((sum, group) => sum + group.items.length, 0);
-  return `${preamble(componentCount)}\n${renderComponents(groups)}\n${closing}`;
+  // The RSC-safe count comes from the manifest the build itself uses
+  // (scripts/rsc-safe.mjs) — never a hand-updated number.
+  return `${preamble(componentCount, RSC_SAFE_MODULES.size)}\n${renderComponents(groups)}\n${closing}`;
 }
 
 /**

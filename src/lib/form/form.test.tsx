@@ -15,7 +15,6 @@ import {act, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import {
-  Form,
   createForm,
   getError,
   getFieldErrors,
@@ -24,6 +23,10 @@ import {
   setFocus,
   setValue
 } from 'react-f0rm';
+
+// the closed loop consumers get from the haze-ui barrel: the Form shell
+// and the antd-style instance hook
+import {Form, useForm} from '../index';
 
 import {CheckboxCore} from '../components/Checkbox';
 import {InputCore} from '../components/Input';
@@ -1371,6 +1374,64 @@ describe('FormItem', () => {
       );
       expect(document.activeElement).toBe(screen.getByLabelText('Name'));
     });
+  });
+});
+
+describe('haze-ui barrel: Form + useForm closed loop', () => {
+  it('submits and validates a minimal native-input form end to end', async () => {
+    const user = userEvent.setup();
+    const onValidSubmit = vi.fn();
+
+    function MinimalForm() {
+      const form = useForm<{name: string}>({initialValues: {name: ''}});
+      return (
+        <Form form={form} onValidSubmit={onValidSubmit}>
+          <FormItem
+            form={form}
+            name='name'
+            label='Name'
+            validate={(v) => (v.trim() ? undefined : 'Name is required')}
+          >
+            {({id, errorId, invalid, value, onChange}) => (
+              <input
+                id={id}
+                data-testid='native-name'
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                aria-describedby={errorId}
+                aria-invalid={invalid}
+              />
+            )}
+          </FormItem>
+          <button type='submit'>Submit</button>
+        </Form>
+      );
+    }
+
+    render(<MinimalForm />);
+
+    // invalid path: submit blocked, native input flagged, error surfaced
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(onValidSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Name is required');
+    expect(screen.getByTestId('native-name')).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+
+    // valid path: the typed value reaches onValidSubmit, error cleared
+    await user.type(screen.getByTestId('native-name'), 'Ada');
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    expect(onValidSubmit).toHaveBeenCalledTimes(1);
+    expect(onValidSubmit).toHaveBeenCalledWith(
+      {name: 'Ada'},
+      expect.anything()
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByTestId('native-name')).toHaveAttribute(
+      'aria-invalid',
+      'false'
+    );
   });
 });
 

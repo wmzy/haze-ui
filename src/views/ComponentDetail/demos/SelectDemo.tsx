@@ -50,6 +50,13 @@ const REMOTE_ITEMS = [
   { value: 'alpine', label: 'Alpine.js' },
 ];
 
+// Number-valued options for the generic-value example.
+const YEAR_OPTIONS = [2021, 2022, 2023, 2024, 2025].map((year) => (
+  <Option key={year} value={year}>
+    {year}
+  </Option>
+));
+
 const noteStyle = {
   fontSize: 'var(--haze-text-sm)',
   color: 'var(--haze-color-text-secondary)',
@@ -83,6 +90,10 @@ export default function SelectDemo() {
     'vue',
     'svelte',
   ]);
+  // Number-valued generic usage: one control per mode, both typed as
+  // numbers end to end.
+  const [year, , yearCtrl] = useControl<number>(undefined, 2025);
+  const [years, , yearsCtrl] = useControl<number[]>(undefined, []);
   const [loading, setLoading] = useControl<boolean>(
     undefined,
     false
@@ -398,6 +409,32 @@ export default function SelectDemo() {
           >
             Clear
           </Button>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Number values</h2>
+        <p style={noteStyle}>
+          The value type is generic: number-valued <code>Option</code>s and
+          a number control keep the whole chain typed —{' '}
+          <code>onValuesChange</code> reports raw numbers on both paths
+          (the native select&apos;s DOM stringification is mapped back to
+          the option value), and the floating paths compare raw values.
+        </p>
+        <div className={fieldRow}>
+          <Select value={yearCtrl} placeholder='Pick a year…'>
+            {YEAR_OPTIONS}
+          </Select>
+        </div>
+        <div className={fieldRow}>
+          <Select multiple value={yearsCtrl} placeholder='Pick years…'>
+            {YEAR_OPTIONS}
+          </Select>
+        </div>
+        <div className={row}>
+          <span style={valueStyle}>
+            Single: {year} · Multiple: {years.length > 0 ? years.join(', ') : '[]'}
+          </span>
         </div>
       </div>
 

@@ -1,0 +1,209 @@
+import type { ReactNode } from 'react';
+
+import { useControl } from 'react-use-control';
+
+import {
+  Button,
+  Card,
+  Combobox,
+  Option,
+  Radio,
+  RadioGroup,
+  Select,
+  Switch,
+  Tabs,
+} from '@/lib';
+
+/*
+ * Settings block: one data-driven <Tabs variant='card' items={…}> hosting
+ * three preference sections (Notifications / Appearance / Security). Every
+ * control is a live ControlOrValue — Switches, the theme RadioGroup, the
+ * timezone Select and the alert-routes Combobox all run through
+ * useControl so a host app can own any piece of this state.
+ */
+
+function SettingRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--haze-space-4)',
+        padding: 'var(--haze-space-3) 0',
+        borderBottom: '1px solid var(--haze-color-border)',
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text)' }}>
+          {title}
+        </div>
+        <div
+          style={{
+            fontSize: 'var(--haze-text-xs)',
+            color: 'var(--haze-color-text-muted)',
+          }}
+        >
+          {description}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function NotificationsPanel() {
+  const [productNews, , productNewsCtrl] = useControl(undefined, true);
+  const [, , weeklyDigestCtrl] = useControl(undefined, true);
+  const [, , anomalyAlertsCtrl] = useControl(undefined, false);
+
+  return (
+    <div data-slot='settings-notifications'>
+      <SettingRow title='Product updates' description='New features and changelog highlights.'>
+        <Switch checked={productNewsCtrl} aria-label='Product updates' />
+      </SettingRow>
+      <SettingRow title='Weekly digest' description='A Monday summary of workspace activity.'>
+        <Switch checked={weeklyDigestCtrl} aria-label='Weekly digest' />
+      </SettingRow>
+      <SettingRow title='Anomaly alerts' description='Email me when a metric breaks its band.'>
+        <Switch checked={anomalyAlertsCtrl} aria-label='Anomaly alerts' />
+      </SettingRow>
+      <p
+        style={{
+          margin: 'var(--haze-space-3) 0 0',
+          fontSize: 'var(--haze-text-xs)',
+          color: 'var(--haze-color-text-muted)',
+        }}
+      >
+        {productNews ? 'Product updates are on.' : 'Product updates are off.'}
+      </p>
+    </div>
+  );
+}
+
+function AppearancePanel() {
+  const [theme, , themeCtrl] = useControl(undefined, 'system');
+  const [, , densityCtrl] = useControl(undefined, 'comfortable');
+
+  return (
+    <div data-slot='settings-appearance'>
+      <SettingRow title='Theme' description='Follow the system, or pin light / dark.'>
+        <RadioGroup value={themeCtrl} name='settings-theme'>
+          <Radio value='system'>System</Radio>
+          <Radio value='light'>Light</Radio>
+          <Radio value='dark'>Dark</Radio>
+        </RadioGroup>
+      </SettingRow>
+      <SettingRow title='Density' description='Comfortable spacing or the compact scale.'>
+        <Select value={densityCtrl} size='sm' aria-label='Density'>
+          <Option value='comfortable'>Comfortable</Option>
+          <Option value='compact'>Compact</Option>
+        </Select>
+      </SettingRow>
+      <p
+        style={{
+          margin: 'var(--haze-space-3) 0 0',
+          fontSize: 'var(--haze-text-xs)',
+          color: 'var(--haze-color-text-muted)',
+        }}
+      >
+        Theme: {theme}
+      </p>
+    </div>
+  );
+}
+
+function SecurityPanel() {
+  const [, , twoFactorCtrl] = useControl(undefined, true);
+  const [routes, , routesCtrl] = useControl(undefined, ['email'] as string[]);
+
+  return (
+    <div data-slot='settings-security'>
+      <SettingRow title='Two-factor authentication' description='Require a TOTP code at sign-in.'>
+        <Switch checked={twoFactorCtrl} aria-label='Two-factor authentication' />
+      </SettingRow>
+      <SettingRow title='Alert routes' description='Where security notices are delivered.'>
+        <div style={{ minWidth: '240px' }}>
+          <Combobox
+            multiple
+            value={routesCtrl}
+            options={[
+              { value: 'email', label: 'Email' },
+              { value: 'sms', label: 'SMS' },
+              { value: 'slack', label: 'Slack' },
+              { value: 'pagerduty', label: 'PagerDuty' },
+            ]}
+            placeholder='Add a route…'
+          />
+        </div>
+      </SettingRow>
+      <p
+        style={{
+          margin: 'var(--haze-space-3) 0 0',
+          fontSize: 'var(--haze-text-xs)',
+          color: 'var(--haze-color-text-muted)',
+        }}
+      >
+        Active routes: {routes.join(', ')}
+      </p>
+    </div>
+  );
+}
+
+export default function SettingsBlock() {
+  const [, , activeCtrl] = useControl(undefined, 'notifications');
+
+  return (
+    <div
+      data-slot='settings-block'
+      style={{
+        padding: 'var(--haze-space-5)',
+        background: 'var(--haze-color-bg)',
+        fontFamily: 'var(--haze-font-sans)',
+        color: 'var(--haze-color-text)',
+      }}
+    >
+      <h2 style={{ margin: '0 0 var(--haze-space-1)', fontSize: 'var(--haze-text-xl)' }}>
+        Workspace settings
+      </h2>
+      <p
+        style={{
+          margin: '0 0 var(--haze-space-4)',
+          fontSize: 'var(--haze-text-sm)',
+          color: 'var(--haze-color-text-secondary)',
+        }}
+      >
+        Preferences apply to everyone in acme-robotics.
+      </p>
+      <Card variant='outlined'>
+        <Tabs
+          value={activeCtrl}
+          variant='card'
+          items={[
+            { value: 'notifications', label: 'Notifications', panel: <NotificationsPanel /> },
+            { value: 'appearance', label: 'Appearance', panel: <AppearancePanel /> },
+            { value: 'security', label: 'Security', panel: <SecurityPanel /> },
+          ]}
+        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 'var(--haze-space-2)',
+            marginTop: 'var(--haze-space-4)',
+          }}
+        >
+          <Button variant='ghost'>Discard</Button>
+          <Button>Save changes</Button>
+        </div>
+      </Card>
+    </div>
+  );
+}

@@ -3,7 +3,6 @@ import type { FieldValidator, HazeStrings } from '@/lib';
 import { useState } from 'react';
 import { css } from '@linaria/core';
 import { z } from 'zod';
-import { Form, reset, useForm } from 'react-f0rm';
 import { useControl } from 'react-use-control';
 
 
@@ -13,11 +12,14 @@ import {
   ChatInput,
   CodeBlock,
   Empty,
+  Form,
   FormItem,
   InputCore,
   LocaleProvider,
+  reset,
   Segmented,
   TagInput,
+  useForm,
   localeDirection,
   useDirection,zodResolver
 } from '@/lib';

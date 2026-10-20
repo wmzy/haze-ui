@@ -37,10 +37,12 @@ import 'haze-ui/styles.css';
 ```ts
 // B) the official Vite plugin injects per-component CSS automatically
 //    vite.config.ts
-import hazeCss from 'haze-ui-vite';
+import hazeCss from 'vite-plugin-haze-ui';
 
 export default { plugins: [react(), hazeCss()] };
 ```
+
+Install the plugin with `npm i -D vite-plugin-haze-ui`.
 
 Then render your first component:
 
@@ -58,14 +60,29 @@ export function App() {
 
 The theme class activates the token set — that is the whole setup. Prefer a
 scaffolded start? `pnpm create haze-ui my-app` ships runnable Vite and
-Next.js App Router templates.
+Next.js App Router templates (the CLI lives in [create-haze-ui/](./create-haze-ui),
+publish pending).
 
 Colors are generated in OKLCH with interaction states derived at runtime via
 CSS relative colors, so the browser floor is Chrome/Edge 119+, Safari 16.4+
 or Firefox 128+ (no HSL/hex fallbacks).
 
+### Browser support semantics
+
+The `browserslist` field in [package.json](./package.json) governs the **JS
+API surface only**: `eslint-plugin-compat` lints every `src/**/*.{ts,tsx}`
+file against those targets (`chrome >= 119`, `edge >= 119`, `safari >= 16.4`,
+`firefox >= 128`), so a modern JS API below that floor fails CI rather than
+shipping. **CSS is intentionally not transpiled**: OKLCH colors, CSS relative
+colors, the `popover` attribute and CSS anchor positioning are emitted as-is
+with no polyfills or fallbacks — the same four engines are the hard CSS floor.
+
 ## Highlights
 
+- **React 19 only, by design** — ref-as-prop, native `popover`/anchor-positioning
+  overlays and the RSC-aware `'use client'` split build on React 19's shapes;
+  there is no React 18 compatibility layer (peer range `react: ^19.0.0`).
+  → [Getting started](https://wmzy.github.io/haze-ui/getting-started)
 - **Accessibility as a release gate** — an axe case in every component test
   suite, Playwright e2e across Chromium/Firefox/WebKit plus a phone-viewport
   project, pixel-locked visual baselines, and a real VoiceOver smoke suite on
@@ -74,7 +91,7 @@ or Firefox 128+ (no HSL/hex fallbacks).
   [A11y contracts](https://wmzy.github.io/haze-ui/guides/a11y-contracts)
 - **Per-component CSS** — the JS entry imports no stylesheet. Load the full
   `haze-ui/styles.css`, cherry-pick `haze-ui/css/*.css` subpaths, or let
-  [haze-ui-vite](https://www.npmjs.com/package/haze-ui-vite) inject the right
+  [vite-plugin-haze-ui](https://github.com/wmzy/vite-plugin-haze-ui) inject the right
   files per import through `haze-ui/css-manifest.json`.
   → [Getting started](https://wmzy.github.io/haze-ui/getting-started)
 - **`Control<T> | T` controllable state** — one state prop per component,
@@ -106,10 +123,10 @@ or Firefox 128+ (no HSL/hex fallbacks).
 | Getting started | <https://wmzy.github.io/haze-ui/getting-started> |
 | Migration guide (AntD / shadcn) | <https://wmzy.github.io/haze-ui/guides/migration> |
 | llms.txt / full API for AI readers | <https://wmzy.github.io/haze-ui/llms.txt> |
-| MCP server (`haze-ui-mcp`) | <https://www.npmjs.com/package/haze-ui-mcp> |
+| MCP server — ships as a bin of this package (`npx haze-ui-mcp`) | <https://wmzy.github.io/haze-ui/help> |
 | shadcn registry | [registry/README.md](./registry/README.md) — `pnpm dlx shadcn@latest add wmzy/haze-ui/button` |
-| create-haze-ui (CLI scaffolding) | <https://www.npmjs.com/package/create-haze-ui> |
-| haze-ui-vite (CSS auto-injection) | <https://www.npmjs.com/package/haze-ui-vite> |
+| create-haze-ui (CLI scaffolding) | [create-haze-ui/](./create-haze-ui) — in-repo, publish pending |
+| vite-plugin-haze-ui (CSS auto-injection) | <https://www.npmjs.com/package/vite-plugin-haze-ui> — npm |
 
 Every styled export is also installable through the shadcn CLI as a thin
 wrapper over the npm package — see [registry/README.md](./registry/README.md).

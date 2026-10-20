@@ -22,6 +22,7 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/command.css';
 import 'haze-ui/css/dialog.css';
 import 'haze-ui/css/kbd.css';
+import 'haze-ui/css/virtual-list.css';
 
 export { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandDialog };
-export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps, CommandGroupProps, CommandDialogProps } from 'haze-ui';
+export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps, CommandGroupProps, CommandDialogProps, CommandListVirtualizedConfig } from 'haze-ui';

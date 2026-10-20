@@ -154,7 +154,7 @@ export type { DrawerProps, DrawerClassNames, DrawerHandle } from './components/D
 export { Stepper, Step } from './components/Stepper';
 export type { StepperProps, StepProps } from './components/Stepper';
 export { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandDialog } from './components/Command';
-export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps, CommandGroupProps, CommandDialogProps } from './components/Command';
+export type { CommandProps, CommandInputProps, CommandListProps, CommandItemProps, CommandGroupProps, CommandDialogProps, CommandListVirtualizedConfig } from './components/Command';
 export { ResizableGroup, ResizablePanel, ResizableHandle } from './components/Resizable';
 export type { ResizableGroupProps, ResizablePanelProps, ResizableHandleProps } from './components/Resizable';
 export { Splitter, SplitterPane } from './components/Splitter';
@@ -408,6 +408,7 @@ export { usePrevious } from './hooks';
 
 // form integration (react-f0rm, a regular dependency)
 export {
+  Form,
   FormItem,
   FormList,
   // context layer + imperative form APIs re-exported so consumers of
@@ -417,6 +418,13 @@ export {
   useFieldArray,
   useFieldArrayItem,
   useWatch,
+  // field-level subscription hooks (reactive single-value / whole-form reads)
+  useValue,
+  useValues,
+  // antd-style instance hook (react-f0rm's own, component-bound) and the
+  // manual-lifetime factory
+  useForm,
+  createForm,
   trigger,
   setFocus,
   setServerErrors,

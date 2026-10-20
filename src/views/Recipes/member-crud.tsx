@@ -5,7 +5,6 @@ import type { DataTableColumnDef, FieldValidator } from '@/lib';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@linaria/core';
 import { z } from 'zod';
-import { Form, useForm } from 'react-f0rm';
 import { useControl } from 'react-use-control';
 
 import {
@@ -14,10 +13,12 @@ import {
   ConfirmDialog,
   DataTable,
   Dialog,
+  Form,
   FormItem,
   Input,
   InputCore,
   Option,
+  useForm,
   SelectCore,
   ToastContainer,
   useToast,

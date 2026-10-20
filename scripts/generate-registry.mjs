@@ -125,7 +125,11 @@ for (const m of readFileSync(barrelPath, 'utf8').matchAll(
   const [, isType, names, spec] = m;
   if (!modules.has(spec)) modules.set(spec, { values: [], types: [] });
   const bucket = isType ? 'types' : 'values';
-  for (const clause of names.split(',')) {
+  // Strip line comments first: a comma inside a `//` note (e.g.
+  // "(react-f0rm's own, component-bound)") would otherwise split into a
+  // phantom export name.
+  const commentFree = names.replace(/\/\/[^\n]*/g, '');
+  for (const clause of commentFree.split(',')) {
     const words = clause.trim().split(/\s+/).filter(Boolean);
     if (words.length > 0) modules.get(spec)[bucket].push(words[words.length - 1]);
   }

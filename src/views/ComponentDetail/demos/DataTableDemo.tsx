@@ -314,6 +314,84 @@ function CsvExportTable() {
   );
 }
 
+// Column id for the reorder demo's order bookkeeping — accessor columns
+// derive theirs from the key.
+const columnId = (column: DataTableColumnDef<EmployeeRow>) =>
+  'accessorKey' in column ? String(column.accessorKey) : column.id!;
+
+const reorderColumns: DataTableColumnDef<EmployeeRow>[] = [
+  baseColumns[0]!,
+  baseColumns[1]!,
+  baseColumns[3]!,
+  baseColumns[4]!,
+];
+
+function ColumnReorderTable() {
+  const [order, setOrder] = useState(() =>
+    reorderColumns.map((column) => columnId(column))
+  );
+  // Mirror the reported order into the rendered column sequence, so the
+  // note below and the table itself agree — the order lives in the
+  // table's internal state either way.
+  const ordered = [...reorderColumns].sort(
+    (a, b) => order.indexOf(columnId(a)) - order.indexOf(columnId(b))
+  );
+
+  return (
+    <>
+      <DataTable
+        columns={ordered}
+        data={PEOPLE}
+        columnReorderable
+        onColumnOrderChange={setOrder}
+        getRowId={(employee) => String(employee.id)}
+      />
+      <p className={dataTableNote}>
+        Current column order: {order.join(', ')}
+      </p>
+    </>
+  );
+}
+
+// Infinite-scroll feed: 120 employees built by cycling PEOPLE, appended
+// 15 at a time with a fake 400ms roundtrip.
+const BIG_ROWS: EmployeeRow[] = Array.from({ length: 120 }, (_, index) => ({
+  ...PEOPLE[index % PEOPLE.length]!,
+  id: index + 1,
+}));
+
+function InfiniteScrollTable() {
+  const [count, setCount] = useState(15);
+  const [fetching, setFetching] = useState(false);
+
+  const loadMore = () => {
+    if (fetching || count >= BIG_ROWS.length) return;
+    setFetching(true);
+    setTimeout(() => {
+      setCount((prev) => Math.min(prev + 15, BIG_ROWS.length));
+      setFetching(false);
+    }, 400);
+  };
+
+  return (
+    <>
+      <div style={{ maxHeight: 260 }}>
+        <DataTable
+          columns={baseColumns.slice(0, 3)}
+          data={BIG_ROWS.slice(0, count)}
+          stickyHeader
+          onEndReached={loadMore}
+          getRowId={(employee) => String(employee.id)}
+        />
+      </div>
+      <p className={dataTableNote}>
+        Loaded {count} of {BIG_ROWS.length}
+        {fetching ? ' — fetching…' : ''}
+      </p>
+    </>
+  );
+}
+
 export default function DataTableDemo() {
   const [loading, setLoading] = useState(false);
   const [, setSelection, selectionCtrl] = useControl(
@@ -326,6 +404,8 @@ export default function DataTableDemo() {
   // Editable cells keep the data consumer-owned: edits land here through
   // onCellEdit and flow back as new data.
   const [employees, setEmployees] = useState(PEOPLE);
+  // Density switcher for the size section below.
+  const [density, setDensity] = useState<'sm' | 'md' | 'lg'>('md');
 
   const handleCellEdit = (
     rowId: string,
@@ -345,12 +425,14 @@ export default function DataTableDemo() {
     <>
       <h1>DataTable</h1>
       <p className={intro}>
-        Feature-complete table on top of TanStack Table v9 with the haze skin:
-        opt-in sorting, row selection, pagination, loading skeleton, empty
-        state, sticky header, column resizing, per-column filtering, column
-        visibility, expandable rows, tree data, summary rows and inline cell
-        editing. The plain <code>Table</code> primitives remain available
-        for bespoke layouts.
+        Feature-complete table on top of TanStack Table v9 with the haze
+        skin: opt-in sorting, row selection, pagination, loading skeleton,
+        empty state, sticky header, column resizing, per-column filtering,
+        column visibility, expandable rows, tree data, summary rows,
+        inline cell editing, column reordering and infinite scroll — plus
+        a toolbar slot, three density sizes and roving cell keyboard
+        navigation. The plain <code>Table</code> primitives remain
+        available for bespoke layouts.
       </p>
 
       <div className={section}>
@@ -527,6 +609,98 @@ export default function DataTableDemo() {
       </div>
 
       <div className={section}>
+        <h2>Toolbar slot</h2>
+        <p className={dataTableNote}>
+          <code>toolbar</code> renders custom actions in the strip at the
+          table&apos;s top-right corner — the same flex row as the{' '}
+          <code>columnToggle</code> trigger (slot content first, trigger
+          last, a <code>--haze-space-2</code> gap between). The strip only
+          appears when something occupies it: no slot and no trigger means
+          no strip at all. It stays usable while <code>loading</code>, and
+          with <code>pageSize</code> it keeps its place above the table
+          while the trigger moves into the pagination row. The export
+          button below serializes the same rows and column defs the table
+          renders through <code>dataTableToCsv</code>.
+        </p>
+        <DataTable
+          columns={baseColumns}
+          data={PEOPLE}
+          getRowId={(employee) => String(employee.id)}
+          columnToggle
+          toolbar={
+            <button
+              onClick={() => downloadCsv(dataTableToCsv(PEOPLE, baseColumns))}
+            >
+              Export CSV
+            </button>
+          }
+        />
+      </div>
+
+      <div className={section}>
+        <h2>Density (size)</h2>
+        <p className={dataTableNote}>
+          <code>size</code> sets the cell padding density across header,
+          body and summary footer — <code>&apos;sm&apos;</code> tight,{' '}
+          <code>&apos;md&apos;</code> the default,{' '}
+          <code>&apos;lg&apos;</code> roomy. The padding comes from spacing
+          tokens, so the global <code>compact</code> density class composes
+          instead of colliding (compact shrinks the tokens these rules
+          read; compact + <code>sm</code> stacks). A{' '}
+          <code>virtualized</code> table without an explicit{' '}
+          <code>rowHeight</code> derives its default row height from the
+          step: 23/34/39px.
+        </p>
+        <div className={row}>
+          {(['sm', 'md', 'lg'] as const).map((step) => (
+            <button
+              key={step}
+              onClick={() => setDensity(step)}
+              disabled={density === step}
+            >
+              {step}
+            </button>
+          ))}
+        </div>
+        <DataTable
+          columns={baseColumns}
+          data={PEOPLE}
+          size={density}
+          getRowId={(employee) => String(employee.id)}
+        />
+      </div>
+
+      <div className={section}>
+        <h2>Keyboard navigation</h2>
+        <p className={dataTableNote}>
+          Body cells use a roving tabindex — exactly one cell carries the
+          tab stop (the first cell until you move), the rest join the
+          arrow-key grid: ArrowLeft/ArrowRight/ArrowUp/ArrowDown walk the
+          cells, wrapping across row ends and stopping at the header (the
+          keys mirror under RTL), Home/End jump to the row start or end
+          and PageUp/PageDown to the first or last row. On editable tables
+          Enter or F2 opens the editor on the active cell and Escape
+          cancels back to navigation; Tab is never intercepted, and resize
+          handles keep their own tab stops. An sr-only description of the
+          model is wired through <code>aria-describedby</code> on the
+          container. Virtualized tables scroll the target row into view
+          when navigation leaves the window. Click a cell below and use
+          the arrows.
+        </p>
+        <div style={{ maxHeight: 240 }}>
+          <DataTable
+            columns={editableColumns}
+            data={employees}
+            getRowId={(employee) => String(employee.id)}
+            sortable
+            stickyHeader
+            editable
+            onCellEdit={handleCellEdit}
+          />
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>Server mode (manual pagination &amp; sorting)</h2>
         <p className={dataTableNote}>
           <code>manual</code> hands pagination and sorting to the server:
@@ -563,6 +737,46 @@ export default function DataTableDemo() {
       </div>
 
       <div className={section}>
+        <h2>Column reorder</h2>
+        <p className={dataTableNote}>
+          <code>columnReorderable</code> grows a ⠿ grip on every leaf
+          header. Drag one with the pointer — the drag runtime loads
+          lazily the first time the prop is on, so tables that never opt
+          in ship none of it — or use the keyboard: the grip is a
+          focusable button (its own tab stop, like the resize handles)
+          and <strong>Alt+ArrowLeft / Alt+ArrowRight</strong> move its
+          column one slot (mirrored under RTL). Every completed reorder
+          reports through <code>onColumnOrderChange</code> as the visible
+          leaf column ids in their new sequence; the order itself is
+          table-internal, so persisting one means seeding{' '}
+          <code>columns</code> in that order next mount — the note below
+          does exactly that. The selection column and hidden columns stay
+          out of the set, sorting/resizing/fixed columns/filtering and{' '}
+          <code>virtualized</code> compose, and grouped (nested) headers
+          switch reordering off with a dev-mode warning.
+        </p>
+        <ColumnReorderTable />
+      </div>
+
+      <div className={section}>
+        <h2>Infinite scroll</h2>
+        <p className={dataTableNote}>
+          <code>onEndReached</code> fires when the table scrolls within{' '}
+          <code>endReachedThreshold</code> px (default 200) of its last
+          rendered row — the &quot;load the next page&quot; signal, here
+          answered by a fake 400&nbsp;ms append of 15 rows. Virtualized
+          tables ride the window&apos;s own end-reached channel; plain
+          tables watch a zero-footprint sentinel after the body (an{' '}
+          <code>IntersectionObserver</code> rooted at the table&apos;s
+          scroll container, or the viewport when the table itself
+          doesn&apos;t scroll). Manual pagination composes: the footer and
+          the trigger coexist — the load guard is the consumer&apos;s,
+          exactly like any hand-rolled pagination.
+        </p>
+        <InfiniteScrollTable />
+      </div>
+
+      <div className={section}>
         <h2>Props</h2>
         <PropsTable of='DataTableProps' />
       </div>
@@ -585,6 +799,13 @@ export default function DataTableDemo() {
               double-click resets it
             </li>
             <li>
+              Reorder grips are labeled focusable buttons with{' '}
+              <code>aria-keyshortcuts</code>: Alt+ArrowLeft/ArrowRight
+              move the column one slot (mirrored under RTL); the sr-only
+              keyboard description mentions the model while reordering is
+              on
+            </li>
+            <li>
               Expander buttons expose <code>aria-expanded</code> and{' '}
               <code>aria-controls</code>; the panel is a row spanning every
               column
@@ -604,6 +825,12 @@ export default function DataTableDemo() {
             <li>
               Editable cells are focusable and open a labeled editor on
               Enter/double-click; Enter or blur commits, Escape discards
+            </li>
+            <li>
+              Body cells use a roving tabindex with an sr-only keyboard
+              description (<code>aria-describedby</code> on the container):
+              arrows move the active cell (mirrored under RTL),
+              Home/End/PageUp/PageDown jump, Enter/F2 edit
             </li>
           </ul>
         </A11yNote>

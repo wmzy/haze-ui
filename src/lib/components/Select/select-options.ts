@@ -4,9 +4,11 @@ import { Children, isValidElement } from 'react';
 
 import OptionGroup from './OptionGroup';
 
-/** One selectable entry extracted from the Select's JSX children. */
-export type SelectOptionData = {
-  value: string;
+/** One selectable entry extracted from the Select's JSX children. The
+ * value keeps the raw `<Option value>` type (no DOM stringification —
+ * the floating paths compare raw values). */
+export type SelectOptionData<T extends string | number = string> = {
+  value: T;
   label: ReactNode;
 };
 
@@ -16,9 +18,9 @@ export type SelectOptionData = {
  * The flat keyboard-navigation order is the depth-first traversal of
  * this structure, so highlighting runs continuously across groups.
  */
-export type SelectEntryData =
-  | { kind: 'option'; option: SelectOptionData }
-  | { kind: 'group'; label: string; options: SelectOptionData[] };
+export type SelectEntryData<T extends string | number = string> =
+  | { kind: 'option'; option: SelectOptionData<T> }
+  | { kind: 'group'; label: string; options: SelectOptionData<T>[] };
 
 /** Props of an <Option> or plain <option> element, as far as option
  * extraction is concerned. */
@@ -51,15 +53,19 @@ const isOptionElement = (child: ReactNode): child is ReactElement<OptionLikeProp
  * order. Children without a resolvable value are ignored, the same way
  * a native select treats stray non-option nodes.
  */
-export function extractSelectOptions(children: ReactNode): SelectOptionData[] {
+export function extractSelectOptions<T extends string | number = string>(
+  children: ReactNode
+): SelectOptionData<T>[] {
   return Children.toArray(children).flatMap((child) => {
     if (isGroupElement(child)) {
-      return extractSelectOptions(child.props.children);
+      return extractSelectOptions<T>(child.props.children);
     }
     if (!isOptionElement(child)) return [];
     const { value, children: label } = child.props;
     if (value === undefined || Array.isArray(value)) return [];
-    return [{ value: String(value), label: label ?? String(value) }];
+    // The JSX prop holds the raw value — only the DOM stringifies it
+    // (the native single-mode path maps it back; see SelectCore).
+    return [{ value: value as T, label: label ?? String(value) }];
   });
 }
 
@@ -70,10 +76,12 @@ export function extractSelectOptions(children: ReactNode): SelectOptionData[] {
  * nesting is not recursive — a native <optgroup> cannot contain another
  * group — and groups left without any resolvable option are dropped.
  */
-export function extractSelectEntries(children: ReactNode): SelectEntryData[] {
-  return Children.toArray(children).flatMap((child): SelectEntryData[] => {
+export function extractSelectEntries<T extends string | number = string>(
+  children: ReactNode
+): SelectEntryData<T>[] {
+  return Children.toArray(children).flatMap((child): SelectEntryData<T>[] => {
     if (isGroupElement(child)) {
-      const options = extractSelectOptions(child.props.children);
+      const options = extractSelectOptions<T>(child.props.children);
       if (options.length === 0) return [];
       return [
         {
@@ -87,14 +95,16 @@ export function extractSelectEntries(children: ReactNode): SelectEntryData[] {
     const { value, children: label } = child.props;
     if (value === undefined || Array.isArray(value)) return [];
     return [
-      { kind: 'option', option: { value: String(value), label: label ?? String(value) } },
+      { kind: 'option', option: { value: value as T, label: label ?? String(value) } },
     ];
   });
 }
 
 /** Depth-first flattening of the entry structure (groups in document
  * order) — the order keyboard navigation walks. */
-export function flattenSelectEntries(entries: SelectEntryData[]): SelectOptionData[] {
+export function flattenSelectEntries<T extends string | number = string>(
+  entries: SelectEntryData<T>[]
+): SelectOptionData<T>[] {
   return entries.flatMap((entry) =>
     entry.kind === 'group' ? entry.options : [entry.option]
   );
@@ -122,13 +132,13 @@ export function selectOptionText(label: ReactNode): string {
  * whose options all miss the query are dropped entirely, keeping the
  * rendered list free of orphaned headers.
  */
-export function filterSelectEntries(
-  entries: SelectEntryData[],
+export function filterSelectEntries<T extends string | number = string>(
+  entries: SelectEntryData<T>[],
   query: string
-): SelectEntryData[] {
+): SelectEntryData<T>[] {
   const needle = query.trim().toLowerCase();
   if (!needle) return entries;
-  return entries.flatMap((entry): SelectEntryData[] => {
+  return entries.flatMap((entry): SelectEntryData<T>[] => {
     if (entry.kind === 'option') {
       return selectOptionText(entry.option.label).toLowerCase().includes(needle)
         ? [entry]

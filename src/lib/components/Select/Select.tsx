@@ -28,9 +28,10 @@ type SelectClassNames = {
   searchInput?: string;
 };
 
-type SelectProps = {
-  /** `string` in single mode, `string[]` when `multiple` is set. */
-  value?: ControlOrValue<string | string[]>;
+type SelectProps<T extends string | number = string> = {
+  /** The option value type: `T` in single mode, `T[]` when `multiple`
+   * is set (defaults to `string`). */
+  value?: ControlOrValue<T | T[]>;
   /**
    * Multiple selection mode (see SelectCoreProps.multiple). The
    * uncontrolled empty value is `[]` in this mode, `''` otherwise.
@@ -83,13 +84,13 @@ type SelectProps = {
    */
   virtualized?: boolean | SelectVirtualizedConfig;
   /**
-   * Value callback for both modes: `string` in single mode, `string[]`
-   * when `multiple` is set — fired after the value updates. The native
+   * Value callback for both modes: `T` in single mode, `T[]` when
+   * `multiple` is set — fired after the value updates. The native
    * select `change` event stays available through `onChange` in single
    * mode (the historical contract); the floating paths have no native
    * event.
    */
-  onValuesChange?: (value: string | string[]) => void;
+  onValuesChange?: (value: T | T[]) => void;
   /**
    * Placeholder text for the floating triggers (falls back to the
    * `select.placeholder` locale string). A native `<select>` has no
@@ -110,7 +111,7 @@ type SelectProps = {
   children: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'select'>, 'value' | 'size' | 'multiple'>;
 
-export default function Select({
+export default function Select<T extends string | number = string>({
   value: valueControl,
   multiple = false,
   searchable = false,
@@ -128,15 +129,15 @@ export default function Select({
   placeholder,
   ref,
   ...rest
-}: SelectProps) {
-  const [value, setValue] = useControl(valueControl, multiple ? [] : '');
+}: SelectProps<T>) {
+  const [value, setValue] = useControl(valueControl, multiple ? ([] as T[]) : ('' as T));
   // ConfigProvider `Select.classNames` merges under the prop, per key.
   const config = useConfigDefaults('Select');
   const resolvedClassNames = config.classNames
     ? { ...config.classNames, ...classNames }
     : classNames;
 
-  const handleValueChange = (next: string | string[]) => {
+  const handleValueChange = (next: T | T[]) => {
     setValue(next);
     onValuesChange?.(next);
   };

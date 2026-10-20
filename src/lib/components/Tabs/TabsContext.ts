@@ -3,6 +3,28 @@ import type {Dispatch, SetStateAction} from 'react';
 import {createContext, useContext} from 'react';
 
 /**
+ * Visual skin of the strip, declared once on `<Tabs>` and distributed
+ * through context:
+ *
+ * - `line` — the classic underline strip (default, the long-standing look)
+ * - `card` — flat antd-style cards; the selected tab raises onto a
+ *   bordered surface, no strip separator
+ * - `pill` — the Segmented-style capsule: a muted trough with the
+ *   selected tab lifting onto the bg surface
+ */
+export type TabsVariant = 'line' | 'card' | 'pill';
+
+/**
+ * The strip-tail `+` affordance, declared once on `<Tabs>` — see
+ * `addable` there. `addLabel` overrides the button's accessible
+ * name (the i18n hook).
+ */
+export type TabsAddable = {
+  onAdd?: () => void;
+  addLabel?: string;
+};
+
+/**
  * Semantic slot classes (AntD v6 `classNames` shape) for the Tabs
  * family: declared once on the `<Tabs>` root and distributed to every
  * part through context — the sub-components stay prop-light while one
@@ -25,6 +47,14 @@ export type TabsClassNames = {
 type TabsContextValue = {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
+  /** Strip/tab visual variant — one declaration on `<Tabs>` skins
+   *  every part (the strip chrome, each tab, the overflow areas). */
+  variant: TabsVariant;
+  /** Unmount inactive tab panels instead of keeping them alive and
+   *  hidden — see `destroyInactiveTabPane` on `<Tabs>`. */
+  destroyInactiveTabPane: boolean;
+  /** Renders the strip-tail `+` button when set (TabList reads it). */
+  addable: TabsAddable | undefined;
   classNames: TabsClassNames | undefined;
 };
 

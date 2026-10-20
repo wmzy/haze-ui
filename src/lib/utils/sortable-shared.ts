@@ -39,6 +39,13 @@ export function useSortableSensors() {
   );
 }
 
+/** The horizontal layout strategy, re-exported for drag surfaces that must
+ * keep their own static import graph free of `@dnd-kit` (the dist-esm
+ * contract's peer import rules) — DataTable's lazily loaded
+ * `column-reorder` kit reaches the sortable runtime only through the
+ * utils modules. A plain value re-export; nothing else leaks. */
+export { horizontalListSortingStrategy } from '@dnd-kit/sortable';
+
 /** Inline transform style for a sortable node; `transition` animates the
  * snap-back after a cancelled or completed drag. */
 export function sortableItemStyle(

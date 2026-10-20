@@ -1127,3 +1127,57 @@ describe('Combobox ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Combobox generics', () => {
+  // Inference site: number-valued options fix T = number for the whole
+  // component — value and onValuesChange follow without annotations.
+  const YEARS = [2023, 2024, 2025].map((year) => ({
+    value: year,
+    label: `Year ${year}`,
+  }));
+
+  it('selects number values in single mode with the label in the input', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: number | number[]) => void>();
+    render(
+      <Combobox options={YEARS} onValuesChange={onValuesChange} />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByText('Year 2024'));
+    // Strict equality: 2024, not the stringified '2024'.
+    expect(onValuesChange).toHaveBeenCalledWith(2024);
+    expect(screen.getByRole('combobox')).toHaveValue('Year 2024');
+  });
+
+  it('toggles number values in multiple mode, rendering chips from raw values', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn<(value: number | number[]) => void>();
+    render(
+      <Combobox multiple options={YEARS} onValuesChange={onValuesChange} />
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith([2023]);
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith([2023, 2024]);
+    // Each selected year appears twice: once as a chip in the trigger
+    // box, once as its (still open) option row.
+    expect(screen.getAllByText('Year 2023')).toHaveLength(2);
+    expect(screen.getAllByText('Year 2024')).toHaveLength(2);
+  });
+
+  it('rejects string values for a number-typed Combobox at compile time', () => {
+    render(
+      <Combobox<number>
+        options={YEARS}
+        // @ts-expect-error — a string value is not assignable to the
+        // number value type
+        value="2024"
+      />
+    );
+    // Runtime: the stray string matches no option — the input still
+    // renders its placeholder state.
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+});

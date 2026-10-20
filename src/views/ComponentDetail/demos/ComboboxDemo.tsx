@@ -46,11 +46,20 @@ const REMOTE_LIBRARY = [
   { value: 'persimmon', label: 'Persimmon' },
 ];
 
+// Number-valued options for the generic-value example.
+const YEARS = [2021, 2022, 2023, 2024, 2025].map((year) => ({
+  value: year,
+  label: String(year),
+}));
+
 export default function ComboboxDemo() {
   // ControlOrValue contract: drive the component through a control,
   // never a bare value (a bare value is only the uncontrolled initial
   // value — later prop changes are ignored).
   const [, , tagsCtrl] = useControl<string[]>(undefined, []);
+  // Number-valued generic usage: the control and the chips stay
+  // numbers end to end.
+  const [years, , yearsCtrl] = useControl<number[]>(undefined, [2024]);
   // Async-search stand-in for the loading example.
   const [loading, setLoading] = useState(false);
   // Remote-search stand-in: the fake server owns the option list and
@@ -263,6 +272,38 @@ export default function ComboboxDemo() {
             virtualized
             placeholder="Search 1000 options..."
           />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Number values</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          The option value type is generic: number-valued{' '}
+          <code>options</code> with a number control keep{' '}
+          <code>onValuesChange</code> reporting raw numbers — selection,
+          chips and dedupe all compare raw values (no string coercion).
+        </p>
+        <div className={fieldRow}>
+          <Combobox
+            multiple
+            options={YEARS}
+            value={yearsCtrl}
+            placeholder="Pick years..."
+          />{' '}
+          <span
+            style={{
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Value: [{years.join(', ')}]
+          </span>
         </div>
       </div>
 

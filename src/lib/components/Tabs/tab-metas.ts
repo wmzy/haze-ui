@@ -11,6 +11,9 @@ export type TabMeta = {
   label: ReactNode;
   icon?: ReactNode;
   status?: TabStatus;
+  /** Carried into the overflow menu so a disabled tab is not
+   * selectable through the ⋯ radios either. */
+  disabled?: boolean;
 };
 
 /**
@@ -30,8 +33,9 @@ export function collectTabMetas(children: ReactNode): TabMeta[] {
     Children.forEach(nodes, (node) => {
       if (!isValidElement(node)) return;
       if (node.type === Tab) {
-        const { value, icon, status, children: label } = node.props as TabProps;
-        metas.push({ value, icon, status, label });
+        const { value, icon, status, disabled, children: label } =
+          node.props as TabProps;
+        metas.push({ value, icon, status, disabled, label });
       } else if (node.type === Fragment) {
         // React 19's isValidElement narrows to ReactElement<unknown>.
         walk((node.props as { children?: ReactNode }).children);

@@ -35,10 +35,12 @@ import 'haze-ui/styles.css';
 ```ts
 // B）官方 Vite 插件按 import 自动注入 per-component CSS
 //    vite.config.ts
-import hazeCss from 'haze-ui-vite';
+import hazeCss from 'vite-plugin-haze-ui';
 
 export default { plugins: [react(), hazeCss()] };
 ```
+
+插件通过 npm 安装：`npm i -D vite-plugin-haze-ui`。
 
 渲染第一个组件：
 
@@ -55,13 +57,26 @@ export function App() {
 ```
 
 主题类激活令牌集——配置到此为止。想直接脚手架起步？
-`pnpm create haze-ui my-app` 提供 Vite 与 Next.js App Router 两套可运行模板。
+`pnpm create haze-ui my-app` 提供 Vite 与 Next.js App Router 两套可运行模板
+（脚手架包尚未发布 npm，可先从仓库内 [create-haze-ui/](./create-haze-ui) 使用）。
 
 颜色由 OKLCH 生成、交互态在运行时以 CSS 相对色推导，因此浏览器基线为
 Chrome/Edge 119+、Safari 16.4+ 或 Firefox 128+（无 HSL/hex 回退）。
 
+### 浏览器支持语义
+
+[package.json](./package.json) 的 `browserslist` 字段只约束 **JS API 面**：
+`eslint-plugin-compat` 按targets（`chrome >= 119`、`edge >= 119`、
+`safari >= 16.4`、`firefox >= 128`）对全部 `src/**/*.{ts,tsx}` 做门禁，低于
+底线的现代 JS API 会在 CI 失败而不是发布出去。**CSS 有意不转译**：OKLCH
+颜色、CSS 相对色、`popover` 属性与 CSS anchor positioning 原样直出，无
+polyfill/回退——同一四引擎即硬性 CSS 底线。
+
 ## 亮点
 
+- **有意只支持 React 19**——ref-as-prop、原生 `popover`/anchor 定位、RSC 感知的
+  `'use client'` 拆分都基于 React 19 形态；没有 React 18 兼容层
+  （peer 依赖 `^19.0.0`）。
 - **无障碍是发布门禁**——每个组件测试套件都有 axe 用例；Playwright e2e 覆盖
   Chromium/Firefox/WebKit 与手机视口工程；像素级视觉基线；macOS CI 上的真实
   VoiceOver 冒烟套件。
@@ -69,7 +84,7 @@ Chrome/Edge 119+、Safari 16.4+ 或 Firefox 128+（无 HSL/hex 回退）。
   [A11y 契约表](https://wmzy.github.io/haze-ui/guides/a11y-contracts)
 - **Per-component CSS**——JS 入口不 import 任何样式。整包 `haze-ui/styles.css`、
   按需 `haze-ui/css/*.css` 子路径，或让
-  [haze-ui-vite](https://www.npmjs.com/package/haze-ui-vite) 通过
+  [vite-plugin-haze-ui](https://github.com/wmzy/vite-plugin-haze-ui) 通过
   `haze-ui/css-manifest.json` 按你的 import 自动注入。
   → [入门](https://wmzy.github.io/haze-ui/getting-started)
 - **`Control<T> | T` 可控状态**——每组件一个状态 prop，由
@@ -99,10 +114,10 @@ Chrome/Edge 119+、Safari 16.4+ 或 Firefox 128+（无 HSL/hex 回退）。
 | 入门 | <https://wmzy.github.io/haze-ui/getting-started> |
 | 迁移指南（AntD / shadcn） | <https://wmzy.github.io/haze-ui/guides/migration> |
 | llms.txt / AI 用完整 API | <https://wmzy.github.io/haze-ui/llms.txt> |
-| MCP server（`haze-ui-mcp`） | <https://www.npmjs.com/package/haze-ui-mcp> |
+| MCP server（`npx haze-ui-mcp`） | 随本包 bin 一起发布——见[帮助页](https://wmzy.github.io/haze-ui/help) |
 | shadcn registry | [registry/README.md](./registry/README.md) — `pnpm dlx shadcn@latest add wmzy/haze-ui/button` |
-| create-haze-ui（脚手架） | <https://www.npmjs.com/package/create-haze-ui> |
-| haze-ui-vite（CSS 自动注入） | <https://www.npmjs.com/package/haze-ui-vite> |
+| create-haze-ui（脚手架） | [create-haze-ui/](./create-haze-ui) — 仓库内置，npm 发布待定 |
+| vite-plugin-haze-ui（CSS 自动注入） | <https://www.npmjs.com/package/vite-plugin-haze-ui> — npm |
 
 每个带样式的导出都可经 shadcn CLI 安装（对 npm 包的薄封装）——见
 [registry/README.md](./registry/README.md)。

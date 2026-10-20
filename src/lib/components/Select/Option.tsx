@@ -1,7 +1,10 @@
 import type {ComponentPropsWithoutRef, ReactNode} from 'react';
 
 type OptionProps = {
-  value: string;
+  /** Raw option value — `string | number`; the owning Select's value
+   * type param governs what is meaningful here (the DOM stringifies
+   * the rendered attribute; the floating paths compare raw values). */
+  value: string | number;
   children: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'option'>, 'value'>;
 

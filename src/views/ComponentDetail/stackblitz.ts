@@ -25,6 +25,7 @@ const KNOWN_RUNTIME_DEPS: Record<string, string> = {
   '@linaria/core': '^8.2.0',
   '@tanstack/react-table': '^9.2.4',
   'react-use-control': '^1.6.0',
+  zod: '^4.6.1',
 };
 
 const REACT_VERSION = '^19.2.8';
@@ -91,26 +92,49 @@ export default defineConfig({
 
 /**
  * 组装 StackBlitz 工程：App.tsx 为 demo 源码原文；'@/lib' 由 vite alias
- * 解析到 haze-ui 包；main.tsx 引入 tokens.css 与该组件的 css family
- * （routeKey 查不到时回退 tokens-only，不抛错）；源码 import 的已知
- * 第三方库追加进 dependencies。
+ * 解析到 haze-ui 包（alias 的字符串键按 `/` 边界前缀匹配，'@/lib/form'
+ * 这类子路径同样命中 'haze-ui/form'）；main.tsx 引入 tokens.css 与该组件
+ * 的 css family（routeKey 查不到时回退 tokens-only，不抛错）并把主题
+ * token 类挂到 <html> 上；源码 import 的已知第三方库追加进 dependencies。
+ *
+ * `options` 支持多文件工程（Blocks 页等整页组合）：
+ * - `files`：额外源码文件（'src/DashboardBlock.tsx' → 内容），并入工程树
+ *   （可覆盖生成文件）；依赖扫描覆盖入口与全部额外文件。
+ * - `cssFamilies`：route key 之外追加的 css family（整页 block 组合多个
+ *   组件家族时逐个列出）；与 route key 查得的结果去重合并。
+ * - `openFile`：StackBlitz 打开时聚焦的文件，默认入口 'src/App.tsx'。
  */
+export type StackblitzProjectOptions = {
+  files?: Record<string, string>;
+  cssFamilies?: string[];
+  openFile?: string;
+};
+
 export function buildStackblitzProject(
   name: string,
-  source: string
+  source: string,
+  options: StackblitzProjectOptions = {}
 ): StackblitzProject {
-  const cssFamily = cssFamilyFor(name);
+  const extraFiles = options.files ?? {};
+  const routeFamily = cssFamilyFor(name);
+  const cssFamilies = [
+    ...new Set([...(routeFamily ? [routeFamily] : []), ...(options.cssFamilies ?? [])]),
+  ];
   const cssImports = [
     "import 'haze-ui/css/tokens.css';",
-    ...(cssFamily ? [`import 'haze-ui/css/${cssFamily}.css';`] : []),
+    ...cssFamilies.map((family) => `import 'haze-ui/css/${family}.css';`),
   ].join('\n');
 
   const main = `import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { lightTheme, spacing, typography, motion } from 'haze-ui';
 import App from './App';
 
 ${cssImports}
+
+// tokens.css 只定义 token 类，不自动应用 —— 挂到 <html> 上整页生效。
+document.documentElement.classList.add(lightTheme, spacing, typography, motion);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -129,7 +153,7 @@ createRoot(document.getElementById('root')!).render(
       react: REACT_VERSION,
       'react-dom': REACT_VERSION,
       'haze-ui': HAZE_UI_VERSION,
-      ...inferDependencies(source),
+      ...inferDependencies([source, ...Object.values(extraFiles)].join('\n')),
     },
     devDependencies: {
       // WebContainer（StackBlitz 的 node 运行时）跑不了 vite 8 的 rolldown
@@ -150,7 +174,8 @@ createRoot(document.getElementById('root')!).render(
       'index.html': indexHtml,
       'src/main.tsx': main,
       'src/App.tsx': source,
+      ...extraFiles,
     },
-    openFile: 'src/App.tsx',
+    openFile: options.openFile ?? 'src/App.tsx',
   };
 }

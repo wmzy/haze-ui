@@ -32,6 +32,7 @@ export const fr: DeepPartial<SiteStrings> = {
     home: 'Accueil',
     gettingStarted: 'Premiers pas',
     recipes: 'Recettes',
+    blocks: 'Blocs',
     guides: 'Guides',
     tokens: 'Tokens',
     components: 'Composants',
@@ -50,6 +51,7 @@ export const fr: DeepPartial<SiteStrings> = {
     migration: 'Migrer depuis AntD / shadcn',
     streamingA11y: 'Accessibilité du streaming',
     motion: 'Préréglages d’animation',
+    figmaTokens: 'Tokens dans Figma',
   },
   guideSummaries: {
     darkMode:
@@ -62,7 +64,39 @@ export const fr: DeepPartial<SiteStrings> = {
     streamingA11y:
       'Sorties IA en streaming accessibles : live regions, annonces et mouvement réduit.',
     motion:
-      'Préréglages d’animation d’entrée/sortie pilotés par data-state, sur les tokens de motion.',
+      'Préréglages d’animation entrée/sortie pilotés par data-state sur les tokens de mouvement.',
+    figmaTokens:
+      'Les exports de tokens W3C DTF vers Tokens Studio et Figma Variables — flux et limites.',
+  },
+  blocks: {
+    title: 'Blocs',
+    intro:
+      'Des compositions de page entière construites uniquement avec les composants haze-ui. Chaque bloc se prévisualise en direct, se lit en source, ou s’ouvre dans StackBlitz comme projet Vite exécutable.',
+    dashboard: {
+      title: 'Tableau de bord analytique',
+      description:
+        'AppShell avec navigation Sidebar et Breadcrumb, une ligne de cartes Stat et un DataTable avec export en toolbar, densité et pagination.',
+    },
+    login: {
+      title: 'Page de connexion',
+      description:
+        'Un panneau de marque à côté d’une Card centrée portant la boucle de formulaire complète — validation zod, erreurs rendues par champ.',
+    },
+    settings: {
+      title: 'Paramètres de l’espace',
+      description:
+        'Des Tabs en variante card pour trois sections de réglages ; Switch, RadioGroup, Select et Combobox suivent tous le pattern d’état contrôlable.',
+    },
+    chat: {
+      title: 'Espace de chat IA',
+      description:
+        'La famille de conversation IA sur un seul écran — un ChatContainer role="log", un tour scripté ThinkingIndicator → ToolCallCard → StreamingText, un ChatInput dont l’envoi devient arrêt, et un rail ConversationList.',
+    },
+    crud: {
+      title: 'CRUD maître–détail',
+      description:
+        'Un Tree choisit l’équipe, une DataTable avec toolbar et densité liste les pipelines ; l’édition Dialog + FormItem zod, la suppression ConfirmDialog et le retour Toast bouclent la boucle.',
+    },
   },
   componentGroups: {
     General: 'Général',
@@ -438,6 +472,58 @@ export const fr: DeepPartial<SiteStrings> = {
       ],
       orOtherManagers: 'Ou avec d’autres gestionnaires de paquets :',
     },
+    frameworks: {
+      title: 'Intégration framework',
+      switchLabel: 'Framework',
+      intro: [
+        'L’installation est la même partout — seul l’emplacement de l’import CSS diffère. Les noms de modes correspondent au quickstart du README : ',
+        { strong: 'A' },
+        ' est une feuille de style complète unique, ',
+        { strong: 'B' },
+        ' est le CSS par composant.',
+      ],
+      vite: {
+        lead: 'Créez une application Vite (React 19, TypeScript) et ajoutez la bibliothèque :',
+        modeA: [
+          { strong: 'Mode A — une feuille de style complète (le plus simple).' },
+          ' Un seul import dans le module d’entrée couvre toutes les composantes :',
+        ],
+        modeB: [
+          { strong: 'Mode B — CSS par composante.' },
+          ' Le plugin Vite officiel lit chaque instruction ',
+          { code: "import { … } from 'haze-ui'" },
+          ' et injecte les fichiers ',
+          { code: 'css/*.css' },
+          ' correspondants (tokens inclus ; le graphe de modules déduplique) :',
+        ],
+        pluginNote: [
+          { code: 'vite-plugin-haze-ui' },
+          ' est sur npm — installez-le avec ',
+          { code: 'npm i -D vite-plugin-haze-ui' },
+          '. Vous préférez choisir les fichiers vous-même ? Importez ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus les fichiers de familles utilisés et passez du plugin — la forme manuelle est dans la section « Configuration » ci-dessus.',
+        ],
+      },
+      next: {
+        lead: 'Créez un projet App Router (Next.js 15+ fournit React 19) et ajoutez la bibliothèque :',
+        modeA: [
+          { strong: 'Mode A — une feuille de style complète (le plus simple).' },
+          ' Le CSS global va dans le layout racine :',
+        ],
+        modeB: [
+          { strong: 'Mode B — CSS par composante.' },
+          ' Sans plugin — listez ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus les fichiers de familles réellement rendus, toujours dans le layout racine :',
+        ],
+        note: [
+          'Appliquez les classes de thème à ',
+          { code: '<body>' },
+          ' comme montré dans la section « rendu serveur » ci-dessous — chaque route en hérite.',
+        ],
+      },
+    },
     setup: {
       title: 'Configuration',
       steps: [
@@ -589,6 +675,19 @@ export const fr: DeepPartial<SiteStrings> = {
         'Haze UI vise les navigateurs modernes qui prennent en charge les custom properties CSS et l’élément ',
         { code: '<dialog>' },
         ' :',
+      ],
+    },
+    cdn: {
+      title: 'Essayer via un CDN',
+      para: [
+        'Aucune installation nécessaire pour une expérience rapide : la feuille de style depuis unpkg, les composantes depuis esm.sh, et une seule copie de React fixée par l’import map :',
+      ],
+      note: [
+        'Épinglez une version réelle — ici ',
+        { code: '1.33.0' },
+        ' ; la dernière est sur npm. Le paramètre ',
+        { code: '?external=react,react-dom' },
+        ' garde haze-ui sur l’unique copie de React de l’import map — deux instances de React cassent les hooks. Le mode CDN échange la justesse de l’outillage contre zéro configuration ; passez à une vraie installation avant de construire une application.',
       ],
     },
   },

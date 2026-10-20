@@ -9,7 +9,7 @@
 
 140 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 36 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 55 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -228,9 +228,11 @@ states (hover/active/subtle/focus-ring/border-hover) are **CSS relative-color fo
 runtime, no rebuild. Themes ship as classes: apply `lightTheme` (or `darkTheme`) plus
 `spacing` and `typography` to a root element. Browser baseline: Chrome/Edge 119+,
 Safari 16.4+, Firefox 128+ (relative-color syntax, no hex fallbacks).
-`toDesignTokens()` (from `haze-ui/tokens`) exports the registry as a
-[W3C Design Tokens](https://tr.designtokens.org/) JSON file for Figma Tokens /
-Tokens Studio. All tokens are plain CSS custom properties prefixed `--haze-*`.
+The registry also ships as [W3C Design Tokens](https://tr.designtokens.org/) JSON —
+`haze-ui/design-tokens/light.json` and `dark.json`, plus five brand archives
+(`violet`/`teal`/`cyan`/`orange`/`rose` × light/dark) — for Tokens Studio /
+Style Dictionary pipelines; the [Tokens in Figma guide](https://wmzy.github.io/haze-ui/guides/figma-tokens)
+walks the import. All tokens are plain CSS custom properties prefixed `--haze-*`.
 
 ## Floating overlays: three tiers
 
@@ -264,7 +266,14 @@ haze-ui ships controlled cores — `InputCore`, `SelectCore`, `SwitchCore`, `Tex
 `{value, onChange}` pair its headless `useField` hook emits, with zero adapters.
 `FormItem` wraps the hook's state in label, error and aria wiring, with declarative
 binding via `as`/`input` props. The sugar components (`Input`, `Select`, …) keep the
-`ControlOrValue<T>` API for standalone use outside forms.
+`ControlOrValue<T>` API for standalone use outside forms. The whole form surface is
+re-exported from the haze-ui barrel — `FormItem`, `FormList`, the instance factories
+`Form`/`useForm()`/`createForm()`, `FormProvider`/`useFormContext`, the imperative
+APIs (`useFieldArray`, `useWatch`, `setValue`/`getValue`/`getValues`/`reset`,
+`trigger`, `setFocus`) and the schema resolvers (`zodResolver`,
+`standardSchemaResolver`, …) — so app code never needs react-f0rm as a direct
+dependency: import everything from `haze-ui` and let the regular dependency resolve
+underneath.
 
 ## AI-friendly distribution
 

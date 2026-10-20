@@ -27,6 +27,10 @@ export default function App() {
             component: () => import('./Recipes'),
           },
           {
+            path: '/blocks',
+            component: () => import('./Blocks'),
+          },
+          {
             path: '/guides/dark-mode',
             component: () => import('./Guides/DarkMode'),
           },
@@ -53,6 +57,10 @@ export default function App() {
           {
             path: '/guides/motion',
             component: () => import('./Guides/Motion'),
+          },
+          {
+            path: '/guides/figma-tokens',
+            component: () => import('./Guides/FigmaTokens'),
           },
           {
             path: '/tokens',

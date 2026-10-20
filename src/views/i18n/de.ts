@@ -32,6 +32,7 @@ export const de: DeepPartial<SiteStrings> = {
     home: 'Start',
     gettingStarted: 'Erste Schritte',
     recipes: 'Rezepte',
+    blocks: 'Blöcke',
     guides: 'Anleitungen',
     tokens: 'Tokens',
     components: 'Komponenten',
@@ -50,6 +51,7 @@ export const de: DeepPartial<SiteStrings> = {
     migration: 'Migration von AntD / shadcn',
     streamingA11y: 'Barrierefreiheit beim Streaming',
     motion: 'Motion-Presets',
+    figmaTokens: 'Tokens in Figma',
   },
   guideSummaries: {
     darkMode:
@@ -62,6 +64,38 @@ export const de: DeepPartial<SiteStrings> = {
     streamingA11y:
       'Barrierefreie KI-Ausgaben: Live-Regions, Ansagen und reduzierte Bewegung.',
     motion: 'data-state-gesteuerte Ein-/Aus-Animationspresets auf den Motion-Tokens.',
+    figmaTokens:
+      'Die W3C-DTF-Token-Exporte in Tokens Studio und Figma Variables — Workflow und Grenzen.',
+  },
+  blocks: {
+    title: 'Blöcke',
+    intro:
+      'Ganzseitige Kompositionen, ausschließlich aus haze-ui-Komponenten gebaut. Jeden Block live ansehen, den Quelltext lesen oder als lauffähiges Vite-Projekt in StackBlitz öffnen.',
+    dashboard: {
+      title: 'Analytics-Dashboard',
+      description:
+        'AppShell mit Sidebar-Navigation und Breadcrumb, eine Zeile Stat-Kennzahlen und ein DataTable mit Toolbar-Export, Dichte-Umschalter und Paginierung.',
+    },
+    login: {
+      title: 'Anmeldeseite',
+      description:
+        'Ein Brand-Panel neben einer zentrierten Card mit kompletter Form-Schleife — zod-validiert, Fehler je Feld gerendert.',
+    },
+    settings: {
+      title: 'Workspace-Einstellungen',
+      description:
+        'Tabs in der Card-Variante mit drei Einstellungssektionen; Switch, RadioGroup, Select und Combobox laufen alle im Controlled-State-Muster.',
+    },
+    chat: {
+      title: 'KI-Chat-Arbeitsbereich',
+      description:
+        'Die KI-Konversationsfamilie auf einem Bildschirm — ein ChatContainer mit role="log", eine gescriptete Runde aus ThinkingIndicator → ToolCallCard → StreamingText, ein ChatInput, dessen Senden zu Stopp wird, plus eine ConversationList-Leiste.',
+    },
+    crud: {
+      title: 'Master–Detail-CRUD',
+      description:
+        'Ein Tree wählt das Team, eine DataTable mit Toolbar und Dichte listet die Pipelines; Dialog + zod-FormItem-Bearbeitung, ConfirmDialog-Löschen und Toast-Feedback schließen die Schleife.',
+    },
   },
   componentGroups: {
     General: 'Allgemein',
@@ -438,6 +472,58 @@ export const de: DeepPartial<SiteStrings> = {
       ],
       orOtherManagers: 'Oder mit anderen Paketmanagern:',
     },
+    frameworks: {
+      title: 'Framework-Einbindung',
+      switchLabel: 'Framework',
+      intro: [
+        'Die Installation ist überall gleich — nur der Ort des CSS-Imports unterscheidet sich. Die Modusnamen entsprechen dem README-Quickstart: ',
+        { strong: 'A' },
+        ' ist ein einziges volles Stylesheet, ',
+        { strong: 'B' },
+        ' ist CSS je Komponente.',
+      ],
+      vite: {
+        lead: 'Eine Vite-App (React 19, TypeScript) anlegen und die Bibliothek installieren:',
+        modeA: [
+          { strong: 'Modus A — ein volles Stylesheet (am einfachsten).' },
+          ' Ein einzelner Import im Entry-Modul deckt jede Komponente ab:',
+        ],
+        modeB: [
+          { strong: 'Modus B — CSS je Komponente.' },
+          ' Das offizielle Vite-Plugin liest jede ',
+          { code: "import { … } from 'haze-ui'" },
+          '-Anweisung und injiziert die passenden ',
+          { code: 'css/*.css' },
+          '-Dateien (inklusive Tokens; der Modulgraph dedupliziert):',
+        ],
+        pluginNote: [
+          { code: 'vite-plugin-haze-ui' },
+          ' ist auf npm — mit ',
+          { code: 'npm i -D vite-plugin-haze-ui' },
+          ' installieren. Lieber selbst Dateien wählen? ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus die genutzten Familien-Dateien importieren und das Plugin weglassen — die manuelle Form steht im Abschnitt „Einrichtung“ oben.',
+        ],
+      },
+      next: {
+        lead: 'Ein App-Router-Projekt anlegen (Next.js 15+ liefert React 19) und die Bibliothek installieren:',
+        modeA: [
+          { strong: 'Modus A — ein volles Stylesheet (am einfachsten).' },
+          ' Globales CSS gehört ins Root-Layout:',
+        ],
+        modeB: [
+          { strong: 'Modus B — CSS je Komponente.' },
+          ' Ohne Plugin — ',
+          { code: 'haze-ui/css/tokens.css' },
+          ' plus die tatsächlich gerenderten Familien-Dateien im Root-Layout auflisten:',
+        ],
+        note: [
+          'Die Theme-Klassen wie unten im Abschnitt „Server-Rendering“ auf ',
+          { code: '<body>' },
+          ' anwenden — jede Route erbt sie.',
+        ],
+      },
+    },
     setup: {
       title: 'Einrichtung',
       steps: [
@@ -589,6 +675,19 @@ export const de: DeepPartial<SiteStrings> = {
         'Haze UI zielt auf moderne Browser, die CSS Custom Properties und das ',
         { code: '<dialog>' },
         '-Element unterstützen:',
+      ],
+    },
+    cdn: {
+      title: 'Per CDN ausprobieren',
+      para: [
+        'Für einen schnellen Versuch ist keine Installation nötig: das Stylesheet von unpkg, die Komponenten von esm.sh und eine einzige React-Kopie, über die Import Map fixiert:',
+      ],
+      note: [
+        'Eine echte Version pinnen — hier ',
+        { code: '1.33.0' },
+        '; die aktuellste Version steht auf npm. Das Flag ',
+        { code: '?external=react,react-dom' },
+        ' hält haze-ui auf der einen React-Kopie der Import Map — zwei React-Instanzen brechen Hooks. Der CDN-Modus tauscht Werkzeug-Korrektheit gegen Null Setup; vor dem Bau einer App auf eine echte Installation umsteigen.',
       ],
     },
   },

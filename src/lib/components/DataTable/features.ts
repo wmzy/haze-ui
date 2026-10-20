@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import {
   columnFilteringFeature,
+  columnOrderingFeature,
   columnResizingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
@@ -117,7 +118,8 @@ type DataTableColumnMeta = {
  * actually drives are registered. `columnMeta` is a type-only slot that
  * types `meta` on column definitions.
  *
- * The resizing, expanding, visibility and filtering features are registered
+ * The resizing, expanding, visibility, ordering and filtering features are
+ * registered
  * unconditionally but stay inert until their table-level props opt in —
  * with empty state and no `getSubRows` wired their row-model steps are
  * identities, so the default render path is unchanged. The column-sizing
@@ -133,6 +135,7 @@ const dataTableFeatures = tableFeatures({
   rowExpandingFeature,
   expandedRowModel: createExpandedRowModel(),
   columnVisibilityFeature,
+  columnOrderingFeature,
   columnFilteringFeature,
   filteredRowModel: createFilteredRowModel(),
   filterFns: { includesString: filterFn_includesString },

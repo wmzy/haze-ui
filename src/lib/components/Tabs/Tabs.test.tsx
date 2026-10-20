@@ -6,15 +6,30 @@ import userEvent from '@testing-library/user-event';
 
 import { floatingHidden } from '../../utils/floating';
 
-import Tabs from './Tabs';
 import TabList from './TabList';
 import Tab from './Tab';
 import TabPanel from './TabPanel';
+import Tabs, { type TabData } from './Tabs';
 
 
-function TabsFixture({ defaultValue = 'one' }: { defaultValue?: string }) {
+function TabsFixture({
+  defaultValue = 'one',
+  variant,
+  destroyInactiveTabPane,
+  addable,
+}: {
+  defaultValue?: string;
+  variant?: 'line' | 'card' | 'pill';
+  destroyInactiveTabPane?: boolean;
+  addable?: { onAdd?: () => void; addLabel?: string };
+}) {
   return (
-    <Tabs value={defaultValue}>
+    <Tabs
+      value={defaultValue}
+      variant={variant}
+      destroyInactiveTabPane={destroyInactiveTabPane}
+      addable={addable}
+    >
       <TabList>
         <Tab value="one">Tab 1</Tab>
         <Tab value="two">Tab 2</Tab>
@@ -525,5 +540,225 @@ describe('TabList overflow menu', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Variants: line / card / pill strip skins (data-variant is the DOM handle;
+// jsdom applies no stylesheets, so the skin swap is asserted by the class
+// handover on the strip and the tabs)
+// ---------------------------------------------------------------------------
+
+describe('Tabs variants', () => {
+  it('defaults to the line variant on the strip and every tab', () => {
+    render(<TabsFixture />);
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', 'line');
+    for (const tab of screen.getAllByRole('tab')) {
+      expect(tab).toHaveAttribute('data-variant', 'line');
+    }
+  });
+
+  const assertVariantSwapsSkin = (variant: 'line' | 'card' | 'pill') => {
+    const line = render(<TabsFixture />);
+    const lineStrip = screen.getByRole('tablist').className;
+    const lineTab = screen.getAllByRole('tab')[0]!.className;
+    line.rerender(<TabsFixture variant={variant} />);
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-variant', variant);
+    expect(screen.getByRole('tablist').className).not.toBe(lineStrip);
+    const skinnedTab = screen.getAllByRole('tab')[0]!;
+    expect(skinnedTab).toHaveAttribute('data-variant', variant);
+    expect(skinnedTab.className).not.toBe(lineTab);
+    line.unmount();
+  };
+
+  it('marks the card variant and swaps the strip/tab skin classes', () => {
+    assertVariantSwapsSkin('card');
+  });
+
+  it('marks the pill variant and swaps the strip/tab skin classes', () => {
+    assertVariantSwapsSkin('pill');
+  });
+
+  it('keeps roving selection working in every variant', async () => {
+    for (const variant of ['line', 'card', 'pill'] as const) {
+      const user = userEvent.setup();
+      const { unmount } = render(<TabsFixture variant={variant} />);
+      screen.getAllByRole('tab')[0]!.focus();
+      await user.keyboard('{ArrowRight}');
+      expect(screen.getAllByRole('tab')[1]).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      unmount();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// items: the data-driven rendering path (same TabList underneath)
+// ---------------------------------------------------------------------------
+
+const sampleItems: TabData[] = [
+  { value: 'one', label: 'Item One', panel: 'Panel One' },
+  { value: 'two', label: 'Item Two', panel: 'Panel Two' },
+  { value: 'three', label: 'Item Three', disabled: true, panel: 'Panel Three' },
+];
+
+describe('Tabs items (data-driven)', () => {
+  it('renders the tablist, tabs and panels from items', () => {
+    render(<Tabs value="one" items={sampleItems} />);
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    expect(screen.getAllByRole('tab')).toHaveLength(3);
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(3);
+    expect(screen.getByRole('tab', { name: 'Item One' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    expect(screen.getByText('Panel One')).toBeVisible();
+    // every panel renders — the tabs' aria-controls targets never dangle
+    expect(screen.getByText('Panel Two')).toBeInTheDocument();
+  });
+
+  it('switches panels on tab click', async () => {
+    const user = userEvent.setup();
+    render(<Tabs value="one" items={sampleItems} />);
+    await user.click(screen.getByRole('tab', { name: 'Item Two' }));
+    expect(screen.getByRole('tab', { name: 'Item Two' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    expect(screen.getByText('Panel Two')).toBeVisible();
+  });
+
+  it('renders disabled items inert — no click selection, skipped by roving', async () => {
+    const user = userEvent.setup();
+    render(<Tabs value="one" items={sampleItems} />);
+    const disabled = screen.getByRole('tab', { name: 'Item Three' });
+    expect(disabled).toBeDisabled();
+    await user.click(disabled);
+    expect(disabled).toHaveAttribute('aria-selected', 'false');
+    // the roving arrows skip the disabled tab: from tab two the wrap
+    // lands back on tab one, never on three
+    screen.getByRole('tab', { name: 'Item Two' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'Item One' })).toHaveFocus();
+  });
+
+  it('forwards icon, status and closable affordances from item data', () => {
+    render(
+      <Tabs
+        value="one"
+        items={[
+          {
+            value: 'one',
+            label: 'Item One',
+            icon: <svg data-testid="item-icon" />,
+            status: 'error',
+            closable: true,
+            panel: 'P1',
+          },
+        ]}
+      />
+    );
+    const tab = screen.getByRole('tab', { name: /Item One.*Error/ });
+    expect(tab).toContainElement(screen.getByTestId('item-icon'));
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+  });
+
+  it('errors in dev when items and children are both given — items win', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      render(
+        <Tabs value="one" items={sampleItems}>
+          <TabList>
+            <Tab value="x">Compound</Tab>
+          </TabList>
+        </Tabs>
+      );
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(error.mock.calls[0]![0]).toContain('mutually exclusive');
+      // the items path renders, the compound child does not
+      expect(screen.getAllByRole('tab')).toHaveLength(3);
+      expect(screen.queryByRole('tab', { name: 'Compound' })).toBeNull();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it('has no axe violations with items, the pill variant and the add button', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Tabs
+        value="one"
+        variant="pill"
+        items={sampleItems}
+        addable={{ onAdd: () => undefined }}
+      />
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// destroyInactiveTabPane: unmount vs keep-alive
+// ---------------------------------------------------------------------------
+
+describe('Tabs destroyInactiveTabPane', () => {
+  it('keeps inactive panels mounted (hidden) by default', () => {
+    render(<TabsFixture />);
+    expect(screen.getByText('Panel 2')).toBeInTheDocument();
+  });
+
+  it('unmounts inactive panels and remounts them on return', async () => {
+    const user = userEvent.setup();
+    render(<TabsFixture destroyInactiveTabPane />);
+    expect(screen.getByText('Panel 1')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 2')).toBeNull();
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.getByText('Panel 2')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 1')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: 'Tab 1' }));
+    expect(screen.getByText('Panel 1')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 2')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// addable: the strip-tail + button
+// ---------------------------------------------------------------------------
+
+describe('Tabs addable', () => {
+  it('renders the + button outside the tablist with the default name', () => {
+    render(<TabsFixture addable={{ onAdd: () => undefined }} />);
+    const add = screen.getByRole('button', { name: 'Add tab' });
+    expect(screen.getByRole('tablist')).not.toContainElement(add);
+  });
+
+  it('renders no + button when addable is omitted', () => {
+    render(<TabsFixture />);
+    expect(screen.queryByRole('button', { name: 'Add tab' })).toBeNull();
+  });
+
+  it('calls onAdd on click and Enter', async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    render(<TabsFixture addable={{ onAdd }} />);
+    const add = screen.getByRole('button', { name: 'Add tab' });
+    await user.click(add);
+    expect(onAdd).toHaveBeenCalledTimes(1);
+    add.focus();
+    await user.keyboard('{Enter}');
+    expect(onAdd).toHaveBeenCalledTimes(2);
+  });
+
+  it('honors a custom addLabel', () => {
+    render(
+      <TabsFixture addable={{ onAdd: () => undefined, addLabel: 'New tab' }} />
+    );
+    expect(screen.getByRole('button', { name: 'New tab' })).toBeInTheDocument();
   });
 });

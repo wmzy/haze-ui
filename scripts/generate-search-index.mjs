@@ -63,6 +63,21 @@ const PAGES = [
     zh: '实战示例',
   },
   {
+    label: 'Blocks',
+    sublabel: 'Demo',
+    route: '/blocks',
+    keywords: [
+      'blocks',
+      'page templates',
+      'dashboard',
+      'login',
+      'settings',
+      'composition',
+      'stackblitz',
+    ],
+    zh: '页面区块',
+  },
+  {
     label: 'Dark mode',
     sublabel: 'Guide',
     route: '/guides/dark-mode',
@@ -118,6 +133,13 @@ const PAGES = [
     route: '/guides/motion',
     keywords: ['motion', 'animation', 'transition', 'enter', 'exit', 'data-state', 'presence'],
     zh: '动效预设',
+  },
+  {
+    label: 'Tokens in Figma',
+    sublabel: 'Guide',
+    route: '/guides/figma-tokens',
+    keywords: ['figma', 'tokens studio', 'w3c', 'dtf', 'design tokens', 'variables', 'oklch'],
+    zh: 'Figma 中的设计令牌',
   },
   {
     label: 'Design Tokens',
