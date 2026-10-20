@@ -56,9 +56,9 @@ export function App() {
 }
 ```
 
-主题类激活令牌集——配置到此为止。想直接脚手架起步？
-`pnpm create haze-ui my-app` 提供 Vite 与 Next.js App Router 两套可运行模板
-（脚手架包尚未发布 npm，可先从仓库内 [create-haze-ui/](./create-haze-ui) 使用）。
+主题类激活令牌集——配置到此为止。想从模板起步？
+[painless](https://github.com/wmzy/painless) 是基于 haze-ui 的 RealWorld SPA
+模板——克隆下来删掉不需要的部分，即是成品形态的客户端应用。
 
 颜色由 OKLCH 生成、交互态在运行时以 CSS 相对色推导，因此浏览器基线为
 Chrome/Edge 119+、Safari 16.4+ 或 Firefox 128+（无 HSL/hex 回退）。
@@ -116,7 +116,7 @@ polyfill/回退——同一四引擎即硬性 CSS 底线。
 | llms.txt / AI 用完整 API | <https://wmzy.github.io/haze-ui/llms.txt> |
 | MCP server（`npx haze-ui-mcp`） | 随本包 bin 一起发布——见[帮助页](https://wmzy.github.io/haze-ui/help) |
 | shadcn registry | [registry/README.md](./registry/README.md) — `pnpm dlx shadcn@latest add wmzy/haze-ui/button` |
-| create-haze-ui（脚手架） | [create-haze-ui/](./create-haze-ui) — 仓库内置，npm 发布待定 |
+| painless（RealWorld SPA 模板） | <https://github.com/wmzy/painless> — GitHub |
 | vite-plugin-haze-ui（CSS 自动注入） | <https://www.npmjs.com/package/vite-plugin-haze-ui> — npm |
 
 每个带样式的导出都可经 shadcn CLI 安装（对 npm 包的薄封装）——见

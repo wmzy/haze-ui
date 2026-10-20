@@ -58,10 +58,9 @@ export function App() {
 }
 ```
 
-The theme class activates the token set — that is the whole setup. Prefer a
-scaffolded start? `pnpm create haze-ui my-app` ships runnable Vite and
-Next.js App Router templates (the CLI lives in [create-haze-ui/](./create-haze-ui),
-publish pending).
+The theme class activates the token set — that is the whole setup. For a
+template start, [painless](https://github.com/wmzy/painless) is a RealWorld
+SPA template built on haze-ui — clone it and delete what you don't need.
 
 Colors are generated in OKLCH with interaction states derived at runtime via
 CSS relative colors, so the browser floor is Chrome/Edge 119+, Safari 16.4+
@@ -125,7 +124,7 @@ with no polyfills or fallbacks — the same four engines are the hard CSS floor.
 | llms.txt / full API for AI readers | <https://wmzy.github.io/haze-ui/llms.txt> |
 | MCP server — ships as a bin of this package (`npx haze-ui-mcp`) | <https://wmzy.github.io/haze-ui/help> |
 | shadcn registry | [registry/README.md](./registry/README.md) — `pnpm dlx shadcn@latest add wmzy/haze-ui/button` |
-| create-haze-ui (CLI scaffolding) | [create-haze-ui/](./create-haze-ui) — in-repo, publish pending |
+| painless (RealWorld SPA template) | <https://github.com/wmzy/painless> — GitHub |
 | vite-plugin-haze-ui (CSS auto-injection) | <https://www.npmjs.com/package/vite-plugin-haze-ui> — npm |
 
 Every styled export is also installable through the shadcn CLI as a thin
