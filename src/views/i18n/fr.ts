@@ -203,6 +203,7 @@ export const fr: DeepPartial<SiteStrings> = {
     PasswordInput: 'Champ texte avec bascule de visibilité.',
     Radio: 'Option radio et groupe avec sélection contrôlable.',
     Rating: 'Notation par étoiles avec prise en charge des demi-étoiles.',
+    RichTextEditor: 'Éditeur de texte riche basé sur Tiptap, avec barre de formatage intégrée et valeur HTML contrôlable.',
     Segmented: 'Contrôle segmenté choisissant une option dans un ensemble compact.',
     Select:
       'Sélecteur déroulant sur SelectCore avec enfants <option> ; onSearch active le filtrage côté serveur.',
@@ -268,6 +269,7 @@ export const fr: DeepPartial<SiteStrings> = {
     Progress: 'Barre ou anneau de progression pilotés par une valeur en pourcentage.',
     QRCode:
       'Code QR rendu en un seul chemin SVG net avec options value/size/level/bordered et couleurs de modules/fond issues des tokens de thème.',
+    Schedule: 'Surface de planification avec vues jour/semaine/mois, replanification au glisser et au clavier, grille mensuelle avec puces de débordement.',
     Stat: 'Affichage de métrique avec titre, valeur et indicateur de tendance.',
     Sparkline:
       'Mini-graphique de tendance SVG en ligne : sans état, sans recharts, compatible RSC ; variantes ligne ou aire sur les tons sémantiques.',
@@ -334,18 +336,20 @@ export const fr: DeepPartial<SiteStrings> = {
       'Rend le diff ligne à ligne entre ancien et nouveau contenu pour les éditions proposées par l’agent.',
     FilePreview:
       'Carte de pièce jointe avec vignette d’image ou badge d’extension, progression d’envoi et actions retirer/réessayer.',
+    InlineCitation: 'Marqueur de citation en exposant ; au clic, ouvre une carte source flottante avec titre, extrait et lien sortant optionnel.',
     InlineCompletion:
       'Suggestion en texte fantôme pour input/textarea ; Tab accepte la suggestion, Escape la rejette.',
     LogViewer: 'Flux de journaux défilant avec filtrage par niveau de sévérité.',
     MarkdownRenderer:
       'Rend du contenu Markdown (blocs de code inclus) pour les réponses de l’assistant.',
     ModelPicker: 'Liste déroulante contrôlable pour choisir le modèle actif.',
+    Plan: 'Plan et progression de l’agent : liste d’étapes titrée dont les statuts alimentent automatiquement barre de progression et résumé.',
     PromptInput:
       'Composeur de prompt IA : zone de texte auto-extensible avec tags de contexte en ligne, suggestions au déclencheur @ et touche d’envoi configurable.',
+    Queue: 'File d’attente d’actions ou de messages de l’agent, avec statuts queued/sending/failed et suppression par élément.',
     Sources:
       'Liste de citations numérotées pour les réponses RAG ; les extraits se révèlent au survol/focus avec un ensemble expanded contrôlable, compact rend des badges [1] [2] en ligne.',
-    StepTimeline:
-      'Chronologie verticale des étapes d’exécution de l’agent avec un statut par étape.',
+    StepTimeline: 'Chronologie verticale des étapes de l’agent : statut par étape (dont running), durée, détails repliables et sous-étapes imbriquées.',
     StreamingText:
       'Effet machine à écrire dévoilant le texte en streaming caractère par caractère, curseur optionnel.',
     ThinkingIndicator:

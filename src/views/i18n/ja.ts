@@ -196,6 +196,7 @@ export const ja: DeepPartial<SiteStrings> = {
     PasswordInput: '可視性の切替表示付きテキスト入力。',
     Radio: 'ラジオオプションとグループ。選択を制御可能。',
     Rating: 'スターレーティング。ハーフステップに対応。',
+    RichTextEditor: 'Tiptap ベースのリッチテキストエディター。書式設定ツールバー内蔵、HTML 値は制御可能。',
     Segmented: 'セグメントコントロール：コンパクトな選択肢群から 1 つを選択。',
     Select:
       'ドロップダウンセレクト：SelectCore をベースに <option> 子要素を取る。onSearch でサーバー側絞り込み。',
@@ -259,6 +260,7 @@ export const ja: DeepPartial<SiteStrings> = {
     Progress: '進捗バーまたは進捗リング。パーセント値で駆動。',
     QRCode:
       'QR コード：単一の鮮明な SVG パスとして描画。value/size/level/bordered オプション、モジュールと背景色はテーマトークンに従う。',
+    Schedule: '日／週／月ビューのカレンダースケジュール面。ドラッグとキーボードでの再スケジュール、月グリッドのオーバーフローチップ付き。',
     Stat: '指標表示：タイトル、値、トレンドインジケーター。',
     Sparkline:
       'インライン SVG ミニトレンドチャート：ステートレス、recharts 不使用、RSC 安全。ラインまたは塗り面バリアントをセマンティックトーントークンで。',
@@ -317,17 +319,19 @@ export const ja: DeepPartial<SiteStrings> = {
       'エージェントが提案する編集に向け、新旧コンテンツの行差分を描画。',
     FilePreview:
       '添付カード：画像サムネイルまたは拡張子バッジ、アップロード進捗、削除/再試行。',
+    InlineCitation: '行内上付き引用マーカー：クリックでタイトル・抜粋・外部リンク付きのフローティング出典カードを開く。',
     InlineCompletion:
       'input/textarea 向けゴーストテキスト補完：Tab で候補を確定、Escape で閉じる。',
     LogViewer: 'スクロール可能なログストリーム。重大度レベルでフィルタ。',
     MarkdownRenderer: 'Markdown コンテンツ（コードブロック含む）を描画。アシスタント応答用。',
     ModelPicker: 'アクティブなモデルを選ぶドロップダウン。制御可能。',
+    Plan: 'エージェントの計画と進捗：タイトル付きステップリストで、各ステップの状態が進捗バーと要約を自動駆動。',
     PromptInput:
       'AI プロンプト入力：自動伸長テキストエリア、インラインのコンテキストタグ、@ トリガー候補、設定可能な送信キー。',
+    Queue: '送信待ちのエージェント操作／メッセージキュー。queued/sending/failed 状態と項目ごとの削除に対応。',
     Sources:
       'RAG 回答の番号付き引用リスト：hover/focus で抜粋を展開（expanded 集合は制御可能）、compact はインライン [1] [2] バッジを描画。',
-    StepTimeline:
-      'エージェント実行ステップの縦タイムライン。ステップごとに状態を持つ。',
+    StepTimeline: 'エージェント実行ステップの縦タイムライン：ステップ状態（running 含む）、所要時間、折りたたみ可能な詳細とネストされたサブステップ。',
     StreamingText:
       'タイプライター効果：ストリーミングテキストを一文字ずつ明かす。任意のカーソル付き。',
     ThinkingIndicator:

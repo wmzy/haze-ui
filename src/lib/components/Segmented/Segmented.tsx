@@ -5,6 +5,8 @@ import type { SegmentedOption } from './SegmentedCore';
 
 import { useControl } from 'react-use-control';
 
+import { NativeHiddenFields } from '../../utils/native-form';
+
 import SegmentedCore from './SegmentedCore';
 
 type SegmentedProps = {
@@ -13,6 +15,14 @@ type SegmentedProps = {
   onChange?: (value: string) => void;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /**
+   * Form field name: renders a hidden input bridge next to the button
+   * group so `<form action={fn}>` / `new FormData(form)` receive the
+   * selected option's value. The `''` no-selection sentinel submits
+   * nothing. react-f0rm `FormItem` usage never passes it, so both
+   * worlds coexist.
+   */
+  name?: string;
   /**
    * Forwarded to the group's focus target — the selected option's
    * `<button>` (falling back to the first) — so form bridges and
@@ -27,22 +37,29 @@ export default function Segmented({
   onChange,
   size,
   className,
+  name,
   ref,
 }: SegmentedProps) {
   const [value, setValue] = useControl(valueControl, '');
 
   return (
-    <SegmentedCore
-      ref={ref}
-      options={options}
-      value={value}
-      onChange={(next) => {
-        setValue(next);
-        onChange?.(next);
-      }}
-      size={size}
-      className={className}
-    />
+    <>
+      <SegmentedCore
+        ref={ref}
+        options={options}
+        value={value}
+        onChange={(next) => {
+          setValue(next);
+          onChange?.(next);
+        }}
+        size={size}
+        className={className}
+      />
+      <NativeHiddenFields
+        name={name}
+        values={value === '' ? [] : [value]}
+      />
+    </>
   );
 }
 

@@ -9,7 +9,7 @@
 [![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
 
 haze-ui 是一个 React 19 组件库：Linaria（零运行时 CSS-in-JS）+ `--haze-*`
-设计令牌；143 个组件、9 大分组；ESM-only、`preserveModules` 可摇树产物；
+设计令牌；148 个组件、9 大分组；ESM-only、`preserveModules` 可摇树产物；
 RTL 与生俱来；RSC 感知拆分（仅交互模块预注入 `'use client'`，静态子集可直接
 作为 React Server Components 渲染）。每个有状态组件都讲同一套
 `ControlOrValue<T>` 协议——一个 prop（如 `checked?: Control<T> | T`）同时覆盖
@@ -92,10 +92,17 @@ polyfill/回退——同一四引擎即硬性 CSS 底线。
   没有 `defaultXxx` / `xxx` 双套 API 要同步。
   → [入门](https://wmzy.github.io/haze-ui/getting-started)
 - **AI / 聊天组件族**——`ChatContainer`、`ChatMessage`、`StreamingText`、
-  `ToolCallCard`、`ThinkingIndicator`、`ChatInput` 覆盖 agent 聊天界面，
-  并附 Vercel AI SDK `useChat` 的单测适配 recipe。
+  `ToolCallCard`、`ThinkingIndicator`、`ChatInput` 覆盖 agent 聊天界面；
+  `Plan`、`Queue`、`InlineCitation` 与可折叠的 `StepTimeline` trace 行
+  覆盖 agentic 交互模式，并附 Vercel AI SDK `useChat` 的单测适配 recipe。
   → [AI 展示](https://wmzy.github.io/haze-ui/ai-showcase) ·
   [Recipes](https://wmzy.github.io/haze-ui/recipes)
+- **React Compiler 已验证**——开启 babel-plugin-react-compiler 跑全量测试
+  （`pnpm test:compiler`），自动记忆化是发布门禁的一部分，而非祈愿。
+- **原生表单就绪**——持有值的组件（Select、Switch、Rating、Slider、
+  TagInput、OTPInput、Segmented、ColorPicker、RichTextEditor）接受
+  `name` 并提交进 `FormData`，`<form action={serverAction}>` 无表单库
+  即可用；react-f0rm 集成依旧是一等公民。
 - **多历法日期层**——公历之外内置六个适配器（Hijri Umm al-Qura、波斯历、
   希伯来历、日本年号、佛历、埃塞俄比亚历）：整数算术实现并与全量 ICU
   `Intl` oracle 交叉验证，经 barrel 的 `getAdapter()` 导出。

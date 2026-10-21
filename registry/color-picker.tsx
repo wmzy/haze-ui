@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/color-picker.css';
 
 export { ColorPicker, ColorPickerCore };
-export type { ColorPickerProps, ColorPickerCoreProps } from 'haze-ui';
+export type { ColorPickerProps, ColorPickerCoreProps, ColorPickerPreset } from 'haze-ui';

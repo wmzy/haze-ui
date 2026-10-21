@@ -1404,3 +1404,89 @@ describe('Select generics', () => {
     expect(within(trigger).getByText('Year 2025')).toBeInTheDocument();
   });
 });
+
+describe('Select native form participation', () => {
+  it('submits the single value under name (native single mode)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Select name="fruit" value="apple" aria-label="fruit">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </Select>
+      </form>
+    );
+    const data = new FormData(container.querySelector('form')!);
+    expect(data.get('fruit')).toBe('apple');
+  });
+
+  it('stringifies number-valued options', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Select<number> name="year" value={2025} aria-label="year">
+          <option value={2025}>2025</option>
+        </Select>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('year')).toBe('2025');
+  });
+
+  it('submits nothing for the empty sentinel in single mode', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Select name="fruit" aria-label="fruit">
+          <option value="apple">Apple</option>
+        </Select>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('fruit')).toBeNull();
+  });
+
+  it('repeats the name per entry in multiple mode (getAll order preserved)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Select name="fruits" multiple value={['apple', 'cherry']} aria-label="fruits">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <option value="cherry">Cherry</option>
+        </Select>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).getAll('fruits')).toEqual([
+      'apple',
+      'cherry',
+    ]);
+  });
+
+  it('submits through the floating trigger too (searchable mode reroutes name off the button)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Select name="fruit" searchable value="apple" aria-label="fruit">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+        </Select>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('fruit')).toBe('apple');
+    // a <button>'s own name would be submitter-scoped — must stay off the trigger
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('name');
+  });
+
+  it('keeps name off the native <select> (no duplicate submission)', () => {
+    const {container} = render(
+      <Select name="fruit" value="apple" aria-label="fruit">
+        <option value="apple">Apple</option>
+      </Select>
+    );
+    expect(container.querySelector('select')).not.toHaveAttribute('name');
+    expect(container.querySelectorAll("[data-slot='native-input']")).toHaveLength(1);
+  });
+
+  it('renders no bridge input without name', () => {
+    const {container} = render(
+      <Select value="apple" aria-label="fruit">
+        <option value="apple">Apple</option>
+      </Select>
+    );
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+  });
+});

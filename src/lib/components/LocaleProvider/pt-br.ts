@@ -109,6 +109,13 @@ const ptBR: HazeStrings = {
     alpha: 'Opacidade',
     presetsLabel: 'Cores predefinidas',
     recentColors: 'Cores recentes',
+    solid: 'Sólida',
+    gradient: 'Gradiente',
+    angle: 'Ângulo',
+    stopColor: 'Cor da parada',
+    stopPosition: 'Posição da parada',
+    addStop: 'Adicionar parada',
+    removeStop: 'Remover parada',
   },
   confirmDialog: {
     confirm: 'Confirmar',

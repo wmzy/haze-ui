@@ -132,3 +132,30 @@ describe('Radio ref forwarding', () => {
     expect(ref.current).toHaveAttribute('value', 'a');
   });
 });
+
+describe('Radio native form participation', () => {
+  // Radio renders real native <input type='radio'> elements carrying
+  // RadioGroup's name — the checked one submits natively, no bridge.
+  it('submits the selected value under the group name', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <RadioGroup name="plan" value="pro">
+          <Radio value="free">Free</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('plan')).toBe('pro');
+  });
+
+  it('submits nothing with no selection', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <RadioGroup name="plan">
+          <Radio value="free">Free</Radio>
+        </RadioGroup>
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('plan')).toBeNull();
+  });
+});

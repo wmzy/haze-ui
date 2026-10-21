@@ -528,6 +528,12 @@
   },
   {
     "type": "component",
+    "label": "RichTextEditor",
+    "route": "/components/rich-text-editor",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Segmented",
     "route": "/components/segmented",
     "keywords": []
@@ -790,6 +796,12 @@
   },
   {
     "type": "component",
+    "label": "Schedule",
+    "route": "/components/schedule",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Sparkline",
     "route": "/components/sparkline",
     "keywords": []
@@ -1032,6 +1044,12 @@
   },
   {
     "type": "component",
+    "label": "InlineCitation",
+    "route": "/components/inline-citation",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "InlineCompletion",
     "route": "/components/inline-completion",
     "keywords": []
@@ -1056,8 +1074,20 @@
   },
   {
     "type": "component",
+    "label": "Plan",
+    "route": "/components/plan",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "PromptInput",
     "route": "/components/prompt-input",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Queue",
+    "route": "/components/queue",
     "keywords": []
   },
   {
@@ -2166,6 +2196,12 @@
   },
   {
     "type": "section",
+    "label": "Agent Trace",
+    "sublabel": "StepTimeline",
+    "route": "/components/step-timeline"
+  },
+  {
+    "type": "section",
     "label": "StepTimeline Props",
     "sublabel": "StepTimeline",
     "route": "/components/step-timeline"
@@ -2175,6 +2211,48 @@
     "label": "StepTimelineItem Props",
     "sublabel": "StepTimeline",
     "route": "/components/step-timeline"
+  },
+  {
+    "type": "section",
+    "label": "Error and Skipped States",
+    "sublabel": "Plan",
+    "route": "/components/plan"
+  },
+  {
+    "type": "section",
+    "label": "Plan Props",
+    "sublabel": "Plan",
+    "route": "/components/plan"
+  },
+  {
+    "type": "section",
+    "label": "PlanItem Props",
+    "sublabel": "Plan",
+    "route": "/components/plan"
+  },
+  {
+    "type": "section",
+    "label": "Queue Props",
+    "sublabel": "Queue",
+    "route": "/components/queue"
+  },
+  {
+    "type": "section",
+    "label": "QueueItem Props",
+    "sublabel": "Queue",
+    "route": "/components/queue"
+  },
+  {
+    "type": "section",
+    "label": "Controlled Open State",
+    "sublabel": "InlineCitation",
+    "route": "/components/inline-citation"
+  },
+  {
+    "type": "section",
+    "label": "InlineCitation Props",
+    "sublabel": "InlineCitation",
+    "route": "/components/inline-citation"
   },
   {
     "type": "section",
@@ -2436,6 +2514,12 @@
   },
   {
     "type": "section",
+    "label": "Gradients",
+    "sublabel": "ColorPicker",
+    "route": "/components/color-picker"
+  },
+  {
+    "type": "section",
     "label": "Inline",
     "sublabel": "ColorPicker",
     "route": "/components/color-picker"
@@ -2451,6 +2535,18 @@
     "label": "Half Stars",
     "sublabel": "Rating",
     "route": "/components/rating"
+  },
+  {
+    "type": "section",
+    "label": "Controlled value",
+    "sublabel": "RichTextEditor",
+    "route": "/components/rich-text-editor"
+  },
+  {
+    "type": "section",
+    "label": "Read-only + custom toolbar",
+    "sublabel": "RichTextEditor",
+    "route": "/components/rich-text-editor"
   },
   {
     "type": "section",
@@ -2985,6 +3081,12 @@
     "label": "Custom Colors",
     "sublabel": "QRCode",
     "route": "/components/qr-code"
+  },
+  {
+    "type": "section",
+    "label": "Schedule Props",
+    "sublabel": "Schedule",
+    "route": "/components/schedule"
   },
   {
     "type": "section",
@@ -3565,6 +3667,24 @@
   {
     "type": "section",
     "label": "Custom series colors",
+    "sublabel": "Chart",
+    "route": "/components/chart"
+  },
+  {
+    "type": "section",
+    "label": "Annotations",
+    "sublabel": "Chart",
+    "route": "/components/chart"
+  },
+  {
+    "type": "section",
+    "label": "Gauge",
+    "sublabel": "Chart",
+    "route": "/components/chart"
+  },
+  {
+    "type": "section",
+    "label": "Waffle",
     "sublabel": "Chart",
     "route": "/components/chart"
   },
@@ -4573,13 +4693,19 @@
   {
     "type": "prop",
     "label": "presets",
-    "sublabel": "ColorPicker — Preset swatch row above the recent row; any parsable format",
+    "sublabel": "ColorPicker — Preset entries: plain color strings, labeled solid groups { label?, colors } and single gradients { label?, gradient } rendered as preview bars of the actual gradient. Clicking any entry applies it",
+    "route": "/components/color-picker"
+  },
+  {
+    "type": "prop",
+    "label": "gradient",
+    "sublabel": "ColorPicker — Adds the Solid/Gradient toggle and, for gradient values, an angle field plus a stop list. The mode is value-derived; switching modes applies the default of the target mode (no per-mode value memory): solid → linear-gradient(90deg, <color> 0%, #ffffff 100%), gradient → first stop's color",
     "route": "/components/color-picker"
   },
   {
     "type": "prop",
     "label": "recent",
-    "sublabel": "ColorPicker — Tracks recently used colors (last 10, newest first) as internal state",
+    "sublabel": "ColorPicker — Tracks recently used colors (last 10, newest first) as internal state; gradient values never enter the list",
     "route": "/components/color-picker"
   },
   {

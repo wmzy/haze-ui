@@ -108,6 +108,13 @@ const deDE: HazeStrings = {
     alpha: 'Deckkraft',
     presetsLabel: 'Voreinstellungen',
     recentColors: 'Zuletzt verwendete Farben',
+    solid: 'Unifarben',
+    gradient: 'Verlauf',
+    angle: 'Winkel',
+    stopColor: 'Farbstop',
+    stopPosition: 'Stoppposition',
+    addStop: 'Farbstop hinzufügen',
+    removeStop: 'Farbstop entfernen',
   },
   confirmDialog: {
     confirm: 'Bestätigen',

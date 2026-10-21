@@ -5,4 +5,6 @@ export type {
   ChartTooltipEntry,
   ChartTooltipPayload,
   ChartType,
+  ChartGaugeThreshold,
+  ChartWaffleSeries,
 } from './Chart';

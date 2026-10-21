@@ -67,6 +67,9 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/tool-call-card</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/thinking-indicator</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/step-timeline</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/plan</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/queue</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/inline-citation</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/approval-card</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/token-counter</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/model-picker</loc></url>
@@ -83,6 +86,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/upload</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/color-picker</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/rating</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/rich-text-editor</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/timeline</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/typography</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/ellipsis</loc></url>
@@ -119,6 +123,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/descriptions</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/json-view</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/qr-code</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/schedule</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/sources</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/file-preview</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/inline-completion</loc></url>

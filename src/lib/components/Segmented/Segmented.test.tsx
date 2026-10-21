@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 
+import {Form, FormItem, createForm, getValue} from '../../form';
+
 import Segmented from './Segmented';
 import SegmentedCore from './SegmentedCore';
 
@@ -79,5 +81,71 @@ describe('Segmented ref forwarding', () => {
     ref.current!.focus();
     expect(document.activeElement).toBe(ref.current);
     expect(ref.current).toHaveTextContent('day');
+  });
+});
+
+const views = [
+  {value: 'day', label: 'Day'},
+  {value: 'week', label: 'Week'},
+  {value: 'month', label: 'Month'},
+];
+
+describe('Segmented native form participation', () => {
+
+  it('submits the selected value under name', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Segmented name="view" options={views} value="week" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('view')).toBe('week');
+  });
+
+  it('follows selection changes', async () => {
+    const user = userEvent.setup();
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Segmented name="view" options={views} value="day" />
+      </form>
+    );
+    const form = container.querySelector('form')!;
+    await user.click(screen.getByRole('button', {name: 'Month'}));
+    expect(new FormData(form).get('view')).toBe('month');
+  });
+
+  it('submits nothing for the empty no-selection sentinel and no bridge without name', () => {
+    const empty = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Segmented name="view" options={views} />
+      </form>
+    );
+    expect(new FormData(empty.container.querySelector('form')!).get('view')).toBeNull();
+
+    const unnamed = render(<Segmented options={views} value="day" />);
+    expect(unnamed.container.querySelector("[data-slot='native-input']")).toBeNull();
+  });
+});
+
+describe('Segmented + react-f0rm FormItem coexistence', () => {
+  it('FormItem-driven usage unchanged: value flows through the form store, bridge stays inert', async () => {
+    const user = userEvent.setup();
+    const form = createForm({initialValues: {view: 'day'}});
+
+    const {container} = render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem form={form} name="view" label="View">
+          {({value, onChange}) => (
+            <Segmented options={views} value={value} onChange={onChange} />
+          )}
+        </FormItem>
+      </Form>
+    );
+
+    // FormItem never passes a component name — no bridge input renders
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+    // and f0rm preventDefaults submission, so even a named bridge would
+    // be inert there; the form store is the single value channel.
+    await user.click(screen.getByRole('button', {name: 'Week'}));
+    expect(getValue(form, 'view')).toBe('week');
   });
 });

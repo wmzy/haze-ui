@@ -108,6 +108,13 @@ const esES: HazeStrings = {
     alpha: 'Opacidad',
     presetsLabel: 'Colores predefinidos',
     recentColors: 'Colores recientes',
+    solid: 'Sólido',
+    gradient: 'Degradado',
+    angle: 'Ángulo',
+    stopColor: 'Color del punto',
+    stopPosition: 'Posición del punto',
+    addStop: 'Añadir punto',
+    removeStop: 'Quitar punto',
   },
   confirmDialog: {
     confirm: 'Confirmar',

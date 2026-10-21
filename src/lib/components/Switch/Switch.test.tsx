@@ -113,3 +113,60 @@ describe('Switch ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Switch native form participation', () => {
+  it('submits "on" under name while checked (uncontrolled default)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Switch name="notifications" checked aria-label="Notifications" />
+      </form>
+    );
+    const data = new FormData(container.querySelector('form')!);
+    expect(data.get('notifications')).toBe('on');
+  });
+
+  it('submits nothing while unchecked (native successful-control rule)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Switch name="notifications" aria-label="Notifications" />
+      </form>
+    );
+    const data = new FormData(container.querySelector('form')!);
+    expect(data.get('notifications')).toBeNull();
+  });
+
+  it('follows toggles: FormData tracks the live checked state', async () => {
+    const user = userEvent.setup();
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Switch name="notifications" aria-label="Notifications" />
+      </form>
+    );
+    const form = container.querySelector('form')!;
+    await user.click(screen.getByRole('switch'));
+    expect(new FormData(form).get('notifications')).toBe('on');
+    await user.click(screen.getByRole('switch'));
+    expect(new FormData(form).get('notifications')).toBeNull();
+  });
+
+  it('renders no bridge input and keeps name off the button without name', () => {
+    const {container} = render(<Switch checked aria-label="Notifications" />);
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+    // a <button>'s own name would be submitter-scoped — must not leak there
+    expect(screen.getByRole('switch')).not.toHaveAttribute('name');
+  });
+
+  it('bridge input is a non-interactive clipped checkbox', () => {
+    const {container} = render(
+      <Switch name="notifications" checked aria-label="Notifications" />
+    );
+    const bridge = container.querySelector<HTMLInputElement>(
+      "[data-slot='native-input']"
+    )!;
+    expect(bridge.type).toBe('checkbox');
+    expect(bridge).toBeChecked();
+    expect(bridge).toHaveAttribute('readonly');
+    expect(bridge.tabIndex).toBe(-1);
+    expect(bridge.getAttribute('aria-hidden')).toBe('true');
+  });
+});

@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 142 Haze UI components in one
-> file (256 type tables), generated from the library source. Do not
+> Complete props reference for all 147 Haze UI components in one
+> file (263 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -464,11 +464,20 @@ import { Chart } from 'haze-ui';
 | --- | --- | --- | --- |
 | `type` | `ChartType` | — |  |
 | `data` | `T[]` | — |  |
-| `series` | `ChartSeries[]` | — |  |
+| `series` | `ChartSeries[] \| ChartWaffleSeries[]` | — |  |
 | `xKey` | `keyof T & string` | — |  |
 | `height` | `number` | — |  |
 | `innerRadius` | `string \| number` | — |  |
 | `layout` | `'vertical' \| 'horizontal'` | — |  |
+| `referenceLines` | `Props[]` | — |  |
+| `referenceAreas` | `Props[]` | — |  |
+| `referenceDots` | `Props[]` | — |  |
+| `value` | `number` | — |  |
+| `max` | `number` | — |  |
+| `thresholds` | `ChartGaugeThreshold[]` | — |  |
+| `label` | `ReactNode` | — |  |
+| `valueFormat` | `(v: number) => string` | — |  |
+| `columns` | `number` | — |  |
 | `renderTooltip` | `(payload: ChartTooltipPayload<T>) => ReactNode` | — |  |
 | `showLegend` | `boolean` | — |  |
 | `showGrid` | `boolean` | — |  |
@@ -647,8 +656,9 @@ import { ColorPicker, ColorPickerCore } from 'haze-ui';
 | `onCommit` | `(value: string) => void` | — |  |
 | `format` | `ColorFormat` | — |  |
 | `allowAlpha` | `boolean` | — |  |
-| `presets` | `string[]` | — |  |
+| `presets` | `ColorPickerPreset[]` | — |  |
 | `recentColors` | `string[]` | — |  |
+| `gradient` | `boolean` | — |  |
 | `className` | `string` | — |  |
 
 ### ColorPickerProps
@@ -661,9 +671,11 @@ import { ColorPicker, ColorPickerCore } from 'haze-ui';
 | `inline` | `boolean` | — | Always-visible panel card instead of trigger + floating panel |
 | `format` | `ColorFormat` | — | Serialization format of the text field and emitted values; switching it does not re-emit the current value |
 | `allowAlpha` | `boolean` | — | Adds the alpha rail; opacity below 1 serializes into the value (#rrggbbaa / rgba() / hsla()) |
-| `presets` | `string[]` | — | Preset swatch row above the recent row; any parsable format |
-| `recent` | `boolean` | — | Tracks recently used colors (last 10, newest first) as internal state |
+| `presets` | `ColorPickerPreset[]` | — | Preset entries: plain color strings, labeled solid groups { label?, colors } and single gradients { label?, gradient } rendered as preview bars of the actual gradient. Clicking any entry applies it |
+| `recent` | `boolean` | — | Tracks recently used colors (last 10, newest first) as internal state; gradient values never enter the list |
+| `gradient` | `boolean` | — | Adds the Solid/Gradient toggle and, for gradient values, an angle field plus a stop list. The mode is value-derived; switching modes applies the default of the target mode (no per-mode value memory): solid → linear-gradient(90deg, <color> 0%, #ffffff 100%), gradient → first stop's color |
 | `className` | `string` | — | Additional CSS class (the panel card) |
+| `name` | `string` | — |  |
 | `aria-label` | `string` | — | Accessible name of the trigger and the panel; defaults to the locale's "Pick color". Set it when more than one picker is on a page |
 | `ref` | `Ref<HTMLButtonElement \| HTMLDivElement>` | — |  |
 
@@ -1686,6 +1698,23 @@ import { Indicator } from 'haze-ui';
 | `position` | `'bottom-end' \| 'top-start' \| 'top-end' \| 'bottom-start'` | — |  |
 | `children` | `ReactNode` | — |  |
 
+## InlineCitation
+
+```jsx
+import { InlineCitation } from 'haze-ui';
+```
+
+### InlineCitationProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `index` | `number` | — |  |
+| `href` | `string` | — |  |
+| `title` | `ReactNode` | — |  |
+| `snippet` | `ReactNode` | — |  |
+| `open` | `ControlOrValue<boolean>` | — |  |
+| `className` | `string` | — |  |
+
 ## InlineCompletion
 
 ```jsx
@@ -2151,6 +2180,7 @@ import { OTPInput, OTPInputCore } from 'haze-ui';
 | `value` | `ControlOrValue<string>` | — | Controlled OTP value |
 | `onChange` | `(value: string) => void` | — | Called when OTP changes |
 | `className` | `string` | — | Additional CSS class |
+| `name` | `string` | — |  |
 | `ref` | `Ref<HTMLInputElement>` | — |  |
 
 ## Pagination
@@ -2204,6 +2234,30 @@ import { PasswordInput, PasswordInputCore } from 'haze-ui';
 | `disabled` | `boolean` | `false` | Disable the input |
 | `className` | `string` | — | Additional CSS class |
 | `ref` | `Ref<HTMLInputElement>` | — |  |
+
+## Plan
+
+```jsx
+import { Plan, PlanItem } from 'haze-ui';
+```
+
+### PlanItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `status` | `PlanStatus` | — |  |
+| `className` | `string` | — |  |
+
+### PlanProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `ReactNode` | — |  |
+| `summary` | `(done: number, total: number) => ReactNode` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
 
 ## Popover
 
@@ -2279,6 +2333,30 @@ import { QRCode } from 'haze-ui';
 | `modulesColor` | `string` | — |  |
 | `bgColor` | `string` | — |  |
 
+## Queue
+
+```jsx
+import { Queue, QueueItem } from 'haze-ui';
+```
+
+### QueueItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `status` | `QueueStatus` | — |  |
+| `onRemove` | `() => void` | — |  |
+| `removeLabel` | `string` | — |  |
+| `className` | `string` | — |  |
+
+### QueueProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
 ## Radio
 
 ```jsx
@@ -2341,6 +2419,7 @@ import { Rating, RatingCore } from 'haze-ui';
 | `allowHalf` | `boolean` | `false` | Allow half-star ratings |
 | `onChange` | `(value: number) => void` | — | Called when rating changes |
 | `className` | `string` | — | Additional CSS class |
+| `name` | `string` | — |  |
 | `ref` | `Ref<HTMLSpanElement>` | — |  |
 
 ## Resizable
@@ -2396,6 +2475,53 @@ import { Result } from 'haze-ui';
 | `subTitle` | `ReactNode` | — |  |
 | `extra` | `ReactNode` | — |  |
 
+## RichTextEditor
+
+```jsx
+import { RichTextEditor } from 'haze-ui';
+```
+
+### RichTextEditorProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ControlOrValue<string>` | — |  |
+| `placeholder` | `string` | — |  |
+| `editable` | `ControlOrValue<boolean>` | — |  |
+| `toolbar` | `ReactNode` | — |  |
+| `extensions` | `AnyExtension[]` | — |  |
+| `editorKey` | `string` | — |  |
+| `name` | `string` | — |  |
+| `ref` | `Ref<RichTextEditorHandle>` | — |  |
+
+## Schedule
+
+```jsx
+import { Schedule } from 'haze-ui';
+```
+
+### ScheduleProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `events` | `ScheduleEvent[]` | — |  |
+| `view` | `ControlOrValue<ScheduleView>` | — |  |
+| `onViewChange` | `(view: ScheduleView) => void` | — |  |
+| `date` | `ControlOrValue<Date>` | — |  |
+| `onDateChange` | `(date: Date) => void` | — |  |
+| `slotMinutes` | `number` | — |  |
+| `businessHours` | `ScheduleBusinessHours` | — |  |
+| `nowIndicator` | `boolean` | — |  |
+| `onEventClick` | `(event: ScheduleEvent) => void` | — |  |
+| `onEventChange` | `(change: ScheduleEventChange) => void` | — |  |
+| `onDayClick` | `(date: Date) => void` | — |  |
+| `todayLabel` | `string` | — |  |
+| `prevLabel` | `string` | — |  |
+| `nextLabel` | `string` | — |  |
+| `viewLabels` | `Partial<Record<ScheduleView, string>>` | — |  |
+| `locale` | `string` | — |  |
+| `className` | `string` | — |  |
+
 ## ScrollArea
 
 ```jsx
@@ -2436,6 +2562,7 @@ import { Segmented, SegmentedCore } from 'haze-ui';
 | `onChange` | `(value: string) => void` | — | Called when selection changes |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Segment size |
 | `className` | `string` | — | Additional CSS class |
+| `name` | `string` | — |  |
 | `ref` | `Ref<HTMLButtonElement>` | — |  |
 
 ## Select
@@ -2516,6 +2643,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the select |
 | `classNames` | `SelectClassNames` | — |  |
 | `ref` | `Ref<HTMLButtonElement \| HTMLSelectElement>` | — |  |
+| `name` | `string` | — |  |
 | `children` | `ReactNode` | — | <Option> elements |
 | `disabled` | `boolean` | `false` | Disable the select |
 | `className` | `string` | — | Additional CSS class |
@@ -2799,6 +2927,13 @@ import { StepTimeline, StepTimelineItem } from 'haze-ui';
 | `label` | `ReactNode` | — | Step label text |
 | `description` | `ReactNode` | — | Optional description below the label |
 | `status` | `StepStatus` | `'pending'` | Step status |
+| `time` | `ReactNode` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `collapsible` | `boolean` | — |  |
+| `content` | `ReactNode` | — |  |
+| `open` | `ControlOrValue<boolean>` | — |  |
+| `onOpenChange` | `(open: boolean) => void` | — |  |
+| `children` | `ReactNode` | — |  |
 | `className` | `string` | — | Additional CSS class |
 
 ### StepTimelineProps
@@ -2889,6 +3024,7 @@ import { Switch, SwitchCore } from 'haze-ui';
 | --- | --- | --- | --- |
 | `checked` | `ControlOrValue<boolean>` | — | Controlled checked state or control object |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the switch |
+| `name` | `string` | — |  |
 | `ref` | `Ref<HTMLButtonElement>` | — |  |
 | `disabled` | `boolean` | `false` | Disable the switch |
 | `className` | `string` | — | Additional CSS class |
@@ -3134,6 +3270,7 @@ import { TagInput, TagInputCore, SortableTagInput, SortableTagInputCore } from '
 | `maxTags` | `number` | — | Maximum number of tags |
 | `disabled` | `boolean` | `false` | Disable the input |
 | `className` | `string` | — | Additional CSS class |
+| `name` | `string` | — |  |
 | `id` | `string` | — |  |
 | `aria-invalid` | `boolean` | — |  |
 | `aria-describedby` | `string` | — |  |

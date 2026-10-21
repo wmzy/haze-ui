@@ -45,11 +45,12 @@ export default function ChartDemo() {
     <>
       <h1>Chart</h1>
       <p className={intro}>
-        Line, area, bar, pie, donut, radar and scatter charts over{' '}
-        <a href='https://recharts.com'>recharts</a> (a haze-ui dependency,
-        bundled only when you render charts), with every color, font and
-        grid line resolved from haze tokens. Series colors cycle through
-        the semantic palette; pass your own as any CSS color string.
+        Line, area, bar, pie, donut, radar, scatter, gauge and waffle charts
+        over <a href='https://recharts.org'>recharts</a> (a haze-ui
+        dependency, bundled only when you render charts — the waffle is pure
+        CSS), with every color, font and grid line resolved from haze
+        tokens. Series colors cycle through the semantic palette; pass your
+        own as any CSS color string.
       </p>
 
       <div className={section}>
@@ -135,6 +136,124 @@ export default function ChartDemo() {
             ]}
           />
         </div>
+      </div>
+
+      <div className={section}>
+        <h2>Annotations</h2>
+        <p className={row}>
+          Cartesian charts accept recharts reference annotations —{' '}
+          <code>referenceLines</code> (averages, targets),{' '}
+          <code>referenceAreas</code> (band highlights) and{' '}
+          <code>referenceDots</code> (point markers). Each entry's props
+          spread through to recharts verbatim, so you control stroke, fill
+          and label. Ignored by the polar chart types.
+        </p>
+        <div className={row}>
+          <Chart
+            type='line'
+            data={revenue}
+            xKey='month'
+            series={[{ key: 'saas', label: 'SaaS' }]}
+            referenceLines={[
+              {
+                y: 39,
+                stroke: 'var(--haze-color-danger)',
+                strokeDasharray: '4 4',
+                label: 'Avg 39',
+              },
+            ]}
+            referenceAreas={[
+              {
+                x1: 'Apr',
+                x2: 'May',
+                fill: 'var(--haze-color-primary)',
+                fillOpacity: 0.08,
+                label: 'Migration',
+              },
+            ]}
+          />
+        </div>
+        <pre className={codeBlock}>
+          {`<Chart
+  type='line'
+  data={revenue}
+  xKey='month'
+  series={[{ key: 'saas', label: 'SaaS' }]}
+  referenceLines={[{ y: 39, stroke: 'var(--haze-color-danger)', strokeDasharray: '4 4', label: 'Avg 39' }]}
+  referenceAreas={[{ x1: 'Apr', x2: 'May', fill: 'var(--haze-color-primary)', fillOpacity: 0.08 }]}
+/>`}
+        </pre>
+      </div>
+
+      <div className={section}>
+        <h2>Gauge</h2>
+        <p className={row}>
+          <code>{"type='gauge'"}</code> reads a single <code>value</code>{' '}
+          against <code>max</code> (default 100) on a semicircle arc with a
+          center readout — <code>valueFormat</code> formats the number,{' '}
+          <code>label</code> captions it. <code>thresholds</code> paint
+          colored arc bands (ascending bounds) and the value arc takes the
+          color of the band it falls in.
+        </p>
+        <div className={row}>
+          <Chart
+            type='gauge'
+            value={72}
+            max={100}
+            label='of quota'
+            valueFormat={(v) => `${v}%`}
+            thresholds={[
+              { value: 60, color: 'var(--haze-color-success)' },
+              { value: 85, color: 'var(--haze-color-warning)' },
+            ]}
+            height={220}
+          />
+        </div>
+        <pre className={codeBlock}>
+          {`<Chart
+  type='gauge'
+  value={72}
+  label='of quota'
+  valueFormat={(v) => \`\${v}%\`}
+  thresholds={[
+    { value: 60, color: 'var(--haze-color-success)' },
+    { value: 85, color: 'var(--haze-color-warning)' },
+  ]}
+/>`}
+        </pre>
+      </div>
+
+      <div className={section}>
+        <h2>Waffle</h2>
+        <p className={row}>
+          <code>{"type='waffle'"}</code> renders series shares as a square
+          CSS grid — one square per value unit, padded with muted squares up
+          to whole rows of <code>columns</code> (default 10), with a
+          built-in legend. No recharts involved.
+        </p>
+        <div className={row}>
+          <Chart
+            type='waffle'
+            columns={10}
+            series={[
+              { name: 'Shipped', value: 64, color: 'var(--haze-color-success)' },
+              { name: 'In review', value: 23, color: 'var(--haze-color-info)' },
+              { name: 'Backlog', value: 13, color: 'var(--haze-color-warning)' },
+            ]}
+            height={260}
+          />
+        </div>
+        <pre className={codeBlock}>
+          {`<Chart
+  type='waffle'
+  columns={10}
+  series={[
+    { name: 'Shipped', value: 64, color: 'var(--haze-color-success)' },
+    { name: 'In review', value: 23, color: 'var(--haze-color-info)' },
+    { name: 'Backlog', value: 13, color: 'var(--haze-color-warning)' },
+  ]}
+/>`}
+        </pre>
       </div>
 
       <div className={section}>

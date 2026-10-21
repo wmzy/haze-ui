@@ -108,6 +108,13 @@ const koKR: HazeStrings = {
     alpha: '불투명도',
     presetsLabel: '사전 설정 색상',
     recentColors: '최근 사용한 색상',
+    solid: '단색',
+    gradient: '그라데이션',
+    angle: '각도',
+    stopColor: '중지점 색상',
+    stopPosition: '중지점 위치',
+    addStop: '중지점 추가',
+    removeStop: '중지점 제거',
   },
   confirmDialog: {
     confirm: '확인',

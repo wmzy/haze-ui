@@ -22,6 +22,11 @@ import {
   PolarRadiusAxis,
   Radar,
   RadarChart,
+  RadialBar,
+  RadialBarChart,
+  ReferenceArea,
+  ReferenceDot,
+  ReferenceLine,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
@@ -37,6 +42,7 @@ import {
   pieRingRadii,
   resolveChartSeries,
   seriesElement,
+  waffleCellColors,
 } from './chart-elements';
 
 type SalesDatum = { month: string; sales: number; costs: number };
@@ -99,6 +105,10 @@ vi.mock('recharts', async () => {
     PieChart: frame('pie-chart'),
     RadarChart: frame('radar-chart'),
     ScatterChart: frame('scatter-chart'),
+    RadialBarChart: frame('radial-bar-chart'),
+    ReferenceLine: frame('reference-line'),
+    ReferenceArea: frame('reference-area'),
+    ReferenceDot: frame('reference-dot'),
     XAxis: frame('x-axis'),
     YAxis: frame('y-axis'),
     CartesianGrid: frame('grid'),
@@ -123,6 +133,18 @@ vi.mock('recharts', async () => {
     Bar: plotted('bar'),
     Radar: plotted('radar'),
     Scatter: plotted('scatter'),
+    /* Gauge arcs: one RadialBar per concern (track / threshold band /
+     * value), each reading its own dataKey field off the chart's single
+     * datum — expose key/fill/opacity so the arc stack stays observable. */
+    RadialBar: vi.fn((props: Record<string, unknown>) =>
+      createElement('div', {
+        'data-radial-bar': '',
+        'data-key': props.dataKey as string,
+        'data-fill': String(props.fill),
+        'data-fill-opacity':
+          typeof props.fillOpacity === 'number' ? String(props.fillOpacity) : '',
+      })
+    ),
     Pie: vi.fn((props: Record<string, unknown>) =>
       createElement(
         'div',
@@ -305,6 +327,65 @@ describe('pieRingRadii', () => {
       innerRadius: '55%',
       outerRadius: '80%',
     });
+  });
+});
+
+describe('waffleCellColors', () => {
+  it('colors one square per unit and pads whole rows with the muted track color', () => {
+    // 7 + 3 = 10: exactly one row of 10, no remainder
+    expect(
+      waffleCellColors(
+        [
+          { name: 'a', value: 7, color: 'var(--haze-color-success)' },
+          { name: 'b', value: 3, color: 'var(--haze-color-warning)' },
+        ],
+        10
+      )
+    ).toEqual([
+      ...Array.from({ length: 7 }, () => 'var(--haze-color-success)'),
+      ...Array.from({ length: 3 }, () => 'var(--haze-color-warning)'),
+    ]);
+
+    // 7 + 8 = 15: rounded up to two rows of 10, 5 muted remainder squares
+    expect(
+      waffleCellColors(
+        [
+          { name: 'a', value: 7, color: 'var(--haze-color-success)' },
+          { name: 'b', value: 8, color: 'var(--haze-color-warning)' },
+        ],
+        10
+      )
+    ).toEqual([
+      ...Array.from({ length: 7 }, () => 'var(--haze-color-success)'),
+      ...Array.from({ length: 8 }, () => 'var(--haze-color-warning)'),
+      ...Array.from({ length: 5 }, () => 'var(--haze-color-bg-muted)'),
+    ]);
+  });
+
+  it('cycles the semantic tokens per series when color is omitted', () => {
+    expect(
+      waffleCellColors(
+        [
+          { name: 'a', value: 1 },
+          { name: 'b', value: 1 },
+          { name: 'c', value: 1 },
+        ],
+        10
+      ).slice(0, 3)
+    ).toEqual([
+      'var(--haze-color-primary)',
+      'var(--haze-color-info)',
+      'var(--haze-color-success)',
+    ]);
+  });
+
+  it('never renders fewer than one row and clamps negative values', () => {
+    expect(waffleCellColors([], 10)).toEqual(
+      Array(10).fill('var(--haze-color-bg-muted)')
+    );
+    expect(
+      waffleCellColors([{ name: 'a', value: -5, color: 'c' }], 4)
+    ).toEqual(Array(4).fill('var(--haze-color-bg-muted)'));
   });
 });
 
@@ -1095,6 +1176,296 @@ describe('Chart', () => {
     expect(screen.queryByText('No data')).not.toBeInTheDocument();
   });
 
+  it('renders reference lines, areas and dots inside cartesian charts', () => {
+    const { container } = render(
+      <Chart
+        type='line'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        referenceLines={[
+          {
+            y: 12,
+            stroke: 'var(--haze-color-danger)',
+            strokeDasharray: '4 4',
+            label: 'Avg',
+          },
+        ]}
+        referenceAreas={[
+          {
+            x1: 'Feb',
+            x2: 'Mar',
+            fill: 'var(--haze-color-primary)',
+            fillOpacity: 0.08,
+          },
+        ]}
+        referenceDots={[{ x: 'Feb', y: 18, r: 4 }]}
+      />
+    );
+    // each annotation reaches recharts verbatim — consumers own
+    // stroke/fill/label styling
+    expect(ReferenceLine).toHaveBeenCalledWith(
+      expect.objectContaining({
+        y: 12,
+        stroke: 'var(--haze-color-danger)',
+        label: 'Avg',
+      }),
+      undefined
+    );
+    expect(ReferenceArea).toHaveBeenCalledWith(
+      expect.objectContaining({ x1: 'Feb', x2: 'Mar' }),
+      undefined
+    );
+    expect(ReferenceDot).toHaveBeenCalledWith(
+      expect.objectContaining({ x: 'Feb', y: 18, r: 4 }),
+      undefined
+    );
+    // and mounts inside the cartesian container, under the series
+    expect(
+      container.querySelector('[data-line-chart] [data-reference-line]')
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-line-chart] [data-reference-area]')
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-line-chart] [data-reference-dot]')
+    ).toBeInTheDocument();
+  });
+
+  it('ignores annotations in polar charts', () => {
+    render(
+      <Chart
+        type='pie'
+        data={DATA}
+        series={[{ key: 'sales' }]}
+        xKey='month'
+        referenceLines={[{ y: 12 }]}
+        referenceAreas={[{ x1: 'Jan', x2: 'Feb' }]}
+        referenceDots={[{ x: 'Jan', y: 12 }]}
+      />
+    );
+    expect(ReferenceLine).not.toHaveBeenCalled();
+    expect(ReferenceArea).not.toHaveBeenCalled();
+    expect(ReferenceDot).not.toHaveBeenCalled();
+  });
+
+  it('renders a gauge as a semicircle RadialBarChart with track, value arc and center readout', () => {
+    const { container } = render(
+      <Chart
+        type='gauge'
+        value={72}
+        max={100}
+        label='of quota'
+        valueFormat={(v) => `${v}%`}
+      />
+    );
+    expect(RadialBarChart).toHaveBeenCalledWith(
+      expect.objectContaining({ startAngle: 180, endAngle: 0 }),
+      undefined
+    );
+    expect(PolarAngleAxis).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'number', domain: [0, 100] }),
+      undefined
+    );
+    // one shared datum: every arc reads its own [from, to] tuple field
+    const chartData = vi.mocked(RadialBarChart).mock.calls[0]?.[0] as {
+      data: Record<string, [number, number]>[];
+    };
+    expect(chartData.data[0]?.track).toEqual([0, 100]);
+    expect(chartData.data[0]?.value).toEqual([0, 72]);
+    // two arcs: the muted full-domain track, then the value arc on top
+    const bars = container.querySelectorAll('[data-radial-bar]');
+    expect(bars).toHaveLength(2);
+    expect(bars[0]).toHaveAttribute('data-key', 'track');
+    expect(bars[0]).toHaveAttribute('data-fill', 'var(--haze-color-bg-muted)');
+    expect(bars[1]).toHaveAttribute('data-key', 'value');
+    expect(bars[1]).toHaveAttribute('data-fill', 'var(--haze-color-primary)');
+    // the svg-level a11y contract: the graphic is a named role='img'
+    expect(
+      container.querySelector("[data-slot='gauge-value']")
+    ).toHaveTextContent('72%');
+    expect(
+      container.querySelector("[data-slot='gauge-label']")
+    ).toHaveTextContent('of quota');
+  });
+
+  it('renders gauge threshold segments and colors the value arc by band', () => {
+    render(
+      <Chart
+        type='gauge'
+        value={72}
+        thresholds={[
+          { value: 60, color: 'var(--haze-color-success)' },
+          { value: 85, color: 'var(--haze-color-warning)' },
+        ]}
+      />
+    );
+    // arc stack in paint order: track, the two bands, then the value arc
+    // in the color of the 60–85 band the value falls in
+    expect(
+      vi.mocked(RadialBar).mock.calls.map(
+        (call) =>
+          call[0] as {
+            dataKey: string;
+            fill: string;
+            fillOpacity?: number;
+          }
+      )
+    ).toEqual([
+      {
+        dataKey: 'track',
+        fill: 'var(--haze-color-bg-muted)',
+        isAnimationActive: false,
+      },
+      {
+        dataKey: 'segment-0',
+        fill: 'var(--haze-color-success)',
+        fillOpacity: 0.35,
+        isAnimationActive: false,
+      },
+      {
+        dataKey: 'segment-1',
+        fill: 'var(--haze-color-warning)',
+        fillOpacity: 0.35,
+        isAnimationActive: false,
+      },
+      {
+        dataKey: 'value',
+        fill: 'var(--haze-color-warning)',
+        cornerRadius: 999,
+      },
+    ]);
+    // bands split the domain at the threshold bounds
+    const chartData = vi.mocked(RadialBarChart).mock.calls[0]?.[0] as {
+      data: Record<string, [number, number]>[];
+    };
+    expect(chartData.data[0]?.['segment-0']).toEqual([0, 60]);
+    expect(chartData.data[0]?.['segment-1']).toEqual([60, 85]);
+  });
+
+  it('clamps the gauge value arc into [0, max]', () => {
+    render(<Chart type='gauge' value={150} max={100} />);
+    const chartData = vi.mocked(RadialBarChart).mock.calls[0]?.[0] as {
+      data: Record<string, [number, number]>[];
+    };
+    expect(chartData.data[0]?.value).toEqual([0, 100]);
+  });
+
+  it('labels the gauge graphic and tabulates value and max for screen readers', () => {
+    render(<Chart type='gauge' value={72} />);
+    expect(screen.getByRole('img', { name: 'Gauge' })).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(table.querySelector('caption')).toHaveTextContent('Gauge');
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((cell) => cell.textContent)
+    ).toEqual(['value', 'max']);
+    expect(
+      within(table)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent)
+    ).toEqual(['72', '100']);
+  });
+
+  it('renders a waffle as a square grid with one cell per unit and a legend', () => {
+    const { container } = render(
+      <Chart
+        type='waffle'
+        series={[
+          { name: 'Shipped', value: 7, color: 'var(--haze-color-success)' },
+          { name: 'Pending', value: 3, color: 'var(--haze-color-warning)' },
+        ]}
+      />
+    );
+    // 7 + 3 = 10 units = one full row of the default 10 columns
+    const cells = container.querySelectorAll("[data-slot='waffle-cell']");
+    expect(cells).toHaveLength(10);
+    expect(cells[0]).toHaveStyle({
+      background: 'var(--haze-color-success)',
+    });
+    expect(cells[7]).toHaveStyle({ background: 'var(--haze-color-warning)' });
+    // built-in legend: one item per series with its swatch color
+    const legendItems = container.querySelectorAll(
+      "[data-slot='waffle-legend-item']"
+    );
+    expect(legendItems).toHaveLength(2);
+    expect(legendItems[0]).toHaveTextContent('Shipped');
+    expect(legendItems[1]).toHaveTextContent('Pending');
+    expect(
+      container.querySelector("[data-slot='waffle-legend-swatch']")
+    ).toHaveStyle({ background: 'var(--haze-color-success)' });
+    // no recharts involved in the waffle branch
+    expect(ResponsiveContainer).not.toHaveBeenCalled();
+  });
+
+  it('pads the waffle grid up to whole rows with muted remainder cells', () => {
+    const { container } = render(
+      <Chart
+        type='waffle'
+        columns={10}
+        series={[
+          { name: 'Done', value: 7 },
+          { name: 'Left', value: 8 },
+        ]}
+      />
+    );
+    // 15 units round up to two rows: 15 colored + 5 muted cells
+    const cells = container.querySelectorAll("[data-slot='waffle-cell']");
+    expect(cells).toHaveLength(20);
+    expect(cells[14]).toHaveStyle({ background: 'var(--haze-color-info)' });
+    expect(cells[15]).toHaveStyle({
+      background: 'var(--haze-color-bg-muted)',
+    });
+    expect(cells[19]).toHaveStyle({
+      background: 'var(--haze-color-bg-muted)',
+    });
+    // the grid carries its column count for the CSS grid template
+    expect(
+      container.querySelector("[data-slot='waffle-grid']")
+    ).toHaveStyle({ '--waffle-columns': '10' });
+  });
+
+  it('labels the waffle graphic and tabulates the series for screen readers', () => {
+    render(
+      <Chart
+        type='waffle'
+        series={[
+          { name: 'Shipped', value: 7 },
+          { name: 'Pending', value: 3 },
+        ]}
+      />
+    );
+    expect(
+      screen.getByRole('img', { name: 'Waffle chart: Shipped, Pending' })
+    ).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(table.querySelector('caption')).toHaveTextContent(
+      'Waffle chart: Shipped, Pending'
+    );
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((cell) => cell.textContent)
+    ).toEqual(['series', 'value']);
+    expect(
+      within(table)
+        .getAllByRole('rowheader')
+        .map((cell) => cell.textContent)
+    ).toEqual(['Shipped', 'Pending']);
+    expect(
+      within(table)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent)
+    ).toEqual(['7', '3']);
+  });
+
+  it('renders the empty state for a waffle with no series', () => {
+    render(<Chart type='waffle' series={[]} />);
+    expect(screen.getByText('No data')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(
@@ -1138,6 +1509,24 @@ describe('Chart', () => {
         ]}
         xKey='month'
         showLegend
+      />
+    );
+    render(
+      <Chart
+        type='gauge'
+        value={72}
+        max={100}
+        label='of quota'
+        thresholds={[{ value: 85, color: 'var(--haze-color-warning)' }]}
+      />
+    );
+    render(
+      <Chart
+        type='waffle'
+        series={[
+          { name: 'Shipped', value: 7, color: 'var(--haze-color-success)' },
+          { name: 'Pending', value: 3, color: 'var(--haze-color-warning)' },
+        ]}
       />
     );
     const results = await axe(document.body, {

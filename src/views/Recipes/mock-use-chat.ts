@@ -53,6 +53,50 @@ const CSS_TOOL_OUTPUT = {
   loadingModes: 2,
 } as const;
 
+// Agentic script fixtures — the part shapes the adapter maps onto
+// Plan / Queue / InlineCitation, played by the CSS walkthrough below.
+
+const CSS_PLAN_STEPS = [
+  { id: 'plan-find-docs', label: 'Locate the CSS docs' },
+  { id: 'plan-check-modes', label: 'Check both loading modes' },
+  { id: 'plan-summarize', label: 'Summarize the manifest' },
+] as const;
+
+type PlanPhase = 'draft' | 'active' | 'done';
+type PlanStepStatus = 'pending' | 'in_progress' | 'completed';
+
+/** `data-plan` payload in the ag-ui plan shape — steps own their status. */
+const planData = (state: PlanPhase, statuses: PlanStepStatus[]) => ({
+  state,
+  steps: CSS_PLAN_STEPS.map((step, i) => ({ ...step, status: statuses[i] ?? 'pending' })),
+});
+const planPart = (state: PlanPhase, statuses: PlanStepStatus[]): UIPartLike => ({
+  type: 'data-plan',
+  id: 'plan-css',
+  data: planData(state, statuses),
+});
+
+/** `data-queue` payload — an outbox the run is delivering. */
+const queueData = (
+  emit: 'sending' | 'failed',
+  cdn: 'sending' | 'queued'
+) => ({
+  items: [
+    {
+      id: 'q-emit',
+      title: 'Emit loading-modes.md',
+      description: emit === 'failed' ? '403 — docs storage quota exceeded' : undefined,
+      status: emit,
+    },
+    { id: 'q-cdn', title: 'Refresh the CDN manifest', status: cdn },
+  ],
+});
+const queuePart = (emit: 'sending' | 'failed', cdn: 'sending' | 'queued'): UIPartLike => ({
+  type: 'data-queue',
+  id: 'queue-css',
+  data: queueData(emit, cdn),
+});
+
 const asParts = (value: unknown): UIPartLike[] =>
   Array.isArray(value) ? (value as UIPartLike[]) : [];
 
@@ -66,10 +110,11 @@ const patchPart =
 
 /**
  * A `useChat`-shaped mock: `sendMessage` appends the user turn, plays a
- * short scripted assistant reply (reasoning → tool → text → source) with
- * `status` walking `submitted → streaming → ready`, and `stop` finalizes
- * the run the way the SDK does — open parts flip to `done`. Ask for an
- * "error" to see the failure path.
+ * short scripted assistant reply (reasoning → plan → tool → text →
+ * sources → queue, on the CSS walkthrough) with `status` walking
+ * `submitted → streaming → ready`, and `stop` finalizes the run the way
+ * the SDK does — open parts flip to `done`. Ask for an "error" to see
+ * the failure path.
  */
 export function useMockChat(): UseChatLike {
   const [messages, setMessages] = useState<UIMessageLike[]>([WELCOME]);
@@ -143,10 +188,20 @@ export function useMockChat(): UseChatLike {
         state: 'streaming',
       });
       atMs += 900;
-      at(atMs, patchPart(reasoningIndex, { state: 'done' }));
+      at(atMs, patchPart(reasoningIndex, {
+        state: 'done',
+        // ai-sdk v5 shape: thinking time lands in providerMetadata (ms).
+        providerMetadata: { anthropic: { duration: 1240 } },
+      }));
 
       if (isCss) {
+        // Plan: drafted, then executed step by step alongside the tool.
         atMs += 100;
+        const planIndex = push(atMs, planPart('draft', ['pending', 'pending', 'pending']));
+        atMs += 200;
+        at(atMs, patchPart(planIndex, { data: planData('active', ['in_progress', 'pending', 'pending']) }));
+
+        atMs += 300;
         const toolIndex = push(atMs, {
           type: 'tool-searchDocs',
           toolCallId: uid('call'),
@@ -159,7 +214,14 @@ export function useMockChat(): UseChatLike {
           input: CSS_TOOL_INPUT(question),
           output: CSS_TOOL_OUTPUT,
         }));
+
         atMs += 200;
+        at(atMs, patchPart(planIndex, { data: planData('active', ['completed', 'in_progress', 'pending']) }));
+        atMs += 600;
+        at(atMs, patchPart(planIndex, { data: planData('active', ['completed', 'completed', 'in_progress']) }));
+        atMs += 600;
+        at(atMs, patchPart(planIndex, { data: planData('done', ['completed', 'completed', 'completed']) }));
+        atMs += 100;
       } else {
         atMs += 200;
       }
@@ -170,12 +232,34 @@ export function useMockChat(): UseChatLike {
       const revealEnd = atMs + answer.length * REVEAL_MS_PER_CHAR + 500;
       at(revealEnd, patchPart(textIndex, { state: 'done' }));
       if (isCss) {
+        // Two sources → the numbered citation strip.
         push(revealEnd + 60, {
           type: 'source',
-          source: { sourceType: 'url', url: 'https://wmzy.github.io/haze-ui/', title: 'haze-ui docs' },
+          source: {
+            sourceType: 'url',
+            url: 'https://wmzy.github.io/haze-ui/',
+            title: 'haze-ui docs — CSS loading modes',
+            snippet:
+              'Import per-component subpaths (haze-ui/css/button) or the aggregate styles.css; a manifest maps every export to its CSS file.',
+          },
         });
+        push(revealEnd + 120, {
+          type: 'source',
+          source: {
+            sourceType: 'url',
+            url: 'https://github.com/wmzy/haze-ui/blob/main/scripts/split-css.mjs',
+            title: 'scripts/split-css.mjs',
+            snippet:
+              'Groups the per-module CSS output into per-component css/ subpaths plus the aggregate stylesheet.',
+          },
+        });
+        // Delivery queue — the first item fails, the second stays queued.
+        const queueIndex = push(revealEnd + 180, queuePart('sending', 'queued'));
+        at(revealEnd + 980, patchPart(queueIndex, { data: queueData('failed', 'queued') }));
+        timers.current.push(setTimeout(() => setStatus('ready'), revealEnd + 1080));
+      } else {
+        timers.current.push(setTimeout(() => setStatus('ready'), revealEnd));
       }
-      timers.current.push(setTimeout(() => setStatus('ready'), revealEnd + (isCss ? 120 : 0)));
     },
     [clearTimers]
   );

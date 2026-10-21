@@ -1,4 +1,12 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { CSSProperties, ReactElement, ReactNode } from 'react';
+
+import type {
+  ReferenceAreaProps,
+  ReferenceDotProps,
+  ReferenceLineProps,
+} from 'recharts';
+
+import { css } from '@linaria/core';
 
 import {
   Area,
@@ -16,6 +24,11 @@ import {
   PolarRadiusAxis,
   Radar,
   RadarChart,
+  RadialBar,
+  RadialBarChart,
+  ReferenceArea,
+  ReferenceDot,
+  ReferenceLine,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
@@ -68,9 +81,40 @@ export type SeriesChartType = CartesianChartType | 'radar' | 'scatter';
 
 /** Supported chart shapes — the cartesian families plus `pie` (each datum
  * is one sector named by the chart's `xKey`), `radar` (each datum is one
- * spoke named by `xKey`) and `scatter` (numeric `xKey` vs each series
- * `key`). */
-export type ChartType = CartesianChartType | 'radar' | 'scatter' | 'pie';
+ * spoke named by `xKey`), `scatter` (numeric `xKey` vs each series
+ * `key`), `gauge` (a semicircle RadialBar reading one `value` against
+ * `max`) and `waffle` (a CSS-native square grid, no recharts). */
+export type ChartType =
+  | CartesianChartType
+  | 'radar'
+  | 'scatter'
+  | 'pie'
+  | 'gauge'
+  | 'waffle';
+
+/** Chart shapes dispatched through `chartElement`/`chartTree` — everything
+ * except `gauge` (which builds its own RadialBarChart tree via
+ * `gaugeTree`) and `waffle` (pure CSS via `waffleTree`). */
+export type RechartsChartType = Exclude<ChartType, 'gauge' | 'waffle'>;
+
+/** One colored band on a gauge arc: the band spans from the previous
+ * threshold (or 0) up to `value`, painted in `color`. */
+export type ChartGaugeThreshold = {
+  /** Upper bound of the band, in the same units as the gauge `value`. */
+  value: number;
+  /** The band's color — any CSS color string (tokens welcome). */
+  color: string;
+};
+
+/** One waffle series: `value` squares of the grid are painted in `color`
+ * (cycling the semantic tokens when omitted), `name` feeds the legend. */
+export type ChartWaffleSeries = {
+  name: string;
+  /** Square count for this series — one grid square per unit. */
+  value: number;
+  /** Any CSS color string (token reference or literal). */
+  color?: string;
+};
 
 /** One hovered entry as handed to Chart's `renderTooltip` slot. */
 export type ChartTooltipEntry<T = unknown> = {
@@ -258,7 +302,7 @@ export function pieElement(options: {
  * → ScatterChart) plotting `data` with the given series children; cartesian
  * containers carry `layout`. */
 export function chartElement(
-  type: ChartType,
+  type: RechartsChartType,
   data: readonly unknown[],
   children: ReactNode,
   layout: 'horizontal' | 'vertical' = 'horizontal'
@@ -328,7 +372,7 @@ export function buildTooltipContent(
 /** The full token-styled chart tree Chart renders — kept beside the pure
  * helpers so the component module stays a single component export. */
 export function chartTree(options: {
-  type: ChartType;
+  type: RechartsChartType;
   data: readonly unknown[];
   xKey: string;
   showGrid: boolean;
@@ -338,6 +382,9 @@ export function chartTree(options: {
   layout?: 'horizontal' | 'vertical';
   innerRadius?: number | string;
   renderTooltip?: (payload: ChartTooltipPayload) => ReactNode;
+  referenceLines?: readonly ReferenceLineProps[];
+  referenceAreas?: readonly ReferenceAreaProps[];
+  referenceDots?: readonly ReferenceDotProps[];
 }): ReactElement {
   const {
     type,
@@ -350,11 +397,31 @@ export function chartTree(options: {
     layout = 'horizontal',
     innerRadius = 0,
     renderTooltip,
+    referenceLines,
+    referenceAreas,
+    referenceDots,
   } = options;
 
   const tooltipContent = renderTooltip
     ? buildTooltipContent(renderTooltip)
     : undefined;
+
+  /* recharts reference annotations, spread through verbatim so consumers
+   * control stroke/fill/label — rendered before the series so plots draw
+   * on top. Polar branches below simply never mount them. */
+  const annotations = (
+    <>
+      {referenceLines?.map((line, index) => (
+        <ReferenceLine key={index} {...line} />
+      ))}
+      {referenceAreas?.map((area, index) => (
+        <ReferenceArea key={index} {...area} />
+      ))}
+      {referenceDots?.map((dot, index) => (
+        <ReferenceDot key={index} {...dot} />
+      ))}
+    </>
+  );
 
   /* Pie is polar: no cartesian axes or grid, cursor left to recharts'
    * default sector outline, and each series one concentric ring. */
@@ -445,6 +512,7 @@ export function chartTree(options: {
               />
             )}
             {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+            {annotations}
             {/* Same as radar: `type`/`stackId` are cartesian-only — scatter
              * renders one point set per series regardless. */}
             {series.map((entry, index) =>
@@ -492,6 +560,7 @@ export function chartTree(options: {
             />
           )}
           {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+          {annotations}
           {/* Composed charts: a per-series `type` overrides that series'
            * element shape (bar series inside a line chart, a line over an
            * area chart) while the chart-level `type` picks the container;
@@ -505,5 +574,305 @@ export function chartTree(options: {
         layout
       )}
     </ResponsiveContainer>
+  );
+}
+
+/* ─── Gauge ─────────────────────────────────────────────────────────── */
+
+/** Positioning context for the arc and its center readout. */
+const gaugeRoot = css`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
+
+/* The readout sits inside the semicircle's bowl: recharts centers the arc
+ * at the svg's midpoint, so the lower half of the box is empty by
+ * construction — anchoring to the inline/block end tucks the numbers into
+ * it without covering the arc. */
+const gaugeReadout = css`
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--haze-space-1);
+  font-family: var(--haze-font-sans);
+`;
+
+const gaugeValueStyle = css`
+  font-size: var(--haze-text-2xl);
+  font-weight: var(--haze-weight-semibold);
+  line-height: 1;
+  color: var(--haze-color-text);
+`;
+
+const gaugeCaptionStyle = css`
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text-secondary);
+`;
+
+/** The muted surface shared by the gauge's track arc and the waffle's
+ * remainder squares — the same muted background Progress uses for its
+ * track. */
+export const CHART_MUTED_COLOR = 'var(--haze-color-bg-muted)';
+
+/** Splits the gauge's [0, max] domain into one arc segment per threshold
+ * (each spanning from the previous threshold up to its own bound),
+ * clamped into the domain. */
+function gaugeSegments(
+  max: number,
+  thresholds: readonly ChartGaugeThreshold[]
+): { from: number; to: number; color: string }[] {
+  const segments: { from: number; to: number; color: string }[] = [];
+  let from = 0;
+  for (const threshold of thresholds) {
+    const to = Math.min(Math.max(threshold.value, from), max);
+    if (to > from) {
+      segments.push({ from, to, color: threshold.color });
+    }
+    from = to;
+  }
+  return segments;
+}
+
+/** The value arc's color: the first threshold whose bound the value has
+ * not passed (thresholds expected ascending); a value beyond the last
+ * bound falls back to the primary token. */
+function gaugeValueColor(
+  value: number,
+  thresholds: readonly ChartGaugeThreshold[]
+): string | undefined {
+  for (const threshold of thresholds) {
+    if (value <= threshold.value) {
+      return threshold.color;
+    }
+  }
+  return undefined;
+}
+
+/** The semicircle gauge tree — a RadialBarChart whose PolarAngleAxis maps
+ * [0, max] onto the 180°–0° top half. RadialBar items share the chart's
+ * single datum but each reads its own `dataKey` field holding a
+ * `[from, to]` tuple that the angle axis maps onto an arc span — with one
+ * datum the radius band is never subdivided, so every arc paints the same
+ * ring: the muted track first, one reduced-opacity arc per threshold
+ * band, and the opaque value arc last (topmost). The center readout
+ * overlays the bowl's empty lower half. */
+export function gaugeTree(options: {
+  value: number;
+  max: number;
+  thresholds?: readonly ChartGaugeThreshold[];
+  formattedValue: string;
+  label?: ReactNode;
+}): ReactElement {
+  const {
+    value,
+    max,
+    thresholds = [],
+    formattedValue,
+    label,
+  } = options;
+  const clamped = Math.min(Math.max(value, 0), max);
+  const segments = gaugeSegments(max, thresholds);
+  const arcColor =
+    gaugeValueColor(clamped, thresholds) ?? 'var(--haze-color-primary)';
+
+  const segmentFields = segments.map((segment, index) => ({
+    key: `segment-${index}`,
+    ...segment,
+  }));
+  const datum: Record<string, [number, number]> = {
+    track: [0, max],
+    value: [0, clamped],
+  };
+  for (const field of segmentFields) {
+    datum[field.key] = [field.from, field.to];
+  }
+
+  return (
+    <div data-slot='gauge' x-class={[gaugeRoot]}>
+      <ResponsiveContainer width='100%' height='100%'>
+        <RadialBarChart
+          data={[datum]}
+          innerRadius='60%'
+          outerRadius='100%'
+          startAngle={180}
+          endAngle={0}
+        >
+          <PolarAngleAxis type='number' domain={[0, max]} tick={false} />
+          {/* Track first (bottom of the z order): the full-domain arc in
+           * the muted surface token. */}
+          <RadialBar
+            dataKey='track'
+            fill={CHART_MUTED_COLOR}
+            isAnimationActive={false}
+          />
+          {segmentFields.map((field) => (
+            <RadialBar
+              key={field.key}
+              dataKey={field.key}
+              fill={field.color}
+              fillOpacity={0.35}
+              isAnimationActive={false}
+            />
+          ))}
+          {/* Value arc last so it paints over its band at full opacity. */}
+          <RadialBar dataKey='value' fill={arcColor} cornerRadius={999} />
+        </RadialBarChart>
+      </ResponsiveContainer>
+      <div data-slot='gauge-readout' x-class={[gaugeReadout]}>
+        <span data-slot='gauge-value' x-class={[gaugeValueStyle]}>
+          {formattedValue}
+        </span>
+        {label !== undefined && label !== null && label !== false ? (
+          <span data-slot='gauge-label' x-class={[gaugeCaptionStyle]}>
+            {label}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Waffle ────────────────────────────────────────────────────────── */
+
+/* The frame turns its box into a size container so the grid can size
+ * itself against the chart height (100cqh) while never overflowing the
+ * width — cells stay square in both dimensions' favor. */
+const waffleFrame = css`
+  container-type: size;
+  flex: 1 1 auto;
+  min-height: 0;
+`;
+
+const waffleGrid = css`
+  display: grid;
+  grid-template-columns: repeat(var(--waffle-columns), minmax(0, 1fr));
+  gap: var(--haze-space-1);
+  width: min(100%, calc(100cqh * var(--waffle-ratio)));
+  margin-inline: auto;
+`;
+
+const waffleCell = css`
+  aspect-ratio: 1;
+  border-radius: var(--haze-radius-sm);
+`;
+
+const waffleLegendStyle = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--haze-space-2) var(--haze-space-4);
+  margin-block-start: var(--haze-space-3);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text-secondary);
+`;
+
+const waffleLegendItemStyle = css`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--haze-space-2);
+`;
+
+const waffleSwatchStyle = css`
+  inline-size: var(--haze-space-3);
+  block-size: var(--haze-space-3);
+  border-radius: var(--haze-radius-sm);
+  flex-shrink: 0;
+`;
+
+const waffleRoot = css`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+`;
+
+/** The color of every grid square in draw order: one square per value unit
+ * (series colors cycle the semantic tokens when omitted), then muted
+ * remainder squares padding the grid up to a whole number of `columns`
+ * rows. Colored squares are truncated should rounding ever overshoot the
+ * row padding, keeping the grid at `ceil(total/columns) × columns`. */
+export function waffleCellColors(
+  series: readonly ChartWaffleSeries[],
+  columns = 10
+): string[] {
+  const safeColumns = Math.max(1, Math.floor(columns));
+  const total = series.reduce(
+    (sum, entry) => sum + Math.max(entry.value, 0),
+    0
+  );
+  const rows = Math.max(1, Math.ceil(total / safeColumns));
+  const cells: string[] = [];
+  series.forEach((entry, index) => {
+    const color = entry.color ?? cycleColor(index);
+    const count = Math.max(0, Math.round(entry.value));
+    for (let i = 0; i < count; i += 1) {
+      cells.push(color);
+    }
+  });
+  const capacity = rows * safeColumns;
+  const colored = cells.slice(0, capacity);
+  while (colored.length < capacity) {
+    colored.push(CHART_MUTED_COLOR);
+  }
+  return colored;
+}
+
+/** The CSS-native waffle tree — a square-grid alternative to the pie for
+ * part-to-whole shares, with one square per value unit, muted padding up
+ * to whole rows, and a built-in legend. No recharts involved, so the
+ * module stays out of gauge/waffle-only bundles' critical path. */
+export function waffleTree(options: {
+  series: readonly ChartWaffleSeries[];
+  columns?: number;
+}): ReactElement {
+  const { series, columns = 10 } = options;
+  const safeColumns = Math.max(1, Math.floor(columns));
+  const cells = waffleCellColors(series, safeColumns);
+  const rows = Math.max(1, Math.ceil(cells.length / safeColumns));
+
+  return (
+    <div data-slot='waffle' x-class={[waffleRoot]}>
+      <div data-slot='waffle-frame' x-class={[waffleFrame]}>
+        <div
+          data-slot='waffle-grid'
+          x-class={[waffleGrid]}
+          style={
+            {
+              '--waffle-columns': safeColumns,
+              '--waffle-ratio': safeColumns / rows,
+            } as CSSProperties
+          }
+        >
+          {cells.map((color, index) => (
+            <span
+              key={index}
+              data-slot='waffle-cell'
+              x-class={[waffleCell]}
+              style={{ background: color }}
+            />
+          ))}
+        </div>
+      </div>
+      <div data-slot='waffle-legend' x-class={[waffleLegendStyle]}>
+        {series.map((entry, index) => (
+          <div
+            key={entry.name}
+            data-slot='waffle-legend-item'
+            x-class={[waffleLegendItemStyle]}
+          >
+            <span
+              data-slot='waffle-legend-swatch'
+              x-class={[waffleSwatchStyle]}
+              style={{ background: entry.color ?? cycleColor(index) }}
+            />
+            <span data-slot='waffle-legend-label'>{entry.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

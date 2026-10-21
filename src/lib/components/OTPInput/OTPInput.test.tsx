@@ -92,3 +92,43 @@ describe('OTPInput ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('OTPInput native form participation', () => {
+  it('submits the joined code as one value under name', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <OTPInput name="code" value="123456" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('code')).toBe('123456');
+  });
+
+  it('submits nothing for an empty code', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <OTPInput name="code" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('code')).toBeNull();
+  });
+
+  it('renders no bridge input without name (cell count stays 6)', () => {
+    const {container} = render(<OTPInput value="123456" />);
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+    expect(container.querySelectorAll('input')).toHaveLength(6);
+  });
+
+  it('bridge input is hidden and separate from the cells', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <OTPInput name="code" value="123456" length={4} />
+      </form>
+    );
+    const bridge = container.querySelector<HTMLInputElement>(
+      "[data-slot='native-input']"
+    )!;
+    expect(bridge.type).toBe('hidden');
+    // cells + exactly one bridge
+    expect(container.querySelectorAll('input')).toHaveLength(5);
+  });
+});

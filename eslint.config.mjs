@@ -8,10 +8,13 @@ export default [
     files: ['**/*.{js,ts,jsx,tsx}'],
     rules: {
       'import-x/no-unresolved': 'off',
-      // react-hooks 7 的 React Compiler 分析规则对既有异步/DOM 驱动模式偏保守，降为 warn 渐进采用
+      // react-hooks 7 的 React Compiler 分析规则对既有异步/DOM 驱动模式偏保守，降为 warn 渐进采用。
+      // preserve-manual-memoization：Date 数组的 useMemo（Schedule 的时间网格）
+      // 被编译器判为「可变类实例逃逸」而整体跳过优化——跳过是安全行为，不阻塞。
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/refs': 'warn',
       'react-hooks/immutability': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
   {

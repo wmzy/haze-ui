@@ -989,17 +989,17 @@
           {
             "name": "data",
             "type": "T[]",
-            "required": true
+            "required": false
           },
           {
             "name": "series",
-            "type": "ChartSeries[]",
-            "required": true
+            "type": "ChartSeries[] | ChartWaffleSeries[]",
+            "required": false
           },
           {
             "name": "xKey",
             "type": "keyof T & string",
-            "required": true
+            "required": false
           },
           {
             "name": "height",
@@ -1014,6 +1014,51 @@
           {
             "name": "layout",
             "type": "'vertical' | 'horizontal'",
+            "required": false
+          },
+          {
+            "name": "referenceLines",
+            "type": "Props[]",
+            "required": false
+          },
+          {
+            "name": "referenceAreas",
+            "type": "Props[]",
+            "required": false
+          },
+          {
+            "name": "referenceDots",
+            "type": "Props[]",
+            "required": false
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "max",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "thresholds",
+            "type": "ChartGaugeThreshold[]",
+            "required": false
+          },
+          {
+            "name": "label",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "valueFormat",
+            "type": "(v: number) => string",
+            "required": false
+          },
+          {
+            "name": "columns",
+            "type": "number",
             "required": false
           },
           {
@@ -1461,12 +1506,17 @@
           },
           {
             "name": "presets",
-            "type": "string[]",
+            "type": "ColorPickerPreset[]",
             "required": false
           },
           {
             "name": "recentColors",
             "type": "string[]",
+            "required": false
+          },
+          {
+            "name": "gradient",
+            "type": "boolean",
             "required": false
           },
           {
@@ -1508,7 +1558,7 @@
           },
           {
             "name": "presets",
-            "type": "string[]",
+            "type": "ColorPickerPreset[]",
             "required": false
           },
           {
@@ -1517,7 +1567,17 @@
             "required": false
           },
           {
+            "name": "gradient",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "name",
             "type": "string",
             "required": false
           },
@@ -4294,6 +4354,48 @@
       },
       "otherTypes": {}
     },
+    "InlineCitation": {
+      "routeKey": "inline-citation",
+      "cssFamily": "inline-citation",
+      "imports": [
+        "InlineCitation"
+      ],
+      "propsTypes": {
+        "InlineCitationProps": [
+          {
+            "name": "index",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "href",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "snippet",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "InlineCompletion": {
       "routeKey": "inline-completion",
       "cssFamily": "inline-completion",
@@ -5446,6 +5548,11 @@
             "required": false
           },
           {
+            "name": "name",
+            "type": "string",
+            "required": false
+          },
+          {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
             "required": false
@@ -5595,6 +5702,61 @@
           {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "Plan": {
+      "routeKey": "plan",
+      "cssFamily": "plan",
+      "imports": [
+        "Plan",
+        "PlanItem"
+      ],
+      "propsTypes": {
+        "PlanItemProps": [
+          {
+            "name": "label",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "status",
+            "type": "PlanStatus",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "PlanProps": [
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "summary",
+            "type": "(done: number, total: number) => ReactNode",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
             "required": false
           }
         ]
@@ -5799,6 +5961,61 @@
       },
       "otherTypes": {}
     },
+    "Queue": {
+      "routeKey": "queue",
+      "cssFamily": "queue",
+      "imports": [
+        "Queue",
+        "QueueItem"
+      ],
+      "propsTypes": {
+        "QueueItemProps": [
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "status",
+            "type": "QueueStatus",
+            "required": false
+          },
+          {
+            "name": "onRemove",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "removeLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "QueueProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Radio": {
       "routeKey": "radio",
       "cssFamily": "radio",
@@ -5949,6 +6166,11 @@
             "required": false
           },
           {
+            "name": "name",
+            "type": "string",
+            "required": false
+          },
+          {
             "name": "ref",
             "type": "Ref<HTMLSpanElement>",
             "required": false
@@ -6087,6 +6309,155 @@
       },
       "otherTypes": {}
     },
+    "RichTextEditor": {
+      "routeKey": "rich-text-editor",
+      "cssFamily": "rich-text-editor",
+      "imports": [
+        "RichTextEditor"
+      ],
+      "propsTypes": {
+        "RichTextEditorProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "placeholder",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "editable",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "toolbar",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "extensions",
+            "type": "AnyExtension[]",
+            "required": false
+          },
+          {
+            "name": "editorKey",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<RichTextEditorHandle>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "Schedule": {
+      "routeKey": "schedule",
+      "cssFamily": "schedule",
+      "imports": [
+        "Schedule"
+      ],
+      "propsTypes": {
+        "ScheduleProps": [
+          {
+            "name": "events",
+            "type": "ScheduleEvent[]",
+            "required": true
+          },
+          {
+            "name": "view",
+            "type": "ControlOrValue<ScheduleView>",
+            "required": false
+          },
+          {
+            "name": "onViewChange",
+            "type": "(view: ScheduleView) => void",
+            "required": false
+          },
+          {
+            "name": "date",
+            "type": "ControlOrValue<Date>",
+            "required": false
+          },
+          {
+            "name": "onDateChange",
+            "type": "(date: Date) => void",
+            "required": false
+          },
+          {
+            "name": "slotMinutes",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "businessHours",
+            "type": "ScheduleBusinessHours",
+            "required": false
+          },
+          {
+            "name": "nowIndicator",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onEventClick",
+            "type": "(event: ScheduleEvent) => void",
+            "required": false
+          },
+          {
+            "name": "onEventChange",
+            "type": "(change: ScheduleEventChange) => void",
+            "required": false
+          },
+          {
+            "name": "onDayClick",
+            "type": "(date: Date) => void",
+            "required": false
+          },
+          {
+            "name": "todayLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "prevLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "nextLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "viewLabels",
+            "type": "Partial<Record<ScheduleView, string>>",
+            "required": false
+          },
+          {
+            "name": "locale",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "ScrollArea": {
       "routeKey": "scroll-area",
       "cssFamily": "scroll-area",
@@ -6177,6 +6548,11 @@
           },
           {
             "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "name",
             "type": "string",
             "required": false
           },
@@ -6446,6 +6822,11 @@
           {
             "name": "ref",
             "type": "Ref<HTMLButtonElement | HTMLSelectElement>",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
             "required": false
           },
           {
@@ -7130,6 +7511,41 @@
             "required": false
           },
           {
+            "name": "time",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "collapsible",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "content",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
             "name": "className",
             "type": "string",
             "required": false
@@ -7338,6 +7754,11 @@
           {
             "name": "size",
             "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
             "required": false
           },
           {
@@ -7971,6 +8392,11 @@
           },
           {
             "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "name",
             "type": "string",
             "required": false
           },

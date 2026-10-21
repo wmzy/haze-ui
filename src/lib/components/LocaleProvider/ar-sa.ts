@@ -115,6 +115,13 @@ const arSA: HazeStrings = {
     alpha: 'العتامة',
     presetsLabel: 'ألوان جاهزة',
     recentColors: 'الألوان الأخيرة',
+    solid: 'لون واحد',
+    gradient: 'تدرج',
+    angle: 'الزاوية',
+    stopColor: 'لون النقطة',
+    stopPosition: 'موضع النقطة',
+    addStop: 'إضافة نقطة',
+    removeStop: 'إزالة نقطة',
   },
   confirmDialog: {
     confirm: 'تأكيد',

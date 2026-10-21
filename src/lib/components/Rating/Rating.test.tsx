@@ -131,3 +131,37 @@ describe('Rating ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Rating native form participation', () => {
+  it('submits String(value) under name', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Rating name="score" value={4} aria-label="Score" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('score')).toBe('4');
+  });
+
+  it('submits half-star values verbatim', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Rating name="score" value={3.5} allowHalf aria-label="Score" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('score')).toBe('3.5');
+  });
+
+  it('submits nothing for the 0 no-rating sentinel', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Rating name="score" aria-label="Score" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('score')).toBeNull();
+  });
+
+  it('renders no bridge input without name', () => {
+    const {container} = render(<Rating value={4} aria-label="Score" />);
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+  });
+});

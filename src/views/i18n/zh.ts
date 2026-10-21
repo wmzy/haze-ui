@@ -186,6 +186,7 @@ export const zh: DeepPartial<SiteStrings> = {
     PasswordInput: '密码输入框，带明文切换。',
     Radio: '单选按钮与单选组，选中项可控。',
     Rating: '星级评分，支持半星。',
+    RichTextEditor: '基于 Tiptap 的富文本编辑器，内置格式化工具栏，HTML 值可控。',
     Segmented: '分段控制器：在紧凑选项集中单选。',
     Select:
       '下拉选择：基于 SelectCore、以 <option> 为子元素；onSearch 启用服务端筛选。',
@@ -243,6 +244,7 @@ export const zh: DeepPartial<SiteStrings> = {
     Progress: '进度条/进度环，由百分比取值驱动。',
     QRCode:
       '二维码：以单条清晰 SVG 路径渲染，value/size/level/bordered 可配，模块与背景色走主题令牌。',
+    Schedule: '带日/周/月视图的日历日程面板，支持拖拽与键盘改期，月视图网格含溢出折叠。',
     Stat: '指标展示：标题、数值与趋势指示。',
     Sparkline:
       '内联 SVG 迷你趋势图：无状态、不依赖 recharts、RSC 安全；支持折线/面积变体与语义色调令牌。',
@@ -294,15 +296,18 @@ export const zh: DeepPartial<SiteStrings> = {
     ConversationList: '会话列表：聊天历史侧栏的可选中列表。',
     DiffViewer: '渲染新旧内容的行级差异，展示代理提议的编辑。',
     FilePreview: '附件卡片：图片缩略或扩展名徽标、上传进度与移除/重试。',
+    InlineCitation: '行内上标引用标记，点击打开浮动来源卡片，展示标题、摘录与可选外链。',
     InlineCompletion: '输入幽灵补全：Tab 采纳建议，Escape 关闭。',
     LogViewer: '可滚动日志流，按严重级别过滤。',
     MarkdownRenderer: '渲染 Markdown 内容（含代码块），用于助手回复。',
     ModelPicker: '模型选择下拉，取值可控。',
+    Plan: '智能体计划与进度展示：带标题的步骤列表，各步骤状态自动汇总为进度条与进度摘要。',
     PromptInput:
       'AI 提示词输入：自增高文本域、内联上下文标签、@ 触发建议与可配置提交键。',
+    Queue: '待发送的智能体操作或消息队列，支持 queued/sending/failed 状态与逐项移除。',
     Sources:
       'RAG 引用列表：悬停/聚焦展开摘录（expanded 集合可控），compact 渲染内联 [1] [2] 徽标。',
-    StepTimeline: '代理执行步骤的垂直时间线，逐步携带状态。',
+    StepTimeline: '代理执行步骤的垂直时间线：逐步状态（含 running）、耗时、可折叠详情与嵌套子步骤。',
     StreamingText: '打字机效果逐字呈现流式文本，可选光标。',
     ThinkingIndicator: '弹跳动点指示器，表示代理思考中。',
     TokenCounter: '上下文窗口 token 用量计数，含预算进度。',

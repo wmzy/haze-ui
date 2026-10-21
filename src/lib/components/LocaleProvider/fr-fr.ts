@@ -108,6 +108,13 @@ const frFR: HazeStrings = {
     alpha: 'Opacité',
     presetsLabel: 'Couleurs prédéfinies',
     recentColors: 'Couleurs récentes',
+    solid: 'Unie',
+    gradient: 'Dégradé',
+    angle: 'Angle',
+    stopColor: 'Couleur de départ',
+    stopPosition: 'Position du départ',
+    addStop: 'Ajouter un départ',
+    removeStop: 'Supprimer le départ',
   },
   confirmDialog: {
     confirm: 'Confirmer',

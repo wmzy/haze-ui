@@ -697,3 +697,28 @@ describe('Slider vertical', () => {
   });
 });
 
+
+describe('Slider native form participation', () => {
+  // Slider renders real native <input type='range'> elements — name
+  // flows through the rest spread, no bridge input needed.
+  it('submits the value under name in single mode', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Slider name="volume" value={42} aria-label="Volume" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('volume')).toBe('42');
+  });
+
+  it('repeats the name per thumb in range mode (low then high)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Slider name="span" range value={[10, 90]} aria-label="Span" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).getAll('span')).toEqual([
+      '10',
+      '90',
+    ]);
+  });
+});

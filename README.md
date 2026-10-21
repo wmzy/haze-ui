@@ -9,7 +9,7 @@ English | [简体中文](./README-zh_CN.md)
 [![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
 
 haze-ui is a React 19 component library styled with Linaria (zero-runtime
-CSS-in-JS) against `--haze-*` design tokens: 143 components in 9 groups,
+CSS-in-JS) against `--haze-*` design tokens: 148 components in 9 groups,
 ESM-only with a tree-shakeable `preserveModules` dist, RTL by construction,
 and an RSC-aware split (`'use client'` is pre-injected only on interactive
 modules, so the static subset renders as React Server Components). Every
@@ -99,10 +99,18 @@ with no polyfills or fallbacks — the same four engines are the hard CSS floor.
   → [Getting started](https://wmzy.github.io/haze-ui/getting-started)
 - **AI / chat component family** — `ChatContainer`, `ChatMessage`,
   `StreamingText`, `ToolCallCard`, `ThinkingIndicator` and `ChatInput` cover
-  the agent chat surface, with a unit-tested adapter recipe for the Vercel AI
-  SDK's `useChat`.
+  the agent chat surface; `Plan`, `Queue`, `InlineCitation` and the
+  collapsible `StepTimeline` trace rows cover the agentic-UI patterns, with a
+  unit-tested adapter recipe for the Vercel AI SDK's `useChat`.
   → [AI showcase](https://wmzy.github.io/haze-ui/ai-showcase) ·
   [Recipes](https://wmzy.github.io/haze-ui/recipes)
+- **React Compiler verified** — the whole suite runs green with
+  babel-plugin-react-compiler enabled (`pnpm test:compiler`): auto-memoization
+  is part of the release gate, not a hope.
+- **Native-form ready** — value-holding components (Select, Switch, Rating,
+  Slider, TagInput, OTPInput, Segmented, ColorPicker, RichTextEditor) accept
+  a `name` and submit into `FormData`, so `<form action={serverAction}>`
+  works without a form library; react-f0rm integration stays first-class.
 - **Multi-calendar date layer** — Gregorian plus six built-in adapters
   (Hijri Umm al-Qura, Persian, Hebrew, Japanese era, Buddhist, Ethiopic):
   integer-arithmetic implementations cross-verified against full-ICU `Intl`

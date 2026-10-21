@@ -1,10 +1,18 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import type {
+  ReferenceAreaProps,
+  ReferenceDotProps,
+  ReferenceLineProps,
+} from 'recharts';
+
+import type {
+  ChartGaugeThreshold,
   ChartSeries,
   ChartTooltipEntry,
   ChartTooltipPayload,
   ChartType,
+  ChartWaffleSeries,
 } from './chart-elements';
 
 import { useMemo } from 'react';
@@ -16,31 +24,39 @@ import Spinner from '../Spinner/Spinner';
 
 import {
   chartTree,
+  gaugeTree,
   resolveChartSeries,
+  waffleTree,
 } from './chart-elements';
 
 type ChartProps<T> = {
-  /** Which recharts chart family to render. `pie` maps each datum to one
+  /** Which chart family to render. `pie` maps each datum to one
    * sector named by `xKey` and valued by each series `key`; `radar` maps
    * each datum to one spoke named by `xKey`; `scatter` plots the numeric
-   * `xKey` column against each series `key`. In the cartesian families
+   * `xKey` column against each series `key`; `gauge` reads a single
+   * `value` against `max` on a semicircle arc; `waffle` renders the
+   * series shares as a square CSS grid. In the cartesian families
    * the chart `type` picks the container and the default series shape —
    * override the shape per series via `ChartSeries.type`. */
   type: ChartType;
   /** One datum per point (pie: per sector; radar: per spoke); series
-   * values are read by `ChartSeries.key`. */
-  data: T[];
+   * values are read by `ChartSeries.key`. Omitted by `gauge` (driven by
+   * `value`) and `waffle` (driven by its inline `series` values). */
+  data?: T[];
   /** The series to plot — colors cycle through the semantic status tokens
    * when `color` is omitted. With `type='pie'` each series is one
    * concentric ring. In cartesian charts (line/area/bar) a per-series
    * `type` overrides that series' shape for composed charts (bars under a
    * line, a line over areas), and series sharing a `stackId` stack
-   * (Area/Bar shapes). Both are ignored by pie/radar/scatter. */
-  series: ChartSeries[];
+   * (Area/Bar shapes). Both are ignored by pie/radar/scatter. With
+   * `type='waffle'` each entry is one share of the grid: `name` feeds the
+   * legend, `value` is the square count, `color` any CSS color. Omitted
+   * by `gauge`, which reads a single `value` instead. */
+  series?: ChartSeries[] | ChartWaffleSeries[];
   /** Datum field driving the X axis — the cartesian categories, the pie
    * sector names, the radar spoke names, or the numeric scatter X
-   * column. */
-  xKey: keyof T & string;
+   * column. Ignored by `gauge` and `waffle`. */
+  xKey?: keyof T & string;
   /** Container height in px; the chart stretches to the full width. */
   height?: number;
   /** Pie only: inner radius in px (or a % string) — above 0 renders a
@@ -50,6 +66,36 @@ type ChartProps<T> = {
   /** Cartesian charts only: `vertical` swaps the axes for horizontal
    * bars/lines (ignored by `pie`). Default `'horizontal'`. */
   layout?: 'horizontal' | 'vertical';
+  /** Cartesian charts only (line/area/bar/scatter): recharts reference
+   * lines rendered under the series — one per entry, its props
+   * (x/y/segment, stroke, strokeDasharray, label, …) spread through
+   * verbatim. Ignored by pie/radar/gauge/waffle. */
+  referenceLines?: ReferenceLineProps[];
+  /** Cartesian charts only: recharts reference areas (band highlights),
+   * props spread through verbatim (x1/x2/y1/y2, fill, fillOpacity…).
+   * Ignored by pie/radar/gauge/waffle. */
+  referenceAreas?: ReferenceAreaProps[];
+  /** Cartesian charts only: recharts reference dots (point markers),
+   * props spread through verbatim (x/y, r, fill, label…). Ignored by
+   * pie/radar/gauge/waffle. */
+  referenceDots?: ReferenceDotProps[];
+  /** Gauge only: the reading plotted on the arc, clamped to [0, max]. */
+  value?: number;
+  /** Gauge only: the arc's full-scale value. Default `100`. */
+  max?: number;
+  /** Gauge only: colored arc segments — each threshold paints the band
+   * from the previous one (or 0) up to its `value` in its `color` at
+   * reduced opacity, and the value arc takes the color of the band it
+   * falls in (thresholds expected ascending; a value beyond the last
+   * bound falls back to the primary token). */
+  thresholds?: ChartGaugeThreshold[];
+  /** Gauge only: caption under the center readout (e.g. "of quota"). */
+  label?: ReactNode;
+  /** Gauge only: formats the center readout — default prints the raw
+   * number. */
+  valueFormat?: (v: number) => string;
+  /** Waffle only: squares per grid row. Default `10`. */
+  columns?: number;
   /** Replaces the default recharts tooltip. Receives the hovered label
    * (X value / sector name) plus one entry per series or sector. */
   renderTooltip?: (payload: ChartTooltipPayload<T>) => ReactNode;
@@ -152,6 +198,8 @@ const TYPE_LABELS: Record<ChartType, string> = {
   pie: 'Pie chart',
   radar: 'Radar chart',
   scatter: 'Scatter chart',
+  gauge: 'Gauge',
+  waffle: 'Waffle chart',
 };
 
 /** One fallback-table cell: plotted values are primitives in practice —
@@ -168,9 +216,14 @@ function formatCell(value: unknown): string {
   return '';
 }
 
-/** Token-driven chart over recharts: line, area, bar, pie, radar or
- * scatter series rendered with haze semantic colors, axis/grid/tooltip/legend chrome
- * toggles, and the default-omittable `series`/`xKey` mapping. Cartesian
+/** Token-driven chart component: line, area, bar, pie, radar or
+ * scatter series rendered with haze semantic colors over recharts,
+ * axis/grid/tooltip/legend chrome toggles, recharts reference annotations
+ * (lines/areas/dots) on the cartesian families, and the
+ * default-omittable `series`/`xKey` mapping. `gauge` reads one `value`
+ * against `max` on a semicircle arc with threshold bands and a center
+ * readout; `waffle` renders series shares as a square CSS grid with a
+ * built-in legend (no recharts). Cartesian
  * charts double as composed charts — a per-series `type` mixes line/area/bar
  * shapes inside one chart, and `stackId` stacks the Area/Bar series sharing
  * an id. Accessibility: the graphic is a named `role='img'` (type + series,
@@ -188,6 +241,15 @@ export default function Chart<T>({
   height = 300,
   innerRadius = 0,
   layout = 'horizontal',
+  referenceLines,
+  referenceAreas,
+  referenceDots,
+  value,
+  max = 100,
+  thresholds,
+  label,
+  valueFormat,
+  columns,
   renderTooltip,
   showLegend = false,
   showGrid = true,
@@ -200,23 +262,50 @@ export default function Chart<T>({
   style,
   ...rest
 }: ChartProps<T>) {
-  const resolvedSeries = useMemo(() => resolveChartSeries(series), [series]);
+  /* Waffle carries its shares inline in `series`; every other type reads
+   * datum-keyed series off `data` — narrowed once here so the union stays
+   * out of the plotting branches. */
+  const isWaffle = type === 'waffle';
+  const waffleSeries = isWaffle
+    ? ((series ?? []) as ChartWaffleSeries[])
+    : [];
+  const rows = data ?? [];
+  const resolvedSeries = useMemo(
+    () =>
+      isWaffle ? [] : resolveChartSeries((series ?? []) as ChartSeries[]),
+    [series, isWaffle]
+  );
 
   /* State priority: loading > empty > chart — a fetching chart must not
    * flash its (stale or blank) plot, and an empty dataset has nothing to
    * plot. Both states also skip the fallback table (there is no data to
-   * tabulate). */
+   * tabulate). Gauge always has its `value` to plot; waffle empties on an
+   * empty series list instead of an empty `data`. */
   const isLoading = loading !== undefined && loading !== null && loading !== false;
-  const isEmpty = !isLoading && data.length === 0 && empty !== false;
+  const isEmpty =
+    !isLoading &&
+    empty !== false &&
+    (isWaffle
+      ? waffleSeries.length === 0
+      : type === 'gauge'
+        ? false
+        : rows.length === 0);
 
   /* Accessible name shared by the graphic (role='img') and the fallback
    * table caption: chart type plus series labels. A consumer-supplied
    * aria-label wins (it is destructured out of `rest`, so it never
    * duplicates onto the root). */
   const typeLabel = TYPE_LABELS[type];
-  const seriesList = resolvedSeries.map((entry) => entry.label).join(', ');
+  const seriesList = (
+    isWaffle ? waffleSeries.map((entry) => entry.name) : resolvedSeries.map((entry) => entry.label)
+  ).join(', ');
   const chartLabel = seriesList ? `${typeLabel}: ${seriesList}` : typeLabel;
   const accessibleLabel = ariaLabel ?? chartLabel;
+
+  /* Gauge's center readout: the (formatted, clamped) value with the
+   * optional caption under it. */
+  const gaugeReadoutValue =
+    value === undefined ? '' : (valueFormat ? valueFormat(value) : String(value));
 
   return (
     <div
@@ -246,48 +335,100 @@ export default function Chart<T>({
             aria-label={accessibleLabel}
             x-class={[graphic]}
           >
-            {chartTree({
-              type,
-              data,
-              xKey,
-              showGrid,
-              showTooltip,
-              showLegend,
-              series: resolvedSeries,
-              layout,
-              innerRadius,
-              renderTooltip: renderTooltip
-                ? (payload) => renderTooltip(payload as ChartTooltipPayload<T>)
-                : undefined,
-            })}
+            {type === 'gauge' ? (
+              gaugeTree({
+                value: value ?? 0,
+                max,
+                thresholds,
+                formattedValue: gaugeReadoutValue,
+                label,
+              })
+            ) : type === 'waffle' ? (
+              waffleTree({ series: waffleSeries, columns })
+            ) : (
+              chartTree({
+                type,
+                data: rows,
+                xKey: xKey!,
+                showGrid,
+                showTooltip,
+                showLegend,
+                series: resolvedSeries,
+                layout,
+                innerRadius,
+                renderTooltip: renderTooltip
+                  ? (payload) =>
+                      renderTooltip(payload as ChartTooltipPayload<T>)
+                  : undefined,
+                referenceLines,
+                referenceAreas,
+                referenceDots,
+              })
+            )}
           </div>
           {fallbackTable && (
             <div data-slot='fallback-table' x-class={[visuallyHidden]}>
-              <table x-class={[fallbackTableStyle]}>
-                <caption>{accessibleLabel}</caption>
-                <thead>
-                  <tr>
-                    <th scope='col'>{xKey}</th>
-                    {resolvedSeries.map((entry) => (
-                      <th key={entry.key} scope='col'>
-                        {entry.label}
-                      </th>
+              {type === 'gauge' ? (
+                <table x-class={[fallbackTableStyle]}>
+                  <caption>{accessibleLabel}</caption>
+                  <thead>
+                    <tr>
+                      <th scope='col'>value</th>
+                      <th scope='col'>max</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{gaugeReadoutValue}</td>
+                      <td>{String(max)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : type === 'waffle' ? (
+                <table x-class={[fallbackTableStyle]}>
+                  <caption>{accessibleLabel}</caption>
+                  <thead>
+                    <tr>
+                      <th scope='col'>series</th>
+                      <th scope='col'>value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {waffleSeries.map((entry) => (
+                      <tr key={entry.name}>
+                        <th scope='row'>{entry.name}</th>
+                        <td>{formatCell(entry.value)}</td>
+                      </tr>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((datum, index) => (
-                    <tr key={index}>
-                      <th scope='row'>{formatCell(datum[xKey])}</th>
+                  </tbody>
+                </table>
+              ) : (
+                <table x-class={[fallbackTableStyle]}>
+                  <caption>{accessibleLabel}</caption>
+                  <thead>
+                    <tr>
+                      <th scope='col'>{xKey}</th>
                       {resolvedSeries.map((entry) => (
-                        <td key={entry.key}>
-                          {formatCell(datum[entry.key as keyof T])}
-                        </td>
+                        <th key={entry.key} scope='col'>
+                          {entry.label}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {rows.map((datum, index) => (
+                      <tr key={index}>
+                        <th scope='row'>{formatCell(datum[xKey as keyof T])}</th>
+                        {resolvedSeries.map((entry) => (
+                          <td key={entry.key}>
+                            {formatCell(datum[entry.key as keyof T])}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
         </>
@@ -302,4 +443,6 @@ export type {
   ChartTooltipEntry,
   ChartTooltipPayload,
   ChartType,
+  ChartGaugeThreshold,
+  ChartWaffleSeries,
 };

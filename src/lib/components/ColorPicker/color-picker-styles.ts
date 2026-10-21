@@ -198,6 +198,195 @@ export const swatchActive = css`
   box-shadow: 0 0 0 2px var(--haze-color-bg), 0 0 0 4px var(--haze-color-primary);
 `;
 
+// ---------------------------------------------------------------------------
+// Gradient mode
+// ---------------------------------------------------------------------------
+
+/** Solid/Gradient segmented toggle riding on top of the panel. */
+export const modeToggle = css`
+  display: flex;
+  gap: var(--haze-space-1);
+  padding: var(--haze-space-1);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg-muted);
+`;
+
+/** One segment of the mode toggle; the pressed state paints it active. */
+export const modeBtn = css`
+  flex: 1;
+  height: var(--haze-space-6);
+  padding: 0;
+  border: none;
+  border-radius: var(--haze-radius-sm);
+  background: transparent;
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  font-weight: var(--haze-weight-medium);
+  cursor: pointer;
+  transition: background var(--haze-duration-fast), color var(--haze-duration-fast);
+
+  &[aria-pressed='true'] {
+    background: var(--haze-color-bg);
+    color: var(--haze-color-text);
+    box-shadow: var(--haze-shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/** Live preview bar painted (inline style) with the current gradient. */
+export const gradientPreview = css`
+  height: var(--haze-space-6);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+`;
+
+/** Angle row: a labelled compact number input (0..360 degrees). */
+export const angleRow = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--haze-space-2);
+  font-size: var(--haze-text-xs);
+  color: var(--haze-color-text-secondary);
+`;
+
+/** Compact mono number input (angle, stop positions). */
+export const numberInput = css`
+  width: var(--haze-space-12);
+  height: var(--haze-space-6);
+  padding: 0 var(--haze-space-1);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-mono);
+  font-size: var(--haze-text-xs);
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/** Column of stop rows (one line per gradient stop). */
+export const stopsList = css`
+  display: flex;
+  flex-direction: column;
+  gap: var(--haze-space-1);
+`;
+
+/** One stop line: select swatch, position input, remove button. */
+export const stopRow = css`
+  display: flex;
+  align-items: center;
+  gap: var(--haze-space-1);
+`;
+
+/** The stop's select swatch — smaller than a preset, ringed when selected. */
+export const stopSwatchBtn = css`
+  position: relative;
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
+  padding: 0;
+  border: none;
+  border-radius: var(--haze-radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/** Selected stop: the primary ring marks which stop the rails edit. */
+export const stopSwatchActive = css`
+  box-shadow: 0 0 0 2px var(--haze-color-bg), 0 0 0 4px var(--haze-color-primary);
+`;
+
+/** Stop remover; disabled at the two-stop floor. */
+export const stopRemoveBtn = css`
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
+  padding: 0;
+  border: none;
+  border-radius: var(--haze-radius-sm);
+  background: transparent;
+  color: var(--haze-color-text-muted);
+  font-size: var(--haze-text-sm);
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--haze-color-bg-muted);
+    color: var(--haze-color-text);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/** Full-width dashed "Add stop" affordance under the stop list. */
+export const addStopBtn = css`
+  height: var(--haze-space-6);
+  border: 1px dashed var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: transparent;
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--haze-color-border-hover);
+    color: var(--haze-color-text);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/**
+ * A gradient preset entry: a full-width bar previewing the actual
+ * gradient (painted via inline style), stacked one per row.
+ */
+export const gradientSwatch = css`
+  display: block;
+  width: 100%;
+  height: var(--haze-space-6);
+  padding: 0;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  cursor: pointer;
+  transition: transform var(--haze-duration-fast);
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
 /** The floating-mode trigger: a color swatch button. */
 export const trigger = css`
   position: relative;

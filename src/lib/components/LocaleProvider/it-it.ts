@@ -108,6 +108,13 @@ const itIT: HazeStrings = {
     alpha: 'Opacità',
     presetsLabel: 'Colori predefiniti',
     recentColors: 'Colori recenti',
+    solid: 'Tinta unita',
+    gradient: 'Sfumatura',
+    angle: 'Angolo',
+    stopColor: 'Colore della fermata',
+    stopPosition: 'Posizione della fermata',
+    addStop: 'Aggiungi fermata',
+    removeStop: 'Rimuovi fermata',
   },
   confirmDialog: {
     confirm: 'Conferma',

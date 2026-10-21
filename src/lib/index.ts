@@ -174,6 +174,7 @@ export { Upload, UploadCore } from './components/Upload';
 export type { UploadProps, UploadCoreProps, UploadHandle, UploadStatus, UploadFile, UploadValueItem, UploadFileStatus, UploadRequest, UploadRequestOptions, UploadListItemActions, UploadListItemRender } from './components/Upload';
 export { ColorPicker, ColorPickerCore } from './components/ColorPicker';
 export type { ColorPickerProps, ColorPickerCoreProps } from './components/ColorPicker';
+export type { ColorPickerPreset } from './components/ColorPicker';
 export { Rating, RatingCore } from './components/Rating';
 export type { RatingProps, RatingCoreProps } from './components/Rating';
 export { Timeline, TimelineItem } from './components/Timeline';
@@ -274,7 +275,7 @@ export type {
 
 // chart (recharts dependency + haze tokens)
 export { Chart } from './components/Chart';
-export type { ChartProps, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry } from './components/Chart';
+export type { ChartProps, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry, ChartGaugeThreshold, ChartWaffleSeries } from './components/Chart';
 
 // display & overlay additions
 export { Kbd } from './components/Kbd';
@@ -377,12 +378,22 @@ export { JsonView } from './components/JsonView';
 export type { JsonViewProps, MoreLabelFn } from './components/JsonView';
 export { QRCode } from './components/QRCode';
 export type { QRCodeProps, QRCodeLevel } from './components/QRCode';
+export { Schedule } from './components/Schedule';
+export type { ScheduleProps, ScheduleEvent, ScheduleView, ScheduleEventChange, ScheduleEventColor, ScheduleBusinessHours, ScheduleViewLabels } from './components/Schedule';
+export { RichTextEditor } from './components/RichTextEditor';
+export type { RichTextEditorProps, RichTextEditorHandle } from './components/RichTextEditor';
 export { Sources } from './components/Sources';
 export type { SourcesProps, SourceItem } from './components/Sources';
 export { FilePreview } from './components/FilePreview';
 export type { FilePreviewProps, FilePreviewFile, FilePreviewStatus } from './components/FilePreview';
 export { InlineCompletion } from './components/InlineCompletion';
 export type { InlineCompletionProps } from './components/InlineCompletion';
+export { InlineCitation } from './components/InlineCitation';
+export type { InlineCitationProps } from './components/InlineCitation';
+export { Plan, PlanItem } from './components/Plan';
+export type { PlanProps, PlanItemProps, PlanStatus } from './components/Plan';
+export { Queue, QueueItem } from './components/Queue';
+export type { QueueProps, QueueItemProps, QueueStatus } from './components/Queue';
 
 // layout, navigation & forms additions (wave 5)
 export { FloatButton, FloatButtonGroup } from './components/FloatButton';

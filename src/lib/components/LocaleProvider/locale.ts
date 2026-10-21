@@ -105,6 +105,13 @@ const defaultStrings = {
     alpha: 'Opacity',
     presetsLabel: 'Presets',
     recentColors: 'Recent colors',
+    solid: 'Solid',
+    gradient: 'Gradient',
+    angle: 'Angle',
+    stopColor: 'Stop color',
+    stopPosition: 'Stop position',
+    addStop: 'Add stop',
+    removeStop: 'Remove stop',
   },
   confirmDialog: {
     confirm: 'Confirm',

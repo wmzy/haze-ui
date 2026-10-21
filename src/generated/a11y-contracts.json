@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T14:41:24.209Z",
+  "generatedAt": "2026-10-21T05:40:13.960Z",
   "components": [
     {
       "component": "Accordion",
@@ -274,7 +274,7 @@
         "aria-busy"
       ],
       "keys": [],
-      "testCount": 48
+      "testCount": 61
     },
     {
       "component": "ChatContainer",
@@ -316,7 +316,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 12
+      "testCount": 14
     },
     {
       "component": "Chip",
@@ -356,6 +356,7 @@
       "aria": [
         "aria-expanded",
         "aria-haspopup",
+        "aria-pressed",
         "aria-valuemax",
         "aria-valuemin",
         "aria-valuenow"
@@ -365,7 +366,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 51
+      "testCount": 88
     },
     {
       "component": "Combobox",
@@ -837,6 +838,23 @@
       "testCount": 6
     },
     {
+      "component": "InlineCitation",
+      "roles": [
+        "button",
+        "link"
+      ],
+      "aria": [
+        "aria-expanded",
+        "aria-haspopup"
+      ],
+      "keys": [
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 14
+    },
+    {
       "component": "InlineCompletion",
       "roles": [
         "textbox"
@@ -1045,7 +1063,7 @@
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 10
+      "testCount": 14
     },
     {
       "component": "Pagination",
@@ -1072,6 +1090,21 @@
       "aria": [],
       "keys": [],
       "testCount": 12
+    },
+    {
+      "component": "Plan",
+      "roles": [
+        "list",
+        "listitem",
+        "progressbar"
+      ],
+      "aria": [
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [],
+      "testCount": 11
     },
     {
       "component": "Popover",
@@ -1143,6 +1176,18 @@
       "testCount": 9
     },
     {
+      "component": "Queue",
+      "roles": [
+        "button",
+        "list",
+        "listitem",
+        "status"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 11
+    },
+    {
       "component": "Radio",
       "roles": [
         "group",
@@ -1150,7 +1195,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 11
+      "testCount": 13
     },
     {
       "component": "Rating",
@@ -1164,7 +1209,7 @@
         "ArrowLeft",
         "ArrowRight"
       ],
-      "testCount": 14
+      "testCount": 18
     },
     {
       "component": "Resizable",
@@ -1200,6 +1245,36 @@
       "testCount": 7
     },
     {
+      "component": "RichTextEditor",
+      "roles": [
+        "button",
+        "textbox",
+        "toolbar"
+      ],
+      "aria": [
+        "aria-pressed"
+      ],
+      "keys": [],
+      "testCount": 12
+    },
+    {
+      "component": "Schedule",
+      "roles": [
+        "button",
+        "gridcell"
+      ],
+      "aria": [],
+      "keys": [
+        " ",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "Enter"
+      ],
+      "testCount": 33
+    },
+    {
       "component": "ScrollArea",
       "roles": [],
       "aria": [],
@@ -1213,7 +1288,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 9
+      "testCount": 13
     },
     {
       "component": "Select",
@@ -1245,7 +1320,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 74
+      "testCount": 81
     },
     {
       "component": "Sidebar",
@@ -1299,7 +1374,7 @@
         "ArrowLeft",
         "ArrowRight"
       ],
-      "testCount": 55
+      "testCount": 57
     },
     {
       "component": "Sources",
@@ -1405,10 +1480,17 @@
     },
     {
       "component": "StepTimeline",
-      "roles": [],
-      "aria": [],
-      "keys": [],
-      "testCount": 8
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded"
+      ],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 18
     },
     {
       "component": "StreamingText",
@@ -1437,7 +1519,7 @@
         "aria-checked"
       ],
       "keys": [],
-      "testCount": 14
+      "testCount": 19
     },
     {
       "component": "TabBar",
@@ -1543,7 +1625,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 26
+      "testCount": 29
     },
     {
       "component": "Textarea",

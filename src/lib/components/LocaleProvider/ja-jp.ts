@@ -106,6 +106,13 @@ const jaJP: HazeStrings = {
     alpha: '不透明度',
     presetsLabel: 'プリセット',
     recentColors: '最近使用した色',
+    solid: 'ソリッド',
+    gradient: 'グラデーション',
+    angle: '角度',
+    stopColor: 'ストップの色',
+    stopPosition: 'ストップ位置',
+    addStop: 'ストップを追加',
+    removeStop: 'ストップを削除',
   },
   confirmDialog: {
     confirm: '確認',

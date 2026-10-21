@@ -443,3 +443,314 @@ describe('ColorPicker ref forwarding', () => {
     expect(ref.current).toContainElement(screen.getAllByRole('slider')[0]!);
   });
 });
+
+describe('ColorPicker native form participation', () => {
+  it('submits the value under name (floating mode)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <ColorPicker name="accent" value="#ff0000" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('accent')).toBe('#ff0000');
+  });
+
+  it('submits in inline mode too', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <ColorPicker inline name="accent" value="#00ff00" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('accent')).toBe('#00ff00');
+  });
+
+  it('serializes in format — what submits is what the text field shows', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <ColorPicker name="accent" value="#ff0000" format="rgb" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('accent')).toBe(
+      'rgb(255, 0, 0)'
+    );
+  });
+
+  it('keeps the alpha channel when allowAlpha is set', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <ColorPicker name="accent" value="#ff000080" allowAlpha />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('accent')).toBe(
+      '#ff000080'
+    );
+  });
+
+  it('submits the gradient string verbatim when the value is a gradient', () => {
+    const gradient = 'linear-gradient(90deg, #ff0000 0%, #ffffff 50%, #00ff00 100%)';
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <ColorPicker name="accent" value={gradient} />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('accent')).toBe(gradient);
+  });
+
+  it('renders no bridge input without name', () => {
+    const {container} = render(<ColorPicker value="#ff0000" />);
+    expect(container.querySelector("[data-slot='native-input']")).toBeNull();
+    expect(screen.getByRole('button', {name: 'Pick color'})).not.toHaveAttribute('name');
+  });
+});
+
+describe('ColorPicker gradient mode', () => {
+  // What a solid #ff0000 opens into on the Gradient toggle.
+  const DEFAULT_GRADIENT = 'linear-gradient(90deg, #ff0000 0%, #ffffff 100%)';
+  const THREE_STOPS = 'linear-gradient(90deg, #ff0000 0%, #ffffff 50%, #0000ff 100%)';
+
+  /** jsdom's style attribute serializer normalizes hex colors to rgb(). */
+  const rgbGradient = (gradient: string) =>
+    gradient.replace(/#([0-9a-f]{6})/gi, (_m, hex: string) => {
+      const channel = (from: number, to: number) =>
+        Number.parseInt(hex.slice(from, to), 16);
+      return `rgb(${channel(0, 2)}, ${channel(2, 4)}, ${channel(4, 6)})`;
+    });
+
+  it('renders no mode toggle without the gradient prop', async () => {
+    const user = userEvent.setup();
+    render(<ColorPicker value="#ff0000" />);
+    await openPanel(user);
+    expect(screen.queryByRole('button', {name: 'Solid'})).toBeNull();
+    expect(screen.queryByRole('button', {name: 'Gradient'})).toBeNull();
+  });
+
+  it('switching to gradient opens the current color into the default gradient', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value="#ff0000" gradient onChange={onChange} />);
+    await openPanel(user);
+    const gradientBtn = screen.getByRole('button', {name: 'Gradient'});
+    expect(gradientBtn).toHaveAttribute('aria-pressed', 'false');
+    await user.click(gradientBtn);
+    expect(onChange).toHaveBeenCalledWith(DEFAULT_GRADIENT);
+    // Mode is value-derived: the toggle and the editor follow.
+    expect(gradientBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', {name: 'Solid'})).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByLabelText('Angle')).toHaveValue(90);
+    // The trigger swatch paints the gradient itself (asserted on the
+    // style attribute — jsdom's computed style drops gradient values).
+    const fill = screen.getByRole('button', {name: 'Pick color'}).querySelector('span');
+    expect(fill).toHaveAttribute('style', expect.stringContaining(rgbGradient(DEFAULT_GRADIENT)));
+  });
+
+  it('switching back to solid takes the first stop color — no mode memory', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={DEFAULT_GRADIENT} gradient onChange={onChange} />);
+    await openPanel(user);
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', {name: 'Solid'}));
+    expect(onChange).toHaveBeenCalledWith('#ff0000');
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByLabelText('Angle')).toBeNull();
+  });
+
+  it('renders gradient mode from a controlled gradient value', async () => {
+    const user = userEvent.setup();
+    render(
+      <ColorPicker
+        value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        gradient
+      />
+    );
+    await openPanel(user);
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByLabelText('Angle')).toHaveValue(135);
+    expect(screen.getByLabelText('Stop position 1')).toHaveValue(0);
+    expect(screen.getByLabelText('Stop position 2')).toHaveValue(100);
+    // The text field edits the selected stop (the first by default).
+    expect(screen.getByRole('textbox')).toHaveValue('#667eea');
+  });
+
+  it('falls back to solid mode for an unsupported gradient value', async () => {
+    const user = userEvent.setup();
+    render(<ColorPicker value="linear-gradient(red)" gradient />);
+    await openPanel(user);
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('textbox')).toHaveValue('#000000');
+  });
+
+  it('edits the angle', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={DEFAULT_GRADIENT} gradient onChange={onChange} />);
+    await openPanel(user);
+    fireEvent.change(screen.getByLabelText('Angle'), {target: {value: '45'}});
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(45deg, #ff0000 0%, #ffffff 100%)'
+    );
+  });
+
+  it('edits a stop position', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={DEFAULT_GRADIENT} gradient onChange={onChange} />);
+    await openPanel(user);
+    fireEvent.change(screen.getByLabelText('Stop position 2'), {target: {value: '80'}});
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(90deg, #ff0000 0%, #ffffff 80%)'
+    );
+  });
+
+  it('edits the selected stop color through the text field', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={DEFAULT_GRADIENT} gradient onChange={onChange} />);
+    await openPanel(user);
+    // Stop 1 is selected by default — the field shows its color.
+    expect(screen.getByRole('textbox')).toHaveValue('#ff0000');
+    await user.click(screen.getByRole('button', {name: 'Stop color 2: #ffffff'}));
+    expect(screen.getByRole('textbox')).toHaveValue('#ffffff');
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, {target: {value: '#00ff00'}});
+    fireEvent.keyDown(input, {key: 'Enter'});
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(90deg, #ff0000 0%, #00ff00 100%)'
+    );
+  });
+
+  it('adds a stop at the widest gap midpoint and selects it', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={DEFAULT_GRADIENT} gradient onChange={onChange} />);
+    await openPanel(user);
+    await user.click(screen.getByRole('button', {name: 'Add stop'}));
+    // #ff0000 + #ffffff averaged channel-wise at the 50% midpoint.
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(90deg, #ff0000 0%, #ff8080 50%, #ffffff 100%)'
+    );
+    expect(screen.getByLabelText('Stop position 2')).toHaveValue(50);
+    // The new stop is selected — the field shows its mixed color.
+    expect(screen.getByRole('textbox')).toHaveValue('#ff8080');
+  });
+
+  it('removes stops down to the two-stop floor', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value={THREE_STOPS} gradient onChange={onChange} />);
+    await openPanel(user);
+    await user.click(screen.getByRole('button', {name: 'Remove stop 2'}));
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(90deg, #ff0000 0%, #0000ff 100%)'
+    );
+    expect(screen.queryByLabelText('Stop position 3')).toBeNull();
+    // At two stops the removers disable — a gradient needs two ends.
+    expect(screen.getByRole('button', {name: 'Remove stop 1'})).toBeDisabled();
+    expect(screen.getByRole('button', {name: 'Remove stop 2'})).toBeDisabled();
+  });
+
+  it('applies gradient presets as preview bars', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const SUNSET = 'linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%)';
+    render(
+      <ColorPicker
+        value="#ff0000"
+        gradient
+        onChange={onChange}
+        presets={[
+          {label: 'Sunset', gradient: SUNSET},
+          {gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'},
+          {label: 'Broken', gradient: 'not-a-gradient'},
+        ]}
+      />
+    );
+    await openPanel(user);
+    // Labeled entry shows the label; unlabeled falls back to the value.
+    const sunset = screen.getByRole('button', {name: 'Sunset'});
+    expect(sunset).toHaveAttribute('style', expect.stringContaining(rgbGradient(SUNSET)));
+    expect(
+      screen.getByRole('button', {name: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'})
+    ).toBeInTheDocument();
+    // Unparsable gradient presets are skipped like unparsable colors.
+    expect(screen.queryByRole('button', {name: 'Broken'})).toBeNull();
+    await user.click(sunset);
+    expect(onChange).toHaveBeenCalledWith(SUNSET);
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('applies a solid preset from gradient mode — the mode flips to solid', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <ColorPicker value={DEFAULT_GRADIENT} gradient presets={['#00ff00']} onChange={onChange} />
+    );
+    await openPanel(user);
+    await user.click(screen.getByLabelText('#00ff00'));
+    expect(onChange).toHaveBeenCalledWith('#00ff00');
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('renders labeled solid groups alongside flat presets', async () => {
+    const user = userEvent.setup();
+    render(
+      <ColorPicker
+        value="#ff0000"
+        presets={[{label: 'Brand', colors: ['#00ff00']}, '#0000ff']}
+      />
+    );
+    const panel = await openPanel(user);
+    // The flat list keeps its original "Presets" row; structured
+    // entries render after it in their given order.
+    expect(panelButtonLabels(panel)).toEqual(['#0000ff', '#00ff00']);
+    expect(screen.getByText('Brand')).toBeInTheDocument();
+    expect(screen.getByText('Presets')).toBeInTheDocument();
+  });
+
+  it('keeps gradient commits out of the recent-colors list', async () => {
+    const user = userEvent.setup();
+    render(<ColorPicker value="#ff0000" gradient recent />);
+    await openPanel(user);
+    await user.click(screen.getByRole('button', {name: 'Gradient'}));
+    expect(screen.queryByText('Recent colors')).toBeNull();
+    // Mode switches and stop edits commit gradients — never recorded.
+    await user.click(screen.getByRole('button', {name: 'Solid'}));
+    // The solid commit (mode switch back) is recorded.
+    expect(screen.getByText('Recent colors')).toBeInTheDocument();
+    expect(screen.getByLabelText('#ff0000')).toBeInTheDocument();
+  });
+
+  it('accepts a typed gradient string in the value field', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value="#ff0000" gradient onChange={onChange} />);
+    await openPanel(user);
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, {target: {value: 'linear-gradient(45deg, #000 0%, #fff 100%)'}});
+    fireEvent.keyDown(input, {key: 'Enter'});
+    expect(onChange).toHaveBeenCalledWith(
+      'linear-gradient(45deg, #000000 0%, #ffffff 100%)'
+    );
+    expect(screen.getByRole('button', {name: 'Gradient'})).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('has no axe violations (gradient mode open)', async () => {
+    const {axe} = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <ColorPicker
+        value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        gradient
+        allowAlpha
+        presets={[
+          {label: 'Sunset', gradient: 'linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%)'},
+          '#00ff00',
+        ]}
+        recent
+        aria-label="Background color"
+      />
+    );
+    await openPanel(user, 'Background color');
+    const results = await axe(document.body, {rules: {region: {enabled: false}}});
+    expect(results.violations).toEqual([]);
+  });
+});

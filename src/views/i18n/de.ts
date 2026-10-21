@@ -202,6 +202,7 @@ export const de: DeepPartial<SiteStrings> = {
     PasswordInput: 'Texteingabe mit Sichtbarkeits-Umschalter.',
     Radio: 'Radio-Option und -Gruppe mit steuerbarer Auswahl.',
     Rating: 'Sternebewertung mit Halb-Schritt-Unterstützung.',
+    RichTextEditor: 'Rich-Text-Editor auf Tiptap-Basis mit integrierter Formatierungs-Toolbar und steuerbarem HTML-Wert.',
     Segmented: 'Segment-Control, die eine Option aus einer kompakten Menge wählt.',
     Select:
       'Dropdown-Select über SelectCore mit <option>-Children; onSearch aktiviert serverseitiges Filtern.',
@@ -267,6 +268,7 @@ export const de: DeepPartial<SiteStrings> = {
     Progress: 'Fortschrittsbalken oder -ring, angetrieben von einem Prozentwert.',
     QRCode:
       'QR-Code als ein einziger scharfer SVG-Pfad mit value/size/level/bordered-Optionen und Modul-/Hintergrundfarben aus den Theme-Tokens.',
+    Schedule: 'Kalender-Oberfläche mit Tages-/Wochen-/Monatsansicht, Umplanen per Zeiger und Tastatur, Monatsraster mit Overflow-Chips.',
     Stat: 'Metrikanzeige mit Titel, Wert und Trend-Indikator.',
     Sparkline:
       'Inline-SVG-Mini-Trendchart: zustandslos, ohne recharts, RSC-tauglich; Linien- oder Flächenvariante auf semantischen Ton-Tokens.',
@@ -334,18 +336,20 @@ export const de: DeepPartial<SiteStrings> = {
       'Rendert den Zeilen-Diff zwischen altem und neuem Inhalt für agenten-vorgeschlagene Änderungen.',
     FilePreview:
       'Anhangskarte mit Bild-Thumbnail oder Erweiterungs-Badge, Upload-Fortschritt sowie Entfernen/Erneut-versuchen.',
+    InlineCitation: 'Inline-Hochzitationsmarker; öffnet beim Klick eine schwebende Quellenkarte mit Titel, Auszug und optionalem externen Link.',
     InlineCompletion:
       'Ghost-Text-Vervollständigung für input/textarea; Tab übernimmt den Vorschlag, Escape verwirft ihn.',
     LogViewer: 'Scrollbarer Log-Strom mit Filterung nach Schweregrad.',
     MarkdownRenderer:
       'Rendert Markdown-Inhalte (einschließlich Code-Blöcken) für Assistenten-Antworten.',
     ModelPicker: 'Steuerbares Dropdown zur Auswahl des aktiven Modells.',
+    Plan: 'Agentenplan und Fortschritt: titelte Schrittliste, deren Statusangaben automatisch Fortschrittsbalken und Zusammenfassung treiben.',
     PromptInput:
       'KI-Prompt-Composer: automatisch wachsende Textarea mit Inline-Kontext-Tags, @-Trigger-Vorschlägen und konfigurierbarer Sende-Taste.',
+    Queue: 'Warteschlange ausstehender Agentenaktionen oder -nachrichten mit queued/sending/failed-Status und optionalem Entfernen pro Eintrag.',
     Sources:
       'Nummerierte Zitatsliste für RAG-Antworten; Auszüge erscheinen bei Hover/Fokus mit steuerbarer expanded-Menge, compact rendert inline [1] [2]-Badges.',
-    StepTimeline:
-      'Vertikale Timeline der Agenten-Ausführungsschritte mit Status je Schritt.',
+    StepTimeline: 'Vertikale Zeitleiste der Agentenschritte: Status pro Schritt (inkl. running), Dauer, einklappbare Details und verschachtelte Teilschritte.',
     StreamingText:
       'Schreibmaschinen-Effekt, der Streaming-Text Zeichen für Zeichen enthüllt, mit optionalem Cursor.',
     ThinkingIndicator:

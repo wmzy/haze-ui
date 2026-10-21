@@ -110,6 +110,8 @@ const COMPONENT_BLURBS = {
   PasswordInput: 'Text input with a visibility reveal toggle.',
   Radio: 'Radio option and group with controllable selection.',
   Rating: 'Star rating with half-step support.',
+  RichTextEditor:
+    'Tiptap-powered rich text editor with a built-in formatting toolbar and controllable HTML value.',
   Segmented: 'Segmented control selecting one option from a compact set.',
   Select:
     'Dropdown select over SelectCore with <option> children; onSearch enables server-side filtering.',
@@ -172,6 +174,8 @@ const COMPONENT_BLURBS = {
   Progress: 'Progress bar or circle driven by a percentage value.',
   QRCode:
     'QR code rendered as one crisp SVG path with value/size/level/bordered options and theme-token module/background colors.',
+  Schedule:
+    'Calendar surface with day/week/month views, drag-and-keyboard rescheduling and a month grid with overflow chips.',
   Stat: 'Metric display with title, value and trend indicator.',
   Sparkline:
     'Inline SVG mini trend chart: stateless, recharts-free and RSC-safe; line or filled area variants on semantic tone tokens.',
@@ -234,18 +238,24 @@ const COMPONENT_BLURBS = {
     'Renders the line diff between old and new content for agent-proposed edits.',
   FilePreview:
     'Attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.',
+  InlineCitation:
+    'Inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.',
   InlineCompletion:
     'Ghost-text completion overlay for input/textarea; Tab accepts the suggestion, Escape dismisses it.',
   LogViewer: 'Scrollable log stream with severity-level filtering.',
   MarkdownRenderer:
     'Renders markdown content (including code blocks) for assistant responses.',
   ModelPicker: 'Controllable dropdown for selecting the active model.',
+  Plan:
+    'Agent plan and progress display: a titled step list whose per-item statuses drive an auto progress bar and summary.',
   PromptInput:
     'AI prompt composer: auto-growing textarea with inline context tags, @-trigger suggestions and a configurable submit key.',
+  Queue:
+    'Queue of pending agent actions or messages with queued/sending/failed status and optional per-item removal.',
   Sources:
     'Numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable expanded set, compact renders inline [1] [2] badges.',
   StepTimeline:
-    'Vertical timeline of agent execution steps with per-step status.',
+    'Vertical timeline of agent execution steps with per-step status, timing, collapsible detail panels and nested sub-steps.',
   StreamingText:
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
   ThinkingIndicator:

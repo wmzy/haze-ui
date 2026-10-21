@@ -3,6 +3,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
+import { NativeHiddenFields } from '../../utils/native-form';
+
 import TagInputCore from './TagInputCore';
 
 type TagInputProps = {
@@ -12,6 +14,15 @@ type TagInputProps = {
   maxTags?: number;
   disabled?: boolean;
   className?: string;
+  /**
+   * Form field name: renders one hidden input per tag under the same
+   * name (native repeated-field semantics) so `<form action={fn}>` /
+   * `new FormData(form).getAll(name)` receive every tag — the inner
+   * text input never carries it (partial drafts would leak). An empty
+   * list submits nothing. react-f0rm `FormItem` usage never passes it,
+   * so both worlds coexist.
+   */
+  name?: string;
   /**
    * 字段 id（FormItem 桥生成）：必须挂到内部可聚焦的 input 上而非根
    * div，<label htmlFor> 与错误 span 的 aria 链路才能接到焦点元素——
@@ -34,6 +45,7 @@ export default function TagInput({
   maxTags,
   disabled,
   className,
+  name,
   id,
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedby,
@@ -42,21 +54,24 @@ export default function TagInput({
   const [tags, setTags] = useControl(valueControl, []);
 
   return (
-    <TagInputCore
-      ref={ref}
-      value={tags}
-      onChange={(next) => {
-        setTags(next);
-        onChange?.(next);
-      }}
-      placeholder={placeholder}
-      maxTags={maxTags}
-      disabled={disabled}
-      className={className}
-      id={id}
-      aria-invalid={ariaInvalid}
-      aria-describedby={ariaDescribedby}
-    />
+    <>
+      <TagInputCore
+        ref={ref}
+        value={tags}
+        onChange={(next) => {
+          setTags(next);
+          onChange?.(next);
+        }}
+        placeholder={placeholder}
+        maxTags={maxTags}
+        disabled={disabled}
+        className={className}
+        id={id}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedby}
+      />
+      <NativeHiddenFields name={name} values={tags} />
+    </>
   );
 }
 

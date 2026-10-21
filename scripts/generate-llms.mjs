@@ -132,6 +132,8 @@ const DESCRIPTIONS = {
   Radio:
     'radio option and group with controllable selection.',
   Rating: 'star rating with half-step support.',
+  RichTextEditor:
+    'Tiptap-powered rich text editor (a haze-ui dependency) with built-in formatting toolbar and controllable HTML `value`.',
   Segmented: 'segmented control selecting one option from a compact set.',
   Select:
     'dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.',
@@ -178,6 +180,8 @@ const DESCRIPTIONS = {
   Carousel: 'slideshow with controllable active index and autoplay.',
   Chart:
     'line/area/bar/pie charts over `recharts` (a haze-ui dependency), colors and axes on haze tokens; series cycle the semantic palette, `renderTooltip` customizes the tooltip.',
+  Schedule:
+    'calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.',
   Chip: 'rounded status chip with optional icon and close button.',
   CodeBlock:
     'monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.',
@@ -265,18 +269,24 @@ const DESCRIPTIONS = {
     'renders the line diff between old and new content for agent-proposed edits.',
   FilePreview:
     'attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.',
+  InlineCitation:
+    'inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.',
   InlineCompletion:
     'ghost-text completion overlay for input/textarea; Tab accepts the suggestion, Escape dismisses it.',
   LogViewer: 'scrollable log stream with severity-level filtering.',
   MarkdownRenderer:
     'renders markdown content (including code blocks) for assistant responses.',
   ModelPicker: 'controllable dropdown for selecting the active model.',
+  Plan:
+    'agent plan and progress display: `Plan` + `Plan.Item` step list whose statuses drive an auto progress bar and summary.',
+  Queue:
+    'queue of pending agent actions or messages — `Queue` + `Queue.Item` with queued/sending/failed status and optional per-item removal.',
   PromptInput:
     'AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.',
   Sources:
     'numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` renders inline `[1] [2]` badges.',
   StepTimeline:
-    'vertical timeline of agent execution steps with per-step status.',
+    'vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.',
   StreamingText:
     'typewriter effect that reveals streaming text character by character, with an optional cursor.',
   ThinkingIndicator:

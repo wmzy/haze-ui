@@ -32,6 +32,7 @@ import CascaderDemo from './demos/CascaderDemo';
 import TreeSelectDemo from './demos/TreeSelectDemo';
 import ResultDemo from './demos/ResultDemo';
 import QRCodeDemo from './demos/QRCodeDemo';
+import ScheduleDemo from './demos/ScheduleDemo';
 
 import SidebarDemo from './demos/SidebarDemo';
 
@@ -156,6 +157,9 @@ import ToolCallCardDemo from './demos/ToolCallCardDemo';
 import ThinkingIndicatorDemo from './demos/ThinkingIndicatorDemo';
 
 import StepTimelineDemo from './demos/StepTimelineDemo';
+import PlanDemo from './demos/PlanDemo';
+import QueueDemo from './demos/QueueDemo';
+import InlineCitationDemo from './demos/InlineCitationDemo';
 
 import ApprovalCardDemo from './demos/ApprovalCardDemo';
 
@@ -183,6 +187,7 @@ import UploadDemo from './demos/UploadDemo';
 import ColorPickerDemo from './demos/ColorPickerDemo';
 
 import RatingDemo from './demos/RatingDemo';
+import RichTextEditorDemo from './demos/RichTextEditorDemo';
 
 import TimelineDemo from './demos/TimelineDemo';
 
@@ -330,6 +335,9 @@ const demos: Record<string, () => ReactNode> = {
   'tool-call-card': ToolCallCardDemo,
   'thinking-indicator': ThinkingIndicatorDemo,
   'step-timeline': StepTimelineDemo,
+  plan: PlanDemo,
+  queue: QueueDemo,
+  'inline-citation': InlineCitationDemo,
   'approval-card': ApprovalCardDemo,
   'token-counter': TokenCounterDemo,
   'model-picker': ModelPickerDemo,
@@ -346,6 +354,7 @@ const demos: Record<string, () => ReactNode> = {
   upload: UploadDemo,
   'color-picker': ColorPickerDemo,
   rating: RatingDemo,
+  'rich-text-editor': RichTextEditorDemo,
   timeline: TimelineDemo,
   typography: TypographyDemo,
   ellipsis: EllipsisDemo,
@@ -382,6 +391,7 @@ const demos: Record<string, () => ReactNode> = {
   descriptions: DescriptionsDemo,
   'json-view': JsonViewDemo,
   'qr-code': QRCodeDemo,
+  schedule: ScheduleDemo,
   sources: SourcesDemo,
   'file-preview': FilePreviewDemo,
   'inline-completion': InlineCompletionDemo,

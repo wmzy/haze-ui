@@ -155,6 +155,15 @@ const buildConfig = (() => {
           '@dnd-kit/core',
           '@dnd-kit/sortable',
           '@dnd-kit/utilities',
+          // regular dependencies (RichTextEditor's engine) — same rule:
+          // tiptap ships CJS, bundling it would leak a require() call into
+          // the pure-ESM dist (caught by the bare-node ESM contract test)
+          '@tiptap/core',
+          '@tiptap/react',
+          '@tiptap/starter-kit',
+          '@tiptap/extension-placeholder',
+          '@tiptap/extension-link',
+          '@tiptap/pm',
         ],
         output: {
           preserveModules: true,
@@ -225,6 +234,18 @@ export default defineConfig({
     ...(isDocsApp ? [propsDocgenPlugin()] : []),
     react({
       exclude: ['node_modules/**'],
+      // HAZE_REACT_COMPILER=1 pipes src through babel-plugin-react-compiler:
+      // the React Compiler verification mode (`pnpm test:compiler`) — the
+      // suite must stay green with auto-memoization enabled. The plugin is
+      // referenced by name so the config (and every normal run) loads fine
+      // without the package installed; babel resolves it only when the
+      // env var opts in.
+      babel: {
+        plugins:
+          process.env.HAZE_REACT_COMPILER === '1'
+            ? ['babel-plugin-react-compiler']
+            : [],
+      },
     }),
     wyw({
       evaluate: false,

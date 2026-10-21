@@ -195,3 +195,43 @@ describe('TagInput ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('TagInput native form participation', () => {
+  it('repeats the name per tag (native repeated-field semantics)', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <TagInput name="tags" value={['react', 'css']} />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).getAll('tags')).toEqual([
+      'react',
+      'css',
+    ]);
+  });
+
+  it('follows tag edits', async () => {
+    const user = userEvent.setup();
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <TagInput name="tags" value={['react']} placeholder="Add tag" />
+      </form>
+    );
+    const form = container.querySelector('form')!;
+    await user.type(screen.getByRole('textbox'), 'lint{Enter}');
+    expect(new FormData(form).getAll('tags')).toEqual(['react', 'lint']);
+  });
+
+  it('submits nothing for an empty list and no bridge without name', () => {
+    const empty = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <TagInput name="tags" />
+      </form>
+    );
+    expect(new FormData(empty.container.querySelector('form')!).get('tags')).toBeNull();
+
+    const unnamed = render(<TagInput value={['react']} />);
+    expect(unnamed.container.querySelector("[data-slot='native-input']")).toBeNull();
+    // the inner draft input never carries the field name
+    expect(unnamed.container.querySelector('input')).not.toHaveAttribute('name');
+  });
+});

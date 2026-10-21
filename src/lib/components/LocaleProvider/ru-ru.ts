@@ -108,6 +108,13 @@ const ruRU: HazeStrings = {
     alpha: 'Непрозрачность',
     presetsLabel: 'Предустановленные цвета',
     recentColors: 'Недавние цвета',
+    solid: 'Сплошной',
+    gradient: 'Градиент',
+    angle: 'Угол',
+    stopColor: 'Цвет опорной точки',
+    stopPosition: 'Позиция опорной точки',
+    addStop: 'Добавить опорную точку',
+    removeStop: 'Убрать опорную точку',
   },
   confirmDialog: {
     confirm: 'Подтвердить',

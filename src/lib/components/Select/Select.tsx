@@ -7,6 +7,8 @@ import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
+import { NativeHiddenFields } from '../../utils/native-form';
+
 import SelectCore from './SelectCore';
 
 /**
@@ -108,8 +110,19 @@ type SelectProps<T extends string | number = string> = {
    * `ref.current.focus()` reach whichever mode renders.
    */
   ref?: Ref<HTMLSelectElement | HTMLButtonElement>;
+  /**
+   * Form field name: renders hidden input bridge(s) next to the control
+   * so `<form action={fn}>` / `new FormData(form)` receive the value in
+   * every mode — one input in single mode (String(value)), one per
+   * entry under the same name in multiple mode (native repeated-field
+   * semantics). The empty sentinel (`''` / `[]`) submits nothing.
+   * Rerouted off the visual element because the floating trigger is a
+   * `<button>`, where `name` would be submitter-scoped; react-f0rm
+   * `FormItem` usage never passes it, so both worlds coexist.
+   */
+  name?: string;
   children: ReactNode;
-} & Omit<ComponentPropsWithoutRef<'select'>, 'value' | 'size' | 'multiple'>;
+} & Omit<ComponentPropsWithoutRef<'select'>, 'value' | 'size' | 'multiple' | 'name'>;
 
 export default function Select<T extends string | number = string>({
   value: valueControl,
@@ -127,6 +140,7 @@ export default function Select<T extends string | number = string>({
   onChange,
   onValuesChange,
   placeholder,
+  name,
   ref,
   ...rest
 }: SelectProps<T>) {
@@ -142,27 +156,38 @@ export default function Select<T extends string | number = string>({
     onValuesChange?.(next);
   };
 
+  // Form bridge entries: the array value verbatim in multiple mode, the
+  // non-empty scalar in single mode ('' is the no-selection sentinel).
+  const formEntries: T[] = Array.isArray(value)
+    ? value
+    : value !== ''
+      ? [value]
+      : [];
+
   return (
-    <SelectCore
-      ref={ref}
-      value={value}
-      onChange={handleValueChange}
-      onNativeChange={multiple || searchable ? undefined : onChange}
-      multiple={multiple}
-      searchable={searchable}
-      clearable={clearable}
-      loading={loading}
-      onSearch={onSearch}
-      maxTagCount={maxTagCount}
-      virtualized={virtualized}
-      size={size}
-      className={className}
-      classNames={resolvedClassNames}
-      placeholder={placeholder}
-      {...rest}
-    >
-      {children}
-    </SelectCore>
+    <>
+      <SelectCore
+        ref={ref}
+        value={value}
+        onChange={handleValueChange}
+        onNativeChange={multiple || searchable ? undefined : onChange}
+        multiple={multiple}
+        searchable={searchable}
+        clearable={clearable}
+        loading={loading}
+        onSearch={onSearch}
+        maxTagCount={maxTagCount}
+        virtualized={virtualized}
+        size={size}
+        className={className}
+        classNames={resolvedClassNames}
+        placeholder={placeholder}
+        {...rest}
+      >
+        {children}
+      </SelectCore>
+      <NativeHiddenFields name={name} values={formEntries} />
+    </>
   );
 }
 

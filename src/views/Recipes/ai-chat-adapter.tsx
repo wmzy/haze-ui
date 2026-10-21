@@ -1,12 +1,18 @@
 import type { ReactNode } from 'react';
-import type { ToolCallStatus } from '@/lib';
+import type { PlanStatus, QueueStatus, ToolCallStatus } from '@/lib';
 
 import { useCallback, useMemo } from 'react';
 import { css } from '@linaria/core';
 
 import {
   ChatMessage,
-  Disclosure,
+  InlineCitation,
+  Plan,
+  PlanItem,
+  Queue,
+  QueueItem,
+  StepTimeline,
+  StepTimelineItem,
   StreamingText,
   ThinkingIndicator,
   ToolCallCard,
@@ -38,7 +44,13 @@ export type UIPartLike = {
   input?: unknown; // v5 `tool-${string}`
   output?: unknown; // v5 `tool-${string}`
   states?: unknown; // v5 `tool-${string}` — e.g. ['output-available']
-  source?: unknown; // 'source' — { url, title, … }
+  id?: unknown; // v5 data/tool part identifier — feeds consumer callbacks
+  source?: unknown; // 'source' — { url, title, snippet? } (ag-ui shape)
+  url?: unknown; // 'source-url' — ai-sdk v5 keeps url/title on the part
+  title?: unknown; // 'source-url'
+  duration?: unknown; // reasoning thinking time in ms (ag-ui top-level)
+  providerMetadata?: unknown; // ai-sdk v5 — { [provider]: { duration?: number } }
+  data?: unknown; // `data-*` parts — payload object (ai-sdk v5 custom data parts / ag-ui state)
 };
 
 /** Structural slice of the AI SDK's `UIMessage`. */
@@ -59,6 +71,17 @@ export type UseChatLike = {
   sendMessage?(this: void, message: unknown): unknown; // v5 sender
   append?(this: void, message: unknown): unknown; // v4 sender
   stop?(this: void): void;
+};
+
+/**
+ * Consumer callbacks for the rendered transcript. The adapter is a pure
+ * map with no store — `onQueueRemove` is how a real app wires the
+ * `data-queue` remove buttons back into its own state; without it the
+ * queue items render inert (the recipe demo's choice — document yours).
+ */
+export type RenderUIOptions = {
+  /** Fires with the queue part's id and the removed item's id. */
+  onQueueRemove?: (partId: string, itemId: string) => void;
 };
 
 // ─── Tolerance helpers ─────────────────────────────────────────────────
@@ -153,6 +176,139 @@ function toolCardView(
   };
 }
 
+// ─── Agentic part views (sources / plans / queues) ────────────────────
+
+type CitationView = { href: string; title: string; snippet?: string };
+
+/**
+ * `source` / `source-url` part → citation badge data. ai-sdk v5's
+ * `source-url` keeps `url`/`title` on the part itself; the nested
+ * `source` object is the agentic/ag-ui convention this recipe's mock
+ * uses. Parts without a usable URL are skipped — nothing to cite.
+ */
+function citationView(part: UIPartLike): CitationView | null {
+  if (part.type === 'source-url') {
+    if (typeof part.url !== 'string' || !part.url) return null;
+    return { href: part.url, title: asString(part.title) || part.url };
+  }
+  if (part.type !== 'source' || !isObject(part.source)) return null;
+  const source = part.source;
+  const url = typeof source.url === 'string' ? source.url : '';
+  if (!url) return null;
+  return {
+    href: url,
+    title: asString(source.title) || url,
+    snippet: asString(source.snippet) || undefined,
+  };
+}
+
+/** Reasoning thinking time → compact StepTimeline label, if reported. */
+function reasoningTime(part: UIPartLike): string | undefined {
+  const metadata = isObject(part.providerMetadata) ? part.providerMetadata : undefined;
+  const nested = metadata
+    ? Object.values(metadata).find(
+        (value): value is Record<string, unknown> =>
+          isObject(value) && typeof value.duration === 'number' && value.duration > 0
+      )
+    : undefined;
+  const ms: unknown =
+    typeof part.duration === 'number' && part.duration > 0
+      ? part.duration
+      : nested?.duration;
+  if (typeof ms !== 'number' || !Number.isFinite(ms) || ms <= 0) return undefined;
+  return ms < 1000 ? `${Math.round(ms)}ms` : `${Math.round(ms / 100) / 10}s`;
+}
+
+/** `completed` / `in progress` / `in-progress` → `completed` / `in_progress`. */
+const normalizeStatus = (value: unknown): string =>
+  asString(value).trim().toLowerCase().replace(/[\s-]+/g, '_');
+
+type PlanItemView = { key: string; label: string; description?: string; status: PlanStatus };
+
+/** Status vocabularies agentic runtimes emit → Plan's statuses. */
+const PLAN_STATUS: Record<string, PlanStatus> = {
+  pending: 'pending',
+  queued: 'pending',
+  planned: 'pending',
+  not_started: 'pending',
+  active: 'active',
+  in_progress: 'active',
+  running: 'active',
+  started: 'active',
+  done: 'done',
+  completed: 'done',
+  complete: 'done',
+  succeeded: 'done',
+  error: 'error',
+  failed: 'error',
+  skipped: 'skipped',
+  cancelled: 'skipped',
+  canceled: 'skipped',
+};
+
+/**
+ * `data-plan` payload → Plan view (ag-ui's plan state / ai-sdk v5
+ * custom data parts). `data.state` is the plan-level phase
+ * (draft/active/done); each step's own status drives its rendered item,
+ * and a step without a label-ish string gets a positional fallback.
+ */
+function planView(part: UIPartLike): { title: string; items: PlanItemView[] } | null {
+  const data = isObject(part.data) ? part.data : {};
+  const steps = asArray(data.steps).filter(isObject);
+  if (steps.length === 0) return null;
+  return {
+    title: asString(data.title) || 'Plan',
+    items: steps.map((step, index) => ({
+      key: asString(step.id) || `step-${index}`,
+      label:
+        asString(step.label) ||
+        asString(step.title) ||
+        asString(step.name) ||
+        `Step ${index + 1}`,
+      description: asString(step.description) || undefined,
+      status: PLAN_STATUS[normalizeStatus(step.status)] ?? 'pending',
+    })),
+  };
+}
+
+type QueueItemView = { id: string; title: string; description?: string; status: QueueStatus };
+
+/** Status vocabularies agentic runtimes emit → Queue's statuses. */
+const QUEUE_STATUS: Record<string, QueueStatus> = {
+  queued: 'queued',
+  pending: 'queued',
+  waiting: 'queued',
+  planned: 'queued',
+  sending: 'sending',
+  active: 'sending',
+  running: 'sending',
+  in_progress: 'sending',
+  failed: 'failed',
+  error: 'failed',
+};
+
+/**
+ * `data-queue` payload → Queue view: `data.items[]` each own a status;
+ * item ids feed the remove callback, positional fallbacks when absent.
+ */
+function queueView(part: UIPartLike): { items: QueueItemView[] } | null {
+  const data = isObject(part.data) ? part.data : {};
+  const items = asArray(data.items).filter(isObject);
+  if (items.length === 0) return null;
+  return {
+    items: items.map((item, index) => ({
+      id: asString(item.id) || `item-${index}`,
+      title:
+        asString(item.title) ||
+        asString(item.label) ||
+        asString(item.name) ||
+        `Item ${index + 1}`,
+      description: asString(item.description) || undefined,
+      status: QUEUE_STATUS[normalizeStatus(item.status)] ?? 'queued',
+    })),
+  };
+}
+
 // ─── Part rendering ────────────────────────────────────────────────────
 
 const textBody = css`
@@ -166,19 +322,24 @@ const reasoningBody = css`
   white-space: pre-wrap;
 `;
 
-const sourceLink = css`
-  display: inline-block;
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-primary);
-  text-decoration: underline;
+const citationStrip = css`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--haze-space-1) var(--haze-space-2);
+  margin-block-start: var(--haze-space-2);
 `;
 
 type PartRender = {
   key: string;
   /** True while this message is the last one and the run is in flight. */
   live: boolean;
+  /** Identity of this part for consumer callbacks (ai-sdk data part id). */
+  partId: string;
   resultsByCallId: Map<string, UIPartLike>;
   callIds: Set<string>;
+  /** Consumer remove hook for `data-queue` items, when provided. */
+  onQueueRemove?: (partId: string, itemId: string) => void;
 };
 
 function renderPart(part: UIPartLike, opts: PartRender): ReactNode {
@@ -200,42 +361,88 @@ function renderPart(part: UIPartLike, opts: PartRender): ReactNode {
     );
   }
 
-  // Reasoning — dots while the model thinks, transcript once it lands.
+  // Reasoning — dots while the model thinks with nothing to show yet;
+  // once text exists the transcript is a collapsible StepTimeline row,
+  // `running` while the part streams and `done` when it settles, with
+  // the thinking time the transport reported (if any).
   if (part.type === 'reasoning') {
-    if (live && part.state === 'streaming') {
-      return <ThinkingIndicator key={key} />;
-    }
     const text = asString(part.text);
-    if (!text) return null;
+    if (!text) {
+      return live && part.state === 'streaming' ? <ThinkingIndicator key={key} /> : null;
+    }
     return (
-      <Disclosure key={key} summary='Thought process'>
-        <p className={reasoningBody}>{text}</p>
-      </Disclosure>
+      <StepTimeline key={key}>
+        <StepTimelineItem
+          label='Thought process'
+          status={part.state === 'streaming' ? 'running' : 'done'}
+          time={reasoningTime(part)}
+          collapsible
+          content={<p className={reasoningBody}>{text}</p>}
+        />
+      </StepTimeline>
     );
   }
 
-  // Tools — every `tool-*` type maps to one ToolCallCard.
+  // Tools — every `tool-*` type maps to one ToolCallCard. Kept flat on
+  // purpose: cards already render in part order, so wrapping each in a
+  // collapsible StepTimeline row would add nesting without adding state.
   if (part.type.startsWith('tool-')) {
     const view = toolCardView(part, opts.resultsByCallId, opts.callIds);
     if (!view) return null;
     return <ToolCallCard key={key} {...view} />;
   }
 
-  // Sources — a plain link (no dedicated card component).
-  if (part.type === 'source') {
-    const source = part.source;
-    const url = isObject(source) && typeof source.url === 'string' ? source.url : '';
-    if (!url) return null;
-    const title =
-      isObject(source) && asString(source.title) ? asString(source.title) : url;
+  // Plan — `data-plan` carries an agentic execution plan: `data.state`
+  // is the phase, `data.steps[]` each own a status that drives Plan's
+  // computed progress summary.
+  if (part.type === 'data-plan') {
+    const view = planView(part);
+    if (!view) return null;
     return (
-      <a key={key} className={sourceLink} href={url} target='_blank' rel='noreferrer'>
-        {title}
-      </a>
+      <Plan key={key} title={view.title}>
+        {view.items.map((item) => (
+          <PlanItem
+            key={item.key}
+            label={item.label}
+            description={item.description}
+            status={item.status}
+          />
+        ))}
+      </Plan>
     );
   }
 
-  // Unknown part types (step-start, data-*, file, …) are skipped.
+  // Queue — `data-queue` carries outbox items being delivered. Removal
+  // is the consumer's business (this map holds no state): pass
+  // `options.onQueueRemove` to arm the remove buttons, otherwise they
+  // render inert.
+  if (part.type === 'data-queue') {
+    const view = queueView(part);
+    if (!view) return null;
+    const onQueueRemove = opts.onQueueRemove;
+    return (
+      <Queue key={key}>
+        {view.items.map((item) => (
+          <QueueItem
+            key={item.id}
+            title={item.title}
+            description={item.description}
+            status={item.status}
+            {...(onQueueRemove
+              ? {
+                  onRemove: () => onQueueRemove(opts.partId, item.id),
+                  removeLabel: `Remove ${item.title}`,
+                }
+              : {})}
+          />
+        ))}
+      </Queue>
+    );
+  }
+
+  // Sources are collected in renderUIMessages (numbering spans the
+  // message); unknown part types (step-start, other data-*, file, …)
+  // are skipped.
   return null;
 }
 
@@ -245,18 +452,26 @@ function renderPart(part: UIPartLike, opts: PartRender): ReactNode {
  * Pure mapping from a `useChat`-shaped object to nodes the agent
  * components render directly:
  *
- * - message        → `ChatMessage` bubble (role, user send status)
- * - text part      → plain block, or `StreamingText` while it streams
- * - reasoning part → `ThinkingIndicator`, then a `Disclosure` transcript
- * - tool part      → `ToolCallCard` (v5 `states`, v4 call/result folded)
- * - source part    → link
- * - status         → `submitted` appends waiting dots; `error` appends a
- *                    system bubble with the transport error
+ * - message         → `ChatMessage` bubble (role, user send status)
+ * - text part       → plain block, or `StreamingText` while it streams
+ * - reasoning part  → `ThinkingIndicator` while streaming with no text,
+ *                     then a collapsible `StepTimeline` row (running →
+ *                     done, thinking time when reported)
+ * - tool part       → `ToolCallCard` (v5 `states`, v4 call/result folded)
+ * - source part     → numbered `InlineCitation` strip under the body
+ * - data-plan part  → `Plan` + `Plan.Item` tree (steps own statuses)
+ * - data-queue part → `Queue` + `Queue.Item`; remove wires to
+ *                     `options.onQueueRemove` when the consumer passes one
+ * - status          → `submitted` appends waiting dots; `error` appends a
+ *                     system bubble with the transport error
+ *
+ * `options.onQueueRemove` arms the `data-queue` remove buttons — the map
+ * holds no state, so without it the queue renders inert.
  *
  * Never throws: non-array/foreign entries and unknown part types are
  * skipped, so a partial or future-shaped payload degrades, not crashes.
  */
-export function renderUIMessages(chat: UseChatLike): ReactNode[] {
+export function renderUIMessages(chat: UseChatLike, options?: RenderUIOptions): ReactNode[] {
   const messages = asArray(chat.messages).filter(isObject) as UIMessageLike[];
   const status = chat.status;
   const live = status === 'submitted' || status === 'streaming';
@@ -279,15 +494,45 @@ export function renderUIMessages(chat: UseChatLike): ReactNode[] {
     }
 
     const body: ReactNode[] = [];
+    const citations: ReactNode[] = [];
     parts.forEach((part, partIndex) => {
+      const key = `${id}-part-${partIndex}`;
+
+      // Sources are collected across the whole message and rendered as
+      // one numbered citation strip under the body — the index follows
+      // the order the parts arrived in.
+      const citation = citationView(part);
+      if (citation) {
+        citations.push(
+          <InlineCitation
+            key={key}
+            index={citations.length + 1}
+            href={citation.href}
+            title={citation.title}
+            snippet={citation.snippet}
+          />
+        );
+        return;
+      }
+
       const node = renderPart(part, {
-        key: `${id}-part-${partIndex}`,
+        key,
         live: live && isLast,
+        partId: asString(part.id) || key,
         resultsByCallId,
         callIds,
+        onQueueRemove: options?.onQueueRemove,
       });
       if (node !== null) body.push(node);
     });
+
+    if (citations.length > 0) {
+      body.push(
+        <div key={`${id}-citations`} className={citationStrip}>
+          {citations}
+        </div>
+      );
+    }
 
     // The optimistic user message is in flight while `submitted`.
     const userStatus =
@@ -331,13 +576,17 @@ export function renderUIMessages(chat: UseChatLike): ReactNode[] {
  * `useHazeChat(useChat(…))` — renders through {@link renderUIMessages}
  * and wires the sender pair to haze-ui's composer:
  *
- * - `messages` — ready-to-render nodes for `ChatContainer`
+ * - `messages` — ready-to-render nodes for `ChatContainer` (options,
+ *   e.g. `onQueueRemove`, pass straight through)
  * - `send` — `ChatInput`'s `onSend`, routed to v5 `sendMessage` or v4
  *   `append` (empty input is ignored)
  * - `busy` — `submitted | streaming`, for disabling the composer
  * - `stop` — `ChatInput` + a Stop button while `busy`
  */
-export function useHazeChat(chat: UseChatLike): {
+export function useHazeChat(
+  chat: UseChatLike,
+  options?: RenderUIOptions
+): {
   messages: ReactNode[];
   busy: boolean;
   error: boolean;
@@ -345,9 +594,10 @@ export function useHazeChat(chat: UseChatLike): {
   stop: () => void;
 } {
   const { messages, status, error } = chat;
+  const onQueueRemove = options?.onQueueRemove;
   const rendered = useMemo(
-    () => renderUIMessages({ messages, status, error }),
-    [messages, status, error]
+    () => renderUIMessages({ messages, status, error }, { onQueueRemove }),
+    [messages, status, error, onQueueRemove]
   );
 
   const { sendMessage, append, stop: stopChat } = chat;

@@ -454,6 +454,10 @@ const descriptions = {
   progress: 'Progress bar or circle driven by a percentage `value`.',
   'qr-code':
     'QR code rendered as one crisp SVG path over the `qrcode` engine dependency; theme-token module/background colors with `value`/`size`/`level`/`bordered` options.',
+  schedule:
+    'Calendar surface with day/week/month views, drag-and-keyboard rescheduling and a month grid with overflow chips.',
+  'rich-text-editor':
+    'Tiptap-powered rich text editor with a built-in formatting toolbar and controllable HTML `value`.',
   radio:
     'Radio option and group with controllable selection (`Radio`, `RadioGroup`, headless `RadioGroupCore`).',
   rating: 'Star rating with half-step support.',
@@ -475,7 +479,8 @@ const descriptions = {
   spoiler:
     'Collapsed long-content gate ("show more/less"): height-capped preview with a fade edge and a toggle button; `expanded` is controllable.',
   stat: 'Metric display with title, value and trend indicator (`StatGroup` container).',
-  'step-timeline': 'Vertical timeline of agent execution steps with per-step status.',
+  'step-timeline':
+    'Vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.',
   stepper: 'Step indicator driven by `activeStep` (`Step` children).',
   'streaming-text':
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
@@ -527,6 +532,11 @@ const descriptions = {
     'Attachment card with image thumbnail or extension badge, size formatting, upload progress and remove/retry actions.',
   'inline-completion':
     'Ghost-text completion overlay for input/textarea: Tab accepts the suggestion, Escape dismisses it.',
+  'inline-citation':
+    'Inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.',
+  plan: 'Agent plan and progress display: `Plan` + `Plan.Item` step list whose statuses drive an auto progress bar and summary.',
+  queue:
+    'Queue of pending agent actions or messages (`Queue` + `Queue.Item`) with queued/sending/failed status and optional per-item removal.',
   'float-button':
     'Floating action button over the page (`FloatButtonGroup` for expandable stacks) with built-in back-to-top and help glyphs.',
   masonry:
@@ -562,7 +572,7 @@ const CATEGORY_GROUPS = {
     'date-range-picker', 'fieldset', 'file-input',
     'form', 'image-crop', 'inline-edit', 'input', 'mentions',
     'number-input', 'otp-input',
-    'password-input', 'radio', 'rating', 'segmented', 'select',
+    'password-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
     // 'time-field' 无独立 css family——其样式并入 date-field（segmented-field
     // 引擎在 DateField 目录）+ time-picker 闭包，见 dist/css-manifest.json
@@ -575,7 +585,7 @@ const CATEGORY_GROUPS = {
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
     'code-block', 'data-table', 'descriptions', 'image', 'indicator',
-    'json-view', 'kbd', 'list', 'progress', 'qr-code',
+    'json-view', 'kbd', 'list', 'progress', 'qr-code', 'schedule',
     'sparkline', 'spoiler', 'stat', 'table', 'timeline', 'tree',
     'virtual-list', 'watermark',
   ],
@@ -591,10 +601,10 @@ const CATEGORY_GROUPS = {
   ],
   agent: [
     'approval-card', 'chat-container', 'chat-input', 'chat-message',
-    'conversation-list', 'diff-viewer', 'file-preview', 'inline-completion',
-    'log-viewer', 'markdown-renderer', 'model-picker', 'prompt-input',
-    'sources', 'step-timeline', 'streaming-text', 'thinking-indicator',
-    'token-counter', 'tool-call-card',
+    'conversation-list', 'diff-viewer', 'file-preview', 'inline-citation',
+    'inline-completion', 'log-viewer', 'markdown-renderer', 'model-picker',
+    'plan', 'prompt-input', 'queue', 'sources', 'step-timeline',
+    'streaming-text', 'thinking-indicator', 'token-counter', 'tool-call-card',
   ],
   utilities: ['collapsible', 'disclosure', 'swipe-action', 'visually-hidden'],
 };

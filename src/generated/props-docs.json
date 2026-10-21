@@ -735,13 +735,18 @@
     },
     {
       "name": "presets",
-      "type": "string[]",
-      "description": "Preset swatch row above the recent row; any parsable format"
+      "type": "ColorPickerPreset[]",
+      "description": "Preset entries: plain color strings, labeled solid groups { label?, colors } and single gradients { label?, gradient } rendered as preview bars of the actual gradient. Clicking any entry applies it"
+    },
+    {
+      "name": "gradient",
+      "type": "boolean",
+      "description": "Adds the Solid/Gradient toggle and, for gradient values, an angle field plus a stop list. The mode is value-derived; switching modes applies the default of the target mode (no per-mode value memory): solid → linear-gradient(90deg, <color> 0%, #ffffff 100%), gradient → first stop's color"
     },
     {
       "name": "recent",
       "type": "boolean",
-      "description": "Tracks recently used colors (last 10, newest first) as internal state"
+      "description": "Tracks recently used colors (last 10, newest first) as internal state; gradient values never enter the list"
     },
     {
       "name": "onChange",

@@ -84,6 +84,18 @@ const sharedLayers = {
   // so tag-input needs no utils css.
   'utils/sortable': ['tag-group'],
   'utils/sortable-handle': ['tag-group'],
+  // Native-form hidden inputs (utils/native-form.tsx): every component
+  // that renders a name-carrying FormData bridge rides with its css.
+  'utils/native-form': [
+    'color-picker',
+    'otp-input',
+    'rating',
+    'rich-text-editor',
+    'segmented',
+    'select',
+    'switch',
+    'tag-input',
+  ],
 };
 
 /**

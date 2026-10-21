@@ -106,6 +106,13 @@ const zhCN: HazeStrings = {
     alpha: '不透明度',
     presetsLabel: '预设颜色',
     recentColors: '最近使用',
+    solid: '单色',
+    gradient: '渐变',
+    angle: '角度',
+    stopColor: '节点颜色',
+    stopPosition: '节点位置',
+    addStop: '添加节点',
+    removeStop: '移除节点',
   },
   confirmDialog: {
     confirm: '确认',

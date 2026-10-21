@@ -100,3 +100,25 @@ describe('Checkbox ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Checkbox native form participation', () => {
+  // Checkbox renders a real native <input type='checkbox'> — name flows
+  // to it through the rest spread, no bridge input needed.
+  it('submits "on" under name while checked', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Checkbox name="agree" checked aria-label="Agree" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('agree')).toBe('on');
+  });
+
+  it('submits nothing while unchecked', () => {
+    const {container} = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Checkbox name="agree" aria-label="Agree" />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).get('agree')).toBeNull();
+  });
+});
