@@ -286,6 +286,34 @@
       "description": "Additional CSS class"
     }
   ],
+  "AvatarGroupProps": [
+    {
+      "name": "max",
+      "type": "number",
+      "description": "Maximum avatars rendered before the overflow chip"
+    },
+    {
+      "name": "total",
+      "type": "number",
+      "description": "Overflow count shown instead of children count - max"
+    },
+    {
+      "name": "overflowLabel",
+      "type": "(count: number) => string",
+      "default": "(count) => `+${count}`",
+      "description": "Formats the \"+N\" overflow chip text; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own formatter"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "...rest",
+      "type": "ComponentPropsWithoutRef<'div'>",
+      "description": "Native div attributes forwarded to the group element"
+    }
+  ],
   "BackToTopProps": [
     {
       "name": "threshold",
@@ -424,6 +452,17 @@
       "name": "children",
       "type": "ReactNode",
       "description": "BreadcrumbItem elements"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "default": "'Breadcrumb'",
+      "description": "Accessible name for the nav landmark; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label"
+    },
+    {
+      "name": "...rest",
+      "type": "ComponentPropsWithoutRef<'nav'>",
+      "description": "Native nav attributes forwarded to the root element"
     }
   ],
   "ButtonProps": [
@@ -654,7 +693,13 @@
     {
       "name": "onClose",
       "type": "() => void",
-      "description": "Close handler; shows close button when provided"
+      "description": "Called when remove button is clicked; providing it shows the button"
+    },
+    {
+      "name": "removeLabel",
+      "type": "string",
+      "default": "'Remove'",
+      "description": "Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string"
     },
     {
       "name": "className",
@@ -2005,6 +2050,17 @@
       "description": "Color variant"
     },
     {
+      "name": "aria-label",
+      "type": "string",
+      "default": "'Progress'",
+      "description": "Accessible name for the progressbar; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label"
+    },
+    {
+      "name": "...rest",
+      "type": "ComponentPropsWithoutRef<'div'>",
+      "description": "Native div attributes forwarded to the progressbar element"
+    },
+    {
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
@@ -2876,6 +2932,12 @@
       "name": "onClose",
       "type": "() => void",
       "description": "Called when close button is clicked"
+    },
+    {
+      "name": "removeLabel",
+      "type": "string",
+      "default": "'Remove'",
+      "description": "Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string"
     },
     {
       "name": "className",

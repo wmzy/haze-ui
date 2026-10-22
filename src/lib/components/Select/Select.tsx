@@ -26,7 +26,8 @@ type SelectClassNames = {
   clearButton?: string;
   /** Selected-value chip in multiple mode (data-slot='item'). */
   item?: string;
-  /** Panel-top filter input in searchable mode (data-slot='input'). */
+  /** Search input (data-slot='input'): the panel-top filter in
+   * searchable mode, the inline trigger input in tags mode. */
   searchInput?: string;
 };
 
@@ -39,6 +40,27 @@ type SelectProps<T extends string | number = string> = {
    * uncontrolled empty value is `[]` in this mode, `''` otherwise.
    */
   multiple?: boolean;
+  /**
+   * Tags mode (AntD `mode="tags"` / Mantine TagsInput shape): implies
+   * `multiple` selection and `searchable` — the search input moves
+   * into the trigger, which renders the selected chips and the inline
+   * input as one field. Typing filters the panel's options; Enter
+   * commits the highlighted option, or — when nothing matches —
+   * creates a new tag from the trimmed query (highlighted `Create
+   * "…"` row, deduped against existing option values and the current
+   * selection). Backspace on an empty query removes the last chip.
+   * Usable alone or with `multiple` set explicitly.
+   */
+  tags?: boolean;
+  /**
+   * Multiple/tags mode only: cap the selectable count. Once the
+   * selection reaches `maxCount`, options that are not selected are
+   * disabled — dimmed, `aria-disabled`, clicks and Enter rejected —
+   * until something is deselected (selected options stay removable,
+   * and the tags create row is suppressed at the cap). Works the same
+   * controlled and uncontrolled; single mode ignores it.
+   */
+  maxCount?: number;
   /**
    * Searchable single select (see SelectCoreProps.searchable): swaps
    * the native `<select>` for the floating listbox with a panel-top
@@ -106,10 +128,11 @@ type SelectProps<T extends string | number = string> = {
   /**
    * Forwarded to the focusable element — the native `<select>` in plain
    * and clearable single mode, the trigger `<button>` when `multiple`
-   * or `searchable` render the floating engine. Form bridges and
-   * `ref.current.focus()` reach whichever mode renders.
+   * or `searchable` render the floating engine, and the inline
+   * `<input>` in tags mode. Form bridges and `ref.current.focus()`
+   * reach whichever mode renders.
    */
-  ref?: Ref<HTMLSelectElement | HTMLButtonElement>;
+  ref?: Ref<HTMLSelectElement | HTMLButtonElement | HTMLInputElement>;
   /**
    * Form field name: renders hidden input bridge(s) next to the control
    * so `<form action={fn}>` / `new FormData(form)` receive the value in
@@ -127,6 +150,8 @@ type SelectProps<T extends string | number = string> = {
 export default function Select<T extends string | number = string>({
   value: valueControl,
   multiple = false,
+  tags = false,
+  maxCount,
   searchable = false,
   clearable = false,
   loading = false,
@@ -144,7 +169,12 @@ export default function Select<T extends string | number = string>({
   ref,
   ...rest
 }: SelectProps<T>) {
-  const [value, setValue] = useControl(valueControl, multiple ? ([] as T[]) : ('' as T));
+  // Tags implies multiple semantics: the array value and the `[]`
+  // uncontrolled default apply to `tags` alone as well.
+  const [value, setValue] = useControl(
+    valueControl,
+    multiple || tags ? ([] as T[]) : ('' as T)
+  );
   // ConfigProvider `Select.classNames` merges under the prop, per key.
   const config = useConfigDefaults('Select');
   const resolvedClassNames = config.classNames
@@ -170,8 +200,10 @@ export default function Select<T extends string | number = string>({
         ref={ref}
         value={value}
         onChange={handleValueChange}
-        onNativeChange={multiple || searchable ? undefined : onChange}
+        onNativeChange={multiple || searchable || tags ? undefined : onChange}
         multiple={multiple}
+        tags={tags}
+        maxCount={maxCount}
         searchable={searchable}
         clearable={clearable}
         loading={loading}

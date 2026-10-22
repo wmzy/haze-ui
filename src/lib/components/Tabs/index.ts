@@ -9,3 +9,7 @@ export {default as TabPanel} from './TabPanel';
 export type {TabPanelProps} from './TabPanel';
 export {default as SortableTabList} from './SortableTabList';
 export type {SortableTabListProps} from './SortableTabList';
+// The per-variant skin classes the strip and its tabs wear, exported
+// for composition (same shape and rationale as Button's
+// `buttonVariants`/`buttonSizes`).
+export {tabVariants, listVariants} from './tabs-styles';

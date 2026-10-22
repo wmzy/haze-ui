@@ -1,5 +1,6 @@
 export {default as Table} from './Table';
 export type {TableProps} from './Table';
+export type {TableClassNames} from './TableContext';
 export {default as TableHead} from './TableHead';
 export type {TableHeadProps} from './TableHead';
 export {default as TableBody} from './TableBody';

@@ -4,6 +4,7 @@ import { css } from '@linaria/core';
 import { useId } from 'react';
 
 import { dropdownMenuGroupLabel } from './dropdown-menu-item-styles';
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuGroupProps = {
   /** Non-interactive heading naming the group (aria-labelledby). */
@@ -28,9 +29,10 @@ export default function DropdownMenuGroup({
   className,
   children,
 }: DropdownMenuGroupProps) {
+  const classNames = useDropdownMenuContext().classNames;
   const labelId = useId();
   return (
-    <div data-slot='group' role="group" aria-labelledby={labelId} x-class={[group, className]}>
+    <div data-slot='group' role="group" aria-labelledby={labelId} x-class={[group, classNames?.group, className]}>
       <div id={labelId} data-slot='group-label' x-class={dropdownMenuGroupLabel}>
         {label}
       </div>

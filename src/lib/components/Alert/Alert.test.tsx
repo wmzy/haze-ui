@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Alert from './Alert';
+import { alertVariants } from './index';
 
 describe('Alert', () => {
   it('renders children with alert role', () => {
@@ -47,5 +48,19 @@ describe('Alert', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('alertVariants exports', () => {
+  it('exposes the variant skin classes for composition', () => {
+    expect(Object.keys(alertVariants)).toEqual(['info', 'success', 'warning', 'danger']);
+    for (const cls of Object.values(alertVariants)) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('is the exact class Alert wears', () => {
+    render(<Alert variant="warning">Skin</Alert>);
+    expect(screen.getByRole('alert')).toHaveClass(alertVariants.warning);
   });
 });

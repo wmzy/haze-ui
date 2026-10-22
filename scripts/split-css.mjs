@@ -71,6 +71,7 @@ const sharedLayers = {
     'datepicker',
     'dropdown-menu',
     'menu',
+    'navigation-menu',
     'popover',
     'select',
     'tree-select',

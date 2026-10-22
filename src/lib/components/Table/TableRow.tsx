@@ -1,12 +1,19 @@
 import type {ReactNode} from 'react';
 
+import { useTableClassNames } from './TableContext';
+
 type TableRowProps = {
   className?: string;
   children: ReactNode;
 };
 
 export default function TableRow({className, children}: TableRowProps) {
-  return <tr data-slot="row" x-class={[className]}>{children}</tr>;
+  const classNames = useTableClassNames();
+  return (
+    <tr data-slot="row" x-class={[classNames?.row, className]}>
+      {children}
+    </tr>
+  );
 }
 
 export type {TableRowProps};

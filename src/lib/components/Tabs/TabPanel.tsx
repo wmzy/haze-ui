@@ -23,9 +23,14 @@ export default function TabPanel({
   className,
   children,
 }: TabPanelProps) {
-  const { value: current, destroyInactiveTabPane, classNames } =
+  const { value: current, destroyInactiveTabPane, lazy, activated, classNames } =
     useTabsContext();
   const isActive = current === value;
+
+  // lazy: a panel that has never been active stays unmounted — its
+  // first activation mounts it (the active panel passes every gate);
+  // afterwards destroyInactiveTabPane governs as usual.
+  if (!isActive && lazy && !activated.has(value)) return null;
 
   // destroyInactiveTabPane: unmount instead of hide — the panel's
   // internal state (inputs, scroll) is destroyed on switch, which is

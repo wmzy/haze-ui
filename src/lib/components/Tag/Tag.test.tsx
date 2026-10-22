@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Tag from './Tag';
+import { tagVariants, tagSizes } from './index';
 
 describe('Tag', () => {
   it('renders children', () => {
@@ -30,6 +31,11 @@ describe('Tag', () => {
     expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
   });
 
+  it('honors removeLabel for the close button name', () => {
+    render(<Tag closable removeLabel="标签移除">Label</Tag>);
+    expect(screen.getByRole('button', { name: '标签移除' })).toBeInTheDocument();
+  });
+
   it('calls onClose when close button is clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
@@ -50,5 +56,28 @@ describe('Tag', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('tagVariants / tagSizes exports', () => {
+  it('exposes the variant and size skin classes for composition', () => {
+    expect(Object.keys(tagVariants)).toEqual([
+      'default',
+      'primary',
+      'success',
+      'warning',
+      'danger',
+    ]);
+    expect(Object.keys(tagSizes)).toEqual(['sm', 'md']);
+    for (const cls of [...Object.values(tagVariants), ...Object.values(tagSizes)]) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('are the exact classes Tag wears', () => {
+    render(<Tag variant="primary" size="sm">Skin</Tag>);
+    const tag = screen.getByText('Skin');
+    expect(tag).toHaveClass(tagVariants.primary);
+    expect(tag).toHaveClass(tagSizes.sm);
   });
 });

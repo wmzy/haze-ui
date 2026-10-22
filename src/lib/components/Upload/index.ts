@@ -3,6 +3,7 @@ export type {UploadProps} from './Upload';
 export {default as UploadCore} from './UploadCore';
 export type {UploadCoreProps} from './UploadCore';
 export type {
+  UploadClassNames,
   UploadHandle,
   UploadStatus,
   UploadFile,

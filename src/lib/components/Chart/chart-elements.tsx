@@ -1,4 +1,9 @@
-import type { CSSProperties, ReactElement, ReactNode } from 'react';
+import type {
+  ComponentProps,
+  CSSProperties,
+  ReactElement,
+  ReactNode,
+} from 'react';
 
 import type {
   ReferenceAreaProps,
@@ -14,6 +19,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  DefaultLegendContent,
   Legend,
   Line,
   LineChart,
@@ -371,6 +377,18 @@ export function buildTooltipContent(
 
 /** The full token-styled chart tree Chart renders — kept beside the pure
  * helpers so the component module stays a single component export. */
+/** Builds the recharts Legend `content` for the Chart `classNames.legend`
+ * slot: a div wrapping the default legend items (recharts v3's own
+ * Legend wrapper takes no consumer class). Legend hands the payload to
+ * this function; it forwards to DefaultLegendContent untouched. */
+function legendContentFactory(className: string) {
+  return (props: ComponentProps<typeof DefaultLegendContent>) => (
+    <div className={className}>
+      <DefaultLegendContent {...props} />
+    </div>
+  );
+}
+
 export function chartTree(options: {
   type: RechartsChartType;
   data: readonly unknown[];
@@ -385,6 +403,12 @@ export function chartTree(options: {
   referenceLines?: readonly ReferenceLineProps[];
   referenceAreas?: readonly ReferenceAreaProps[];
   referenceDots?: readonly ReferenceDotProps[];
+  /** Consumer class for the recharts Tooltip wrapper (the Chart
+   *  `classNames.tooltip` slot). */
+  tooltipClassName?: string;
+  /** Consumer class for the container around the default recharts
+   *  legend (the Chart `classNames.legend` slot). */
+  legendClassName?: string;
 }): ReactElement {
   const {
     type,
@@ -400,7 +424,14 @@ export function chartTree(options: {
     referenceLines,
     referenceAreas,
     referenceDots,
+    tooltipClassName,
+    legendClassName,
   } = options;
+
+  const legendContent =
+    legendClassName === undefined
+      ? undefined
+      : legendContentFactory(legendClassName);
 
   const tooltipContent = renderTooltip
     ? buildTooltipContent(renderTooltip)
@@ -433,9 +464,15 @@ export function chartTree(options: {
           data,
           <>
             {showTooltip && (
-              <Tooltip contentStyle={TOOLTIP_STYLE} content={tooltipContent} />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                content={tooltipContent}
+                wrapperClassName={tooltipClassName}
+              />
             )}
-            {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+            {showLegend && (
+              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
+            )}
             {/* Per-series `type` and `stackId` are cartesian-only — each pie
              * series is one ring regardless, so both are ignored here. */}
             {series.map((entry, index) =>
@@ -471,9 +508,12 @@ export function chartTree(options: {
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
                 content={tooltipContent}
+                wrapperClassName={tooltipClassName}
               />
             )}
-            {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+            {showLegend && (
+              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
+            )}
             {/* Per-series `type` and `stackId` are cartesian-only — radar
              * renders one polygon per series regardless, so both are
              * ignored here. */}
@@ -509,9 +549,12 @@ export function chartTree(options: {
                 cursor={{ stroke: AXIS_STROKE }}
                 contentStyle={TOOLTIP_STYLE}
                 content={tooltipContent}
+                wrapperClassName={tooltipClassName}
               />
             )}
-            {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+            {showLegend && (
+              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
+            )}
             {annotations}
             {/* Same as radar: `type`/`stackId` are cartesian-only — scatter
              * renders one point set per series regardless. */}
@@ -557,9 +600,12 @@ export function chartTree(options: {
               cursor={{ stroke: AXIS_STROKE }}
               contentStyle={TOOLTIP_STYLE}
               content={tooltipContent}
+              wrapperClassName={tooltipClassName}
             />
           )}
-          {showLegend && <Legend wrapperStyle={LEGEND_STYLE} />}
+          {showLegend && (
+            <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
+          )}
           {annotations}
           {/* Composed charts: a per-series `type` overrides that series'
            * element shape (bar series inside a line chart, a line over an
@@ -828,8 +874,11 @@ export function waffleCellColors(
 export function waffleTree(options: {
   series: readonly ChartWaffleSeries[];
   columns?: number;
+  /** Consumer class for the built-in legend row (the Chart
+   *  `classNames.legend` slot). */
+  legendClassName?: string;
 }): ReactElement {
-  const { series, columns = 10 } = options;
+  const { series, columns = 10, legendClassName } = options;
   const safeColumns = Math.max(1, Math.floor(columns));
   const cells = waffleCellColors(series, safeColumns);
   const rows = Math.max(1, Math.ceil(cells.length / safeColumns));
@@ -857,7 +906,10 @@ export function waffleTree(options: {
           ))}
         </div>
       </div>
-      <div data-slot='waffle-legend' x-class={[waffleLegendStyle]}>
+      <div
+        data-slot='waffle-legend'
+        x-class={[waffleLegendStyle, legendClassName]}
+      >
         {series.map((entry, index) => (
           <div
             key={entry.name}

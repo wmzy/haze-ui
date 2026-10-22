@@ -1,12 +1,25 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
+import type { TableClassNames } from './TableContext';
 
 import { css } from '@linaria/core';
+
+import { TableClassNamesProvider } from './TableContext';
 
 type TableProps = {
   striped?: boolean;
   bordered?: boolean;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): declared once
+   * here and distributed to every family part through context (see
+   * {@link TableClassNames}). Slot classes are appended at the end of
+   * each part's class list; per-part `className` props still land after
+   * the slot class. Not passing it renders identical output.
+   */
+  classNames?: TableClassNames;
   className?: string;
   children: ReactNode;
+  /** Forwarded to the underlying `<table>` element. */
+  ref?: Ref<HTMLTableElement>;
 };
 
 const wrapper = css`
@@ -37,23 +50,28 @@ const borderedStyle = css`
 export default function Table({
   striped = false,
   bordered = false,
+  classNames,
   className,
   children,
+  ref,
 }: TableProps) {
   return (
-    <div x-class={[wrapper]} data-slot="table-container">
-      <table
-        data-slot="table"
-        x-class={[
-          base,
-          striped && stripedStyle,
-          bordered && borderedStyle,
-          className,
-        ]}
-      >
-        {children}
-      </table>
-    </div>
+    <TableClassNamesProvider value={classNames}>
+      <div x-class={[wrapper, classNames?.wrapper]} data-slot="table-container">
+        <table
+          ref={ref}
+          data-slot="table"
+          x-class={[
+            base,
+            striped && stripedStyle,
+            bordered && borderedStyle,
+            className,
+          ]}
+        >
+          {children}
+        </table>
+      </div>
+    </TableClassNamesProvider>
   );
 }
 

@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { NumberInput, NumberInputCore } from 'haze-ui';
+import { NumberInput, NumberInputCore, inputSizes, btnSizes } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/number-input.css';
 
-export { NumberInput, NumberInputCore };
+export { NumberInput, NumberInputCore, inputSizes, btnSizes };
 export type { NumberInputProps, NumberInputCoreProps } from 'haze-ui';

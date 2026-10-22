@@ -52,6 +52,7 @@ export const fr: DeepPartial<SiteStrings> = {
     streamingA11y: 'Accessibilité du streaming',
     motion: 'Préréglages d’animation',
     figmaTokens: 'Tokens dans Figma',
+    serverActions: 'React 19 Actions',
   },
   guideSummaries: {
     darkMode:
@@ -67,6 +68,8 @@ export const fr: DeepPartial<SiteStrings> = {
       'Préréglages d’animation entrée/sortie pilotés par data-state sur les tokens de mouvement.',
     figmaTokens:
       'Les exports de tokens W3C DTF vers Tokens Studio et Figma Variables — flux et limites.',
+    serverActions:
+      'Server actions sur FormData natif, useActionState et useOptimistic avec haze-ui.',
   },
   blocks: {
     title: 'Blocs',
@@ -133,6 +136,8 @@ export const fr: DeepPartial<SiteStrings> = {
     Badge: 'Petit libellé d’état en ligne avec options de variante et de couleur.',
     Button:
       'Bouton d’action avec options variant/size/square ; un <button> natif sous le capot.',
+    ButtonGroup:
+      'Barre de boutons liés : coins et coutures fusionnés, size/variant/disabled au niveau groupe, sous-composant séparateur.',
     CountUp:
       'Compteur numérique animé : rAF + interpolation ease-out vers la cible, avec bascule instantanée sous prefers-reduced-motion.',
     Countdown:
@@ -196,6 +201,11 @@ export const fr: DeepPartial<SiteStrings> = {
       'Recadreur d’image interactif (compagnon d’Upload) : zone CropRect normalisée contrôlable, verrou de ratio, masque avatar circulaire et pilotage clavier complet (flèches pour déplacer, Maj+flèches pour redimensionner).',
     InlineEdit: 'Valeur textuelle à éditer sur place au clic.',
     Input: 'Champ texte avec ornements ; sucre au-dessus d’InputCore.',
+    InputGroup: 'Cluster de champs : add-ons préfixe/suffixe (icône, texte, bouton) fusionnés avec Input/Select en un seul contrôle.',
+    Meter: 'Jauge sémantique en lecture seule : track et bar changent de couleur au franchissement de chaque seuil.',
+    CopyButton: 'Bouton de copie en un clic avec état « copié » ; inclut la puce Snippet.',
+    Heatmap: 'Carte de chaleur d’activité style GitHub : cases teintées par valeur, palette suivant le thème.',
+    TimeGrid: 'Grille de créneaux générée d’une fenêtre et d’un pas : les flèches naviguent et sélectionnent.',
     Mentions:
       'Saisie de mentions avec suggestions au caractère déclencheur choisies dans une liste d’options.',
     NumberInput: 'Saisie numérique avec min/max/step.',
@@ -294,6 +304,7 @@ export const fr: DeepPartial<SiteStrings> = {
     FloatButton:
       'Bouton d’action flottant au-dessus de la page ; FloatButtonGroup empile des actions derrière un déclencheur d’expansion, avec glyphes retour-en-haut et aide intégrés.',
     NavigationBar: 'Barre de navigation supérieure avec emplacements brand et end.',
+    NavigationMenu: 'Méga-menu au survol : les déclencheurs ouvrent de grands panneaux avec délai d’intention et grâce du pointeur ; activeValue contrôlable.',
     Pagination: 'Navigation par pages avec page contrôlable et fenêtres de points de suspension.',
     Stepper: 'Indicateur d’étapes piloté par activeStep (enfants Step).',
     Tabs: 'Bascule de panneaux à onglets avec onglet actif contrôlable.',

@@ -10,6 +10,7 @@ import {
   dropdownMenuItemIndicator,
   dropdownMenuItemKbd,
 } from './dropdown-menu-item-styles';
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuCheckboxItemProps = {
   /** Whether the option is checked — controlled control or uncontrolled initial value. */
@@ -74,12 +75,13 @@ export default function DropdownMenuCheckboxItem({
   className,
   children,
 }: DropdownMenuCheckboxItemProps) {
+  const classNames = useDropdownMenuContext().classNames;
   const [checked, setChecked] = useControl(checkedControl, false);
 
   return (
     <button
       data-slot='menu-checkbox-item'
-      x-class={[item, danger && dropdownMenuItemDanger, className]}
+      x-class={[item, danger && dropdownMenuItemDanger, classNames?.checkboxItem, className]}
       type="button"
       role="menuitemcheckbox"
       aria-checked={checked}

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Banner from './Banner';
+import { bannerVariants } from './index';
 
 describe('Banner', () => {
   it('renders children', () => {
@@ -67,5 +68,19 @@ describe('Banner', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('bannerVariants exports', () => {
+  it('exposes the variant skin classes for composition', () => {
+    expect(Object.keys(bannerVariants)).toEqual(['info', 'success', 'warning', 'danger']);
+    for (const cls of Object.values(bannerVariants)) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('is the exact class Banner wears', () => {
+    render(<Banner variant="danger">Skin</Banner>);
+    expect(screen.getByRole('alert')).toHaveClass(bannerVariants.danger);
   });
 });

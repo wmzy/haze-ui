@@ -24,8 +24,16 @@ export default function DropdownMenuTrigger({
   children,
   className,
 }: DropdownMenuTriggerProps) {
-  const { open, setOpen, triggerRef, contentRef, contentId, focusRequestRef, floating } =
-    useDropdownMenuContext();
+  const {
+    open,
+    setOpen,
+    triggerRef,
+    contentRef,
+    contentId,
+    focusRequestRef,
+    floating,
+    classNames,
+  } = useDropdownMenuContext();
 
   // Open the menu and land focus on its first/last item. When the menu is
   // already open (focus stayed on the clicked trigger), focus it directly.
@@ -44,7 +52,7 @@ export default function DropdownMenuTrigger({
     <button
       ref={triggerRef}
       data-slot='trigger'
-      x-class={[trigger, className]}
+      x-class={[trigger, classNames?.trigger, className]}
       type="button"
       aria-haspopup="menu"
       aria-expanded={open}

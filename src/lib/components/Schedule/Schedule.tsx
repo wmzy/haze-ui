@@ -3,6 +3,7 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
+  Ref,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
@@ -40,6 +41,28 @@ type ScheduleBusinessHours = { start: number; end: number };
 
 type ScheduleViewLabels = Partial<Record<ScheduleView, string>>;
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape) for Schedule: one
+ * record themes the toolbar and both grid kinds plus every event chip.
+ * Consumer classes are appended at the end of each part's class list
+ * (able to override component defaults).
+ */
+type ScheduleClassNames = {
+  /** The root container (`data-slot='schedule'`). */
+  root?: string;
+  /** The toolbar strip — nav buttons, title and the view switcher
+   *  (`data-slot='toolbar'`). */
+  toolbar?: string;
+  /** The day/week time grid (`data-slot='time-grid'`), header and
+   *  all-day rows included. */
+  timeGrid?: string;
+  /** The month grid (`data-slot='month-grid'`). */
+  monthGrid?: string;
+  /** Every event chip across all views (`data-slot='event'`), the
+   *  "+N" overflow chips excepted (`data-slot='overflow-chip'`). */
+  event?: string;
+}
+
 type ScheduleProps = {
   /** Events to lay out. The component never mutates them — drag and
    * keyboard rescheduling surface through `onEventChange` and the
@@ -71,7 +94,17 @@ type ScheduleProps = {
   /** BCP 47 locale for weekday/month/time formatting; falls back to the
    * LocaleProvider chain, then the browser default. */
   locale?: string;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape), keyed by the
+   * structural parts (see {@link ScheduleClassNames}). Slot classes are
+   * appended at the end of each part's class list; per-part `className`
+   * stays on the root and still lands after the `root` slot. Not
+   * passing it renders identical output.
+   */
+  classNames?: ScheduleClassNames;
   className?: string;
+  /** Forwarded to the root container `<div>` (`data-slot='schedule'`). */
+  ref?: Ref<HTMLDivElement>;
 } & ComponentPropsWithoutRef<'div'>;
 
 type DropPosition = { dayIndex: number; minutes: number };
@@ -683,7 +716,9 @@ export default function Schedule({
   nextLabel = 'Next',
   viewLabels,
   locale,
+  classNames,
   className,
+  ref,
   ...rest
 }: ScheduleProps) {
   const [view, setView] = useControl(viewControl, 'week');
@@ -1002,7 +1037,10 @@ export default function Schedule({
   };
 
   const renderTimeGrid = () => (
-    <div data-slot='time-grid' className={timeGrid}>
+    <div
+      data-slot='time-grid'
+      x-class={[timeGrid, classNames?.timeGrid]}
+    >
       <div data-slot='day-header' className={headerRow}>
         <div className={headerGutter} aria-hidden />
         <div
@@ -1040,7 +1078,11 @@ export default function Schedule({
                 key={placement.event.id}
                 type='button'
                 data-slot='event'
-                x-class={[allDayChip, chipColors[placement.event.color ?? 'primary']]}
+                x-class={[
+                  allDayChip,
+                  chipColors[placement.event.color ?? 'primary'],
+                  classNames?.event,
+                ]}
                 style={{
                   gridColumn: `${placement.startCol + 1} / span ${placement.span}`,
                 }}
@@ -1114,6 +1156,7 @@ export default function Schedule({
                     eventBlock,
                     chipColors[placement.event.color ?? 'primary'],
                     dragging && eventDragging,
+                    classNames?.event,
                   ]}
                   style={{
                     top: (minutesOfDay(start) / 60) * HOUR_HEIGHT,
@@ -1191,7 +1234,7 @@ export default function Schedule({
     return (
       <div
         data-slot='month-grid'
-        className={monthGrid}
+        x-class={[monthGrid, classNames?.monthGrid]}
         role='grid'
         aria-label={titleText}
         ref={monthGridRef}
@@ -1256,7 +1299,11 @@ export default function Schedule({
                         key={event.id}
                         type='button'
                         data-slot='event'
-                        x-class={[monthChip, chipColors[event.color ?? 'primary']]}
+                        x-class={[
+                          monthChip,
+                          chipColors[event.color ?? 'primary'],
+                          classNames?.event,
+                        ]}
                         aria-label={[title, time].filter(Boolean).join(', ')}
                         onClick={(ce) => {
                           ce.stopPropagation();
@@ -1290,8 +1337,8 @@ export default function Schedule({
   };
 
   return (
-    <div data-slot='schedule' x-class={[root, className]} {...rest}>
-      <div data-slot='toolbar' className={toolbar}>
+    <div ref={ref} data-slot='schedule' x-class={[root, classNames?.root, className]} {...rest}>
+      <div data-slot='toolbar' x-class={[toolbar, classNames?.toolbar]}>
         <Button
           variant='ghost'
           size='sm'
@@ -1337,6 +1384,7 @@ export default function Schedule({
 
 export type {
   ScheduleProps,
+  ScheduleClassNames,
   ScheduleEvent,
   ScheduleView,
   ScheduleEventChange,

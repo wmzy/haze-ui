@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 
@@ -15,6 +15,21 @@ import {
   type FloatingPlacement,
 } from '../../utils/floating';
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape): keys mirror the
+ * data-slot each part carries. Consumer classes are appended at the end
+ * of each part's class list (able to override component defaults) and
+ * compose with the root `className`.
+ */
+type TooltipClassNames = {
+  /** The wrapper `<span>` (`data-slot='tooltip'`) around trigger and bubble. */
+  root?: string;
+  /** The trigger-hosting `<span>` (`data-slot='trigger'`) that wraps children. */
+  trigger?: string;
+  /** The bubble `<span>` itself (`data-slot='content'`, `role='tooltip'`). */
+  content?: string;
+};
+
 type TooltipProps = {
   content: ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
@@ -23,7 +38,15 @@ type TooltipProps = {
   open?: ControlOrValue<boolean>;
   /** Viewport inset the bubble treats as collision space. */
   collisionPadding?: CollisionPadding;
+  /** Slot classes (see {@link TooltipClassNames}); each key lands on the
+   * part carrying the matching data-slot, after the component defaults. */
+  classNames?: TooltipClassNames;
   className?: string;
+  /**
+   * Forwarded to the component's own root — the wrapper `<span>`
+   * (`data-slot='tooltip'`) around the trigger host and the bubble.
+   */
+  ref?: Ref<HTMLSpanElement>;
   children: ReactNode;
 };
 
@@ -68,7 +91,9 @@ export default function Tooltip({
   delay: delayProp,
   open: openControl,
   collisionPadding,
+  classNames,
   className,
+  ref,
   children,
 }: TooltipProps) {
   // Three tiers: explicit prop → ConfigProvider default → built-in 150ms
@@ -114,10 +139,11 @@ export default function Tooltip({
   };
 
   return (
-    <span data-slot='tooltip' x-class={[wrapper, className]}>
+    <span ref={ref} data-slot='tooltip' x-class={[wrapper, className, classNames?.root]}>
       <span
         ref={triggerRef}
         data-slot='trigger'
+        x-class={[classNames?.trigger]}
         style={floating.triggerStyle}
         aria-describedby={id}
         onMouseEnter={show}
@@ -139,6 +165,7 @@ export default function Tooltip({
           bubble,
           ...floating.panelClasses,
           ...floatingPlacementClasses(floating, placement, floating.direction),
+          classNames?.content,
         ]}
       >
         {content}
@@ -147,4 +174,4 @@ export default function Tooltip({
   );
 }
 
-export type { TooltipProps };
+export type { TooltipProps, TooltipClassNames };

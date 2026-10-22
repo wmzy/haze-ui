@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { MenuDataItem } from '../../utils/menuItems';
+import type { MenuClassNames } from './MenuContext';
 
 import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
@@ -21,6 +22,8 @@ import MenuSub from './MenuSub';
 import MenuSubContent from './MenuSubContent';
 import MenuSubTrigger from './MenuSubTrigger';
 
+import { MenuClassNamesProvider } from './MenuContext';
+
 type MenuProps = {
   open?: ControlOrValue<boolean>;
   trigger?: ReactNode;
@@ -31,8 +34,24 @@ type MenuProps = {
    * uses. When passed, it replaces the panel's children.
    */
   items?: MenuDataItem[];
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): declared once
+   * here and distributed to every family part through context (see
+   * {@link MenuClassNames}). Slot classes are appended at the end of
+   * each part's class list; per-part `className` props still land after
+   * the slot class. Not passing it renders identical output.
+   */
+  classNames?: MenuClassNames;
   className?: string;
   children?: ReactNode;
+  /**
+   * Forwarded to the family's root wrapper `<div>`
+   * (`data-slot='menu'`) — the container holding both the trigger area
+   * and the floating panel. The panel itself is a native popover with
+   * its own DOM; reach it through `classNames.panel` styling or panel
+   * queries (`role="menu"`), not this ref.
+   */
+  ref?: Ref<HTMLDivElement>;
 };
 
 const container = css`
@@ -72,12 +91,22 @@ const menuFamily = {
   SubContent: MenuSubContent,
 };
 
+/** Joins the panel's own `className` prop with the `classNames.panel`
+ * slot — the slot class lands after it, both after the visual skin. */
+function panelClassName(className: string | undefined, slot: string | undefined) {
+  if (className === undefined) return slot;
+  if (slot === undefined) return className;
+  return `${className} ${slot}`;
+}
+
 export default function Menu({
   open: openControl,
   trigger,
   items,
+  classNames,
   className,
   children,
+  ref,
 }: MenuProps) {
   const [open, setOpen] = useControl(openControl, false);
   const triggerRef = useRef<HTMLSpanElement>(null);
@@ -108,28 +137,31 @@ export default function Menu({
   );
 
   return (
-    <div data-slot='menu' x-class={container}>
-      <span
-        ref={triggerRef}
-        data-slot='trigger'
-        style={floating.triggerStyle}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
-      >
-        {trigger}
-      </span>
-      <FloatingPanel
-        ref={setPanelRef}
-        behavior={floating}
-        placement="bottom"
-        role="menu"
-        visualClass={panel}
-        className={className}
-        onKeyDown={handleKeyDown}
-      >
-        {items !== undefined ? renderMenuDataItems(items, menuFamily) : children}
-      </FloatingPanel>
-    </div>
+    <MenuClassNamesProvider value={classNames}>
+      <div ref={ref} data-slot='menu' x-class={[container, classNames?.root]}>
+        <span
+          ref={triggerRef}
+          data-slot='trigger'
+          style={floating.triggerStyle}
+          className={classNames?.trigger}
+          onPointerDown={floating.onTriggerPointerDown}
+          onClick={floating.onTriggerClick}
+        >
+          {trigger}
+        </span>
+        <FloatingPanel
+          ref={setPanelRef}
+          behavior={floating}
+          placement="bottom"
+          role="menu"
+          visualClass={panel}
+          className={panelClassName(className, classNames?.panel)}
+          onKeyDown={handleKeyDown}
+        >
+          {items !== undefined ? renderMenuDataItems(items, menuFamily) : children}
+        </FloatingPanel>
+      </div>
+    </MenuClassNamesProvider>
   );
 }
 

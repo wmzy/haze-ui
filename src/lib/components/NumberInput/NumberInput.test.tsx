@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import NumberInput from './NumberInput';
 import NumberInputCore from './NumberInputCore';
+import { inputSizes, btnSizes } from './index';
 
 describe('NumberInput', () => {
   it('renders a number input with stepper buttons', () => {
@@ -133,5 +134,22 @@ describe('NumberInput ref forwarding', () => {
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
     ref.current!.focus();
     expect(document.activeElement).toBe(ref.current);
+  });
+});
+
+describe('inputSizes / btnSizes exports', () => {
+  it('expose the per-size skin classes for composition', () => {
+    expect(Object.keys(inputSizes)).toEqual(['sm', 'md', 'lg']);
+    expect(Object.keys(btnSizes)).toEqual(['sm', 'md', 'lg']);
+    for (const cls of [...Object.values(inputSizes), ...Object.values(btnSizes)]) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('are the exact classes NumberInput wears', () => {
+    render(<NumberInput size="sm" aria-label="quantity" />);
+    expect(screen.getByRole('spinbutton')).toHaveClass(inputSizes.sm);
+    expect(screen.getByRole('button', { name: 'Decrease' })).toHaveClass(btnSizes.sm);
+    expect(screen.getByRole('button', { name: 'Increase' })).toHaveClass(btnSizes.sm);
   });
 });

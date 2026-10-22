@@ -1436,3 +1436,102 @@ describe('DropdownMenu axe with selection items', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('DropdownMenu classNames slots', () => {
+  it('applies every slot to its part', async () => {
+    const user = userEvent.setup();
+    render(
+      <DropdownMenu
+        classNames={{
+          root: 'slot-root',
+          trigger: 'slot-trigger',
+          content: 'slot-content',
+          item: 'slot-item',
+          group: 'slot-group',
+          separator: 'slot-separator',
+        }}
+      >
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuGroup label="Actions">
+            <DropdownMenuItem>Rename</DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    expect(document.querySelector("[data-slot='dropdown-menu']")).toHaveClass(
+      'slot-root'
+    );
+    await user.click(screen.getByRole('button', { name: 'Open' }));
+    expect(screen.getByRole('button', { name: 'Open' })).toHaveClass(
+      'slot-trigger'
+    );
+    expect(screen.getByRole('menu')).toHaveClass('slot-content');
+    expect(screen.getByRole('menuitem', { name: 'Rename' })).toHaveClass(
+      'slot-item'
+    );
+    expect(screen.getByRole('group', { name: 'Actions' })).toHaveClass(
+      'slot-group'
+    );
+    expect(screen.getByRole('separator')).toHaveClass('slot-separator');
+  });
+
+  it('applies checkbox, radio, sub, subTrigger and subContent slots', async () => {
+    const user = userEvent.setup();
+    render(
+      <DropdownMenu
+        open
+        classNames={{
+          checkboxItem: 'slot-checkbox',
+          radioItem: 'slot-radio',
+          sub: 'slot-sub',
+          subTrigger: 'slot-sub-trigger',
+          subContent: 'slot-sub-content',
+        }}
+      >
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuCheckboxItem checked>Snap</DropdownMenuCheckboxItem>
+          <DropdownMenuRadioGroup value="g">
+            <DropdownMenuRadioItem value="g">Grid</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Share</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem>Link</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    expect(screen.getByRole('menuitemcheckbox')).toHaveClass('slot-checkbox');
+    expect(screen.getByRole('menuitemradio')).toHaveClass('slot-radio');
+    const subTrigger = screen.getByRole('menuitem', { name: 'Share' });
+    expect(subTrigger).toHaveClass('slot-sub-trigger');
+    expect(subTrigger.parentElement).toHaveClass('slot-sub');
+    // the sub panel unmounts while the submenu is closed — open it,
+    // then assert its slot class on the nested role="menu"
+    await user.click(subTrigger);
+    expect(subTrigger.parentElement!.querySelector('[role="menu"]')).toHaveClass(
+      'slot-sub-content'
+    );
+    expect(screen.getByRole('menuitem', { name: 'Link' })).toBeInTheDocument();
+  });
+
+  it('lands the content slot after the className prop class', async () => {
+    const user = userEvent.setup();
+    render(
+      <DropdownMenu classNames={{ content: 'slot-content' }}>
+        <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+        <DropdownMenuContent className="custom">
+          <DropdownMenuItem>X</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Open' }));
+    const menu = screen.getByRole('menu');
+    expect(menu).toHaveClass('custom');
+    expect(menu).toHaveClass('slot-content');
+  });
+});

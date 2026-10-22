@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tooltip.css';
 
 export { Tooltip };
-export type { TooltipProps } from 'haze-ui';
+export type { TooltipProps, TooltipClassNames } from 'haze-ui';

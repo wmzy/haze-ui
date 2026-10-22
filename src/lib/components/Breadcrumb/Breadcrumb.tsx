@@ -1,15 +1,13 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 import { Children } from 'react';
-
-import { useStrings } from '../LocaleProvider';
 
 type BreadcrumbProps = {
   separator?: ReactNode;
   className?: string;
   children: ReactNode;
-};
+} & Omit<ComponentPropsWithoutRef<'nav'>, 'children' | 'className'>;
 
 const nav = css`
   font-family: var(--haze-font-sans);
@@ -34,14 +32,20 @@ const sep = css`
 
 export default function Breadcrumb({
   separator = '/',
+  'aria-label': ariaLabel = 'Breadcrumb',
   className,
   children,
+  ...rest
 }: BreadcrumbProps) {
-  const strings = useStrings('breadcrumb');
   const items = Children.toArray(children);
 
   return (
-    <nav data-slot='breadcrumb' aria-label={strings.label} x-class={[nav, className]}>
+    <nav
+      data-slot='breadcrumb'
+      aria-label={ariaLabel}
+      x-class={[nav, className]}
+      {...rest}
+    >
       <ol data-slot='list' className={list}>
         {items.map((child, i) => (
           <li

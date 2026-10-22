@@ -4,6 +4,8 @@ import { css } from '@linaria/core';
 
 import { useSubmenuContext } from '../../utils/submenu';
 
+import { useDropdownMenuContext } from './DropdownMenuContext';
+
 type DropdownMenuSubTriggerProps = {
   disabled?: boolean;
   className?: string;
@@ -63,6 +65,7 @@ export default function DropdownMenuSubTrigger({
   className,
   children,
 }: DropdownMenuSubTriggerProps) {
+  const classNames = useDropdownMenuContext().classNames;
   const sub = useSubmenuContext();
   return (
     <button
@@ -75,7 +78,7 @@ export default function DropdownMenuSubTrigger({
       aria-expanded={sub.open}
       aria-owns={sub.open ? sub.contentId : undefined}
       disabled={disabled}
-      x-class={[trigger, className]}
+      x-class={[trigger, classNames?.subTrigger, className]}
       style={sub.floating.triggerStyle}
       onPointerDown={sub.floating.onTriggerPointerDown}
       onPointerEnter={sub.onTriggerPointerEnter}

@@ -64,7 +64,7 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json && node scripts/fix-dts-extensions.mjs",
+    "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json && node scripts/fix-dts-extensions.mjs && node scripts/generate-licenses.mjs",
     "build:demo": "node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
@@ -175,6 +175,8 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-icons": "^5.7.0",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
     "semantic-release": "^25.0.9",
     "size-limit": "^13.0.3",
     "terser": "^5.51.2",
@@ -214,16 +216,16 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "19 KB"
+      "limit": "19.5 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "29.5 KB"
+      "limit": "30.75 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "40.1 KB",
+      "limit": "42 KB",
       "gzip": true
     },
     {
@@ -307,7 +309,7 @@
     {
       "name": "CSS family ratchet: data-table",
       "path": "dist/css/data-table.css",
-      "limit": "1.5 KB",
+      "limit": "1.6 KB",
       "gzip": true
     },
     {
@@ -428,6 +430,48 @@
       "name": "CSS family ratchet: error-boundary",
       "path": "dist/css/error-boundary.css",
       "limit": "0.7 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: button-group",
+      "path": "dist/css/button-group.css",
+      "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: input-group",
+      "path": "dist/css/input-group.css",
+      "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: navigation-menu",
+      "path": "dist/css/navigation-menu.css",
+      "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: meter",
+      "path": "dist/css/meter.css",
+      "limit": "1 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: copy-button",
+      "path": "dist/css/copy-button.css",
+      "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: heatmap",
+      "path": "dist/css/heatmap.css",
+      "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: time-grid",
+      "path": "dist/css/time-grid.css",
+      "limit": "2 KB",
       "gzip": true
     }
   ]

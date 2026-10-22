@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { useTableClassNames } from './TableContext';
+
 type TableHeadProps = {
   className?: string;
   children: ReactNode;
@@ -19,7 +21,12 @@ const head = css`
 `;
 
 export default function TableHead({ className, children }: TableHeadProps) {
-  return <thead data-slot="header" x-class={[head, className]}>{children}</thead>;
+  const classNames = useTableClassNames();
+  return (
+    <thead data-slot="header" x-class={[head, classNames?.head, className]}>
+      {children}
+    </thead>
+  );
 }
 
 export type { TableHeadProps };

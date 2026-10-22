@@ -731,3 +731,60 @@ describe('Schedule — conventions', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('Schedule classNames slots', () => {
+  const EVENTS = [
+    { id: 'e1', start: new Date(2026, 0, 12, 10), end: new Date(2026, 0, 12, 11), title: 'Standup' },
+  ];
+
+  it('applies root and toolbar slots', () => {
+    render(
+      <Schedule events={EVENTS} classNames={{ root: 'slot-root', toolbar: 'slot-toolbar' }} />
+    );
+    expect(document.querySelector("[data-slot='schedule']")).toHaveClass('slot-root');
+    expect(document.querySelector("[data-slot='toolbar']")).toHaveClass('slot-toolbar');
+  });
+
+  it('applies the timeGrid slot in week view', () => {
+    render(
+      <Schedule events={EVENTS} view="week" classNames={{ timeGrid: 'slot-grid' }} />
+    );
+    expect(document.querySelector("[data-slot='time-grid']")).toHaveClass('slot-grid');
+  });
+
+  it('applies the monthGrid slot in month view', () => {
+    render(
+      <Schedule events={EVENTS} view="month" classNames={{ monthGrid: 'slot-month' }} />
+    );
+    expect(document.querySelector("[data-slot='month-grid']")).toHaveClass('slot-month');
+  });
+
+  it('applies the event slot to month-view event chips', () => {
+    render(
+      <Schedule
+        events={EVENTS}
+        view="month"
+        date={new Date(2026, 0, 12)}
+        classNames={{ event: 'slot-event' }}
+      />
+    );
+    const chip = document.querySelector("[data-slot='event']");
+    expect(chip).not.toBeNull();
+    expect(chip).toHaveClass('slot-event');
+  });
+
+  it('forwards ref to the root container', () => {
+    render(
+      <Schedule
+        events={EVENTS}
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+      />
+    );
+    expect(document.querySelector("[data-slot='schedule']")).toHaveAttribute(
+      'data-probe',
+      'set'
+    );
+  });
+});

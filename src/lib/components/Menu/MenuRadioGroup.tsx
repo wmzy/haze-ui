@@ -8,6 +8,8 @@ import { useMenuRadioGroup, MenuRadioGroupProvider } from '../../utils/menuRadio
 
 import { menuGroupLabel } from './menu-item-styles';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuRadioGroupProps = {
   /** Selected value — controlled control or uncontrolled initial value ('' = none). */
   value?: ControlOrValue<string>;
@@ -37,6 +39,7 @@ export default function MenuRadioGroup({
   children,
 }: MenuRadioGroupProps) {
   const state = useMenuRadioGroup(value, onValueChange);
+  const classNames = useMenuClassNames();
   const labelId = useId();
   return (
     <MenuRadioGroupProvider value={state}>
@@ -44,7 +47,7 @@ export default function MenuRadioGroup({
         data-slot='group'
         role='group'
         aria-labelledby={label !== undefined ? labelId : undefined}
-        x-class={[group, className]}
+        x-class={[group, classNames?.group, className]}
       >
         {label !== undefined && (
           <div id={labelId} data-slot='group-label' x-class={menuGroupLabel}>

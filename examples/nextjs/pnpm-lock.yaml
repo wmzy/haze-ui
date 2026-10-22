@@ -24,8 +24,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.8(react@19.2.8)
       react-f0rm:
-        specifier: ^1.1.1
-        version: 1.1.1(react@19.2.8)
+        specifier: ^1.4.0
+        version: 1.5.0(react@19.2.8)
     devDependencies:
       '@types/node':
         specifier: ^26.4.1
@@ -384,10 +384,10 @@ packages:
     peerDependencies:
       react: ^19.2.8
 
-  react-f0rm@1.1.1:
-    resolution: {integrity: sha512-R8TPBK1KIO9YtU9r0Whvog5vM0mYTW37LOaOw9JHV0HeHrvJYVS8djYW6yiQDHIY15g5CGc2zoVdmkfpz2nINA==}
+  react-f0rm@1.5.0:
+    resolution: {integrity: sha512-GlgExJN5dKYgPO6acYwRYYq3eH5ggx2x2Yz4H76yB0UzFtsVjQwZRm1RQeUP5q1gN5KdodU1nkYZTIpTHXZbCw==}
     peerDependencies:
-      react: '>=16.8.0'
+      react: '>=18.0.0'
       valibot: '>=1.0.0'
       yup: '>=0.32.0'
       zod: '>=3.0.0'
@@ -447,11 +447,6 @@ packages:
 
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
-
-  use-sync-external-store@1.6.0:
-    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -718,11 +713,10 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-f0rm@1.1.1(react@19.2.8):
+  react-f0rm@1.5.0(react@19.2.8):
     dependencies:
       '@for-fun/event-emitter': 1.1.0
       react: 19.2.8
-      use-sync-external-store: 1.6.0(react@19.2.8)
 
   react@19.2.8: {}
 
@@ -777,9 +771,5 @@ snapshots:
   typescript@5.9.3: {}
 
   undici-types@8.3.0: {}
-
-  use-sync-external-store@1.6.0(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   yocto-queue@0.1.0: {}

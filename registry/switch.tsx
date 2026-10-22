@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Switch, SwitchCore } from 'haze-ui';
+import { Switch, SwitchCore, trackSizes, thumbSizes } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/switch.css';
 
-export { Switch, SwitchCore };
+export { Switch, SwitchCore, trackSizes, thumbSizes };
 export type { SwitchProps, SwitchCoreProps } from 'haze-ui';

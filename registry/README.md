@@ -24,7 +24,7 @@ the generated files — edit the script. Only `README.md`, `tsconfig.json`,
 
 ```bash
 # the whole design system in one command — theme tokens plus a wrapper
-# for every component (107 items pulled in via registryDependencies)
+# for every component (all component items pulled in via registryDependencies)
 npx shadcn@latest add wmzy/haze-ui/base
 
 # any single item — every styled export in the library is covered
@@ -32,6 +32,11 @@ npx shadcn@latest add wmzy/haze-ui/button
 
 # several at once
 npx shadcn@latest add wmzy/haze-ui/button wmzy/haze-ui/dialog wmzy/haze-ui/toast
+
+# full-page blocks — vendored page source you own (see "Blocks" below)
+npx shadcn@latest add wmzy/haze-ui/login-block
+npx shadcn@latest add wmzy/haze-ui/dashboard-block
+npx shadcn@latest add wmzy/haze-ui/crud-block
 
 # browse the catalog / inspect an item payload
 npx shadcn@latest list wmzy/haze-ui
@@ -46,9 +51,10 @@ with your own components. To pin a release, append a tag or commit SHA:
 
 ## Items
 
-Generated coverage: **every styled export of the main barrel** — 107 css
-families, one item per family — plus the `base` meta item and the
-hand-curated `haze-tokens` doc (109 items total). Multi-export families
+Generated coverage: **every styled export of the main barrel** — 149 css
+families in the current build, one item per family — plus the `base` meta
+item, the hand-curated `haze-tokens` doc and 3 vendored full-page blocks
+(154 items total). Multi-export families
 ship together (e.g. `tabs` → `Tabs`/`TabList`/`Tab`/`TabPanel`,
 `resizable` → `Resizable*` plus the `Splitter*` aliases, `toast` →
 `Toast`, `ToastContainer`, `useToast`, `toast()`), and the `tokens` item
@@ -59,9 +65,12 @@ A few examples:
 
 | Item | What you get |
 | --- | --- |
-| `base` | The whole design system: theme tokens + every component wrapper (`registryDependencies` on all 107 component items) |
+| `base` | The whole design system: theme tokens + every component wrapper (`registryDependencies` on all component items) |
 | `tokens` | Theme classes: `lightTheme`/`darkTheme` + `spacing` + `typography` |
 | `haze-tokens` | Token onboarding guide installed as `docs/haze-tokens.md` |
+| `login-block` | Vendored login page (see "Blocks" below) |
+| `dashboard-block` | Vendored SaaS dashboard page (see "Blocks" below) |
+| `crud-block` | Vendored master–detail CRUD page (see "Blocks" below) |
 | `button` | `Button`, `ButtonLink` re-exports |
 | `input` | `Input`, `InputCore` (form-bindable core) |
 | `dialog` | `Dialog` (native `<dialog>`, controllable `open`) |
@@ -75,11 +84,8 @@ A few examples:
 | `chat-message` | `ChatMessage` (AI chat kit anchor) |
 
 Each item declares `dependencies: ["haze-ui"]`, so the CLI installs the npm
-package automatically. Items whose components need optional peers declare
-them too (detected from the source import closure): `form` → `react-f0rm`,
-`data-table` → `@tanstack/react-table`, `chart` → `recharts`,
-`tag-input`/`tag-group` → `@dnd-kit/core` + `@dnd-kit/sortable` +
-`@dnd-kit/utilities`.
+package automatically; blocks additionally declare the npm packages their
+vendored source imports (`zod`, `react-use-control`).
 
 Skipped on purpose (no css of their own — import from `haze-ui` directly):
 hooks (`useMediaQuery`, `useClipboard`, …), `TOKEN_REGISTRY` /
@@ -100,8 +106,8 @@ Every item carries the schema's two documentation/filter fields:
   (dynamic search endpoints, the MCP server): `general`, `layout`,
   `form`, `overlay`, `data-display`, `navigation`, `feedback`, `agent`
   (AI & chat), `utilities`, plus `theme`/`setup` for the non-component
-  items. Mirrored from the demo sidebar grouping in
-  `src/views/Layout/component-groups.ts`.
+  items and `blocks` (+ topical tags) for block items. Mirrored from the
+  demo sidebar grouping in `src/views/Layout/component-groups.ts`.
 
 The `base` item (type `registry:base`) is the one-command path:
 
@@ -111,12 +117,54 @@ npx shadcn@latest add wmzy/haze-ui/base
 
 It installs a token-activation wrapper (`lib/haze/base.tsx` re-exporting
 `lightTheme`/`darkTheme`/`spacing`/`typography` + importing
-`haze-ui/css/tokens.css`) and, through `registryDependencies`, all 107
-component items. Note the dependency entries are full GitHub item
+`haze-ui/css/tokens.css`) and, through `registryDependencies`, every
+component item. Note the dependency entries are full GitHub item
 addresses (`wmzy/haze-ui/<item>`), not plain names — the CLI resolves
 plain names against the official shadcn registry, which would install the
 wrong components. Addresses without a `#ref` track the repo's default
 branch.
+
+## Blocks
+
+Component items are thin wrappers (the implementation stays in the `haze-ui`
+npm package). **Blocks are the opposite**: full-page compositions vendored
+into your project as source you own and edit — the shadcn block contract.
+They are generated from the docs-site
+[Blocks gallery](https://wmzy.github.io/haze-ui/#/blocks)
+(`src/views/Blocks/blocks/`), which is deliberately self-contained: only
+`@/lib` + npm imports, all layout glue as inline styles over `--haze-*`
+tokens, so the vendored file builds and themes in a plain consumer project.
+
+| Item | What you get |
+| --- | --- |
+| `login-block` | Login page: brand panel + Card form loop, zod-validated (`useForm`/`Form`/`FormItem` over `InputCore`/`PasswordInputCore`/`CheckboxCore`) |
+| `dashboard-block` | SaaS admin starter: `AppShell` + `Sidebar` nav, `Breadcrumb`, `Stat` row, `DataTable` with density toggle and CSV export |
+| `crud-block` | Master–detail CRUD: `Tree` team picker, `DataTable`, zod-validated `Dialog` form, `ConfirmDialog`, `useToast` |
+
+```bash
+npx shadcn@latest add wmzy/haze-ui/login-block
+# or
+npx shadcn@latest add wmzy/haze-ui/dashboard-block wmzy/haze-ui/crud-block
+```
+
+What the generator does to each block source:
+
+- rewrites `@/lib…` imports to the published `haze-ui` barrel (the run
+  fails if a block imports anything the package does not export);
+- prepends the stylesheet imports for the page's full component closure
+  (`haze-ui/css/tokens.css` + every family it renders) so the file is
+  self-contained;
+- declares the npm deps the page needs beyond `haze-ui` (`zod`,
+  `react-use-control`) in the item's `dependencies`;
+- pulls in every rendered component's wrapper item through
+  `registryDependencies` (full `wmzy/haze-ui/<item>` addresses), so the
+  page's css closure and customization seams arrive with it.
+
+The vendored source lands at `components/block/haze/<block>.tsx` (via the
+`@block/` target placeholder — add a `"block"` alias to `components.json`
+if your project does not have one yet; recent shadcn scaffolds ship it).
+Apply the theme classes to a root element as with every haze-ui consumer
+(see below), then render the default export as a page.
 
 ## You still need the theme — but not the stylesheet imports
 
@@ -155,9 +203,10 @@ registry/
 ├── tsconfig.json                  # typechecks the wrappers (haze-ui self-reference)
 ├── css.d.ts                       # ambient declarations for the css side-effect imports
 ├── haze-tokens/haze-tokens.md     # token guide installed by the haze-tokens item
-├── <item>.tsx                     # wrapper source (one per css family + base, generated)
-└── <item>.json                    # flat registry-item payload with the wrapper
-                                   # source embedded (direct .json address installs)
+├── <item>.tsx                     # wrapper source (one per css family + base) or
+│                                  # vendored block page (<item>-block.tsx), generated
+└── <item>.json                    # flat registry-item payload with the source
+                                   # embedded (direct .json address installs)
 ```
 
 Note: the root `registry.json` is unrelated to the `registry.json` **export**

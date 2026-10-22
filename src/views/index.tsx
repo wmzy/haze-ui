@@ -63,6 +63,10 @@ export default function App() {
             component: () => import('./Guides/FigmaTokens'),
           },
           {
+            path: '/guides/server-actions',
+            component: () => import('./Guides/ServerActions'),
+          },
+          {
             path: '/tokens',
             component: () => import('./Tokens'),
           },

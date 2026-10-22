@@ -4,6 +4,8 @@ import { css } from '@linaria/core';
 
 import { useSubmenuContext } from '../../utils/submenu';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuSubTriggerProps = {
   disabled?: boolean;
   className?: string;
@@ -79,6 +81,7 @@ export default function MenuSubTrigger({
   className,
   children,
 }: MenuSubTriggerProps) {
+  const classNames = useMenuClassNames();
   const sub = useSubmenuContext();
   return (
     <button
@@ -91,7 +94,7 @@ export default function MenuSubTrigger({
       aria-expanded={sub.open}
       aria-owns={sub.open ? sub.contentId : undefined}
       disabled={disabled}
-      x-class={[trigger, className]}
+      x-class={[trigger, classNames?.subTrigger, className]}
       style={sub.floating.triggerStyle}
       onPointerDown={sub.floating.onTriggerPointerDown}
       onPointerEnter={sub.onTriggerPointerEnter}

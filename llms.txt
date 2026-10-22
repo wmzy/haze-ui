@@ -7,9 +7,9 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-148 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+155 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 55 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 90 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -57,6 +57,8 @@ re-deriving file names.
 - **AvatarGroup** — stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).
 - **Badge** — small inline status label with variant and color options.
 - **Button** — action button with `variant`/`size`/`square` options; native `<button>` under the hood.
+- **ButtonGroup** — attached button bar — corners and seams merge via wrapper CSS while children stay real focusable `Button`s; group-wide `size`/`variant`/`disabled` fill in on children that leave them unset, `ButtonGroupSeparator` divides the bar (1px rule or a glyph/label).
+- **CopyButton** — one-click copy button over Button’s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.
 - **Divider** — content separator line, horizontal or vertical.
 - **Icon** — inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.
 - **Tag** — compact status label with variant color and an optional close button.
@@ -102,6 +104,7 @@ re-deriving file names.
 - **ImageCrop** — interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.
 - **InlineEdit** — click-to-edit text value in place.
 - **Input** — text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.
+- **InputGroup** — field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.
 - **Mentions** — mentions input with trigger-character suggestions picked from an option list.
 - **NumberInput** — numeric input with `min`/`max`/`step`.
 - **OTPInput** — one-time-password input of `length` segmented character boxes.
@@ -115,6 +118,7 @@ re-deriving file names.
 - **Slider** — native range slider with controllable value.
 - **Switch** — toggle switch (`role="switch"`) with controllable `checked`.
 - **TagInput** — enter-to-commit token input over `TagInputCore`; `sortable` enables dnd-kit drag reordering (new order via `onChange`).
+- **TimeGrid** — single-select `'HH:mm'` slot grid generated from `from`/`to` (inclusive) and a minute `step` (default 60): ARIA radiogroup of native buttons with roving tabindex, arrows move-and-select, `value` is ControlOrValue, `name` rides a hidden input bridge for FormData/server actions.
 - **Textarea** — multiline text input.
 - **TimeField** — segmented time-of-day input (hour/minute/second spinbuttons, optional 12-hour AM/PM) typing `HH:mm[:ss]` directly.
 - **TimePicker** — time-of-day input with controllable value.
@@ -153,9 +157,11 @@ re-deriving file names.
 - **Kbd** — keyboard key-cap styling for shortcuts.
 - **List** — styled `ul`/`ol`/plain list variants.
 - **Progress** — progress bar or circle driven by a percentage `value`.
+- **Meter** — read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid tone) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.
 - **QRCode** — QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.
 - **Schedule** — calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.
 - **Sparkline** — inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.
+- **Heatmap** — GitHub-style activity calendar: week columns × weekday rows of squares, `data` (array or Record) binned into `levels` intensity steps (default 4) and tinted via `color-mix` of primary↔bg-subtle — light/dark/brand themes follow automatically; `getLabel`/`getMonthLabel`/`getWeekdayLabel`/`summary` carry all i18n, RSC-safe (hook-free).
 - **Spoiler** — collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.
 - **Stat** — metric display with title, value and trend indicator.
 - **Table** — styled semantic table (`striped`, `bordered`).
@@ -173,6 +179,7 @@ re-deriving file names.
 - **Command** — command palette surface: `CommandInput` plus filterable `CommandItem`s.
 - **FloatButton / FloatButtonGroup** — floating action button over the page; `FloatButtonGroup` stacks actions behind an expand trigger, with back-to-top and help glyphs built in.
 - **NavigationBar** — top nav bar with `brand` and `end` slots.
+- **NavigationMenu** — hover mega-menu navigation (WAI-ARIA disclosure navigation pattern): `NavigationMenuTrigger` opens `NavigationMenuContent` panels with a ~100ms intent dwell and ~300ms pointer grace, instantly switching between open panels; `activeValue` is controllable, Escape closes, left/right arrows traverse triggers.
 - **Pagination** — page navigation with controllable `page` and ellipsis windows.
 - **Stepper** — step indicator driven by `activeStep` (`Step` children).
 - **Tabs** — tab panel switcher with controllable active tab; document affordances on `Tab` (`icon`, `status` dot, `closable` ×/Delete) and `TabList` overflow ⋯ menu; `SortableTabList` adds dnd-kit drag reordering.

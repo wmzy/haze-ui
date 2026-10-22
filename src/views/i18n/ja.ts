@@ -51,6 +51,7 @@ export const ja: DeepPartial<SiteStrings> = {
     streamingA11y: 'ストリーミングのアクセシビリティ',
     motion: 'モーションプリセット',
     figmaTokens: 'Figma のデザイントークン',
+    serverActions: 'React 19 Actions',
   },
   guideSummaries: {
     darkMode: '明暗両方のトークンクラス、useDarkMode フック、実行時ブランドテーマ。',
@@ -63,6 +64,8 @@ export const ja: DeepPartial<SiteStrings> = {
     motion: 'モーショントークンの上に築いた data-state 駆動の登場/退場アニメーションプリセット。',
     figmaTokens:
       'W3C DTF トークンエクスポートを Tokens Studio と Figma Variables に接続する：手順と限界。',
+    serverActions:
+      'ネイティブ FormData・useActionState・useOptimistic で haze-ui を Server Actions に接続。',
   },
   blocks: {
     title: 'ブロック',
@@ -129,6 +132,8 @@ export const ja: DeepPartial<SiteStrings> = {
     Badge: 'バリアントと色を選べる小さなインライン状態ラベル。',
     Button:
       'アクションボタン：variant/size/square オプションを備え、内部はネイティブ <button>。',
+    ButtonGroup:
+      '連結ボタンバー：角と継ぎ目を統合し、グループ単位の size/variant/disabled を配布。セパレーターサブコンポーネント付き。',
     CountUp:
       '数値ティッカーアニメーション：rAF + ease-out 補間で目標値へ到達。prefers-reduced-motion 時は瞬時に確定。',
     Countdown:
@@ -190,6 +195,11 @@ export const ja: DeepPartial<SiteStrings> = {
       '画像クロップ（Upload と併用）：正規化 CropRect を制御可能。アスペクト比ロック、円形アバターマスク、キーボード完全操作（矢印キーで移動、Shift+矢印キーでリサイズ）に対応。',
     InlineEdit: 'クリックでその場から編集できるテキスト値。',
     Input: 'テキスト入力：装飾（アダーンメント）付き。InputCore のシュガー。',
+    InputGroup: 'フィールドクラスタ：前後のアドオン（アイコン・テキスト・ボタン）と Input/Select を一体化。',
+    Meter: '読み取り専用セマンティックゲージ：値がしきい値を越えると track と bar が変色。',
+    CopyButton: 'ワンクリックコピーボタン、「コピー済み」フィードバック付き。Snippet コードチップ同梱。',
+    Heatmap: 'GitHub 風アクティビティヒートマップ：値に応じてマスを色分け、配色はテーマに追従。',
+    TimeGrid: '時間帯ウィンドウとステップから生成される時間グリッド：矢印キーで移動・選択。',
     Mentions: 'メンション入力：トリガー文字でオプションリストから候補を提示。',
     NumberInput: '数値入力。min/max/step に対応。',
     OTPInput: 'length 個の分かれた文字枠によるワンタイムパスワード入力。',
@@ -282,6 +292,7 @@ export const ja: DeepPartial<SiteStrings> = {
     FloatButton:
       'ページ上のフローティングアクションボタン。FloatButtonGroup はアクションを展開トリガーの背後に束ね、トップへ戻る・ヘルプのグリフを内蔵。',
     NavigationBar: '上部ナビゲーションバー：brand と end スロット。',
+    NavigationMenu: 'ホバー式メガメニュー：トリガーが意図遅延で大きなコンテンツパネルを開き、ポインタ離脱には猶予期間。activeValue は制御可能。',
     Pagination: 'ページナビゲーション：page を制御可能、省略記号ウィンドウ付き。',
     Stepper: 'ステップインジケーター。activeStep で駆動（Step 子要素）。',
     Tabs: 'タブパネル切替。アクティブタブを制御可能。',

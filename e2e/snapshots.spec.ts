@@ -39,6 +39,12 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * (document dir injected before first paint, same addInitScript
  * approach as rtl.spec.ts, so logical CSS and [dir] selectors resolve
  * RTL from the start).
+ *
+ * The wave5 group captures the components added in Waves 3–5 from
+ * e2e/app/snapshots-wave5.html: ButtonGroup, InputGroup, Meter,
+ * CopyButton, Snippet, Heatmap, TimeGrid, the closed NavigationMenu
+ * bar, the refactored Accordion (controlled + disabled + classNames,
+ * in light and dark), and the NavigationMenu's hover-opened mega panel.
  */
 
 /** Waits until no enter animation is running and opacity is back to 1. */
@@ -144,6 +150,61 @@ test.describe('visual baselines — static components', () => {
     });
     expect(scrolled).toBeGreaterThan(0);
     await expect(section).toHaveScreenshot('datatable-fixed.png');
+  });
+});
+
+/**
+ * Wave 3–5 additions, one section per new component on
+ * e2e/app/snapshots-wave5.html (same `[data-snap]` contract as the
+ * static page): ButtonGroup, InputGroup, Meter, CopyButton, Snippet,
+ * Heatmap, TimeGrid, the closed NavigationMenu bar, the Wave-1
+ * refactored Accordion (controlled `open` + disabled item + classNames
+ * slots) and the same Accordion as a dark-theme island — plus one
+ * overlay-state frame: the NavigationMenu's mega panel, opened by a
+ * pure hover (the fixture pins intentDelay={0}, so the dwell is
+ * deterministic; a click would race the intent timer — whichever of
+ * the two opens first, the click toggles it closed again).
+ */
+const WAVE5_SECTIONS = [
+  'buttongroup',
+  'inputgroup',
+  'meter',
+  'copybutton',
+  'snippet',
+  'heatmap',
+  'timegrid',
+  'navigationmenu',
+  'accordioncontrolled',
+  'accordiondark',
+] as const;
+
+test.describe('visual baselines — wave5 components', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/snapshots-wave5');
+  });
+
+  for (const name of WAVE5_SECTIONS) {
+    test(`${name} baseline frame`, async ({ page }) => {
+      const section = page.locator(`[data-snap="${name}"]`);
+      await expect(section).toBeVisible();
+      await expect(section).toHaveScreenshot(`${name}.png`);
+    });
+  }
+
+  test('navigationmenu open panel (bar + mega panel)', async ({ page }) => {
+    const section = page.locator('[data-snap="navigationmenu"]');
+    await section.scrollIntoViewIfNeeded();
+    const trigger = page.getByRole('button', { name: 'Components' });
+    await trigger.hover();
+    const panelId = await trigger.getAttribute('aria-controls');
+    const panel = page.locator(`[id="${panelId}"]`);
+    await expect(panel).toBeVisible();
+    await waitForOpenAnimationToSettle(panel);
+    // The panel is a top-layer popover painting outside the section
+    // subtree — the viewport is the smallest frame holding the bar, the
+    // hovered trigger and its open mega panel (same approach as the
+    // dropdown-submenu frame).
+    await expect(page).toHaveScreenshot('navigationmenu-open.png');
   });
 });
 

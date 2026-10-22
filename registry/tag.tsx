@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Tag } from 'haze-ui';
+import { Tag, tagVariants, tagSizes } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tag.css';
 
-export { Tag };
+export { Tag, tagVariants, tagSizes };
 export type { TagProps } from 'haze-ui';

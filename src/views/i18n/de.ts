@@ -52,6 +52,7 @@ export const de: DeepPartial<SiteStrings> = {
     streamingA11y: 'Barrierefreiheit beim Streaming',
     motion: 'Motion-Presets',
     figmaTokens: 'Tokens in Figma',
+    serverActions: 'React 19 Actions',
   },
   guideSummaries: {
     darkMode:
@@ -66,6 +67,8 @@ export const de: DeepPartial<SiteStrings> = {
     motion: 'data-state-gesteuerte Ein-/Aus-Animationspresets auf den Motion-Tokens.',
     figmaTokens:
       'Die W3C-DTF-Token-Exporte in Tokens Studio und Figma Variables — Workflow und Grenzen.',
+    serverActions:
+      'Server Actions über natives FormData, useActionState und useOptimistic mit haze-ui.',
   },
   blocks: {
     title: 'Blöcke',
@@ -132,6 +135,8 @@ export const de: DeepPartial<SiteStrings> = {
     Badge: 'Kleines Inline-Statuslabel mit Varianten- und Farboptionen.',
     Button:
       'Aktionsbutton mit variant/size/square-Optionen; unter der Haube ein natives <button>.',
+    ButtonGroup:
+      'Verbundene Button-Leiste: Ecken und Nähte verschmolzen, gruppenweite size/variant/disabled, Separator-Subkomponente.',
     CountUp:
       'Animierte Zahlen-Ticker: rAF + Ease-out-Interpolation zum Zielwert; prefers-reduced-motion erzeugt einen sofortigen Sprung.',
     Countdown:
@@ -195,6 +200,11 @@ export const de: DeepPartial<SiteStrings> = {
       'Interaktiver Bildzuschnitt (Partner von Upload): steuerbare normalisierte CropRect-Fläche, Seitenverhältnis-Sperre, runde Avatar-Maske und vollständige Tastaturbedienung (Pfeiltasten verschieben, Umschalt+Pfeiltasten skalieren).',
     InlineEdit: 'Klick-zum-Bearbeiten von Textwerten an Ort und Stelle.',
     Input: 'Texteingabe mit Adornments; Sugar über InputCore.',
+    InputGroup: 'Feld-Cluster: Präfix/Suffix-Addons (Icon, Text, Button) mit Input/Select zu einem Control verbunden.',
+    Meter: 'Schreibgeschütztes semantisches Messgerät: Track und Bar wechseln die Farbe, wenn der Wert jede Schwelle überschreitet.',
+    CopyButton: 'Ein-Klick-Kopierbutton mit Kopiert-Feedback; inklusive Snippet-Code-Chip.',
+    Heatmap: 'Aktivitäts-Heatmap im GitHub-Stil: Quadrate nach Wert eingefärbt, Palette folgt dem Theme.',
+    TimeGrid: 'Zeitgitter aus Fenster und Schritt: Pfeiltasten wandern und wählen.',
     Mentions:
       'Erwähnungs-Eingabe mit Vorschlägen zum Trigger-Zeichen aus einer Optionsliste.',
     NumberInput: 'Numerische Eingabe mit min/max/step.',
@@ -293,6 +303,7 @@ export const de: DeepPartial<SiteStrings> = {
     FloatButton:
       'Schwebender Aktionsbutton über der Seite; FloatButtonGroup stapelt Aktionen hinter einem Ausklapp-Trigger, mit eingebauten Nach-oben- und Hilfe-Glyphen.',
     NavigationBar: 'Obere Navigationsleiste mit brand- und end-Slots.',
+    NavigationMenu: 'Hover-Mega-Menü: Trigger öffnen große Inhaltspanels mit Intent-Verzögerung und Zeiger-Kulanz; activeValue steuerbar.',
     Pagination: 'Seitennavigation mit steuerbarer page und Ellipsen-Fenstern.',
     Stepper: 'Schrittanzeige, angetrieben von activeStep (Step-Children).',
     Tabs: 'Tab-Panel-Umschalter mit steuerbarem aktivem Tab.',

@@ -5,6 +5,8 @@ import { css } from '@linaria/core';
 import { FloatingPanel } from '../../utils/floating';
 import { useSubmenuContext } from '../../utils/submenu';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuSubContentProps = {
   className?: string;
   children: ReactNode;
@@ -39,6 +41,7 @@ export default function MenuSubContent({
   className,
   children,
 }: MenuSubContentProps) {
+  const classNames = useMenuClassNames();
   const sub = useSubmenuContext();
   return (
     <FloatingPanel
@@ -48,7 +51,7 @@ export default function MenuSubContent({
       id={sub.contentId}
       role='menu'
       visualClass={panel}
-      className={className}
+      className={[className, classNames?.subContent].filter(Boolean).join(' ') || undefined}
       onKeyDown={sub.contentKeyDown}
     >
       {children}

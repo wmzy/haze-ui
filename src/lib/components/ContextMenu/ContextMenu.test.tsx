@@ -265,3 +265,74 @@ describe('ContextMenu', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('ContextMenu classNames slots', () => {
+  it('applies every slot to its part', () => {
+    render(
+      <ContextMenu
+        open
+        classNames={{
+          root: 'slot-root',
+          trigger: 'slot-trigger',
+          content: 'slot-content',
+          item: 'slot-item',
+          separator: 'slot-separator',
+        }}
+      >
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem>Paste</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    expect(document.querySelector("[data-slot='context-menu']")).toHaveClass(
+      'slot-root'
+    );
+    expect(document.querySelector("[data-slot='trigger']")).toHaveClass(
+      'slot-trigger'
+    );
+    expect(screen.getByRole('menu')).toHaveClass('slot-content');
+    expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveClass(
+      'slot-item'
+    );
+    expect(screen.getByRole('separator')).toHaveClass('slot-separator');
+  });
+
+  it('lands the content slot after the className prop class', () => {
+    render(
+      <ContextMenu open classNames={{ content: 'slot-content' }}>
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="custom">
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    const menu = screen.getByRole('menu');
+    expect(menu).toHaveClass('custom');
+    expect(menu).toHaveClass('slot-content');
+  });
+
+  it('forwards ref to the root wrapper', () => {
+    render(
+      <ContextMenu
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+      >
+        <ContextMenuTrigger>
+          <div>Target</div>
+        </ContextMenuTrigger>
+      </ContextMenu>,
+    );
+    expect(document.querySelector("[data-slot='context-menu']")).toHaveAttribute(
+      'data-probe',
+      'set'
+    );
+  });
+});

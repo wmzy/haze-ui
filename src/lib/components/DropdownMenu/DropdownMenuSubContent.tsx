@@ -5,6 +5,8 @@ import { css } from '@linaria/core';
 import { FloatingPanel } from '../../utils/floating';
 import { useSubmenuContext } from '../../utils/submenu';
 
+import { useDropdownMenuContext } from './DropdownMenuContext';
+
 type DropdownMenuSubContentProps = {
   className?: string;
   children: ReactNode;
@@ -41,6 +43,7 @@ export default function DropdownMenuSubContent({
   className,
   children,
 }: DropdownMenuSubContentProps) {
+  const classNames = useDropdownMenuContext().classNames;
   const sub = useSubmenuContext();
   if (!sub.open && sub.floating.exited) return null;
   return (
@@ -51,7 +54,9 @@ export default function DropdownMenuSubContent({
       id={sub.contentId}
       role='menu'
       visualClass={content}
-      className={className}
+      className={
+        [className, classNames?.subContent].filter(Boolean).join(' ') || undefined
+      }
       onKeyDown={sub.contentKeyDown}
     >
       {children}

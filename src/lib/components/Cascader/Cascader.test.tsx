@@ -597,6 +597,63 @@ describe('Cascader remote search', () => {
   });
 });
 
+describe('Cascader classNames slots', () => {
+  it('applies root/trigger/value/placeholder slot classes', () => {
+    render(
+      <Cascader
+        options={OPTIONS}
+        placeholder='Select region'
+        classNames={{
+          root: 'slot-root',
+          trigger: 'slot-trigger',
+          value: 'slot-value',
+          placeholder: 'slot-placeholder',
+        }}
+      />
+    );
+    const trigger = screen.getByRole('button', { name: 'Select region' });
+    expect(trigger).toHaveClass('slot-trigger');
+    const root = trigger.parentElement!;
+    expect(root).toHaveClass('slot-root');
+    expect(
+      trigger.querySelector("[data-slot='value']")
+    ).toHaveClass('slot-value');
+    expect(
+      trigger.querySelector("[data-slot='placeholder']")
+    ).toHaveClass('slot-placeholder');
+  });
+
+  it('applies content/column/option/label slot classes once open', async () => {
+    const user = userEvent.setup();
+    render(
+      <Cascader
+        options={OPTIONS}
+        placeholder='Select region'
+        classNames={{
+          content: 'slot-content',
+          column: 'slot-column',
+          option: 'slot-option',
+          label: 'slot-label',
+        }}
+      />
+    );
+    const trigger = screen.getByRole('button', { name: 'Select region' });
+    await user.click(trigger);
+    const panel = document.getElementById(
+      trigger.getAttribute('aria-controls')!
+    )!;
+    expect(panel).toHaveAttribute('data-slot', 'content');
+    expect(panel).toHaveClass('slot-content');
+    const column = panel.querySelector("[data-slot='column']")!;
+    expect(column).toHaveClass('slot-column');
+    const option = screen.getByRole('menuitem', { name: /浙江/ });
+    expect(option).toHaveClass('slot-option');
+    expect(option.querySelector("[data-slot='label']")).toHaveClass(
+      'slot-label'
+    );
+  });
+});
+
 describe('Cascader ref forwarding', () => {
   it('forwards ref to the trigger button', () => {
     const ref = createRef<HTMLButtonElement>();

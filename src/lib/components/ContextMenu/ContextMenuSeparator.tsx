@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { useContextMenuContext } from './ContextMenuContext';
+
 type ContextMenuSeparatorProps = {
   className?: string;
 };
@@ -11,7 +13,14 @@ const separator = css`
 `;
 
 export default function ContextMenuSeparator({ className }: ContextMenuSeparatorProps) {
-  return <div data-slot='separator' x-class={[separator, className]} role="separator" />;
+  const classNames = useContextMenuContext().classNames;
+  return (
+    <div
+      data-slot='separator'
+      x-class={[separator, classNames?.separator, className]}
+      role="separator"
+    />
+  );
 }
 
 export type { ContextMenuSeparatorProps };

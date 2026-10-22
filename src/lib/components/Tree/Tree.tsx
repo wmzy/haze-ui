@@ -13,6 +13,7 @@ import { css } from '@linaria/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getDirection } from '../../utils/direction';
+import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { VirtualList } from '../VirtualList';
 
@@ -130,6 +131,7 @@ export default function Tree({
   expandedKeys: expandedKeysControl,
   selectedKeys: selectedKeysControl,
   checkedKeys: checkedKeysControl,
+  ref,
   className,
   onExpand,
   onSelect,
@@ -264,6 +266,13 @@ export default function Tree({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VirtualListHandle>(null);
+  // The consumer's ref rides the same root node every render path
+  // roots at; the tree's own handle stays live alongside (TreeSelect's
+  // setTriggerRef pattern).
+  const setRootRef = useCallback(
+    (node: HTMLDivElement | null) => mergeRefs(rootRef, ref)(node),
+    [ref]
+  );
 
   // Visible rows in depth-first order — the keyboard model and the
   // virtualized windowing share this one flattening.
@@ -625,7 +634,7 @@ export default function Tree({
       <div
         role='tree'
         data-slot='tree'
-        ref={rootRef}
+        ref={setRootRef}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         x-class={[base, className]}
@@ -640,7 +649,7 @@ export default function Tree({
       <div
         role='tree'
         data-slot='tree'
-        ref={rootRef}
+        ref={setRootRef}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         x-class={[virtualTree, className]}
@@ -662,7 +671,7 @@ export default function Tree({
     <div
       role='tree'
       data-slot='tree'
-      ref={rootRef}
+      ref={setRootRef}
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
       x-class={[base, className]}

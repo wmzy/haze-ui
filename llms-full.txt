@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 147 Haze UI components in one
-> file (263 type tables), generated from the library source. Do not
+> Complete props reference for all 154 Haze UI components in one
+> file (278 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -56,6 +56,9 @@ import { Accordion, AccordionItem } from 'haze-ui';
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `title` | `ReactNode` | — | Header text shown in the summary |
+| `itemKey` | `string` | — |  |
+| `disabled` | `boolean` | — |  |
+| `index` | `number` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Collapsible content |
 
@@ -63,7 +66,10 @@ import { Accordion, AccordionItem } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `open` | `ControlOrValue<string[]>` | — |  |
+| `onOpenChange` | `(keys: string[]) => void` | — |  |
 | `exclusive` | `boolean` | `false` | Only one item open at a time (uses name attribute) |
+| `classNames` | `AccordionClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | AccordionItem elements |
 
@@ -113,7 +119,7 @@ import { Affix } from 'haze-ui';
 ## Alert
 
 ```jsx
-import { Alert } from 'haze-ui';
+import { Alert, alertVariants } from 'haze-ui';
 ```
 
 ### AlertProps
@@ -240,8 +246,11 @@ import { AvatarGroup } from 'haze-ui';
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `max` | `number` | — |  |
-| `total` | `number` | — |  |
+| `max` | `number` | — | Maximum avatars rendered before the overflow chip |
+| `total` | `number` | — | Overflow count shown instead of children count - max |
+| `overflowLabel` | `(count: number) => string` | `(count) => `+${count}`` | Formats the "+N" overflow chip text; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own formatter |
+| `className` | `string` | — | Additional CSS class |
+| `...rest` | `ComponentPropsWithoutRef<'div'>` | — | Native div attributes forwarded to the group element |
 
 ## BackToTop
 
@@ -276,7 +285,7 @@ import { Badge, badgeVariants, badgeSizes } from 'haze-ui';
 ## Banner
 
 ```jsx
-import { Banner } from 'haze-ui';
+import { Banner, bannerVariants } from 'haze-ui';
 ```
 
 ### BannerProps
@@ -329,6 +338,8 @@ import { Breadcrumb, BreadcrumbItem } from 'haze-ui';
 | `separator` | `ReactNode` | `'/'` | Separator between items |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | BreadcrumbItem elements |
+| `aria-label` | `string` | `'Breadcrumb'` | Accessible name for the nav landmark; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label |
+| `...rest` | `ComponentPropsWithoutRef<'nav'>` | — | Native nav attributes forwarded to the root element |
 
 ## Button
 
@@ -344,6 +355,7 @@ import { Button, ButtonLink, buttonVariants, buttonSizes } from 'haze-ui';
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
 | `loading` | `boolean \| { icon?: ReactNode; text?: ReactNode; }` | — |  |
+| `ref` | `Ref<HTMLAnchorElement>` | — |  |
 
 ### ButtonOwnProps
 
@@ -366,6 +378,32 @@ import { Button, ButtonLink, buttonVariants, buttonSizes } from 'haze-ui';
 | `disabled` | `boolean` | `false` | Disable the button |
 | `className` | `string` | — | Additional CSS class |
 | `...rest` | `ButtonHTMLAttributes` | — | All native button attributes (except type) |
+
+## ButtonGroup
+
+```jsx
+import { ButtonGroup, ButtonGroupSeparator, useButtonGroup } from 'haze-ui';
+```
+
+### ButtonGroupProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
+| `orientation` | `'vertical' \| 'horizontal'` | — |  |
+| `disabled` | `boolean` | — |  |
+| `classNames` | `ButtonGroupClassNames` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
+
+### ButtonGroupSeparatorProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
 
 ## Calendar
 
@@ -390,11 +428,13 @@ import { Calendar } from 'haze-ui';
 | `rangeEnd` | `string` | — | Highlight a range endpoint/in-between span (YYYY-MM-DD) without selecting |
 | `onSelect` | `(date: string) => void` | — |  |
 | `cellRender` | `CalendarCellRender` | — | Appends custom content inside every picker cell (day numbers, month/quarter/year labels, drill-down grids) — receives the cell's civil date and the mode it renders in |
+| `classNames` | `CalendarClassNames` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## Card
 
 ```jsx
-import { Card } from 'haze-ui';
+import { Card, cardVariants } from 'haze-ui';
 ```
 
 ### CardProps
@@ -450,6 +490,7 @@ import { Cascader } from 'haze-ui';
 | `loading` | `boolean` | — |  |
 | `virtualized` | `boolean \| CascaderVirtualizedConfig` | — | Window each cascading panel list with VirtualList for large option trees |
 | `className` | `string` | — |  |
+| `classNames` | `CascaderClassNames` | — |  |
 | `ref` | `Ref<HTMLButtonElement>` | — |  |
 
 ## Chart
@@ -485,6 +526,8 @@ import { Chart } from 'haze-ui';
 | `fallbackTable` | `boolean` | — |  |
 | `loading` | `ReactNode` | — |  |
 | `empty` | `ReactNode` | — |  |
+| `classNames` | `ChartClassNames` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## ChatContainer
 
@@ -572,7 +615,7 @@ import { Checkbox, CheckboxCore } from 'haze-ui';
 ## Chip
 
 ```jsx
-import { Chip } from 'haze-ui';
+import { Chip, chipVariants } from 'haze-ui';
 ```
 
 ### ChipProps
@@ -582,7 +625,8 @@ import { Chip } from 'haze-ui';
 | `variant` | `'solid' \| 'outline'` | `'solid'` | Visual variant |
 | `color` | `'success' \| 'warning' \| 'danger' \| 'default' \| 'primary'` | `'default'` | Color scheme |
 | `icon` | `ReactNode` | — | Leading icon |
-| `onClose` | `() => void` | — | Close handler; shows close button when provided |
+| `onClose` | `() => void` | — | Called when remove button is clicked; providing it shows the button |
+| `removeLabel` | `string` | `'Remove'` | Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Chip content |
 
@@ -677,7 +721,7 @@ import { ColorPicker, ColorPickerCore } from 'haze-ui';
 | `className` | `string` | — | Additional CSS class (the panel card) |
 | `name` | `string` | — |  |
 | `aria-label` | `string` | — | Accessible name of the trigger and the panel; defaults to the locale's "Pick color". Set it when more than one picker is on a page |
-| `ref` | `Ref<HTMLButtonElement \| HTMLDivElement>` | — |  |
+| `ref` | `Ref<HTMLDivElement \| HTMLButtonElement>` | — |  |
 
 ## Combobox
 
@@ -880,7 +924,9 @@ import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, C
 | `open` | `ControlOrValue<boolean>` | — | Controlled open state |
 | `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes |
 | `children` | `ReactNode` | — | Trigger and Content elements |
+| `classNames` | `ContextMenuClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ### ContextMenuSeparatorProps
 
@@ -919,6 +965,42 @@ import { ConversationList, ConversationItem } from 'haze-ui';
 | `children` | `ReactNode` | — | ConversationItem elements |
 | `onLoadMore` | `() => void` | — |  |
 | `className` | `string` | — | Additional CSS class |
+
+## CopyButton
+
+```jsx
+import { CopyButton, Snippet, iconSizes } from 'haze-ui';
+```
+
+### CopyButtonProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `getValue` | `() => string` | — |  |
+| `copiedTimeout` | `number` | — |  |
+| `copyLabel` | `string` | — |  |
+| `copiedLabel` | `string` | — |  |
+| `classNames` | `CopyButtonClassNames` | — |  |
+| `children` | `ReactNode \| ((copied: boolean) => ReactNode)` | — |  |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `square` | `boolean` | — |  |
+| `loading` | `boolean \| { icon?: ReactNode; text?: ReactNode; }` | — |  |
+| `as` | `T` | — |  |
+
+### SnippetProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `copiedTimeout` | `number` | — |  |
+| `copyLabel` | `string` | — |  |
+| `copiedLabel` | `string` | — |  |
+| `classNames` | `SnippetClassNames` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## CountUp
 
@@ -1010,6 +1092,8 @@ import { DataTable, dataTableToCsv, dataTableSum, dataTableAvg, dataTableCount }
 | `columnVisibility` | `ControlOrValue<ColumnVisibilityState>` | — | Controlled column visibility state (TanStack VisibilityState) |
 | `columnToggle` | `boolean` | `false` | Render the column settings menu (hideable columns only; meta.hideable === false pins a column) |
 | `filterable` | `boolean` | `false` | Render a filter row under the header; per-column opt-in/out via meta.filterable |
+| `filters` | `ControlOrValue<DataTableFiltersState>` | — |  |
+| `onFiltersChange` | `(filters: DataTableFiltersState) => void` | — |  |
 | `summary` | `(rows: Row<{ rowPaginationFeature: TableFeature; paginatedRowModel: (table: Table<any, any>) => () => RowModel<any, any>; rowSelectionFeature: TableFeature; ... 12 more ...; columnMeta: DataTableColumnMeta; }, TData>[]) => DataTableSummary<...>[]` | — |  |
 | `stickyFooter` | `boolean` | — |  |
 | `editable` | `boolean` | — |  |
@@ -1020,7 +1104,9 @@ import { DataTable, dataTableToCsv, dataTableSum, dataTableAvg, dataTableCount }
 | `onColumnOrderChange` | `(order: ColumnOrderState) => void` | — |  |
 | `onEndReached` | `() => void` | — |  |
 | `endReachedThreshold` | `number` | — |  |
+| `classNames` | `DataTableClassNames` | — |  |
 | `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## DateField
 
@@ -1327,6 +1413,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 | `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes |
 | `collisionPadding` | `CollisionPadding` | — |  |
 | `items` | `MenuDataItem[]` | — |  |
+| `classNames` | `DropdownMenuClassNames` | — |  |
 | `children` | `ReactNode` | — | Trigger and Content elements |
 | `className` | `string` | — | Additional CSS class |
 | `ref` | `Ref<DropdownMenuHandle>` | — |  |
@@ -1580,6 +1667,28 @@ import { Grid, GridItem } from 'haze-ui';
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | GridItem elements |
 
+## Heatmap
+
+```jsx
+import { Heatmap } from 'haze-ui';
+```
+
+### HeatmapProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `data` | `HeatmapDatum[] \| Record<string, number>` | — |  |
+| `levels` | `number` | — |  |
+| `startDate` | `string` | — |  |
+| `endDate` | `string` | — |  |
+| `getLabel` | `(datum: { date: string; value: number; }) => string` | — |  |
+| `getMonthLabel` | `(month: number, year: number) => string` | — |  |
+| `getWeekdayLabel` | `(weekday: number) => string` | — |  |
+| `summary` | `string` | — |  |
+| `classNames` | `HeatmapClassNames` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
+
 ## Highlight
 
 ```jsx
@@ -1785,6 +1894,30 @@ import { Input, InputCore } from 'haze-ui';
 | `disabled` | `boolean` | `false` | Disable the input |
 | `className` | `string` | — | Additional CSS class |
 | `...rest` | `InputHTMLAttributes` | — | All native input attributes |
+
+## InputGroup
+
+```jsx
+import { InputGroup, InputGroupAddon, useInputGroup } from 'haze-ui';
+```
+
+### InputGroupAddonProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `className` | `string` | — |  |
+
+### InputGroupProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `classNames` | `InputGroupClassNames` | — |  |
+| `children` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## JsonView
 
@@ -2018,8 +2151,10 @@ import { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGr
 | `open` | `ControlOrValue<boolean>` | `false` | Whether the menu is open |
 | `trigger` | `ReactNode` | — | Trigger element |
 | `items` | `MenuDataItem[]` | — |  |
+| `classNames` | `MenuClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | MenuItem and MenuDivider elements |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ### MenuRadioGroupProps
 
@@ -2067,6 +2202,40 @@ import { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGr
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
 
+## Meter
+
+```jsx
+import { Meter, trackSizes } from 'haze-ui';
+```
+
+### MeterOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | — |  |
+| `min` | `number` | — |  |
+| `max` | `number` | — |  |
+| `thresholds` | `MeterThreshold[]` | — |  |
+| `label` | `ReactNode` | — |  |
+| `showValue` | `boolean` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `classNames` | `MeterClassNames` | — |  |
+
+### MeterProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | — |  |
+| `min` | `number` | — |  |
+| `max` | `number` | — |  |
+| `thresholds` | `MeterThreshold[]` | — |  |
+| `label` | `ReactNode` | — |  |
+| `showValue` | `boolean` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `classNames` | `MeterClassNames` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
+
 ## ModelPicker
 
 ```jsx
@@ -2108,6 +2277,55 @@ import { NavigationBar, NavLink } from 'haze-ui';
 | `end` | `ReactNode` | — | End slot content (e.g. login button) |
 | `className` | `string` | — | Additional CSS class |
 
+## NavigationMenu
+
+```jsx
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent } from 'haze-ui';
+```
+
+### NavigationMenuContentProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
+### NavigationMenuItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `className` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
+### NavigationMenuListProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
+### NavigationMenuProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `activeValue` | `ControlOrValue<string \| null>` | — |  |
+| `onActiveValueChange` | `(value: string \| null) => void` | — |  |
+| `intentDelay` | `number` | — |  |
+| `graceDelay` | `number` | — |  |
+| `stretchToTrigger` | `boolean` | — |  |
+| `classNames` | `NavigationMenuClassNames` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLElement>` | — |  |
+| `children` | `ReactNode` | — |  |
+
+### NavigationMenuTriggerProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
 ## NumberFormatter
 
 ```jsx
@@ -2127,7 +2345,7 @@ import { NumberFormatter } from 'haze-ui';
 ## NumberInput
 
 ```jsx
-import { NumberInput, NumberInputCore } from 'haze-ui';
+import { NumberInput, NumberInputCore, inputSizes, btnSizes } from 'haze-ui';
 ```
 
 ### NumberInputCoreProps
@@ -2280,7 +2498,7 @@ import { Popover } from 'haze-ui';
 ## Progress
 
 ```jsx
-import { Progress } from 'haze-ui';
+import { Progress, barSizes, circleSizes } from 'haze-ui';
 ```
 
 ### ProgressProps
@@ -2292,6 +2510,8 @@ import { Progress } from 'haze-ui';
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the progress indicator |
 | `color` | `'success' \| 'warning' \| 'danger' \| 'primary'` | `'primary'` | Color variant |
 | `className` | `string` | — | Additional CSS class |
+| `aria-label` | `string` | `'Progress'` | Accessible name for the progressbar; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label |
+| `...rest` | `ComponentPropsWithoutRef<'div'>` | — | Native div attributes forwarded to the progressbar element |
 
 ## PromptInput
 
@@ -2520,7 +2740,9 @@ import { Schedule } from 'haze-ui';
 | `nextLabel` | `string` | — |  |
 | `viewLabels` | `Partial<Record<ScheduleView, string>>` | — |  |
 | `locale` | `string` | — |  |
+| `classNames` | `ScheduleClassNames` | — |  |
 | `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## ScrollArea
 
@@ -2594,6 +2816,8 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `onNativeChange` | `ChangeEventHandler<HTMLSelectElement, HTMLSelectElement> \| undefined` | — |  |
 | `placeholder` | `string` | — |  |
 | `multiple` | `boolean` | — |  |
+| `tags` | `boolean` | — |  |
+| `maxCount` | `number` | — |  |
 | `searchable` | `boolean` | — |  |
 | `clearable` | `boolean` | — |  |
 | `loading` | `boolean` | — |  |
@@ -2604,7 +2828,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `children` | `ReactNode` | — |  |
 | `className` | `string` | — |  |
 | `classNames` | `SelectClassNames` | — |  |
-| `ref` | `Ref<HTMLButtonElement \| HTMLSelectElement>` | — |  |
+| `ref` | `Ref<HTMLButtonElement \| HTMLInputElement \| HTMLSelectElement>` | — |  |
 
 ### SelectFloatingProps
 
@@ -2614,6 +2838,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `onChange` | `(value: T \| T[]) => void` | — |  |
 | `entries` | `SelectEntryData<T>[]` | — |  |
 | `multiple` | `boolean` | — |  |
+| `tags` | `boolean` | — |  |
 | `placeholder` | `string` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `classNames` | `SelectClassNames` | — |  |
@@ -2622,9 +2847,10 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `loading` | `boolean` | — |  |
 | `onSearch` | `(query: string) => void` | — |  |
 | `maxTagCount` | `number` | — |  |
+| `maxCount` | `number` | — |  |
 | `virtualized` | `boolean \| SelectVirtualizedConfig` | — |  |
 | `className` | `string` | — |  |
-| `ref` | `Ref<HTMLButtonElement>` | — |  |
+| `ref` | `Ref<HTMLButtonElement \| HTMLInputElement>` | — |  |
 
 ### SelectProps
 
@@ -2632,6 +2858,8 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | --- | --- | --- | --- |
 | `value` | `ControlOrValue<T \| T[]>` | — | Controlled value or control object |
 | `multiple` | `boolean` | — |  |
+| `tags` | `boolean` | — |  |
+| `maxCount` | `number` | — |  |
 | `searchable` | `boolean` | — |  |
 | `clearable` | `boolean` | — |  |
 | `loading` | `boolean` | — |  |
@@ -2642,7 +2870,7 @@ import { Select, SelectCore, Option, OptionGroup } from 'haze-ui';
 | `placeholder` | `string` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the select |
 | `classNames` | `SelectClassNames` | — |  |
-| `ref` | `Ref<HTMLButtonElement \| HTMLSelectElement>` | — |  |
+| `ref` | `Ref<HTMLButtonElement \| HTMLInputElement \| HTMLSelectElement>` | — |  |
 | `name` | `string` | — |  |
 | `children` | `ReactNode` | — | <Option> elements |
 | `disabled` | `boolean` | `false` | Disable the select |
@@ -3004,7 +3232,7 @@ import { SwipeAction } from 'haze-ui';
 ## Switch
 
 ```jsx
-import { Switch, SwitchCore } from 'haze-ui';
+import { Switch, SwitchCore, trackSizes, thumbSizes } from 'haze-ui';
 ```
 
 ### SwitchCoreProps
@@ -3089,8 +3317,10 @@ import { Table, TableHead, TableBody, TableRow, TableCell } from 'haze-ui';
 | --- | --- | --- | --- |
 | `striped` | `boolean` | `false` | Alternate row backgrounds |
 | `bordered` | `boolean` | `false` | Add cell borders |
+| `classNames` | `TableClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | TableHead and TableBody elements |
+| `ref` | `Ref<HTMLTableElement>` | — |  |
 
 ### TableRowProps
 
@@ -3102,7 +3332,7 @@ import { Table, TableHead, TableBody, TableRow, TableCell } from 'haze-ui';
 ## Tabs
 
 ```jsx
-import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
+import { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariants } from 'haze-ui';
 ```
 
 ### SortableTabListProps
@@ -3154,15 +3384,17 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList } from 'haze-ui';
 | `variant` | `TabsVariant` | — |  |
 | `items` | `TabData[]` | — |  |
 | `destroyInactiveTabPane` | `boolean` | — |  |
+| `lazy` | `boolean` | — |  |
 | `addable` | `TabsAddable` | — |  |
 | `classNames` | `TabsClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 | `children` | `ReactNode` | — | TabList and TabPanel elements |
 
 ## Tag
 
 ```jsx
-import { Tag } from 'haze-ui';
+import { Tag, tagVariants, tagSizes } from 'haze-ui';
 ```
 
 ### TagProps
@@ -3173,6 +3405,7 @@ import { Tag } from 'haze-ui';
 | `size` | `'sm' \| 'md'` | `'md'` | Tag size |
 | `closable` | `boolean` | `false` | Show close button |
 | `onClose` | `() => void` | — | Called when close button is clicked |
+| `removeLabel` | `string` | `'Remove'` | Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Tag content |
 
@@ -3350,6 +3583,29 @@ import { TimeField, TimeFieldCore } from 'haze-ui';
 | `labels` | `TimeLabels` | — |  |
 | `className` | `string` | — |  |
 | `ref` | `Ref<HTMLSpanElement>` | — |  |
+
+## TimeGrid
+
+```jsx
+import { TimeGrid } from 'haze-ui';
+```
+
+### TimeGridProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ControlOrValue<string>` | — |  |
+| `onChange` | `(value: string) => void` | — |  |
+| `from` | `string` | — |  |
+| `to` | `string` | — |  |
+| `step` | `number` | — |  |
+| `disabledValues` | `readonly string[]` | — |  |
+| `columns` | `number` | — |  |
+| `formatLabel` | `(value: string) => string` | — |  |
+| `name` | `string` | — |  |
+| `classNames` | `TimeGridClassNames` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLButtonElement>` | — |  |
 
 ## TimePicker
 
@@ -3547,7 +3803,9 @@ import { Tooltip } from 'haze-ui';
 | `delay` | `number` | `150` | Hover delay in ms before showing; defaults to 150 or the ConfigProvider defaults.Tooltip.delay value |
 | `open` | `ControlOrValue<boolean>` | — |  |
 | `collisionPadding` | `CollisionPadding` | — |  |
+| `classNames` | `TooltipClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
 | `children` | `ReactNode` | — | Trigger element |
 
 ## Tour
@@ -3612,6 +3870,7 @@ import { Tree, SortableTree } from 'haze-ui';
 | --- | --- | --- | --- |
 | `onMove` | `(info: SortableTreeMoveInfo) => void` | — |  |
 | `dragHandle` | `boolean` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 | `className` | `string` | — |  |
 | `onSelect` | `(selectedKeys: string[], info: { selected: boolean; selectedNodes: TreeNodeData[]; node: TreeNodeData; }) => void` | — |  |
 | `disabled` | `boolean` | — |  |
@@ -3661,6 +3920,7 @@ import { Tree, SortableTree } from 'haze-ui';
 | `expandedKeys` | `ControlOrValue<string[]>` | — | Controlled expanded node keys |
 | `selectedKeys` | `ControlOrValue<string[]>` | — | Controlled selected node keys |
 | `checkedKeys` | `ControlOrValue<string[]>` | — | Controlled checked node keys |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `onExpand` | `(expandedKeys: string[], info: { expanded: boolean; node: TreeNodeData; }) => void` | — | Callback when node is expanded/collapsed |
 | `onSelect` | `(selectedKeys: string[], info: { selected: boolean; selectedNodes: TreeNodeData[]; node: TreeNodeData; }) => void` | — | Callback when node is selected |
@@ -3774,12 +4034,14 @@ import { Upload, UploadCore } from 'haze-ui';
 | `name` | `string` | — |  |
 | `data` | `Record<string, string \| Blob>` | — |  |
 | `manual` | `boolean` | — |  |
+| `concurrency` | `number` | — |  |
 | `showUploadList` | `boolean \| { itemRender?: UploadListItemRender \| undefined; }` | — |  |
 | `listType` | `'picture' \| 'text' \| 'picture-card'` | — |  |
 | `onPreview` | `(file: UploadValueItem) => void` | — |  |
 | `removeLabel` | `string` | — |  |
 | `directory` | `boolean` | — |  |
 | `onStatusChange` | `(files: UploadFileStatus[]) => void` | — |  |
+| `classNames` | `UploadClassNames` | — |  |
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
 | `ref` | `Ref<UploadHandle>` | — |  |
@@ -3796,6 +4058,8 @@ import { Upload, UploadCore } from 'haze-ui';
 | `onRemove` | `(file: UploadValueItem) => void` | — |  |
 | `onRetry` | `(file: UploadValueItem) => void` | — |  |
 | `onCancel` | `(file: UploadValueItem) => void` | — |  |
+| `classNames` | `Pick<UploadClassNames, 'progress' \| 'list' \| 'item'>` | — |  |
+| `ref` | `Ref<HTMLUListElement>` | — |  |
 
 ### UploadProps
 
@@ -3814,6 +4078,7 @@ import { Upload, UploadCore } from 'haze-ui';
 | `name` | `string` | — |  |
 | `data` | `Record<string, string \| Blob>` | — |  |
 | `manual` | `boolean` | — |  |
+| `concurrency` | `number` | — |  |
 | `showUploadList` | `boolean \| { itemRender?: UploadListItemRender \| undefined; }` | `false` | Renders the built-in file list below the zone: live progress, cancel while uploading, retry + remove on error, per-state actions |
 | `listType` | `'picture' \| 'text' \| 'picture-card'` | `'text'` | Rendering style of the built-in list: text rows; picture — text rows with a 32px inline thumbnail; picture-card — a grid of square thumbnail cards |
 | `onPreview` | `(file: UploadValueItem) => void` | — | Click handler for picture / picture-card thumbnails — the natural spot to open a lightbox (wire it to Image/ImagePreview); remove/retry/cancel buttons stay independent |
@@ -3821,6 +4086,7 @@ import { Upload, UploadCore } from 'haze-ui';
 | `directory` | `boolean` | — |  |
 | `onStatusChange` | `(files: UploadFileStatus[]) => void` | — |  |
 | `onChange` | `(files: File[]) => void` | — | Fires with the freshly picked local Files only — the accumulated list (echo entries included) is the value channel |
+| `classNames` | `UploadClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Custom dropzone content |
 | `ref` | `Ref<UploadHandle>` | — |  |

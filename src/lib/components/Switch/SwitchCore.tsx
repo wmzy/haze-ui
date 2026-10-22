@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
+import { trackSizes, thumbSizes, thumbCheckedSizes } from './switch-styles';
+
 type SwitchCoreProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -89,69 +91,6 @@ const thumb = css`
   transition: transform var(--haze-duration-normal);
   box-shadow: var(--haze-shadow-sm);
 `;
-
-/* Track heights sit at the --haze-space-6 (24px) floor for every size —
-   WCAG 2.5.8 target size: the track is the switch's only pointer
-   target, so the sm/md variants must not dip below it. */
-const trackSm = css`
-  width: 2.25rem;
-  height: var(--haze-space-6);
-`;
-
-const trackMd = css`
-  width: 40px;
-  height: var(--haze-space-6);
-`;
-
-const trackLg = css`
-  width: 48px;
-  height: 26px;
-`;
-
-const thumbSm = css`
-  width: 1rem;
-  height: 1rem;
-`;
-
-const thumbMd = css`
-  width: 18px;
-  height: 18px;
-`;
-
-const thumbLg = css`
-  width: 22px;
-  height: 22px;
-`;
-
-const thumbCheckedSm = css`
-  transform: translateX(1rem);
-`;
-
-const thumbCheckedMd = css`
-  transform: translateX(18px);
-`;
-
-const thumbCheckedLg = css`
-  transform: translateX(22px);
-`;
-
-const trackSizes = {
-  sm: trackSm,
-  md: trackMd,
-  lg: trackLg,
-} as const;
-
-const thumbSizes = {
-  sm: thumbSm,
-  md: thumbMd,
-  lg: thumbLg,
-} as const;
-
-const thumbCheckedSizes = {
-  sm: thumbCheckedSm,
-  md: thumbCheckedMd,
-  lg: thumbCheckedLg,
-} as const;
 
 export default function SwitchCore({
   checked,

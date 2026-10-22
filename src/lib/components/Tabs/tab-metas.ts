@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { TabProps, TabStatus } from './Tab';
 
-import { Children, Fragment, isValidElement } from 'react';
+import { Children, Fragment, isValidElement, useEffect, useState } from 'react';
 
 import Tab from './Tab';
 
@@ -15,6 +15,33 @@ export type TabMeta = {
    * selectable through the ⋯ radios either. */
   disabled?: boolean;
 };
+
+/**
+ * The lazy-mount ledger: tab values that have been active at least
+ * once, seeded with the initial value. `<TabPanel>` consults it when
+ * `lazy` is set on `<Tabs>` — a panel that has never been active stays
+ * unmounted until its first activation. Recording happens in an effect
+ * (the newly active panel already mounts through `isActive`, so the
+ * one-commit lag is invisible). Lives here beside the metas collector
+ * so the component files keep a components-only export surface for
+ * react-refresh.
+ */
+export function useActivatedTabs(
+  activeValue: string,
+  enabled: boolean
+): ReadonlySet<string> {
+  const [activated, setActivated] = useState<ReadonlySet<string>>(
+    () => new Set([activeValue])
+  );
+  useEffect(() => {
+    // Only maintained while lazy is in play — eager strips never read it.
+    if (!enabled) return;
+    setActivated((prev) =>
+      prev.has(activeValue) ? prev : new Set(prev).add(activeValue)
+    );
+  }, [activeValue, enabled]);
+  return activated;
+}
 
 /**
  * `<Tab>` children in DOM order for the overflow menu: arrays and

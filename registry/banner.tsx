@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Banner } from 'haze-ui';
+import { Banner, bannerVariants } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/banner.css';
 
-export { Banner };
+export { Banner, bannerVariants };
 export type { BannerProps } from 'haze-ui';

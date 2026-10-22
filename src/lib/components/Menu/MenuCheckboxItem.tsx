@@ -6,6 +6,8 @@ import { useControl } from 'react-use-control';
 
 import { menuItemDanger, menuItemIcon, menuItemIndicator, menuItemKbd } from './menu-item-styles';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuCheckboxItemProps = {
   /** Whether the option is checked — controlled control or uncontrolled initial value. */
   checked?: ControlOrValue<boolean>;
@@ -85,6 +87,7 @@ export default function MenuCheckboxItem({
   className,
   children,
 }: MenuCheckboxItemProps) {
+  const classNames = useMenuClassNames();
   const [checked, setChecked] = useControl(checkedControl, false);
 
   return (
@@ -94,7 +97,7 @@ export default function MenuCheckboxItem({
       data-slot='menu-checkbox-item'
       aria-checked={checked}
       tabIndex={-1}
-      x-class={[item, danger && menuItemDanger, className]}
+      x-class={[item, danger && menuItemDanger, classNames?.checkboxItem, className]}
       disabled={disabled}
       onClick={() => {
         const next = !checked;

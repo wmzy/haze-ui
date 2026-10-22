@@ -99,6 +99,7 @@ vi.mock('recharts', async () => {
 
   return {
     ResponsiveContainer: frame('responsive-container'),
+    DefaultLegendContent: frame('default-legend'),
     LineChart: frame('line-chart'),
     AreaChart: frame('area-chart'),
     BarChart: frame('bar-chart'),
@@ -1533,5 +1534,77 @@ describe('Chart', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Chart classNames slots', () => {
+  it('applies the wrapper slot to the root', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        xKey='month'
+        series={[{ key: 'sales', label: 'Sales' }]}
+        classNames={{ wrapper: 'slot-wrapper' }}
+      />
+    );
+    expect(document.querySelector("[data-slot='chart']")).toHaveClass(
+      'slot-wrapper'
+    );
+  });
+
+  it('passes the tooltip and legend slots to the recharts wrappers', () => {
+    vi.mocked(Tooltip).mockClear();
+    vi.mocked(Legend).mockClear();
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        xKey='month'
+        series={[{ key: 'sales', label: 'Sales' }]}
+        showTooltip
+        showLegend
+        classNames={{ tooltip: 'slot-tooltip', legend: 'slot-legend' }}
+      />
+    );
+    expect(vi.mocked(Tooltip).mock.lastCall?.[0]).toEqual(
+      expect.objectContaining({ wrapperClassName: 'slot-tooltip' })
+    );
+    const legendProps = vi.mocked(Legend).mock.lastCall?.[0] as {
+      content?: (props: unknown) => { props?: { className?: string } };
+    };
+    expect(legendProps.content).toBeTypeOf('function');
+    expect(legendProps.content?.({}).props?.className).toBe('slot-legend');
+  });
+
+  it('applies the legend slot to the waffle built-in legend', () => {
+    render(
+      <Chart
+        type='waffle'
+        series={[{ name: 'Shipped', value: 7 }]}
+        classNames={{ legend: 'slot-legend' }}
+      />
+    );
+    expect(document.querySelector("[data-slot='waffle-legend']")).toHaveClass(
+      'slot-legend'
+    );
+  });
+
+  it('forwards ref to the root wrapper', () => {
+    render(
+      <Chart
+        type='line'
+        data={DATA}
+        xKey='month'
+        series={[{ key: 'sales', label: 'Sales' }]}
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+      />
+    );
+    expect(document.querySelector("[data-slot='chart']")).toHaveAttribute(
+      'data-probe',
+      'set'
+    );
   });
 });

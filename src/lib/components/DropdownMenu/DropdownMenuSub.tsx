@@ -5,6 +5,8 @@ import { css } from '@linaria/core';
 
 import { SubmenuProvider, useSubmenu } from '../../utils/submenu';
 
+import { useDropdownMenuContext } from './DropdownMenuContext';
+
 type DropdownMenuSubProps = {
   /** Whether the submenu is open — controlled control or uncontrolled initial value. */
   open?: ControlOrValue<boolean>;
@@ -33,10 +35,11 @@ export default function DropdownMenuSub({
   className,
   children,
 }: DropdownMenuSubProps) {
+  const classNames = useDropdownMenuContext().classNames;
   const sub = useSubmenu({ open, onOpenChange });
   return (
     <SubmenuProvider value={sub}>
-      <div data-slot='menu-sub' x-class={[wrapper, className]}>{children}</div>
+      <div data-slot='menu-sub' x-class={[wrapper, classNames?.sub, className]}>{children}</div>
     </SubmenuProvider>
   );
 }

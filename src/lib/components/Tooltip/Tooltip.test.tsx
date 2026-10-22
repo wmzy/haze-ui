@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { TooltipProps } from './Tooltip';
 
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import Tooltip from './Tooltip';
@@ -60,6 +61,37 @@ describe('Tooltip', () => {
       <Tooltip content="Tip" className="custom">Child</Tooltip>
     );
     expect(container.firstChild).toHaveClass('custom');
+  });
+
+  it('applies classNames slots to root, trigger and bubble', () => {
+    const { container } = render(
+      <Tooltip
+        content="Tip"
+        classNames={{ root: 'slot-root', trigger: 'slot-trigger', content: 'slot-content' }}
+      >
+        Child
+      </Tooltip>
+    );
+    const root = container.firstChild as HTMLElement;
+    expect(root).toHaveClass('slot-root');
+    expect(root).toHaveAttribute('data-slot', 'tooltip');
+    const trigger = root.querySelector("[data-slot='trigger']")!;
+    expect(trigger).toHaveClass('slot-trigger');
+    const bubble = screen.getByRole('tooltip');
+    expect(bubble).toHaveAttribute('data-slot', 'content');
+    expect(bubble).toHaveClass('slot-content');
+  });
+
+  it('forwards ref to the root wrapper span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    const { container } = render(
+      <Tooltip content="Tip" ref={ref}>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+    expect(ref.current).toBeInstanceOf(HTMLSpanElement);
+    expect(ref.current).toBe(container.firstChild);
+    expect(ref.current).toHaveAttribute('data-slot', 'tooltip');
   });
 
   it('shows after the hover delay', () => {

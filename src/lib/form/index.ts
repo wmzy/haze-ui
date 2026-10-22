@@ -3,6 +3,7 @@ export type {
   FieldValidator,
   FormItemAsProps,
   FormItemBinding,
+  FormItemClassNames,
   FormItemOwnProps,
   FormItemProps,
   FormItemRawElement,

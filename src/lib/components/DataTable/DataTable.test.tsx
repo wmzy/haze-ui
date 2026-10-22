@@ -2,13 +2,18 @@ import type { MockInstance } from 'vitest';
 
 import type { ExpandedState, RowSelectionState } from '@tanstack/react-table';
 
-import type { DataTableColumnDef, DataTableProps } from './DataTable';
+import type {
+  DataTableColumnDef,
+  DataTableFiltersState,
+  DataTableProps,
+} from './DataTable';
 
-import { render, screen, act, fireEvent, within } from '@testing-library/react';
+import { render, screen, act, fireEvent, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import LocaleProvider from '../LocaleProvider';
+import { floatingHidden } from '../../utils/floating';
 
 import DataTable from './DataTable';
 import { dataTableToCsv } from './csv';
@@ -863,6 +868,330 @@ describe('DataTable filtering', () => {
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.queryByText('Charlie')).not.toBeInTheDocument();
     expect(screen.queryByText('Diana')).not.toBeInTheDocument();
+  });
+});
+
+describe('DataTable column filter menus', () => {
+  /** Body data rows only — excludes the header row and, when the filter
+   * row is present, its `tr` (which carries no `th` either). */
+  function dataRows() {
+    return bodyRows().filter(
+      (row) => row.getAttribute('data-slot') !== 'filter-row'
+    );
+  }
+
+  /** jsdom's queries cannot see class-based `display: none`, so a
+   * closed-but-mounted filter panel stays queryable alongside an open
+   * one. Filters query results down to elements whose floating panel
+   * (if any) is not carrying the hidden handover class. */
+  function shown<T extends Element>(elements: T[]): T[] {
+    return elements.filter((element) => {
+      const panel = element.closest('[data-state]');
+      return !panel?.classList.contains(floatingHidden);
+    });
+  }
+
+  /** Commits the menu and waits out the panel's animated exit. jsdom
+   * cannot see class-based `display: none` through role queries (Linaria
+   * styles are stubbed in tests), so the closing panel's own contents
+   * stay "accessible" — the wait asserts the floating engine's hidden
+   * handover class instead, the same signal Popover's own tests use. */
+  async function commitAndWait(
+    user: ReturnType<typeof userEvent.setup>,
+    action: 'Apply' | 'Reset'
+  ) {
+    const button = shown(screen.getAllByRole('button', { name: action }))[0];
+    if (button === undefined) {
+      throw new Error(`no shown ${action} button`);
+    }
+    await user.click(button);
+    const panel = button.closest('[data-state]');
+    await waitFor(() => {
+      expect(panel).toHaveClass(floatingHidden);
+    });
+  }
+
+  // Age buckets exercise the custom meta.filterFn seam; the Name column
+  // below exercises the default membership check on raw cell values.
+  const ageFilterColumns: DataTableColumnDef<Person>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    {
+      accessorKey: 'age',
+      header: 'Age',
+      meta: {
+        filters: [
+          { text: 'Under 30', value: 'under30' },
+          { text: '30 and over', value: 'over30' },
+        ],
+        filterFn: (row, values) =>
+          values.some((value) =>
+            value === 'under30' ? row.age < 30 : row.age >= 30
+          ),
+      },
+    },
+  ];
+
+  const nameFilterColumns: DataTableColumnDef<Person>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      meta: {
+        filters: [
+          { text: 'Alice', value: 'Alice' },
+          { text: 'Bob', value: 'Bob' },
+          { text: 'Diana', value: 'Diana' },
+        ],
+      },
+    },
+    { accessorKey: 'age', header: 'Age' },
+  ];
+
+  it('renders no filter trigger without meta.filters', () => {
+    render(<DataTable columns={columns} data={people} />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Filter Age' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('filters rows through the menu and marks the trigger active', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={ageFilterColumns} data={people} getRowId={rowId} />
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Filter Age' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(trigger.querySelector("[data-slot='icon']")).not.toHaveAttribute(
+      'data-active'
+    );
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    // Selecting both buckets keeps everyone; the draft only commits on
+    // Apply.
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+    await user.click(screen.getByRole('checkbox', { name: '30 and over' }));
+    await commitAndWait(user, 'Apply');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(dataRows()).toHaveLength(5);
+
+    // One bucket: Alice (28) and Evan (24) only.
+    await user.click(trigger);
+    await user.click(screen.getByRole('checkbox', { name: '30 and over' }));
+    await commitAndWait(user, 'Apply');
+
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('Evan')).toBeInTheDocument();
+    expect(screen.queryByText('Charlie')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+    expect(trigger.querySelector("[data-slot='icon']")).toHaveAttribute(
+      'data-active',
+      'true'
+    );
+  });
+
+  it('clears the filter through Reset', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={ageFilterColumns} data={people} getRowId={rowId} />
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Filter Age' });
+    await user.click(trigger);
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+    await commitAndWait(user, 'Apply');
+    expect(dataRows()).toHaveLength(2);
+
+    await user.click(trigger);
+    await commitAndWait(user, 'Reset');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(dataRows()).toHaveLength(5);
+    expect(trigger.querySelector("[data-slot='icon']")).not.toHaveAttribute(
+      'data-active'
+    );
+  });
+
+  it('defaults to a membership check on the cell value without filterFn', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={nameFilterColumns} data={people} getRowId={rowId} />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Filter Name' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Alice' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Bob' }));
+    await commitAndWait(user, 'Apply');
+
+    expect(dataRows()).toHaveLength(2);
+    // The closed panel's own option labels (Alice, Diana…) are still in
+    // the DOM behind display:none — scope to shown occurrences.
+    expect(shown(screen.getAllByText('Alice'))).toHaveLength(1);
+    expect(shown(screen.getAllByText('Bob'))).toHaveLength(1);
+    expect(shown(screen.queryAllByText('Diana'))).toHaveLength(0);
+    expect(shown(screen.queryAllByText('Charlie'))).toHaveLength(0);
+  });
+
+  it('supports controlled filters through a Control', async () => {
+    const user = userEvent.setup();
+    const onFiltersChange = vi.fn();
+    function Harness() {
+      const [filters, setFilters, filtersCtrl] =
+        useControl<DataTableFiltersState>(undefined, {});
+      return (
+        <>
+          <DataTable
+            columns={ageFilterColumns}
+            data={people}
+            getRowId={rowId}
+            filters={filtersCtrl}
+            onFiltersChange={onFiltersChange}
+          />
+          <output data-testid='filters'>{JSON.stringify(filters)}</output>
+          <button type='button' onClick={() => setFilters({})}>
+            Clear
+          </button>
+        </>
+      );
+    }
+
+    render(<Harness />);
+
+    await user.click(screen.getByRole('button', { name: 'Filter Age' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+    await commitAndWait(user, 'Apply');
+
+    expect(screen.getByTestId('filters')).toHaveTextContent(
+      '{"age":["under30"]}'
+    );
+    expect(onFiltersChange).toHaveBeenCalledWith({ age: ['under30'] });
+    expect(dataRows()).toHaveLength(2);
+
+    // Programmatic clear through the control syncs back into the table.
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(dataRows()).toHaveLength(5);
+    expect(screen.getByTestId('filters')).toHaveTextContent('{}');
+  });
+
+  it('stacks multiple filter columns as an intersection', async () => {
+    const user = userEvent.setup();
+    const bothColumns: DataTableColumnDef<Person>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        meta: {
+          filters: [
+            { text: 'Alice', value: 'Alice' },
+            { text: 'Bob', value: 'Bob' },
+          ],
+        },
+      },
+      ageFilterColumns[1]!,
+    ];
+    render(<DataTable columns={bothColumns} data={people} getRowId={rowId} />);
+
+    await user.click(screen.getByRole('button', { name: 'Filter Name' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Alice' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Bob' }));
+    await commitAndWait(user, 'Apply');
+
+    await user.click(screen.getByRole('button', { name: 'Filter Age' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+    await commitAndWait(user, 'Apply');
+
+    // Alice (28) survives both; Bob (42) fails the age filter.
+    expect(dataRows()).toHaveLength(1);
+    expect(shown(screen.getAllByText('Alice'))).toHaveLength(1);
+    expect(shown(screen.queryAllByText('Bob'))).toHaveLength(0);
+  });
+
+  it('composes with the filter row, sorting and pagination', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable
+        columns={ageFilterColumns}
+        data={people}
+        sortable
+        filterable
+        pageSize={2}
+        getRowId={rowId}
+      />
+    );
+
+    // Text row narrows to Alice; the menu (Under 30) keeps her, and the
+    // footer shrinks to a single page of the filtered rows.
+    await user.type(screen.getByRole('textbox', { name: 'Filter Name' }), 'ali');
+    await user.click(screen.getByRole('button', { name: 'Filter Age' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+    await commitAndWait(user, 'Apply');
+
+    expect(dataRows()).toHaveLength(1);
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '2' })).not.toBeInTheDocument();
+
+    // Sorting still runs on the filtered set (numeric columns sort
+    // descending first; the Age header now also carries the sr-only
+    // 'Filter Age' trigger name, so match by substring).
+    await user.click(screen.getByRole('button', { name: 'Age' }));
+    expect(screen.getByRole('columnheader', { name: /Age/ })).toHaveAttribute(
+      'aria-sort',
+      'descending'
+    );
+    expect(dataRows()).toHaveLength(1);
+  });
+
+  it('opens the menu from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={ageFilterColumns} data={people} getRowId={rowId} />
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Filter Age' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      screen.getByRole('checkbox', { name: 'Under 30' })
+    ).toBeInTheDocument();
+  });
+
+  it('exports the filtered rows through dataTableToCsv', () => {
+    expect(
+      dataTableToCsv(people, ageFilterColumns, { filters: { age: ['under30'] } })
+    ).toBe('\uFEFFName,Age\r\nAlice,28\r\nEvan,24');
+
+    // No active selections: every row, like before the option existed.
+    expect(dataTableToCsv(people, ageFilterColumns, { filters: {} })).toBe(
+      '\uFEFFName,Age\r\nCharlie,35\r\nAlice,28\r\nBob,42\r\nDiana,31\r\nEvan,24'
+    );
+
+    // Filters compose with columnVisibility: the hidden column drops
+    // from the header/body, but its filter still cuts rows.
+    expect(
+      dataTableToCsv(people, ageFilterColumns, {
+        filters: { age: ['under30'] },
+        columnVisibility: { name: false },
+      })
+    ).toBe('\uFEFFAge\r\n28\r\n24');
+  });
+
+  it('has no axe violations with a filter menu open', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <DataTable columns={ageFilterColumns} data={people} getRowId={rowId} />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Filter Age' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Under 30' }));
+
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });
 
@@ -3282,5 +3611,129 @@ describe('DataTable infinite scroll', () => {
       });
       expect(onEndReached).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('DataTable classNames slots', () => {
+  it('applies wrapper, header, body, row and cell slots', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        getRowId={rowId}
+        classNames={{
+          wrapper: 'slot-wrapper',
+          header: 'slot-header',
+          body: 'slot-body',
+          row: 'slot-row',
+          cell: 'slot-cell',
+        }}
+      />
+    );
+    expect(container.querySelector("[data-slot='data-table']")).toHaveClass(
+      'slot-wrapper'
+    );
+    expect(container.querySelector('thead')).toHaveClass('slot-header');
+    expect(container.querySelector('tbody')).toHaveClass('slot-body');
+    for (const row of bodyRows()) {
+      expect(row).toHaveClass('slot-row');
+    }
+    expect(screen.getByText('Alice')).toHaveClass('slot-cell');
+    // header cells carry the cell slot too
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toHaveClass(
+      'slot-cell'
+    );
+  });
+
+  it('applies toolbar and footer slots to their strips', () => {
+    const { container, rerender } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        toolbar={<button type='button'>Export</button>}
+        classNames={{ toolbar: 'slot-toolbar' }}
+      />
+    );
+    expect(container.querySelector("[data-slot='toolbar']")).toHaveClass(
+      'slot-toolbar'
+    );
+
+    rerender(
+      <DataTable
+        columns={columns}
+        data={people}
+        pageSize={2}
+        classNames={{ footer: 'slot-footer' }}
+      />
+    );
+    expect(container.querySelector("[data-slot='pagination']")).toHaveClass(
+      'slot-footer'
+    );
+  });
+
+  it('applies the summary slot to the tfoot and its rows', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        summary={(rows) => [
+          { label: 'Totals', cells: ['Total', dataTableSum(rows, 'age')] },
+        ]}
+        classNames={{ summary: 'slot-summary', row: 'slot-row' }}
+      />
+    );
+    expect(container.querySelector('tfoot')).toHaveClass('slot-summary');
+    expect(container.querySelector('tfoot tr')).toHaveClass('slot-row');
+  });
+
+  it('applies the row slot to skeleton and empty rows', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        loading
+        classNames={{ row: 'slot-row' }}
+      />
+    );
+    // header rows keep their own domain — query body rows only
+    const rows = container.querySelectorAll("tbody tr[data-slot='row']");
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(row).toHaveClass('slot-row');
+
+    const { container: emptyContainer } = render(
+      <DataTable columns={columns} data={[]} classNames={{ row: 'slot-row' }} />
+    );
+    expect(
+      emptyContainer.querySelector("tbody tr[data-slot='row']")
+    ).toHaveClass('slot-row');
+  });
+
+  it('lands the wrapper slot before the className prop class', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        className="custom"
+        classNames={{ wrapper: 'slot-wrapper' }}
+      />
+    );
+    const root = container.querySelector("[data-slot='data-table']");
+    expect(root).toHaveClass('custom');
+    expect(root).toHaveClass('slot-wrapper');
+  });
+
+  it('forwards ref to the root wrapper (not the table)', () => {
+    const { container } = render(
+      <DataTable
+        columns={columns}
+        data={people}
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+      />
+    );
+    const root = container.querySelector("[data-slot='data-table']");
+    expect(root).toHaveAttribute('data-probe', 'set');
+    expect(screen.getByRole('table')).not.toHaveAttribute('data-probe');
   });
 });

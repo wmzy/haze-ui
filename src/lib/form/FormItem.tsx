@@ -143,6 +143,37 @@ export type FormItemRawElementBinding<
   eventToValue: (e: any) => any;
 };
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape) for FormItem's own
+ * structural nodes: keys mirror the data-slot each node carries. The
+ * `control` slot is the odd one out — it has no FormItem-owned node in
+ * the render-prop channel (the consumer renders the control), so it
+ * only wires in the declarative `input`/`as` channels, landing as the
+ * control element's own `className` (merged with any `asProps.className`).
+ * Consumer classes are appended after the component defaults; `root`
+ * composes with FormItem's own `className`.
+ */
+export type FormItemClassNames = {
+  /** The item's root `<div>` (`data-slot='form-item'`) in every layout. */
+  root?: string;
+  /** The `<label>` element (`data-slot='label'`); omitted when no label. */
+  label?: string;
+  /**
+   * The field control element itself — wired in the `input` and `as`
+   * channels as the control's `className`; in the render-prop channel
+   * the consumer owns the element and applies the class itself.
+   */
+  control?: string;
+  /**
+   * Horizontal layout only: the column `<div>` (`data-slot='control-column'`)
+   * wrapping control + error beside the label rail.
+   */
+  controlColumn?: string;
+  /** The error `<span role='alert'>` (`data-slot='error'`); rendered
+   * only while the field has errors. */
+  error?: string;
+};
+
 /** FormItem's own, non-polymorphic props — everything the item itself
  * consumes regardless of how the control is bound (render-prop, `as`
  * or `input`). */
@@ -212,6 +243,10 @@ export type FormItemOwnProps<
    * instead of the bare message. The span itself — id, `role='alert'`,
    * styling — stays FormItem's, in every control-binding mode. */
   renderError?: (error: string, id: string) => ReactNode;
+  /** Slot classes (see {@link FormItemClassNames}); each key lands on
+   * the structural node carrying the matching data-slot, after the
+   * component defaults. */
+  classNames?: FormItemClassNames;
   className?: string;
 };
 
@@ -226,6 +261,9 @@ type FormItemWiredProps = {
   /** the focus channel: react-f0rm's `focusRef` rides the control's
    * `ref` — `setFocus` and failed-submit auto-focus depend on it */
   ref?: unknown;
+  /** the control slot: `classNames.control` (merged with any
+   * `asProps.className`) lands as the control's own className */
+  className?: unknown;
   onBlur?: unknown;
   onChange?: unknown;
   /** the value channel: `value` directly, or the prop `valueToProps`
@@ -441,6 +479,7 @@ export default function FormItem<
   delayError,
   rules,
   className,
+  classNames,
   renderError,
   as: As,
   asProps,
@@ -547,9 +586,26 @@ export default function FormItem<
       }
     : undefined;
 
+  // The control slot class: on the `as` channel it merges with any
+  // className the consumer passed through `asProps` (plain string join —
+  // these are consumer classes, not Linaria-extracted ones); the `input`
+  // channel cannot receive a className through the JSX (the prop is
+  // FormItem's own, landing on the root), so the slot class applies
+  // alone. The render-prop channel wires nothing — its consumer owns
+  // the control element.
+  const controlClassName = As
+    ? [
+        typeof asProps?.className === 'string' ? asProps.className : undefined,
+        classNames?.control,
+      ]
+        .filter(Boolean)
+        .join(' ') || undefined
+    : classNames?.control;
+
   const labelNode = label !== undefined && (
     <label
-      x-class={[labelText, horizontal && labelColumn]}
+      data-slot='label'
+      x-class={[labelText, horizontal && labelColumn, classNames?.label]}
       htmlFor={id}
       style={labelStyle}
     >
@@ -566,6 +622,7 @@ export default function FormItem<
       id={id}
       aria-invalid={invalid || undefined}
       aria-describedby={invalid ? errorId : undefined}
+      className={controlClassName}
       // the focus channel rides the control's ref (raw DOM elements
       // and haze cores both accept a callback ref there)
       ref={focusRef}
@@ -585,6 +642,7 @@ export default function FormItem<
       id={id}
       aria-invalid={invalid || undefined}
       aria-describedby={invalid ? errorId : undefined}
+      className={controlClassName}
       // the focus channel rides the control's ref (raw DOM elements
       // and haze cores both accept a callback ref there)
       ref={focusRef}
@@ -606,7 +664,12 @@ export default function FormItem<
   );
 
   const errorNode = invalid && (
-    <span id={errorId} role='alert' x-class={errorText}>
+    <span
+      id={errorId}
+      role='alert'
+      data-slot='error'
+      x-class={[errorText, classNames?.error]}
+    >
       {renderError
         ? renderError(errors[0]!.message, errorId)
         : errors[0]!.message}
@@ -619,9 +682,9 @@ export default function FormItem<
   // vertical renders the exact historical DOM.
   if (horizontal) {
     return (
-      <div x-class={[itemHorizontal, className]}>
+      <div data-slot='form-item' x-class={[itemHorizontal, className, classNames?.root]}>
         {labelNode}
-        <div x-class={controlColumn}>
+        <div data-slot='control-column' x-class={[controlColumn, classNames?.controlColumn]}>
           {control}
           {errorNode}
         </div>
@@ -630,7 +693,10 @@ export default function FormItem<
   }
 
   return (
-    <div x-class={[layout === 'inline' ? itemInline : item, className]}>
+    <div
+      data-slot='form-item'
+      x-class={[layout === 'inline' ? itemInline : item, className, classNames?.root]}
+    >
       {labelNode}
       {control}
       {errorNode}

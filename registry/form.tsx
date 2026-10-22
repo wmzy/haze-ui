@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/form.css';
 
 export { Form, FormItem, FormList, FormProvider, useFormContext, useFieldArray, useFieldArrayItem, useWatch, useValue, useValues, useForm, createForm, trigger, setFocus, setServerErrors, setValue, getValue, getValues, reset, hasStandardProps, standardSchemaFormValidator, standardSchemaResolver, zodResolver };
-export type { FieldValidator, FormItemAsProps, FormItemBinding, FormItemOwnProps, FormItemProps, FormItemRawElement, FormItemRawElementBinding, FormInstance, FormListProps, FormListBinding, FormListField, PathValueOf, StandardSchemaV1 } from 'haze-ui';
+export type { FieldValidator, FormItemAsProps, FormItemBinding, FormItemOwnProps, FormItemProps, FormItemClassNames, FormItemRawElement, FormItemRawElementBinding, FormInstance, FormListProps, FormListBinding, FormListField, PathValueOf, StandardSchemaV1 } from 'haze-ui';

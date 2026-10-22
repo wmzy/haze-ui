@@ -92,6 +92,18 @@ type DataTableColumnMeta = {
    */
   filterable?: boolean;
   /**
+   * Predefined filter options for the column's header filter menu (the
+   * AntD `column.filters` seam): when non-empty, the column header grows
+   * a funnel trigger opening a floating panel with one checkbox per
+   * option. Selected `value`s land in the table-level `filters` state
+   * keyed by column id; a row passes when `meta.filterFn` (or the
+   * default membership check) returns true for the selection. Leaf
+   * columns only — a group header spans several columns and has no
+   * single value to filter on. `dataTableToCsv` honors the same state
+   * through its `filters` option.
+   */
+  filters?: { text: ReactNode; value: unknown }[];
+  /**
    * `true` keeps the column out of `dataTableToCsv` exports — the flag for
    * columns whose cells are presentation-only (badges, action buttons) or
    * internal (row ids) and meaningless in a spreadsheet.

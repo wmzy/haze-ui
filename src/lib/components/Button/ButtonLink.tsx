@@ -1,6 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-
-import { forwardRef } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
@@ -35,21 +33,19 @@ type ButtonLinkProps = {
   square?: boolean;
   /** Busy state — same visual contract as Button's `loading`. */
   loading?: boolean | { icon?: ReactNode; text?: ReactNode };
+  /** The rendered anchor (React 19 ref-as-prop — no forwardRef wrapper). */
+  ref?: Ref<HTMLAnchorElement>;
 } & ComponentPropsWithoutRef<'a'>;
 
 // eslint-disable-next-line @typescript-eslint/no-deprecated -- 声明点本身必须引用自己的类型
-const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
-  function ButtonLink({ size: sizeProp, ...props }, ref) {
-    // ButtonLink keeps its own ConfigProvider section: before the `as`
-    // delegation it read 'ButtonLink', and existing consumers keep that
-    // tier — explicit prop > ButtonLink config > Button's resolution.
-    const config = useConfigDefaults('ButtonLink');
-    const size = sizeProp ?? config.size;
-    return <Button as='a' ref={ref} size={size} {...props} />;
-  }
-);
-
-export default ButtonLink;
+export default function ButtonLink({ size: sizeProp, ref, ...props }: ButtonLinkProps) {
+  // ButtonLink keeps its own ConfigProvider section: before the `as`
+  // delegation it read 'ButtonLink', and existing consumers keep that
+  // tier — explicit prop > ButtonLink config > Button's resolution.
+  const config = useConfigDefaults('ButtonLink');
+  const size = sizeProp ?? config.size;
+  return <Button as='a' ref={ref} size={size} {...props} />;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-deprecated -- 声明模块必须重导出它，供消费方兼容旧签名
 export type { ButtonLinkProps };

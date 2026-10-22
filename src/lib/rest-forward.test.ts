@@ -48,7 +48,10 @@ const componentExport =
 // spread implies the destructuring exists (an undeclared `rest` binding
 // would not compile). A cast — `{...(rest as ComponentPropsWithoutRef<'button'>)}`
 // — is the same contract when `rest` is a union of element attr sets.
-const restSpread = /\{\s*\.\.\.\s*rest(?:\s+as\s+[^}]+)?\s*\}/;
+// `...props` is the same contract under another name (ButtonLink-style
+// delegation: the whole remainder is spread onto the rendered element
+// via the delegate component).
+const restSpread = /\{\s*\.\.\.\s*(?:rest|props)(?:\s+as\s+[^}]+)?\s*\}/;
 
 // Documented exceptions: path relative to src/lib -> reason.
 // Enforced below — an entry must carry a substantive reason and must still

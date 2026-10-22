@@ -14,7 +14,7 @@ const trigger = css`
 `;
 
 export default function ContextMenuTrigger({ children, className }: ContextMenuTriggerProps) {
-  const { setOpen, setPosition } = useContextMenuContext();
+  const { setOpen, setPosition, classNames } = useContextMenuContext();
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function ContextMenuTrigger({ children, className }: ContextMenuT
   };
 
   return (
-    <div data-slot='trigger' x-class={[trigger, className]} onContextMenu={handleContextMenu}>
+    <div data-slot='trigger' x-class={[trigger, classNames?.trigger, className]} onContextMenu={handleContextMenu}>
       {children}
     </div>
   );

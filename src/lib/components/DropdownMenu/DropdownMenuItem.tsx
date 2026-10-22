@@ -61,7 +61,7 @@ export default function DropdownMenuItem({
   kbdLabel,
   className,
 }: DropdownMenuItemProps) {
-  const { setOpen, triggerRef } = useDropdownMenuContext();
+  const { setOpen, triggerRef, classNames } = useDropdownMenuContext();
 
   const handleClick = () => {
     if (disabled) return;
@@ -75,7 +75,7 @@ export default function DropdownMenuItem({
   return (
     <button
       data-slot='menu-item'
-      x-class={[item, danger && dropdownMenuItemDanger, className]}
+      x-class={[item, danger && dropdownMenuItemDanger, classNames?.item, className]}
       type="button"
       role="menuitem"
       tabIndex={-1}

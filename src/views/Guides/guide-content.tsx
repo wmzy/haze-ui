@@ -68,6 +68,7 @@ export type GuideId =
   | 'density'
   | 'migration'
   | 'motion'
+  | 'serverActions'
   | 'streamingA11y';
 
 /** One block of a guide section body. */
@@ -3653,6 +3654,1002 @@ function StreamedAnswer({ text, done }: { text: string; done: boolean }) {
   },
 };
 
+/* ---------------------------------------------------------------------------
+ * Server-actions guide — React 19 <form action> / useActionState /
+ * useOptimistic over haze-ui's native-form bridge. Every claim is
+ * verified against src/lib/utils/native-form.tsx (the hidden/clipped
+ * input bridges) and the form layer's action channel (react-f0rm's
+ * <Form action> + ActionErrorResult); examples/nextjs/app/actions-demo
+ * runs the same wiring against a real 'use server' module.
+ * ------------------------------------------------------------------------- */
+
+const serverActionsEn: GuideDoc = {
+  title: 'React 19 Actions × haze-ui',
+  intro: [
+    'React 19 turns the ',
+    code('<form>'),
+    ' element into an async state machine: ',
+    code('action'),
+    ' props accept server functions, ',
+    code('useActionState'),
+    ' wraps them with pending and error state, and ',
+    code('useOptimistic'),
+    ' paints the next value before the round trip lands. haze-ui is built to sit inside that machine: every value-holding component ships a native FormData bridge, the form layer speaks server-action results natively, and the controllable-state pattern gives optimistic UI a single write channel. The three sections below wire it all together — the ',
+    link(
+      'examples/nextjs actions-demo route',
+      'https://github.com/wmzy/haze-ui/tree/main/examples/nextjs/app/actions-demo'
+    ),
+    ' runs the same code against a real ',
+    code("'use server'"),
+    ' module.',
+  ],
+  sections: [
+    sec(
+      'native-form-actions',
+      'Server actions over native FormData',
+      p([
+        'A React 19 form action is the most vanilla thing in the world: ',
+        code('<form action={createProfile}>'),
+        ' where ',
+        code('createProfile'),
+        ' is a ',
+        code("'use server'"),
+        ' function receiving the ',
+        code('FormData'),
+        ' the browser built from the form’s successful controls. No serialization layer, no client state mirror — and since the form still works as a plain POST, it submits even before hydration.',
+      ]),
+      p([
+        'That contract is native, and haze-ui meets it natively. Components that already render a real field element — ',
+        code('Input'),
+        ', ',
+        code('Checkbox'),
+        ', ',
+        code('Radio'),
+        ', ',
+        code('Slider'),
+        '’s ',
+        code("input[type='range']"),
+        ', ',
+        code('FileInput'),
+        ' — submit through it directly: give them a ',
+        code('name'),
+        ' and they are done. Components whose visual control is not a field (',
+        code('Switch'),
+        ' renders a ',
+        code('<button>'),
+        ', ',
+        code('Rating'),
+        ' renders stars, ',
+        code('Select'),
+        ' floats its options) cannot rely on that — so when given a ',
+        code('name'),
+        ' they render a bridge: a hidden or clipped native input carrying the same name, kept in sync with the component value (',
+        code('src/lib/utils/native-form.tsx'),
+        ').',
+      ]),
+      table(
+        ['Component', 'What FormData sees'],
+        [
+          [
+            [code('Input'), ', ', code('Checkbox'), ', ', code('Radio'), ', ', code('Slider'), ', ', code('FileInput')],
+            ['A real field element carries ', code('name'), ' — nothing extra to wire.'],
+          ],
+          [
+            [code('Switch')],
+            ['Clipped checkbox bridge: submits ', code('on'), ' while checked, nothing while unchecked (the native successful-control rule).'],
+          ],
+          [
+            [code('Rating')],
+            ['Hidden field with ', code('String(value)'), '; the ', code('0'), '-star sentinel submits nothing.'],
+          ],
+          [
+            [code('Select'), ' (single)'],
+            ['Hidden field with the value; the ', code("''"), ' no-selection sentinel submits nothing.'],
+          ],
+          [
+            [code('Select'), ' (multiple / tags), ', code('TagInput')],
+            ['One hidden input per value under the same name — read with ', code('formData.getAll(name)'), '.'],
+          ],
+          [
+            [code('Segmented'), ', ', code('ColorPicker'), ', ', code('OTPInput'), ', ', code('RichTextEditor')],
+            ['The same hidden-field bridge — every value component without a native field.'],
+          ],
+        ]
+      ),
+      codeBlock(
+        'tsx',
+        `// app/actions.ts
+'use server';
+
+export async function createProfile(formData: FormData) {
+  const title = String(formData.get('title') ?? '');
+  const role = String(formData.get('role') ?? '');         // '' — nothing picked
+  const subscribe = formData.get('subscribe') === 'on';    // absent when off
+  const rating = Number(formData.get('rating') ?? 0) || 0; // absent at 0 stars
+  const tags = formData.getAll('tags').map(String);        // repeated field
+
+  await saveProfile({ title, role, subscribe, rating, tags });
+}`
+      ),
+      codeBlock(
+        'tsx',
+        `import { Button, Input, Option, Rating, Select, Switch, TagInput } from 'haze-ui';
+
+export function ProfileForm({
+  createProfile,
+}: {
+  createProfile: (formData: FormData) => Promise<void>;
+}) {
+  return (
+    <form action={createProfile}>
+      <Input name='title' required placeholder='Project title' />
+      <Select name='role' value=''>
+        <Option value=''>Pick a role…</Option>
+        <Option value='admin'>Admin</Option>
+        <Option value='editor'>Editor</Option>
+      </Select>
+      <label>
+        <Switch name='subscribe' /> Email updates
+      </label>
+      <Rating name='rating' value={0} />
+      <TagInput name='tags' value={[]} placeholder='Add tag…' />
+      <Button onClick={(e) => e.currentTarget.form?.requestSubmit()}>
+        Create profile
+      </Button>
+    </form>
+  );
+}`
+      ),
+      caption([
+        code('value={…}'),
+        ' with a plain value is the uncontrolled ',
+        em('initial'),
+        ' — the ControlOrValue convention. That is exactly what a form-action form wants: the DOM owns the field state, the action reads it once, on submit. (haze ',
+        code('Button'),
+        ' always renders ',
+        code("type='button'"),
+        ' — drive the form with ',
+        code("onClick={(e) => e.currentTarget.form?.requestSubmit()}"),
+        ': ',
+        code('requestSubmit()'),
+        ' runs native constraint validation and the action pipeline, unlike ',
+        code('form.submit()'),
+        '.)',
+      ]),
+      slot('native-demo'),
+      note([
+        strong('The bridge is invisible and non-interactive.'),
+        ' Bridge inputs are ',
+        code('readOnly'),
+        ' + ',
+        code('tabIndex={-1}'),
+        ' + ',
+        code('aria-hidden'),
+        ' — they never join the tab order or the accessibility tree; only FormData sees them. Read the absences, not just the values: an unchecked ',
+        code('Switch'),
+        ' is ',
+        em('missing'),
+        ' from the payload (never ',
+        code("'off'"),
+        '), and so are an empty ',
+        code('Select'),
+        ', a 0-star ',
+        code('Rating'),
+        ' and an empty ',
+        code('TagInput'),
+        '.',
+      ])
+    ),
+    sec(
+      'use-action-state',
+      'useActionState: pending and server errors',
+      p([
+        code('useActionState'),
+        ' wraps a form action with the previous result, a dispatch function and a pending flag: ',
+        code('const [state, formAction, pending] = useActionState(action, initialState)'),
+        '. Point it at a server action that returns a result object and the whole submit lifecycle — dispatch, awaited flight, state commit — is React’s. Because ',
+        code('formAction'),
+        ' is passed straight to ',
+        code("action"),
+        ', a ',
+        code("'use server'"),
+        ' action keeps submitting before hydration here too.',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { useActionState } from 'react';
+import { Button, Input } from 'haze-ui';
+
+type State = { error?: string; saved?: string };
+
+export function SettingsForm() {
+  const [state, formAction, pending] = useActionState(saveSettings, {});
+
+  return (
+    <form action={formAction}>
+      <Input name='email' required placeholder='you@work.dev' />
+      {state.error && (
+        <p role='alert' aria-live='polite'>
+          {state.error}
+        </p>
+      )}
+      <Button
+        loading={pending}
+        onClick={(e) => e.currentTarget.form?.requestSubmit()}
+      >
+        Save settings
+      </Button>
+      {state.saved && <p>{state.saved}</p>}
+    </form>
+  );
+}
+
+// app/actions.ts
+'use server';
+
+export async function saveSettings(
+  _prev: State,
+  formData: FormData
+): Promise<State> {
+  const email = String(formData.get('email') ?? '');
+  await new Promise((resolve) => setTimeout(resolve, 600)); // fake latency
+  if (email.endsWith('@taken.dev')) {
+    return { error: 'That address is already registered.' };
+  }
+  return { saved: 'Saved ' + email };
+}`
+      ),
+      p([
+        code('Button'),
+        '’s ',
+        code('loading'),
+        ' prop is the pending surface: pass the flag straight through and the control disables itself, sets ',
+        code('aria-busy'),
+        ' and swaps in a spinner. Errors ride the state object — render them with ',
+        code("role='alert'"),
+        ' so assistive tech hears the rejection.',
+      ]),
+      h3('The react-f0rm channel'),
+      p([
+        'When a form outgrows a handful of fields, haze-ui’s form layer takes the plumbing: ',
+        code('Form'),
+        ' and ',
+        code('FormItem'),
+        ', re-exported from ',
+        code("'haze-ui'"),
+        '. ',
+        code('Form'),
+        ' has its own ',
+        code('action'),
+        ' prop that speaks server actions natively — it hands the action ',
+        em('validated'),
+        ' FormData built from the form’s values (files, arrays and nested objects included), and it understands rejection: return ',
+        code('{ errors: { email: "…" } }'),
+        ' from the action and the record lands as per-field ',
+        code("type: 'server'"),
+        ' errors, rendered by the matching ',
+        code('FormItem'),
+        '’s error span exactly like failed client validation.',
+      ]),
+      codeBlock(
+        'tsx',
+        `import {
+  Button,
+  Form,
+  FormItem,
+  InputCore,
+  Option,
+  SelectCore,
+  useForm,
+} from 'haze-ui';
+import { useIsSubmitting } from 'react-f0rm';
+
+type MemberValues = { email: string; role: string };
+
+// app/actions.ts
+// 'use server';
+// export async function saveMember(formData: FormData) {
+//   const email = String(formData.get('email') ?? '');
+//   if (email.endsWith('@taken.dev')) {
+//     return { errors: { email: 'That address is already registered.' } };
+//   }
+//   await db.members.save({
+//     email,
+//     role: String(formData.get('role') ?? ''),
+//   });
+// }
+
+export function MemberForm({
+  saveMember,
+}: {
+  saveMember: (
+    formData: FormData
+  ) => Promise<{ errors?: Record<string, string | string[]> } | void>;
+}) {
+  const form = useForm<MemberValues>({
+    initialValues: { email: '', role: 'admin' },
+  });
+  const submitting = useIsSubmitting(form);
+
+  // @types/react's own 'action' typing demands a void return; f0rm reads
+  // the '{ errors }' rejection off the resolved value - one cast at the seam
+  const memberAction = saveMember as unknown as (
+    formData: FormData
+  ) => Promise<void>;
+
+  return (
+    <Form form={form} action={memberAction}>
+      <FormItem
+        form={form}
+        name='email'
+        label='Email'
+        rules={{ required: 'Email is required' }}
+        mode='onBlur'
+        input={InputCore}
+      />
+      <FormItem form={form} name='role' label='Role' input={SelectCore}>
+        <Option value='admin'>Admin</Option>
+        <Option value='editor'>Editor</Option>
+      </FormItem>
+      <Button
+        loading={submitting}
+        onClick={(e) => e.currentTarget.form?.requestSubmit()}
+      >
+        Save member
+      </Button>
+    </Form>
+  );
+}`
+      ),
+      note([
+        code('setServerErrors'),
+        ' (re-exported from ',
+        code("'haze-ui'"),
+        ') lands plain REST responses the same way — ',
+        code('setServerErrors(form, { email: ["already taken"] })'),
+        ' — and a retry clears the previous round automatically, so each attempt is judged fresh. ',
+        code('useIsSubmitting'),
+        ' is the subscription hook behind ',
+        code('form.isSubmitting'),
+        '; it comes from ',
+        code('react-f0rm'),
+        ', haze-ui’s form engine, which form users already depend on.',
+      ]),
+      slot('action-state-demo')
+    ),
+    sec(
+      'use-optimistic',
+      'useOptimistic: optimistic edits with rollback',
+      p([
+        code('useOptimistic'),
+        ' holds a shadow of the server’s state. While no transition is in flight the shadow ',
+        em('is'),
+        ' the state you passed (React returns your own argument); inside one, calling the optimistic setter swaps in whatever your reducer computed, until the transition settles — then React discards the shadow and re-renders from the source. Rollback is not code you write: it is what happens when the action ends without updating the source.',
+      ]),
+      p([
+        'The haze-ui side is the controllable-state pattern. The component must ',
+        em('track'),
+        ' the shadow, and a plain value cannot — plain values are uncontrolled ',
+        em('initials'),
+        ', later prop changes are ignored. So hold the durable state with ',
+        code('useControl'),
+        ' (the control it returns is identity-stable), then point its read at the shadow and its write at the flight with ',
+        code('useThru'),
+        ': the component now reads optimistic values, and its own edits start the transition — without knowing anything is optimistic.',
+      ]),
+      h3('InlineEdit'),
+      codeBlock(
+        'tsx',
+        `import { startTransition, useOptimistic } from 'react';
+import type { SetStateAction } from 'react';
+import { useControl, useThru } from 'react-use-control';
+import { InlineEdit } from 'haze-ui';
+
+export function DisplayName({ initial }: { initial: string }) {
+  const [name, setName, nameCtrl] = useControl(undefined, initial);
+  const [shown, markRenamed] = useOptimistic(
+    name,
+    (_committed, next: string) => next
+  );
+
+  function commitRename(next: SetStateAction<string>) {
+    const value = typeof next === 'function' ? next(name) : next;
+    startTransition(async () => {
+      markRenamed(value);                    // optimistic paint
+      const error = await renameAction(value); // 'use server'
+      if (error) return;  // settle without writing -> automatic rollback
+      setName(value);     // durable — the shadow collapses onto it
+    });
+  }
+
+  // what InlineEdit sees: the shadow on read, the flight on write
+  const optimisticCtrl = useThru(
+    nameCtrl,
+    () => [shown, commitRename]
+  );
+
+  return <InlineEdit value={optimisticCtrl} />;
+}`
+      ),
+      h3('TagInput'),
+      codeBlock(
+        'tsx',
+        `import { startTransition, useOptimistic } from 'react';
+import type { SetStateAction } from 'react';
+import { useControl, useThru } from 'react-use-control';
+import { TagInput } from 'haze-ui';
+
+export function TagEditor({ initial }: { initial: string[] }) {
+  const [tags, setTags, tagsCtrl] = useControl(undefined, initial);
+  const [shown, markTags] = useOptimistic(
+    tags,
+    (_committed, next: string[]) => next
+  );
+
+  // TagInput's onChange emits the whole next list, so the reducer just
+  // forwards it — adds, removals and reorderings all roll through
+  function commitTags(next: SetStateAction<string[]>) {
+    const value = typeof next === 'function' ? next(tags) : next;
+    startTransition(async () => {
+      markTags(value);
+      const ok = await saveTagsAction(value); // 'use server'
+      if (!ok) return;    // settle without writing -> automatic rollback
+      setTags(value);
+    });
+  }
+
+  const optimisticCtrl = useThru(tagsCtrl, () => [shown, commitTags]);
+
+  // name='tags' keeps the FormData bridge alive too
+  return <TagInput name='tags' value={optimisticCtrl} />;
+}`
+      ),
+      slot('optimistic-demo'),
+      list(
+        [
+          strong('Optimistic writes live inside transitions.'),
+          ' ',
+          code('markRenamed'),
+          ' called outside an action or transition has no flight to outlive — React refuses with ',
+          em('“An optimistic state update occurred outside a transition or action.”'),
+        ],
+        [
+          strong('End the flight with the truth.'),
+          ' Success writes durable state — ',
+          code('setName'),
+          ' / ',
+          code('setTags'),
+          ', or a ',
+          code('router.refresh()'),
+          ' revalidation; failure writes nothing, and the automatic revert ',
+          em('is'),
+          ' the rollback. An action that settles without writing leaves the UI exactly where the server left it.',
+        ],
+        [
+          strong('Make the rollback audible.'),
+          ' A silent revert looks like the app ignoring the user. Fire a ',
+          code('useToast'),
+          ' on failure so the conversation continues.',
+        ]
+      )
+    ),
+  ],
+  ui: {
+    payloadHeading: 'What the server receives',
+    payloadEmpty: 'Nothing yet — submit the form.',
+    titlePlaceholder: 'Project title',
+    rolePlaceholder: 'Pick a role…',
+    subscribeLabel: 'Email updates',
+    tagsPlaceholder: 'Add tag…',
+    submitLabel: 'Submit',
+    emailPlaceholder: 'you@work.dev',
+    takenError: 'That address is already registered.',
+    tryHint: 'End the address with @taken.dev to see the rejection path.',
+    settingsSubmitLabel: 'Save settings',
+    savedAs: 'Saved ',
+    nameLabel: 'Display name',
+    tagsLabel: 'Tags',
+    rejectLabel: 'Reject the next save',
+    savedNote: 'Saved.',
+    rolledBackNote: 'Rejected — the optimistic value rolled back.',
+  },
+};
+
+const serverActionsZh: GuideDoc = {
+  title: 'React 19 Actions × haze-ui 实战',
+  intro: [
+    'React 19 把 ',
+    code('<form>'),
+    ' 变成了一台异步状态机：',
+    code('action'),
+    ' prop 接受服务端函数，',
+    code('useActionState'),
+    ' 为它包上 pending 与错误态，',
+    code('useOptimistic'),
+    ' 则在往返落地之前先画出下一个值。haze-ui 生来就坐在这台机器里：每个持有值的组件都内置原生 FormData 桥，表单层原生理解 server action 的返回，controllable-state 模式给乐观 UI 一条单一写入通道。下面三节把它们全部接起来——',
+    link(
+      'examples/nextjs 的 actions-demo 路由',
+      'https://github.com/wmzy/haze-ui/tree/main/examples/nextjs/app/actions-demo'
+    ),
+    '用真实的 ',
+    code("'use server'"),
+    ' 模块运行同样的代码。',
+  ],
+  sections: [
+    sec(
+      'native-form-actions',
+      'Server action 走原生 FormData',
+      p([
+        'React 19 的表单 action 是世上最朴素的东西：',
+        code('<form action={createProfile}>'),
+        '，其中 ',
+        code('createProfile'),
+        ' 是一个 ',
+        code("'use server'"),
+        ' 函数，接收浏览器从表单成功控件构建出的 ',
+        code('FormData'),
+        '。没有序列化层，也没有客户端状态镜像——而且表单仍是一个真实的 POST，水合之前也能提交。',
+      ]),
+      p([
+        '这个契约是原生的，haze-ui 也以原生方式接住。本身就渲染真实字段元素的组件——',
+        code('Input'),
+        '、',
+        code('Checkbox'),
+        '、',
+        code('Radio'),
+        '、',
+        code('Slider'),
+        ' 的 ',
+        code("input[type='range']"),
+        '、',
+        code('FileInput'),
+        '——直接走原生提交：给它们一个 ',
+        code('name'),
+        ' 就完事了。视觉控件不是字段的组件（',
+        code('Switch'),
+        ' 渲染 ',
+        code('<button>'),
+        '，',
+        code('Rating'),
+        ' 渲染星星，',
+        code('Select'),
+        ' 的选项是浮层）没法指望原生——所以一旦给了 ',
+        code('name'),
+        '，它们会渲染一座桥：一个携带同名 ',
+        code('name'),
+        ' 的隐藏（或裁剪）原生 input，与组件值保持同步（',
+        code('src/lib/utils/native-form.tsx'),
+        '）。',
+      ]),
+      table(
+        ['组件', 'FormData 里是什么'],
+        [
+          [
+            [code('Input'), '、', code('Checkbox'), '、', code('Radio'), '、', code('Slider'), '、', code('FileInput')],
+            ['真实字段元素自带 ', code('name'), '——无需任何额外接线。'],
+          ],
+          [
+            [code('Switch')],
+            ['裁剪 checkbox 桥：勾选时提交 ', code('on'), '，未勾选什么都不提交（原生成功控件规则）。'],
+          ],
+          [
+            [code('Rating')],
+            ['隐藏字段携带 ', code('String(value)'), '；', code('0'), ' 星哨兵不提交。'],
+          ],
+          [
+            [code('Select'), '（单选）'],
+            ['隐藏字段携带当前值；', code("''"), ' 未选哨兵不提交。'],
+          ],
+          [
+            [code('Select'), '（多选 / tags）、', code('TagInput')],
+            ['同名下每个值一个隐藏 input——用 ', code('formData.getAll(name)'), ' 读取。'],
+          ],
+          [
+            [code('Segmented'), '、', code('ColorPicker'), '、', code('OTPInput'), '、', code('RichTextEditor')],
+            ['同样的隐藏字段桥——所有没有原生字段的值组件都走这条路。'],
+          ],
+        ]
+      ),
+      codeBlock(
+        'tsx',
+        `// app/actions.ts
+'use server';
+
+export async function createProfile(formData: FormData) {
+  const title = String(formData.get('title') ?? '');
+  const role = String(formData.get('role') ?? '');         // '' — nothing picked
+  const subscribe = formData.get('subscribe') === 'on';    // absent when off
+  const rating = Number(formData.get('rating') ?? 0) || 0; // absent at 0 stars
+  const tags = formData.getAll('tags').map(String);        // repeated field
+
+  await saveProfile({ title, role, subscribe, rating, tags });
+}`
+      ),
+      codeBlock(
+        'tsx',
+        `import { Button, Input, Option, Rating, Select, Switch, TagInput } from 'haze-ui';
+
+export function ProfileForm({
+  createProfile,
+}: {
+  createProfile: (formData: FormData) => Promise<void>;
+}) {
+  return (
+    <form action={createProfile}>
+      <Input name='title' required placeholder='Project title' />
+      <Select name='role' value=''>
+        <Option value=''>Pick a role…</Option>
+        <Option value='admin'>Admin</Option>
+        <Option value='editor'>Editor</Option>
+      </Select>
+      <label>
+        <Switch name='subscribe' /> Email updates
+      </label>
+      <Rating name='rating' value={0} />
+      <TagInput name='tags' value={[]} placeholder='Add tag…' />
+      <Button onClick={(e) => e.currentTarget.form?.requestSubmit()}>
+        Create profile
+      </Button>
+    </form>
+  );
+}`
+      ),
+      caption([
+        'ControlOrValue 约定下，传普通值的 ',
+        code('value={…}'),
+        ' 是非受控的',
+        em('初始值'),
+        '。这正是表单 action 表单想要的：DOM 持有字段状态，action 在提交时一次性读取。（haze ',
+        code('Button'),
+        ' 恒渲染 ',
+        code("type='button'"),
+        '——用 ',
+        code("onClick={(e) => e.currentTarget.form?.requestSubmit()}"),
+        ' 驱动表单：',
+        code('requestSubmit()'),
+        ' 会跑原生约束校验与 action 管线，',
+        code('form.submit()'),
+        ' 不会。）',
+      ]),
+      slot('native-demo'),
+      note([
+        strong('桥是不可见且不可交互的。'),
+        '桥 input 都是 ',
+        code('readOnly'),
+        ' + ',
+        code('tabIndex={-1}'),
+        ' + ',
+        code('aria-hidden'),
+        '——它们从不进入 Tab 焦点序或可访问树，只有 FormData 看得见它们。读缺失和读值同样重要：未勾选的 ',
+        code('Switch'),
+        ' 在载荷里是',
+        em('缺失'),
+        '的（绝不是 ',
+        code("'off'"),
+        '），空 ',
+        code('Select'),
+        '、0 星 ',
+        code('Rating'),
+        '、空 ',
+        code('TagInput'),
+        ' 同理。',
+      ])
+    ),
+    sec(
+      'use-action-state',
+      'useActionState：pending 与服务端错误',
+      p([
+        code('useActionState'),
+        ' 为表单 action 包上「上一次结果、dispatch 函数、pending 标志」三件套：',
+        code('const [state, formAction, pending] = useActionState(action, initialState)'),
+        '。把它指向一个返回结果对象的服务端 action，整个提交生命周期——派发、等待往返、状态提交——都归 React。由于 ',
+        code('formAction'),
+        ' 直接传给 ',
+        code('action'),
+        '，',
+        code("'use server'"),
+        ' 的 action 在这里同样保持水合前可提交。',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { useActionState } from 'react';
+import { Button, Input } from 'haze-ui';
+
+type State = { error?: string; saved?: string };
+
+export function SettingsForm() {
+  const [state, formAction, pending] = useActionState(saveSettings, {});
+
+  return (
+    <form action={formAction}>
+      <Input name='email' required placeholder='you@work.dev' />
+      {state.error && (
+        <p role='alert' aria-live='polite'>
+          {state.error}
+        </p>
+      )}
+      <Button
+        loading={pending}
+        onClick={(e) => e.currentTarget.form?.requestSubmit()}
+      >
+        Save settings
+      </Button>
+      {state.saved && <p>{state.saved}</p>}
+    </form>
+  );
+}
+
+// app/actions.ts
+'use server';
+
+export async function saveSettings(
+  _prev: State,
+  formData: FormData
+): Promise<State> {
+  const email = String(formData.get('email') ?? '');
+  await new Promise((resolve) => setTimeout(resolve, 600)); // fake latency
+  if (email.endsWith('@taken.dev')) {
+    return { error: 'That address is already registered.' };
+  }
+  return { saved: 'Saved ' + email };
+}`
+      ),
+      p([
+        code('Button'),
+        ' 的 ',
+        code('loading'),
+        ' prop 就是 pending 的呈现面：把标志原样传进去，控件会自行禁用、置 ',
+        code('aria-busy'),
+        ' 并换入加载指示。错误随状态对象返回——用 ',
+        code("role='alert'"),
+        ' 渲染，让辅助技术听到拒绝。',
+      ]),
+      h3('react-f0rm 通道'),
+      p([
+        '当表单长过寥寥几个字段，haze-ui 的表单层接管这些管线：从 ',
+        code("'haze-ui'"),
+        ' 导入的 ',
+        code('Form'),
+        ' 与 ',
+        code('FormItem'),
+        '。',
+        code('Form'),
+        ' 自己的 ',
+        code('action'),
+        ' prop 原生理解 server action——它交给 action 的是由表单值构建的',
+        em('已校验'),
+        ' FormData（含文件、数组与嵌套对象），而且它理解拒绝：action 返回 ',
+        code('{ errors: { email: "…" } }'),
+        '，这份记录会以 ',
+        code("type: 'server'"),
+        ' 的字段错误落地，由对应的 ',
+        code('FormItem'),
+        ' 错误 span 渲染——与客户端校验失败完全同构。',
+      ]),
+      codeBlock(
+        'tsx',
+        `import {
+  Button,
+  Form,
+  FormItem,
+  InputCore,
+  Option,
+  SelectCore,
+  useForm,
+} from 'haze-ui';
+import { useIsSubmitting } from 'react-f0rm';
+
+type MemberValues = { email: string; role: string };
+
+// app/actions.ts
+// 'use server';
+// export async function saveMember(formData: FormData) {
+//   const email = String(formData.get('email') ?? '');
+//   if (email.endsWith('@taken.dev')) {
+//     return { errors: { email: 'That address is already registered.' } };
+//   }
+//   await db.members.save({
+//     email,
+//     role: String(formData.get('role') ?? ''),
+//   });
+// }
+
+export function MemberForm({
+  saveMember,
+}: {
+  saveMember: (
+    formData: FormData
+  ) => Promise<{ errors?: Record<string, string | string[]> } | void>;
+}) {
+  const form = useForm<MemberValues>({
+    initialValues: { email: '', role: 'admin' },
+  });
+  const submitting = useIsSubmitting(form);
+
+  // @types/react's own 'action' typing demands a void return; f0rm reads
+  // the '{ errors }' rejection off the resolved value - one cast at the seam
+  const memberAction = saveMember as unknown as (
+    formData: FormData
+  ) => Promise<void>;
+
+  return (
+    <Form form={form} action={memberAction}>
+      <FormItem
+        form={form}
+        name='email'
+        label='Email'
+        rules={{ required: 'Email is required' }}
+        mode='onBlur'
+        input={InputCore}
+      />
+      <FormItem form={form} name='role' label='Role' input={SelectCore}>
+        <Option value='admin'>Admin</Option>
+        <Option value='editor'>Editor</Option>
+      </FormItem>
+      <Button
+        loading={submitting}
+        onClick={(e) => e.currentTarget.form?.requestSubmit()}
+      >
+        Save member
+      </Button>
+    </Form>
+  );
+}`
+      ),
+      note([
+        code('setServerErrors'),
+        '（同样从 ',
+        code("'haze-ui'"),
+        ' 再导出）以相同方式落地普通 REST 响应——',
+        code('setServerErrors(form, { email: ["already taken"] })'),
+        '——而重试会自动先清掉上一轮，每次提交都按新尝试裁决。',
+        code('useIsSubmitting'),
+        ' 是 ',
+        code('form.isSubmitting'),
+        ' 背后的订阅 hook，来自 ',
+        code('react-f0rm'),
+        '（haze-ui 的表单引擎，表单用户本来就依赖它）。',
+      ]),
+      slot('action-state-demo')
+    ),
+    sec(
+      'use-optimistic',
+      'useOptimistic：乐观更新与回滚',
+      p([
+        code('useOptimistic'),
+        ' 持有服务端状态的一道影子。没有 transition 在飞时，影子',
+        em('就是'),
+        '你传入的状态（React 原样返回你的参数）；transition 进行中，乐观 setter 一调用就换成 reducer 算出的值，直到 transition 收尾——React 随即丢弃影子、按源状态重渲染。回滚不是你写的代码：action 结束时没有更新源状态，回滚就发生了。',
+      ]),
+      p([
+        'haze-ui 这一侧靠的是 controllable-state 模式。组件必须',
+        em('跟随'),
+        '影子，而普通值做不到——普通值是非受控',
+        em('初始值'),
+        '，后续 prop 变化会被忽略。所以用 ',
+        code('useControl'),
+        ' 持有持久状态（它返回的 control 身份稳定），再用 ',
+        code('useThru'),
+        ' 把读指向影子、把写指向这次飞行：组件读到的就是乐观值，用户编辑直接开启 transition——组件自己对「乐观」一无所知。',
+      ]),
+      h3('InlineEdit'),
+      codeBlock(
+        'tsx',
+        `import { startTransition, useOptimistic } from 'react';
+import type { SetStateAction } from 'react';
+import { useControl, useThru } from 'react-use-control';
+import { InlineEdit } from 'haze-ui';
+
+export function DisplayName({ initial }: { initial: string }) {
+  const [name, setName, nameCtrl] = useControl(undefined, initial);
+  const [shown, markRenamed] = useOptimistic(
+    name,
+    (_committed, next: string) => next
+  );
+
+  function commitRename(next: SetStateAction<string>) {
+    const value = typeof next === 'function' ? next(name) : next;
+    startTransition(async () => {
+      markRenamed(value);                    // optimistic paint
+      const error = await renameAction(value); // 'use server'
+      if (error) return;  // settle without writing -> automatic rollback
+      setName(value);     // durable — the shadow collapses onto it
+    });
+  }
+
+  // what InlineEdit sees: the shadow on read, the flight on write
+  const optimisticCtrl = useThru(
+    nameCtrl,
+    () => [shown, commitRename]
+  );
+
+  return <InlineEdit value={optimisticCtrl} />;
+}`
+      ),
+      h3('TagInput'),
+      codeBlock(
+        'tsx',
+        `import { startTransition, useOptimistic } from 'react';
+import type { SetStateAction } from 'react';
+import { useControl, useThru } from 'react-use-control';
+import { TagInput } from 'haze-ui';
+
+export function TagEditor({ initial }: { initial: string[] }) {
+  const [tags, setTags, tagsCtrl] = useControl(undefined, initial);
+  const [shown, markTags] = useOptimistic(
+    tags,
+    (_committed, next: string[]) => next
+  );
+
+  // TagInput's onChange emits the whole next list, so the reducer just
+  // forwards it — adds, removals and reorderings all roll through
+  function commitTags(next: SetStateAction<string[]>) {
+    const value = typeof next === 'function' ? next(tags) : next;
+    startTransition(async () => {
+      markTags(value);
+      const ok = await saveTagsAction(value); // 'use server'
+      if (!ok) return;    // settle without writing -> automatic rollback
+      setTags(value);
+    });
+  }
+
+  const optimisticCtrl = useThru(tagsCtrl, () => [shown, commitTags]);
+
+  // name='tags' keeps the FormData bridge alive too
+  return <TagInput name='tags' value={optimisticCtrl} />;
+}`
+      ),
+      slot('optimistic-demo'),
+      list(
+        [
+          strong('乐观写入只活在 transition 里。'),
+          '在 action 或 transition 之外调用 ',
+          code('markRenamed'),
+          ' 没有可依附的飞行——React 会直接拒绝：',
+          em('“An optimistic state update occurred outside a transition or action.”'),
+        ],
+        [
+          strong('用真相结束飞行。'),
+          '成功就写持久状态——',
+          code('setName'),
+          ' / ',
+          code('setTags'),
+          '，或 ',
+          code('router.refresh()'),
+          ' 重新验证；失败什么都不写，自动回退',
+          em('就是'),
+          '回滚。settled 时没有写入的 action 会把 UI 精确留在服务端认可的位置。',
+        ],
+        [
+          strong('让回滚被听见。'),
+          '无声的回退看起来像应用无视了用户。失败时发一个 ',
+          code('useToast'),
+          '，让对话继续下去。',
+        ]
+      )
+    ),
+  ],
+  ui: {
+    payloadHeading: '服务端将收到',
+    payloadEmpty: '还没有数据——提交表单试试。',
+    titlePlaceholder: '项目名称',
+    rolePlaceholder: '选择角色…',
+    subscribeLabel: '邮件通知',
+    tagsPlaceholder: '添加标签…',
+    submitLabel: '提交',
+    emailPlaceholder: 'you@work.dev',
+    takenError: '该邮箱已被注册。',
+    tryHint: '邮箱以 @taken.dev 结尾可触发拒绝路径。',
+    settingsSubmitLabel: '保存设置',
+    savedAs: '已保存 ',
+    nameLabel: '显示名称',
+    tagsLabel: '标签',
+    rejectLabel: '让下一次保存失败',
+    savedNote: '已保存。',
+    rolledBackNote: '被拒绝——乐观值已回滚。',
+  },
+};
+
 /** All migrated guide bodies, keyed by guide id then locale. */
 export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   a11y: { en: a11yEn, zh: a11yZh },
@@ -3661,6 +4658,7 @@ export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   density: { en: densityEn, zh: densityZh },
   migration: { en: migrationEn, zh: migrationZh },
   motion: { en: motionEn, zh: motionZh },
+  serverActions: { en: serverActionsEn, zh: serverActionsZh },
   streamingA11y: { en: streamingA11yEn, zh: streamingA11yZh },
 };
 

@@ -41,6 +41,8 @@ const COMPONENT_BLURBS = {
   Badge: 'Small inline status label with variant and color options.',
   Button:
     'Action button with variant/size/square options; native <button> under the hood.',
+  ButtonGroup:
+    'Attached button bar: merged corners and seams, group-wide size/variant/disabled, separator sub-component.',
   CountUp:
     'Animated number ticker: rAF + ease-out interpolation toward the target, honoring prefers-reduced-motion with an instant snap.',
   Countdown:
@@ -103,6 +105,16 @@ const COMPONENT_BLURBS = {
     'Interactive image cropper pairing with Upload: controllable normalized crop rect, aspect lock, circle avatar mask, and full keyboard operation (arrows move, Shift+arrows resize).',
   InlineEdit: 'Click-to-edit text value in place.',
   Input: 'Text input with adornments; sugar over InputCore.',
+  InputGroup:
+    'Field cluster: prefix/suffix addons (icon, text, button) merged with Input/Select into one attached control.',
+  Meter:
+    'Read-only semantic gauge with threshold bands that recolor track and bar as the value crosses each bound.',
+  CopyButton:
+    'One-click copy button with a copied feedback state, plus Snippet: the inline code chip with a docked copy button.',
+  Heatmap:
+    'GitHub-style activity calendar: intensity-binned day squares over week columns, theme-aware color scale, label props for i18n.',
+  TimeGrid:
+    'Time slot picker grid generated from a window and step; arrow keys roam and select, controllable value.',
   Mentions:
     'Mentions input with trigger-character suggestions picked from an option list.',
   NumberInput: 'Numeric input with min/max/step.',
@@ -198,6 +210,8 @@ const COMPONENT_BLURBS = {
   FloatButton:
     'Floating action button over the page; FloatButtonGroup stacks actions behind an expand trigger, with back-to-top and help glyphs built in.',
   NavigationBar: 'Top nav bar with brand and end slots.',
+  NavigationMenu:
+    'Hover mega-menu navigation: triggers open large content panels with intent dwell and pointer grace; controllable activeValue.',
   Pagination: 'Page navigation with controllable page and ellipsis windows.',
   Stepper: 'Step indicator driven by activeStep (Step children).',
   Tabs: 'Tab panel switcher with controllable active tab.',
@@ -321,6 +335,7 @@ export const en = {
     streamingA11y: 'Streaming a11y',
     motion: 'Motion presets',
     figmaTokens: 'Tokens in Figma',
+    serverActions: 'React 19 Actions',
   },
   /* One-line summaries shown under the guide links (zh mode only for now;
    * the strings exist for both locales so any surface can adopt them). */
@@ -338,6 +353,8 @@ export const en = {
       'data-state-driven enter/exit animation presets over the motion tokens.',
     figmaTokens:
       'The W3C DTF token exports into Tokens Studio and Figma Variables — workflow and limits.',
+    serverActions:
+      'Server actions over native FormData, useActionState and useOptimistic against haze-ui.',
   },
   /* Blocks page (/blocks): full-page compositions gallery. */
   blocks: {

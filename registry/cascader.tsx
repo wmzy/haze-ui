@@ -24,4 +24,4 @@ import 'haze-ui/css/spinner.css';
 import 'haze-ui/css/virtual-list.css';
 
 export { Cascader };
-export type { CascaderProps, CascaderOption } from 'haze-ui';
+export type { CascaderProps, CascaderOption, CascaderClassNames } from 'haze-ui';

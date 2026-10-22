@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Alert } from 'haze-ui';
+import { Alert, alertVariants } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/alert.css';
 
-export { Alert };
+export { Alert, alertVariants };
 export type { AlertProps } from 'haze-ui';

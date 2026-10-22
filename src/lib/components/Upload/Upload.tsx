@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type {
+  UploadClassNames,
   UploadFileStatus,
   UploadHandle,
   UploadListItemRender,
@@ -43,6 +44,9 @@ type UploadProps = {
   /** Picks only enter the list; uploads start via the `UploadHandle`
    * ref — see `UploadCoreProps.manual`. */
   manual?: boolean;
+  /** Cap on simultaneously in-flight uploads (default `4`); excess
+   * files queue in value order — see `UploadCoreProps.concurrency`. */
+  concurrency?: number;
   /** Built-in file list with progress and per-state actions — see
    * `UploadCoreProps.showUploadList`. */
   showUploadList?: boolean | { itemRender?: UploadListItemRender };
@@ -67,8 +71,22 @@ type UploadProps = {
    * when uncontrolled). Removals and `clear()` do not fire this (they
    * are not picks). */
   onChange?: (files: File[]) => void;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): declared once
+   * here and applied to the drop zone plus the built-in list (see
+   * {@link UploadClassNames}). Not passing it renders identical output.
+   */
+  classNames?: UploadClassNames;
   className?: string;
   children?: ReactNode;
+  /**
+   * The imperative `UploadHandle` (`upload`/`uploadAll`/`abort`/
+   * `clear`) — a command object, not a DOM node. The family renders no
+   * single root element (the drop zone and the list are siblings), so
+   * there is no root container to forward a DOM ref to: style the
+   * zone through `classNames.trigger`, or query the parts by their
+   * `data-slot` attributes (`drop-zone`, `list`, `item`).
+   */
   ref?: Ref<UploadHandle>;
 };
 
@@ -86,6 +104,7 @@ export default function Upload({
   name,
   data,
   manual,
+  concurrency,
   showUploadList,
   listType,
   onPreview,
@@ -93,6 +112,7 @@ export default function Upload({
   directory,
   onStatusChange,
   onChange,
+  classNames,
   className,
   children,
   ref,
@@ -121,12 +141,14 @@ export default function Upload({
       name={name}
       data={data}
       manual={manual}
+      concurrency={concurrency}
       showUploadList={showUploadList}
       listType={listType}
       onPreview={onPreview}
       removeLabel={removeLabel}
       directory={directory}
       onStatusChange={onStatusChange}
+      classNames={classNames}
       className={className}
       ref={ref}
     >

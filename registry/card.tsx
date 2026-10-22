@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Card } from 'haze-ui';
+import { Card, cardVariants } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/card.css';
 
-export { Card };
+export { Card, cardVariants };
 export type { CardProps } from 'haze-ui';

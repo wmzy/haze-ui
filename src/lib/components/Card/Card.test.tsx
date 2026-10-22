@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import Card from './Card';
+import { cardVariants } from './index';
 
 describe('Card', () => {
   it('renders children', () => {
@@ -30,5 +31,19 @@ describe('Card', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('cardVariants exports', () => {
+  it('exposes the variant skin classes for composition', () => {
+    expect(Object.keys(cardVariants)).toEqual(['elevated', 'outlined', 'filled']);
+    for (const cls of Object.values(cardVariants)) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('is the exact class Card wears', () => {
+    render(<Card variant="outlined">Skin</Card>);
+    expect(screen.getByText('Skin')).toHaveClass(cardVariants.outlined);
   });
 });

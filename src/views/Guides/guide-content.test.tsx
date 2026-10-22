@@ -12,6 +12,7 @@ import DarkModeGuide from '@/views/Guides/DarkMode';
 import DensityGuide from '@/views/Guides/Density';
 import MigrationGuide from '@/views/Guides/Migration';
 import MotionGuide from '@/views/Guides/Motion';
+import ServerActionsGuide from '@/views/Guides/ServerActions';
 import StreamingA11yGuide from '@/views/Guides/StreamingA11y';
 
 /*
@@ -251,6 +252,35 @@ describe('guide pages locale smoke', () => {
       expect(screen.getByRole('button', { name: '重放流' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '生成回复' })).toBeInTheDocument();
       expect(screen.getByText(/aria-required-children/)).toBeInTheDocument();
+    });
+  });
+
+  describe('ServerActions', () => {
+    it('renders the English source verbatim', () => {
+      renderAt(<ServerActionsGuide />, 'en');
+      expect(screen.getByRole('heading', { level: 1, name: 'React 19 Actions × haze-ui' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Server actions over native FormData' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'useActionState: pending and server errors' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'useOptimistic: optimistic edits with rollback' })).toBeInTheDocument();
+      // Demo chrome: the three live demos render with their ui strings.
+      expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Save settings' })).toBeInTheDocument();
+      expect(screen.getByText('What the server receives')).toBeInTheDocument();
+      expect(screen.getByText(/End the address with @taken.dev/)).toBeInTheDocument();
+      expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    });
+
+    it('renders the Chinese translation under zh', () => {
+      renderAt(<ServerActionsGuide />, 'zh');
+      expect(screen.getByRole('heading', { level: 1, name: 'React 19 Actions × haze-ui 实战' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Server action 走原生 FormData' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'useOptimistic：乐观更新与回滚' })).toBeInTheDocument();
+      // Demo chrome localizes; component names and code stay English.
+      expect(screen.getByRole('button', { name: '提交' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '保存设置' })).toBeInTheDocument();
+      expect(screen.getByText('服务端将收到')).toBeInTheDocument();
+      expect(screen.getByText(/以 @taken.dev 结尾/)).toBeInTheDocument();
+      expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
     });
   });
 });

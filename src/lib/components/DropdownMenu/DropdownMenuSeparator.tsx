@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { useDropdownMenuContext } from './DropdownMenuContext';
+
 type DropdownMenuSeparatorProps = {
   className?: string;
 };
@@ -11,7 +13,14 @@ const separator = css`
 `;
 
 export default function DropdownMenuSeparator({ className }: DropdownMenuSeparatorProps) {
-  return <div data-slot='separator' x-class={[separator, className]} role="separator" />;
+  const classNames = useDropdownMenuContext().classNames;
+  return (
+    <div
+      data-slot='separator'
+      x-class={[separator, classNames?.separator, className]}
+      role="separator"
+    />
+  );
 }
 
 export type { DropdownMenuSeparatorProps };

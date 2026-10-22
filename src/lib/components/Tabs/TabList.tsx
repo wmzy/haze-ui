@@ -6,7 +6,6 @@ import type {
 import type { MenuDataItem } from '../Menu';
 
 import type { TabMeta } from './tab-metas';
-import type { TabsVariant } from './TabsContext';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -22,6 +21,7 @@ import { collectTabMetas } from './tab-metas';
 import { TabStatusDot } from './Tab';
 
 import { useTabsContext } from './TabsContext';
+import { listVariants } from './tabs-styles';
 
 type TabListProps = {
   className?: string;
@@ -78,30 +78,6 @@ const bar = css`
   display: flex;
   align-items: stretch;
 `;
-
-/** Per-variant strip chrome — the tabs carry the matching skins (see
- * Tab's `tabVariants`). `variant` rides the Tabs context. */
-const listVariants: Record<TabsVariant, string> = {
-  /* line: the classic underline strip — the full-width separator the
-   * active tab's underline pierces (Tab overlaps it by -1px). */
-  line: css`
-    border-bottom: 1px solid var(--haze-color-border);
-  `,
-  /* card: flat cards with breathing room — no strip separator; the
-   * selected tab's own surface + stroke is the selection signal. */
-  card: css`
-    gap: var(--haze-space-2);
-  `,
-  /* pill: the Segmented-style capsule — a muted trough the selected
-   * pill lifts out of. The 2px chrome mirrors SegmentedCore's
-   * container (no 2px step exists in the spacing scale). */
-  pill: css`
-    gap: 2px;
-    padding: 2px;
-    background: var(--haze-color-bg-muted);
-    border-radius: var(--haze-radius-full);
-  `,
-};
 
 const overflowArea = css`
   display: flex;

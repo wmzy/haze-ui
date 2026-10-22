@@ -3,14 +3,17 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { css } from '@linaria/core';
 import { Children } from 'react';
 
-import { useStrings } from '../LocaleProvider';
-import { formatString } from '../LocaleProvider/locale';
-
 type AvatarGroupProps = {
-  /** Maximum number of avatars rendered before the "+N" overflow chip. */
+  /** Maximum number of avatars rendered before the overflow chip. */
   max?: number;
   /** Overflow count to display instead of children count - max when truncating. */
   total?: number;
+  /**
+   * Formats the "+N" overflow chip text from the overflow count. Inline
+   * default keeps AvatarGroup hook-free (RSC-safe: no useStrings);
+   * locale-aware callers pass their own formatter.
+   */
+  overflowLabel?: (count: number) => string;
 } & ComponentPropsWithoutRef<'div'>;
 
 const base = css`
@@ -50,12 +53,11 @@ const overflowChip = css`
 export default function AvatarGroup({
   max,
   total,
+  overflowLabel = (count) => `+${count}`,
   className,
   children,
   ...rest
 }: AvatarGroupProps) {
-  const strings = useStrings('avatarGroup');
-
   const items = Children.toArray(children);
   const limit = max === undefined ? items.length : Math.max(max, 0);
   const truncating = items.length > limit;
@@ -74,7 +76,7 @@ export default function AvatarGroup({
           data-slot="overflow-badge"
           x-class={[item, overflowChip, visible.length > 0 && itemStacked]}
         >
-          {formatString(strings.more, { count: overflowCount })}
+          {overflowLabel(overflowCount)}
         </span>
       )}
     </div>

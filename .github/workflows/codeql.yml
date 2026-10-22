@@ -1,0 +1,35 @@
+# CodeQL static security analysis (javascript-typescript): PRs to main,
+# pushes to main, and a weekly scheduled scan of the default branch (catches
+# new queries and advisories against unchanged code). Build mode "none" —
+# JS/TS analysis extracts sources directly, no vite build needed. Permissions
+# are minimal: read the repo, write SARIF results to code scanning only.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Mondays 03:17 UTC — off the top of the hour to dodge scheduling spikes.
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

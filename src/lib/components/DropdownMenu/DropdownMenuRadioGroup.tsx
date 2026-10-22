@@ -7,6 +7,7 @@ import { useId } from 'react';
 import { useMenuRadioGroup, MenuRadioGroupProvider } from '../../utils/menuRadio';
 
 import { dropdownMenuGroupLabel } from './dropdown-menu-item-styles';
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuRadioGroupProps = {
   /** Selected value — controlled control or uncontrolled initial value ('' = none). */
@@ -38,6 +39,7 @@ export default function DropdownMenuRadioGroup({
   children,
 }: DropdownMenuRadioGroupProps) {
   const state = useMenuRadioGroup(value, onValueChange);
+  const classNames = useDropdownMenuContext().classNames;
   const labelId = useId();
   return (
     <MenuRadioGroupProvider value={state}>
@@ -45,7 +47,7 @@ export default function DropdownMenuRadioGroup({
         data-slot='group'
         role="group"
         aria-labelledby={label !== undefined ? labelId : undefined}
-        x-class={[group, className]}
+        x-class={[group, classNames?.group, className]}
       >
         {label !== undefined && (
           <div id={labelId} data-slot='group-label' x-class={dropdownMenuGroupLabel}>

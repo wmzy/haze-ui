@@ -8,11 +8,12 @@ import type {
 
 import { createRef } from 'react';
 
-import { render, screen, fireEvent, act, within } from '@testing-library/react';
+import { render, screen, fireEvent, act, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Upload from './Upload';
 import UploadCore from './UploadCore';
+import UploadList from './UploadList';
 
 /** Flushes the microtask chain of the async beforeUpload gate
  * (Promise.all → single emit) inside act, so state commits settle. */
@@ -701,6 +702,226 @@ describe('Upload — manual mode & handle', () => {
       handle.abort();
       handle.clear();
     }).not.toThrow();
+  });
+});
+
+describe('Upload — concurrency queue', () => {
+  const uploadingRows = () =>
+    document.querySelectorAll('li[data-status="uploading"]');
+  const idleRows = () => document.querySelectorAll('li[data-status="idle"]');
+
+  function sixFiles() {
+    return Array.from({ length: 6 }, (_, i) =>
+      new File([String(i)], `f${i}.txt`, { type: 'text/plain' })
+    );
+  }
+
+  it('runs at most `concurrency` uploads at once, refilling slots as uploads settle', async () => {
+    const onStatusChange = vi.fn<(files: UploadFileStatus[]) => void>();
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload
+        request={request}
+        multiple
+        concurrency={2}
+        showUploadList
+        onStatusChange={onStatusChange}
+      />
+    );
+    const files = sixFiles();
+    await userEvent.upload(getFileInput(), files);
+    await flushUploads();
+
+    // the first two started; the rest queue in value order
+    expect(calls.map((c) => c.file)).toEqual([files[0], files[1]]);
+    expect(uploadingRows()).toHaveLength(2);
+    expect(idleRows()).toHaveLength(4);
+
+    // a success and a failure each free a slot → the next two start
+    calls[0]!.resolve();
+    calls[1]!.reject(new Error('boom'));
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([
+      files[0],
+      files[1],
+      files[2],
+      files[3],
+    ]);
+    expect(uploadingRows()).toHaveLength(2);
+
+    calls[2]!.resolve();
+    calls[3]!.resolve();
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual(files);
+    calls[4]!.resolve();
+    calls[5]!.resolve();
+    await flushUploads();
+    expect(
+      document.querySelectorAll('li[data-status="success"]')
+    ).toHaveLength(5);
+    expect(document.querySelector('li[data-status="error"]')).not.toBeNull();
+
+    // no snapshot along the way ever showed more than two uploading
+    for (const snapshot of onStatusChange.mock.calls.map(([s]) => s)) {
+      expect(
+        snapshot.filter((entry) => entry.status === 'uploading').length
+      ).toBeLessThanOrEqual(2);
+    }
+    // and the final snapshot has every file at a terminal status
+    const final = onStatusChange.mock.calls.at(-1)![0];
+    expect(
+      final.every(
+        (entry) => entry.status === 'success' || entry.status === 'error'
+      )
+    ).toBe(true);
+  });
+
+  it('defaults to at most four in-flight uploads', async () => {
+    const { calls, request } = makeDeferredRequest();
+    render(<Upload request={request} multiple />);
+    const files = sixFiles();
+    await userEvent.upload(getFileInput(), files);
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual(files.slice(0, 4));
+    // settling one lets the fifth in — the queue keeps draining
+    calls[0]!.resolve();
+    await flushUploads();
+    expect(calls).toHaveLength(5);
+    expect(calls[4]!.file).toBe(files[4]);
+  });
+
+  it('treats a non-finite cap as unlimited — everything fires at once', async () => {
+    const { calls, request } = makeDeferredRequest();
+    render(<Upload request={request} multiple concurrency={Infinity} />);
+    const files = sixFiles();
+    await userEvent.upload(getFileInput(), files);
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual(files);
+  });
+
+  it('manual uploadAll() drains through the same queue', async () => {
+    const ref = createRef<UploadHandle>();
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload
+        ref={ref}
+        request={request}
+        manual
+        multiple
+        concurrency={2}
+        showUploadList
+      />
+    );
+    const files = sixFiles();
+    await userEvent.upload(getFileInput(), files);
+    await flushUploads();
+    expect(calls).toHaveLength(0);
+
+    act(() => ref.current!.uploadAll());
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([files[0], files[1]]);
+    expect(uploadingRows()).toHaveLength(2);
+    expect(idleRows()).toHaveLength(4);
+
+    calls[0]!.resolve();
+    calls[1]!.resolve();
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([
+      files[0],
+      files[1],
+      files[2],
+      files[3],
+    ]);
+    calls[2]!.resolve();
+    calls[3]!.resolve();
+    await flushUploads();
+    calls[4]!.resolve();
+    calls[5]!.resolve();
+    await flushUploads();
+    expect(
+      document.querySelectorAll('li[data-status="success"]')
+    ).toHaveLength(6);
+  });
+
+  it('retries re-enter the queue behind in-flight uploads', async () => {
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload request={request} multiple concurrency={1} showUploadList />
+    );
+    const a = new File(['1'], 'a.txt', { type: 'text/plain' });
+    const b = new File(['2'], 'b.txt', { type: 'text/plain' });
+    await userEvent.upload(getFileInput(), [a, b]);
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([a]);
+
+    calls[0]!.reject(new Error('boom'));
+    await flushUploads();
+    // the failure freed the only slot — b stepped in
+    expect(calls.map((c) => c.file)).toEqual([a, b]);
+
+    // retrying a while b runs parks it in the queue again
+    await userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
+    await flushUploads();
+    expect(calls).toHaveLength(2);
+
+    calls[1]!.resolve();
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([a, b, a]);
+    calls[2]!.resolve();
+    await flushUploads();
+    expect(
+      document.querySelectorAll('li[data-status="success"]')
+    ).toHaveLength(2);
+  });
+
+  it('cancelling an in-flight upload frees its slot for the queue', async () => {
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload request={request} multiple concurrency={2} showUploadList />
+    );
+    const a = new File(['1'], 'a.txt', { type: 'text/plain' });
+    const b = new File(['2'], 'b.txt', { type: 'text/plain' });
+    const c = new File(['3'], 'c.txt', { type: 'text/plain' });
+    await userEvent.upload(getFileInput(), [a, b, c]);
+    await flushUploads();
+    expect(calls.map((x) => x.file)).toEqual([a, b]);
+
+    // the first row's cancel aborts a and removes it — c steps in
+    await userEvent.click(screen.getAllByRole('button', { name: 'Cancel upload' })[0]!);
+    await flushUploads();
+    expect(calls.map((x) => x.file)).toEqual([a, b, c]);
+    expect(screen.queryByText('a.txt')).toBeNull();
+    expect(screen.getByText('b.txt')).toBeInTheDocument();
+    expect(screen.getByText('c.txt')).toBeInTheDocument();
+  });
+
+  it('abort() parks queued requests as well as in-flight ones', async () => {
+    const ref = createRef<UploadHandle>();
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload
+        ref={ref}
+        request={request}
+        manual
+        multiple
+        concurrency={1}
+        showUploadList
+      />
+    );
+    const a = new File(['1'], 'a.txt', { type: 'text/plain' });
+    const b = new File(['2'], 'b.txt', { type: 'text/plain' });
+    await userEvent.upload(getFileInput(), [a, b]);
+    await flushUploads();
+    act(() => ref.current!.uploadAll());
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([a]);
+
+    act(() => ref.current!.abort());
+    await flushUploads();
+    // the queued file never started; the in-flight one dropped to idle
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.signal.aborted).toBe(true);
+    expect(idleRows()).toHaveLength(2);
   });
 });
 
@@ -1568,5 +1789,85 @@ describe('Upload — directory picking', () => {
     const bare = getFileInput();
     expect(bare).not.toHaveAttribute('webkitdirectory');
     expect(bare).not.toHaveAttribute('directory');
+  });
+});
+
+describe('Upload classNames slots', () => {
+  it('applies the trigger slot to the drop zone', () => {
+    const { container } = render(
+      <Upload classNames={{ trigger: 'slot-trigger' }} />
+    );
+    expect(container.firstChild).toHaveClass('slot-trigger');
+  });
+
+  it('lands the trigger slot before the className prop class', () => {
+    const { container } = render(
+      <Upload className="custom" classNames={{ trigger: 'slot-trigger' }} />
+    );
+    const zone = container.firstChild as HTMLElement;
+    expect(zone).toHaveClass('custom');
+    expect(zone).toHaveClass('slot-trigger');
+  });
+
+  it('applies list and item slots to the built-in list', () => {
+    const { container } = render(
+      <Upload
+        value={[new File(['1'], 'a.txt', { type: 'text/plain' })]}
+        onChange={() => undefined}
+        showUploadList
+        classNames={{ list: 'slot-list', item: 'slot-item' }}
+      />
+    );
+    const list = container.querySelector("[data-slot='list']");
+    expect(list).toHaveClass('slot-list');
+    expect(container.querySelector("[data-slot='item']")).toHaveClass(
+      'slot-item'
+    );
+  });
+
+  it('applies the progress slot to the row progress bar', async () => {
+    const request = () => new Promise<void>(() => undefined);
+    const { container } = render(
+      <Upload
+        request={request}
+        multiple
+        showUploadList
+        onStatusChange={() => undefined}
+        classNames={{ progress: 'slot-progress' }}
+      />
+    );
+    fireEvent.drop(container.firstChild as HTMLElement, {
+      dataTransfer: { files: [new File(['1'], 'a.txt', { type: 'text/plain' })] },
+    });
+    await waitFor(() => {
+      const bar = container.querySelector(
+        "[data-slot='item'] [role='progressbar']"
+      );
+      expect(bar).toBeInTheDocument();
+      expect(bar).toHaveClass('slot-progress');
+    });
+  });
+
+  it('forwards UploadList ref to the list root', () => {
+    render(
+      <UploadList
+        entries={[
+          {
+            file: new File(['1'], 'a.txt', { type: 'text/plain' }),
+            status: 'idle',
+            percent: 0,
+            uid: 'u1',
+          },
+        ]}
+        onRemove={() => undefined}
+        onRetry={() => undefined}
+        onCancel={() => undefined}
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+      />
+    );
+    const list = document.querySelector("[data-slot='list']");
+    expect(list).toHaveAttribute('data-probe', 'set');
   });
 });

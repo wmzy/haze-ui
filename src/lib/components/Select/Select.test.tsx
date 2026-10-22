@@ -1490,3 +1490,277 @@ describe('Select native form participation', () => {
     expect(container.querySelector("[data-slot='native-input']")).toBeNull();
   });
 });
+
+describe('Select tags', () => {
+  // The chip box around the inline input (the input owns the combobox
+  // role; the chips are its siblings inside the box).
+  const triggerBoxOf = (input: HTMLElement) =>
+    input.closest<HTMLElement>("[data-slot='trigger']")!;
+
+  it('renders the inline-input trigger with chips for an initial value (multiple implied)', () => {
+    render(
+      <Select tags value={['apple']} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox', { name: 'fruit' });
+    expect(input.tagName).toBe('INPUT');
+    expect(input).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    expect(input).toHaveAttribute('aria-autocomplete', 'list');
+    // The chip backfills into the trigger box around the input.
+    const box = triggerBoxOf(input);
+    expect(within(box).getByText('Apple')).toBeInTheDocument();
+    // No placeholder while a selection exists — the field is for the
+    // next tag.
+    expect(input).toHaveAttribute('placeholder', '');
+  });
+
+  it('opens the panel on focus and filters options while typing', async () => {
+    const user = userEvent.setup();
+    render(<Select tags aria-label="fruit">{FRUITS}</Select>);
+    const input = screen.getByRole('combobox');
+    expect(input).toHaveAttribute('placeholder', 'Select…');
+    // jsdom's raw .focus() fires no focus events, so the synthetic one
+    // stands in for the browser's focus → open path.
+    fireEvent.focus(input);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByRole('option')).toHaveLength(3);
+    await user.type(input, 'ban');
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('option', { name: 'Banana' })).toBeInTheDocument();
+  });
+
+  it('creates a new tag from an unmatched query with Enter, backfilling the trigger', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select tags onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'kiwi');
+    const create = screen.getByRole('option', { name: 'Create "kiwi"' });
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    // The create row is auto-highlighted — Enter commits without an
+    // arrow press.
+    expect(input).toHaveAttribute('aria-activedescendant', create.id);
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith(['kiwi']);
+    const box = triggerBoxOf(input);
+    expect(within(box).getByText('kiwi')).toBeInTheDocument();
+    // The query is spent; the panel stays open for the next tag.
+    expect(input).toHaveValue('');
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('dedupes: re-typing a created tag offers no create row and Enter stays inert', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select tags onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'kiwi');
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+
+    await user.type(input, 'kiwi');
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+    expect(screen.getByText('No matches')).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+    const box = triggerBoxOf(input);
+    expect(within(box).getAllByText('kiwi')).toHaveLength(1);
+  });
+
+  it('picks the matching option instead of creating when the query matches', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select tags onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'ban');
+    expect(screen.queryByText(/Create/)).not.toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith(['banana']);
+    const box = triggerBoxOf(input);
+    expect(within(box).getByText('Banana')).toBeInTheDocument();
+    expect(input).toHaveValue('');
+  });
+
+  it('removes the last chip with Backspace on an empty query', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select tags value={['apple', 'banana']} onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    input.focus();
+    await user.keyboard('{Backspace}');
+    expect(onValuesChange).toHaveBeenCalledWith(['apple']);
+    const box = triggerBoxOf(input);
+    expect(within(box).queryByText('Banana')).not.toBeInTheDocument();
+    expect(within(box).getByText('Apple')).toBeInTheDocument();
+  });
+
+  it('keeps the keyboard flow: arrows highlight, Enter picks, Escape closes keeping focus', async () => {
+    const user = userEvent.setup();
+    render(<Select tags aria-label="fruit">{FRUITS}</Select>);
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    expect(input).not.toHaveAttribute('aria-activedescendant');
+    await user.keyboard('{ArrowDown}');
+    expect(input.getAttribute('aria-activedescendant')).toBe(
+      screen.getByRole('option', { name: 'Apple' }).id
+    );
+    await user.keyboard('{Enter}');
+    const box = triggerBoxOf(input);
+    expect(within(box).getByText('Apple')).toBeInTheDocument();
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Escape}');
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    // Tags keeps focus in the field after close — typing can resume.
+    expect(input).toHaveFocus();
+  });
+
+  it('reopens on input click after an Escape close; inside clicks never close', async () => {
+    const user = userEvent.setup();
+    render(<Select tags aria-label="fruit">{FRUITS}</Select>);
+    const input = screen.getByRole('combobox');
+    const box = triggerBoxOf(input);
+    await user.click(input);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    // Escape closes with focus staying in the field — no fresh focus
+    // event exists to reopen on, so the input's own click must.
+    await user.keyboard('{Escape}');
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    await user.click(input);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    // Inside clicks never toggle the panel closed (the field is for
+    // typing) — closing belongs to Escape and outside pointers.
+    await user.click(box);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.pointerDown(document.body);
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('has no axe violations with chips, the open panel and a create row', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Select tags value={['apple']} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'kiwi');
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Select maxCount', () => {
+  it('locks unselected options at the cap, rejecting clicks, and unlocks on deselect', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select multiple maxCount={2} onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: 'Apple' }));
+    await user.click(screen.getByRole('option', { name: 'Banana' }));
+    expect(onValuesChange).toHaveBeenCalledTimes(2);
+
+    const cherry = screen.getByRole('option', { name: 'Cherry' });
+    expect(cherry).toHaveAttribute('aria-disabled', 'true');
+    expect(cherry).toHaveAttribute('data-disabled', 'true');
+    // The click is rejected — no third call, no chip.
+    await user.click(cherry);
+    expect(onValuesChange).toHaveBeenCalledTimes(2);
+    expect(within(trigger).queryByText('Cherry')).not.toBeInTheDocument();
+
+    // Selected options stay removable at the cap…
+    await user.click(screen.getByRole('option', { name: 'Apple' }));
+    expect(onValuesChange).toHaveBeenLastCalledWith(['banana']);
+    // …which unlocks the locked option again.
+    expect(cherry).not.toHaveAttribute('aria-disabled');
+    await user.click(cherry);
+    expect(onValuesChange).toHaveBeenLastCalledWith(['banana', 'cherry']);
+  });
+
+  it('rejects the keyboard path too: Enter on the disabled row is inert', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select multiple maxCount={1} value={['apple']} onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const trigger = screen.getByRole('combobox');
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('option', { name: 'Banana' })).toHaveAttribute('aria-disabled', 'true');
+    // Highlight may traverse the locked row…
+    await user.keyboard('{ArrowDown}');
+    // …but Enter on it commits nothing.
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).not.toHaveBeenCalled();
+    expect(within(trigger).queryByText('Banana')).not.toBeInTheDocument();
+  });
+
+  it('suppresses the tags create row at the cap', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select tags maxCount={1} onValuesChange={onValuesChange} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'kiwi');
+    expect(screen.getByRole('option', { name: 'Create "kiwi"' })).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledWith(['kiwi']);
+
+    // At the cap, a fresh unmatched query offers no creation.
+    await user.type(input, 'mango');
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+    expect(screen.getByText('No matches')).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no axe violations with capped options', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Select multiple maxCount={1} value={['apple']} aria-label="fruit">
+        {FRUITS}
+      </Select>
+    );
+    await user.click(screen.getByRole('combobox'));
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});

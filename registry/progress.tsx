@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Progress } from 'haze-ui';
+import { Progress, barSizes, circleSizes } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/progress.css';
 
-export { Progress };
+export { Progress, barSizes, circleSizes };
 export type { ProgressProps } from 'haze-ui';

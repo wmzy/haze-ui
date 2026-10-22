@@ -2,7 +2,10 @@
 
 A minimal, hand-written Next.js 15 project (no `create-next-app`) exercising
 `Button`, `ButtonLink`, `Switch`, `Datepicker`, and `Toast` from haze-ui, in
-two CSS-consumption modes (full bundle and per-component subpaths).
+two CSS-consumption modes (full bundle and per-component subpaths), plus an
+`/actions-demo` route running real `'use server'` actions against haze-ui
+forms (the react-f0rm `<Form action>` channel with server-error hydration,
+and the plain `useActionState` channel over native FormData bridges).
 
 ## Run it
 
@@ -121,8 +124,12 @@ Notes:
   repository root and silently installs the parent project instead
   (verified with pnpm 11).
 - `@linaria/core` and `react-f0rm` are declared as direct dependencies:
-  they are haze-ui peers, and the `haze-ui` barrel re-exports `FormItem`,
-  so bundlers must resolve them even though these pages never use forms.
+  they are haze-ui peers, and the `haze-ui` barrel re-exports
+  `FormItem`/`Form`/`useForm`, so bundlers must resolve them. The
+  `/actions-demo` route also imports `useFormState` from `react-f0rm`
+  directly — keep its version in step with the root repo (currently
+  `^1.4.0`; 1.1.x predates `useFormState` and the `ActionErrorResult`
+  action typing).
 - Requires Node >= 18.18 (Next 15). `next-env.d.ts`, `.next/`, and the
   lockfile are generated on first install/dev run; `next-env.d.ts` and
   `.next/` are git-ignored, the lockfile is not — commit it if you want

@@ -1,5 +1,7 @@
 import type {ReactNode, ComponentPropsWithoutRef} from 'react';
 
+import { useTableClassNames } from './TableContext';
+
 type TableCellProps = {
   as?: 'td' | 'th';
   className?: string;
@@ -12,7 +14,12 @@ export default function TableCell({
   children,
   ...rest
 }: TableCellProps) {
-  return <Tag data-slot="cell" x-class={[className]} {...rest}>{children}</Tag>;
+  const classNames = useTableClassNames();
+  return (
+    <Tag data-slot="cell" x-class={[classNames?.cell, className]} {...rest}>
+      {children}
+    </Tag>
+  );
 }
 
 export type {TableCellProps};

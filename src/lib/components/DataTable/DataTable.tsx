@@ -4,8 +4,9 @@ import type {
   MouseEvent,
   PointerEventHandler,
   ReactNode,
+  Ref,
 } from 'react';
-import type { ControlOrValue } from 'react-use-control';
+import type { Control, ControlOrValue } from 'react-use-control';
 import type {
   Column,
   ColumnDef,
@@ -22,7 +23,9 @@ import type {
 import type { DataTableCellEditorProps, DataTableColumnMeta } from './features';
 import type { VirtualListHandle } from '../VirtualList';
 
-import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { DataTableFiltersState } from './filters';
+
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTable } from '@tanstack/react-table';
 import { css } from '@linaria/core';
 import { useControl, useThru, watch, isControl } from 'react-use-control';
@@ -42,11 +45,15 @@ import { useStrings } from '../LocaleProvider';
 import { Pagination } from '../Pagination';
 import { Skeleton } from '../Skeleton';
 import { TableBody, TableCell, TableHead } from '../Table';
+
+import { TableClassNamesProvider } from '../Table/TableContext';
 import { VisuallyHidden } from '../VisuallyHidden';
 import { VirtualList } from '../VirtualList';
 
 import CellEditor from './CellEditor';
+import ColumnFilterTrigger from './column-filter';
 import { dataTableFeatures } from './features';
+import { applyColumnFilters } from './filters';
 
 /** Windowing configuration for the table body, reusing `VirtualList`. */
 type DataTableVirtualized =
@@ -64,11 +71,30 @@ type DataTableVirtualized =
  * bound to DataTable's feature set and column meta. The native `size`
  * field doubles as a static px width hint (read as the colgroup width
  * fallback after `meta.width`) and seeds the resize math when `resizable`
- * is on. */
+ * is on. The `meta` extension adds `filterFn`, the custom predicate of
+ * the header filter menu, typed against this table's row data (the
+ * feature-registered meta carries only the TData-independent fields). */
 type DataTableColumnDef<TData extends RowData> = ColumnDef<
   typeof dataTableFeatures,
   TData
-> & { size?: number };
+> & {
+  size?: number;
+  meta?: {
+    /**
+     * Replaces the default membership check of the header filter menu
+     * (`meta.filters`): a row passes the column's filter when this
+     * returns true for the selected values array. Receives the row's
+     * original data, the selected option values and the current cell
+     * value. The default keeps rows whose cell value equals a selected
+     * one (`values.includes(rowValue)`).
+     */
+    filterFn?: (
+      row: TData,
+      filterValue: unknown[],
+      rowValue: unknown
+    ) => boolean;
+  };
+};
 
 /** One cell of a summary row: a static string or number (`undefined`
  * renders an empty cell — `dataTableAvg` of no numeric values), or a
@@ -87,6 +113,44 @@ type DataTableSummary<TData extends RowData = RowData> = {
   label?: string;
   cells: DataTableSummaryCell<TData>[];
 };
+
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape) for DataTable:
+ * declared once on the root and distributed to the structural parts —
+ * the wrapper, the toolbar strip and the pagination footer on their
+ * own `<div>`s, the header/body/row/cell slots through the same
+ * context the Table primitives read (every `<th>`/`<td>` the table
+ * renders — header, body, selection, skeleton, empty, filter and
+ * summary cells alike). Slot classes are appended at the end of each
+ * part's class list; per-part `className` stays on the root and still
+ * lands after the `wrapper` slot.
+ */
+type DataTableClassNames = {
+  /** The root wrapper (`data-slot='data-table'`). */
+  wrapper?: string;
+  /** The header `<thead>` (rendered through `TableHead`). */
+  header?: string;
+  /** The toolbar strip above the table (`data-slot='toolbar'`) — only
+   *  rendered while the `toolbar` slot or `columnToggle` (without
+   *  `pageSize`) contributes something. */
+  toolbar?: string;
+  /** The pagination footer row (`data-slot='pagination'`) — only
+   *  rendered while `pageSize` is set. */
+  footer?: string;
+  /** Every body `<tbody>` (rendered through `TableBody`) — data,
+   *  skeleton, empty and filter bodies alike. */
+  body?: string;
+  /** Every data row `<tr>` — body rows plus the skeleton and empty
+   *  placeholder rows and the summary rows (header rows keep the
+   *  `header` slot's domain). */
+  row?: string;
+  /** Every cell `<th>`/`<td>` — header, body (incl. selection),
+   *  skeleton, empty, filter and summary cells alike. */
+  cell?: string;
+  /** The summary `<tfoot>` (`data-slot='summary'`) — only rendered
+   *  while `summary` returns rows. */
+  summary?: string;
+}
 
 type DataTableProps<TData extends RowData> = {
   /** Column definitions: accessors, headers and cell templates. */
@@ -268,6 +332,31 @@ type DataTableProps<TData extends RowData> = {
    */
   filterable?: boolean;
   /**
+   * Column filter menus: any column declaring `meta.filters` (a list of
+   * `{ text, value }` options) grows a funnel trigger in its header cell
+   * opening a floating panel with one checkbox per option, plus
+   * Apply/Reset. The state maps column id → selected option values; it
+   * composes with the `filterable` text row, sorting and pagination
+   * (menus filter first, then the text filters, then sorting, then the
+   * page slice), and `dataTableToCsv` mirrors it through its `filters`
+   * option. A row passes when `meta.filterFn` returns true for the
+   * selection — the default keeps rows whose cell value equals a
+   * selected one. Controllable exactly like `sorting`/`page`: pass a
+   * value or `Control` to seed or drive it, observe every mutation
+   * through `onFiltersChange`. In `manual` mode the table renders `data`
+   * as received (the refetch trigger is yours, like sorting); row ids
+   * derive from the filtered array, so combine with `getRowId` when
+   * filtering and selecting together.
+   */
+  filters?: ControlOrValue<DataTableFiltersState>;
+  /**
+   * Fires with the next column-filter state whenever a menu commits —
+   * Apply and Reset clicks alike, and programmatic updates on a
+   * controlled `filters`. In `manual` mode this is the server refetch
+   * trigger.
+   */
+  onFiltersChange?: (filters: DataTableFiltersState) => void;
+  /**
    * Renders summary rows in a `<tfoot>` below the body: one row per entry,
    * one cell per leaf column (`cells[i]` aligns with column `i`; the
    * selection column, when present, renders an empty cell first). Cell
@@ -384,7 +473,16 @@ type DataTableProps<TData extends RowData> = {
    * Defaults to `200`.
    */
   endReachedThreshold?: number;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): keyed by
+   * structural part (see {@link DataTableClassNames}). Not passing it
+   * renders identical output.
+   */
+  classNames?: DataTableClassNames;
   className?: string;
+  /** Forwarded to the root wrapper `<div>` (`data-slot='data-table'`)
+   *  — the `...rest` spread keeps landing on the inner `<table>`. */
+  ref?: Ref<HTMLDivElement>;
 } & Omit<ComponentPropsWithoutRef<'table'>, 'children' | 'summary'>;
 
 /** The lazily loaded drag kit behind `columnReorderable` — see
@@ -1038,6 +1136,8 @@ export default function DataTable<TData extends RowData>({
   columnVisibility: columnVisibilityControl,
   columnToggle = false,
   filterable = false,
+  filters: filtersControl,
+  onFiltersChange,
   summary,
   stickyFooter = false,
   editable = false,
@@ -1048,7 +1148,9 @@ export default function DataTable<TData extends RowData>({
   onColumnOrderChange,
   onEndReached,
   endReachedThreshold,
+  classNames,
   className,
+  ref,
   ...rest
 }: DataTableProps<TData>) {
   // Sorting and page states are threaded through a `watch` layer so every
@@ -1091,6 +1193,22 @@ export default function DataTable<TData extends RowData>({
     useThru(undefined, watch((next) => onColumnOrderChange?.(next))),
     []
   );
+  // Header filter menus follow the sorting/page watch-layer contract:
+  // menu commits (Apply/Reset) and programmatic updates report through
+  // onFiltersChange exactly once, from outside the state updater.
+  const filtersControlled = isControl(filtersControl);
+  const [filters, setFilters] = useControl<DataTableFiltersState>(
+    useThru(
+      // isControl narrows to Control<unknown> and cannot recover T here
+      // (a Record value overlaps the Control shape, so the predicate
+      // loses the generic) — re-assert the declared prop type.
+      filtersControlled
+        ? (filtersControl as Control<DataTableFiltersState>)
+        : undefined,
+      watch((next) => onFiltersChange?.(next))
+    ),
+    filtersControlled ? {} : filtersControl ?? {}
+  );
   // Which cell is being edited, if any — purely internal UI state, keyed by
   // row/column id so it survives reorders and the virtualized window.
   const [editingCell, setEditingCell] = useState<{
@@ -1107,6 +1225,13 @@ export default function DataTable<TData extends RowData>({
   // scrollToIndex mounts the row.
   const pendingFocusRef = useRef<NavCell | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // The consumer ref and the internal rootRef both land on the wrapper:
+  // a callback fans the node out to each target.
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) ref.current = node;
+  }, [ref]);
   const virtualListRef = useRef<VirtualListHandle | null>(null);
 
   // Declared intent (LocaleProvider chain → document) for the drag math,
@@ -1162,10 +1287,35 @@ export default function DataTable<TData extends RowData>({
     [columns, sortable, resizable, filterable]
   );
 
+  // Header filter menus run before the table engine: the filtered array
+  // replaces `data`, so the text filter row (TanStack's own column
+  // filters), sorting, pagination, the summary and the window all
+  // compose on top of it — the "menus first" pipeline order. Inert
+  // without active selections (the input array passes through as-is),
+  // and skipped in `manual` mode, where `data` renders exactly as the
+  // server sent it and the state flows out for a refetch instead.
+  const menuFilteredData = useMemo(
+    () => applyColumnFilters(data, columns, filters),
+    [data, columns, filters]
+  );
+  const tableData = manual ? data : menuFilteredData;
+
+  // Commits one column's menu selection: empty selections are dropped so
+  // `{}` stays the canonical "no filters" state.
+  const setColumnFilter = (columnId: string, values: unknown[]) => {
+    setFilters((prev) =>
+      values.length === 0
+        ? Object.fromEntries(
+            Object.entries(prev).filter(([key]) => key !== columnId)
+          )
+        : { ...prev, [columnId]: values }
+    );
+  };
+
   const table = useTable({
     features: dataTableFeatures,
     columns: tableColumns,
-    data,
+    data: tableData,
     getRowId,
     getSubRows: treeMode
       ? (originalRow) =>
@@ -1694,6 +1844,13 @@ export default function DataTable<TData extends RowData>({
               ) : (
                 reorderGrip
               );
+            // Filter menu on leaf columns declaring predefined options —
+            // a group header spans several columns and has no single
+            // value to filter on.
+            const filterOptions =
+              header.subHeaders.length === 0
+                ? header.column.columnDef.meta?.filters
+                : undefined;
             return (
               <TableCell
                 as='th'
@@ -1730,6 +1887,16 @@ export default function DataTable<TData extends RowData>({
                   </button>
                 ) : (
                   <table.FlexRender header={header} />
+                )}
+                {filterOptions !== undefined && filterOptions.length > 0 && (
+                  <ColumnFilterTrigger
+                    label={columnLabel(header.column)}
+                    options={filterOptions}
+                    selected={filters[header.column.id] ?? []}
+                    onChange={(values) =>
+                      setColumnFilter(header.column.id, values)
+                    }
+                  />
                 )}
                 {canResize && (
                   <div
@@ -1785,6 +1952,7 @@ export default function DataTable<TData extends RowData>({
           rowHover,
           row.getIsSelected() && rowSelected,
           onRowClick && clickableRow,
+          classNames?.row,
         ]}
         onClick={
           handleRowClick
@@ -1964,7 +2132,7 @@ export default function DataTable<TData extends RowData>({
   );
 
   const renderSkeletonRow = (rowIndex: number) => (
-    <tr key={`skeleton-${rowIndex}`} data-slot="row">
+    <tr key={`skeleton-${rowIndex}`} data-slot="row" x-class={[classNames?.row]}>
       {selectable && (
         <TableCell
           data-slot="select-cell"
@@ -2004,7 +2172,7 @@ export default function DataTable<TData extends RowData>({
   );
 
   const emptyRow = (
-    <tr data-slot="row">
+    <tr data-slot="row" x-class={[classNames?.row]}>
       <TableCell
         colSpan={columnCount}
         data-slot="empty-cell"
@@ -2056,9 +2224,17 @@ export default function DataTable<TData extends RowData>({
       : undefined;
   const summaryTfoot =
     summaryRows !== undefined && summaryRows.length > 0 ? (
-      <tfoot data-slot="summary" x-class={[summaryFoot, stickyFooter && stickyFoot]}>
+      <tfoot
+        data-slot="summary"
+        x-class={[summaryFoot, stickyFooter && stickyFoot, classNames?.summary]}
+      >
         {summaryRows.map((summaryRow, rowIndex) => (
-          <tr key={`summary-${rowIndex}`} data-slot="row" aria-label={summaryRow.label}>
+          <tr
+            key={`summary-${rowIndex}`}
+            data-slot="row"
+            x-class={[classNames?.row]}
+            aria-label={summaryRow.label}
+          >
             {selectable && <TableCell data-slot="select-cell">{null}</TableCell>}
             {leafHeaders.map((header, cellIndex) => {
               const cell = summaryRow.cells[cellIndex];
@@ -2125,7 +2301,7 @@ export default function DataTable<TData extends RowData>({
           (editable ? KEYBOARD_HINT_EDIT : '')}
       </VisuallyHidden>
       {showToolbar && (
-        <div data-slot="toolbar" x-class={[toolbar]}>
+        <div data-slot="toolbar" x-class={[toolbar, classNames?.toolbar]}>
           {toolbarSlot}
           {columnMenu !== undefined && pageSize === undefined
             ? columnMenu
@@ -2212,18 +2388,19 @@ export default function DataTable<TData extends RowData>({
         </div>
       )}
       {pageSize !== undefined && (
-        <div data-slot="pagination" x-class={[footer]}>
+        <div data-slot="pagination" x-class={[footer, classNames?.footer]}>
           {columnMenu}
           {/* Manual mode: the server owns the row total, so the footer's
            * page math must come from `pageCount` (fed as
            * pageCount × pageSize items — Pagination derives pages from
-           * `total`). Locally the total stays `data.length`. */}
+           * `total`). Locally the total follows the header filter menus
+           * (`tableData`), so pages shrink with the filtered rows. */}
           <Pagination
             page={pageCtrl}
             total={
               manual && pageCount !== undefined
                 ? Math.max(0, pageCount) * pageSize
-                : data.length
+                : tableData.length
             }
             pageSize={pageSize}
             size='sm'
@@ -2234,11 +2411,18 @@ export default function DataTable<TData extends RowData>({
   );
 
   return (
+    <TableClassNamesProvider
+      value={{
+        head: classNames?.header,
+        body: classNames?.body,
+        cell: classNames?.cell,
+      }}
+    >
     <div
-      ref={rootRef}
+      ref={setRootRef}
       data-slot="data-table"
       aria-describedby={keyboardHintId}
-      x-class={[root, className]}
+      x-class={[root, classNames?.wrapper, className]}
     >
       {reorderKit !== null && reorderActive ? (
         <reorderKit.ColumnReorderRegion ids={leafIds} onMove={moveColumn}>
@@ -2248,11 +2432,13 @@ export default function DataTable<TData extends RowData>({
         tableContent
       )}
     </div>
+    </TableClassNamesProvider>
   );
 }
 
 export type {
   DataTableProps,
+  DataTableClassNames,
   DataTableColumnDef,
   DataTableColumnMeta,
   DataTableVirtualized,
@@ -2260,3 +2446,5 @@ export type {
   DataTableSummaryCell,
   DataTableCellEditorProps,
 };
+
+export type { DataTableFiltersState } from './filters';

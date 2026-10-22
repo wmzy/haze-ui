@@ -5,6 +5,7 @@ import type {
 } from '@tanstack/react-table';
 
 import type { DataTableColumnDef } from '@/lib';
+import type { DataTableFiltersState } from '@/lib/components/DataTable';
 
 import { useEffect, useState } from 'react';
 
@@ -314,6 +315,50 @@ function CsvExportTable() {
   );
 }
 
+// Column filter menus: Role/Status use the default membership check on
+// the raw cell value; Score shows a custom meta.filterFn bucketing the
+// numbers (values arrive as the option `value` list, not the rows).
+const filterMenuColumns: DataTableColumnDef<EmployeeRow>[] = [
+  baseColumns[0]!,
+  {
+    accessorKey: 'role',
+    header: 'Role',
+    meta: {
+      filters: [
+        { text: 'Engineer', value: 'Engineer' },
+        { text: 'Engineering Manager', value: 'Engineering Manager' },
+        { text: 'Researcher', value: 'Researcher' },
+      ],
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: (info) => statusBadge(info.getValue() as EmployeeStatus),
+    meta: {
+      filters: [
+        { text: 'active', value: 'active' },
+        { text: 'away', value: 'away' },
+        { text: 'offline', value: 'offline' },
+      ],
+    },
+  },
+  {
+    accessorKey: 'score',
+    header: 'Score',
+    meta: {
+      filters: [
+        { text: 'Top (90+)', value: 'top' },
+        { text: 'Solid (80–89)', value: 'solid' },
+      ],
+      filterFn: (row, values) =>
+        values.some((value) =>
+          value === 'top' ? row.score >= 90 : row.score >= 80 && row.score < 90
+        ),
+    },
+  },
+];
+
 // Column id for the reorder demo's order bookkeeping — accessor columns
 // derive theirs from the key.
 const columnId = (column: DataTableColumnDef<EmployeeRow>) =>
@@ -401,6 +446,10 @@ export default function DataTableDemo() {
   // Controlled expansion (ctrl form): the buttons below drive the same
   // Control the table binds to.
   const [, setExpanded, expandedCtrl] = useControl<ExpandedState>(undefined, {});
+  // Controlled column filters: the Clear button and the CSV export both
+  // act on the same record the filter menus commit into.
+  const [filters, setFilters, filtersCtrl] =
+    useControl<DataTableFiltersState>(undefined, {});
   // Editable cells keep the data consumer-owned: edits land here through
   // onCellEdit and flow back as new data.
   const [employees, setEmployees] = useState(PEOPLE);
@@ -523,6 +572,47 @@ export default function DataTableDemo() {
               {row.original.score}.
             </p>
           )}
+          getRowId={(employee) => String(employee.id)}
+        />
+      </div>
+
+      <div className={section}>
+        <h2>Column filter menus</h2>
+        <p className={dataTableNote}>
+          Columns declaring <code>meta.filters</code> grow a funnel button
+          in the header: it opens a checklist panel (edits stay a draft
+          until Apply; Reset clears), and the funnel lights up while the
+          column holds an active selection. Selections from several
+          columns intersect and run before sorting and pagination,
+          composing with the <code>filterable</code> text row. The whole
+          record hangs off <code>filters</code> with the usual
+          Control-or-value semantics (keyed by column id) — the Clear
+          button below drives the same Control the menus commit into —{' '}
+          <code>meta.filterFn</code> replaces the default membership check
+          (<em>Score</em> buckets here), and{' '}
+          <code>dataTableToCsv</code> accepts the live record so the
+          export matches the visible rows.
+        </p>
+        <div className={row}>
+          <button onClick={() => setFilters({})}>Clear filters</button>
+        </div>
+        <DataTable
+          columns={filterMenuColumns}
+          data={PEOPLE}
+          filters={filtersCtrl}
+          sortable
+          pageSize={5}
+          toolbar={
+            <button
+              onClick={() =>
+                downloadCsv(
+                  dataTableToCsv(PEOPLE, filterMenuColumns, { filters })
+                )
+              }
+            >
+              Export filtered CSV
+            </button>
+          }
           getRowId={(employee) => String(employee.id)}
         />
       </div>

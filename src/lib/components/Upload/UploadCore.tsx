@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 import type {
+  UploadClassNames,
   UploadEntry,
   UploadFileStatus,
   UploadHandle,
@@ -82,6 +83,15 @@ type UploadCoreProps = {
    */
   manual?: boolean;
   /**
+   * Cap on simultaneously in-flight uploads (default `4`). Files
+   * beyond the cap queue in value order and start as running uploads
+   * finish, fail or are cancelled — auto mode, the `UploadHandle`
+   * triggers and retries all funnel through the same queue. A
+   * non-finite value (`Infinity`) uploads everything at once — the
+   * pre-queue behavior.
+   */
+  concurrency?: number;
+  /**
    * Renders the built-in file list below the zone (default `false`):
    * file name, live progress (reusing `Progress`), status icon and
    * per-state actions — cancel while uploading, retry + remove on
@@ -126,8 +136,22 @@ type UploadCoreProps = {
    * echoes report their terminal `status`/`percent` like any row.
    */
   onStatusChange?: (files: UploadFileStatus[]) => void;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): the `trigger`
+   * slot lands on the drop zone, the rest hand down to the built-in
+   * list (see {@link UploadClassNames}).
+   */
+  classNames?: UploadClassNames;
   className?: string;
   children?: ReactNode;
+  /**
+   * The imperative `UploadHandle` (`upload`/`uploadAll`/`abort`/
+   * `clear`) — a command object, not a DOM node. The component renders
+   * no single root element (the drop zone and the list are siblings),
+   * so there is no root container to forward a DOM ref to: style the
+   * zone through `classNames.trigger`, or query the parts by their
+   * `data-slot` attributes (`drop-zone`, `list`, `item`).
+   */
   ref?: Ref<UploadHandle>;
 } & Omit<
   ComponentPropsWithoutRef<'div'>,
@@ -220,6 +244,17 @@ function clampPercent(percent: number): number {
   return Math.max(0, Math.min(100, Math.round(percent)));
 }
 
+/** Queue depth cap for `concurrency`: positive finite numbers are
+ * honored (fractional floors to whole slots); anything else —
+ * `Infinity`, `NaN`, non-positive — means unlimited, the pre-queue
+ * fire-everything behavior. The `4` default lands through the prop's
+ * default value, never here. */
+function resolveConcurrency(concurrency: number): number {
+  return Number.isFinite(concurrency) && concurrency >= 1
+    ? Math.floor(concurrency)
+    : Infinity;
+}
+
 // Value items carry no serializable identity, so list keys come from
 // this WeakMap — stable per object instance across renders/picks.
 // `UploadFile` echoes prefer their explicit `uid`.
@@ -250,12 +285,14 @@ export default function UploadCore({
   name,
   data,
   manual = false,
+  concurrency = 4,
   showUploadList,
   listType,
   onPreview,
   removeLabel,
   directory,
   onStatusChange,
+  classNames,
   className,
   children,
   ref,
@@ -310,11 +347,23 @@ export default function UploadCore({
   useEffect(() => {
     latestOnStatusChange.current = onStatusChange;
   });
+  // The queue drains from long-lived closures (request settle
+  // callbacks) — they must read the freshest cap, not the one captured
+  // at enqueue time.
+  const latestConcurrency = useRef(resolveConcurrency(concurrency));
+  useEffect(() => {
+    latestConcurrency.current = resolveConcurrency(concurrency);
+  });
 
   // One AbortController per in-flight upload — also the synchronous
   // "already running" guard (state updates may not have flushed when
   // two triggers race in the same tick).
   const controllers = useRef(new Map<string, AbortController>());
+  // The concurrency queue: uploads requested while all slots are busy
+  // park here in value order (`pendingUids` is the dedupe guard — a
+  // queued file must not re-enter the queue from a second trigger).
+  const pendingFiles = useRef<File[]>([]);
+  const pendingUids = useRef(new Set<string>());
   // Uids that already went through runUpload. Autostart only fires for
   // fresh entries — an aborted upload returns to idle WITHOUT being
   // restarted by the auto mode (restart would loop: abort → idle →
@@ -331,60 +380,105 @@ export default function UploadCore({
     };
   }, []);
 
+  // Requests an upload for `file` — auto mode, the imperative handle
+  // and retries all funnel through here. Beyond `concurrency`
+  // in-flight uploads the request parks in the queue (value order) and
+  // `drain` starts it as a slot frees up (success, failure, cancel).
   const runUpload = useCallback((file: File) => {
-    const exec = latestExecutor.current;
-    if (!exec || !mountedRef.current) return;
+    if (!latestExecutor.current || !mountedRef.current) return;
     const entry = entriesRef.current.find((e) => e.file === file);
     if (!entry || controllers.current.has(entry.uid)) return;
-    const { uid } = entry;
-    const controller = new AbortController();
-    controllers.current.set(uid, controller);
-    attemptedUids.current.add(uid);
-    setEntries((prev) =>
-      prev.map((e) =>
-        e.uid === uid ? { ...e, status: 'uploading', percent: 0 } : e
-      )
-    );
-    exec(file, {
-      signal: controller.signal,
-      onProgress: (percent) => {
-        setEntries((prev) =>
-          prev.map((e) =>
-            e.uid === uid && e.status === 'uploading'
-              ? { ...e, percent: clampPercent(percent) }
-              : e
-          )
-        );
-      },
-    })
-      .then(() => {
-        setEntries((prev) =>
-          prev.map((e) =>
-            e.uid === uid && e.status === 'uploading'
-              ? { ...e, status: 'success', percent: 100 }
-              : e
-          )
-        );
+    if (pendingUids.current.has(entry.uid)) return;
+
+    // Starts one file — the pre-queue machinery, unchanged: one
+    // controller, the status commits, and a drain on settle.
+    function startUpload(queued: File, queuedEntry: UploadEntry) {
+      const exec = latestExecutor.current;
+      if (!exec || !mountedRef.current) return;
+      const { uid } = queuedEntry;
+      const controller = new AbortController();
+      controllers.current.set(uid, controller);
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.uid === uid ? { ...e, status: 'uploading', percent: 0 } : e
+        )
+      );
+      exec(queued, {
+        signal: controller.signal,
+        onProgress: (percent) => {
+          setEntries((prev) =>
+            prev.map((e) =>
+              e.uid === uid && e.status === 'uploading'
+                ? { ...e, percent: clampPercent(percent) }
+                : e
+            )
+          );
+        },
       })
-      .catch((error: unknown) => {
-        setEntries((prev) =>
-          prev.map((e) => {
-            if (e.uid !== uid || e.status !== 'uploading') return e;
-            const aborted =
-              controller.signal.aborted ||
-              (error instanceof DOMException && error.name === 'AbortError');
-            // A cancelled upload is not a failure: the file drops back
-            // to idle (it leaves the list entirely when the cancel was
-            // a remove — the sync effect below already dropped it).
-            return aborted
-              ? { ...e, status: 'idle', percent: 0 }
-              : { ...e, status: 'error' };
-          })
+        .then(() => {
+          setEntries((prev) =>
+            prev.map((e) =>
+              e.uid === uid && e.status === 'uploading'
+                ? { ...e, status: 'success', percent: 100 }
+                : e
+            )
+          );
+        })
+        .catch((error: unknown) => {
+          setEntries((prev) =>
+            prev.map((e) => {
+              if (e.uid !== uid || e.status !== 'uploading') return e;
+              const aborted =
+                controller.signal.aborted ||
+                (error instanceof DOMException && error.name === 'AbortError');
+              // A cancelled upload is not a failure: the file drops back
+              // to idle (it leaves the list entirely when the cancel was
+              // a remove — the sync effect below already dropped it).
+              return aborted
+                ? { ...e, status: 'idle', percent: 0 }
+                : { ...e, status: 'error' };
+            })
+          );
+        })
+        .finally(() => {
+          controllers.current.delete(uid);
+          // A slot freed up — bring the next queued file in.
+          drain();
+        });
+    }
+
+    // Pops queued files while in-flight count allows. Stale heads (the
+    // file left the value, or is already running through another
+    // path) drop out of the queue without starting.
+    function drain() {
+      if (!mountedRef.current || latestExecutor.current == null) {
+        // Unmounted or disarmed: discard the queue — files keep their
+        // current status; re-arming goes through the normal autostart.
+        pendingFiles.current.length = 0;
+        pendingUids.current.clear();
+        return;
+      }
+      while (
+        pendingFiles.current.length > 0 &&
+        controllers.current.size < latestConcurrency.current
+      ) {
+        const queued = pendingFiles.current.shift()!;
+        const queuedEntry = entriesRef.current.find((e) => e.file === queued);
+        pendingUids.current.delete(
+          queuedEntry ? queuedEntry.uid : uidFor(queued)
         );
-      })
-      .finally(() => {
-        controllers.current.delete(uid);
-      });
+        if (queuedEntry && !controllers.current.has(queuedEntry.uid)) {
+          startUpload(queued, queuedEntry);
+        }
+      }
+    }
+
+    // Enqueue (the attempt mark keeps auto mode from double-queueing
+    // the file while it waits) and immediately look for a free slot.
+    attemptedUids.current.add(entry.uid);
+    pendingUids.current.add(entry.uid);
+    pendingFiles.current.push(file);
+    drain();
   }, []);
 
   // Keep the tracked entries in lockstep with the value: files that
@@ -435,11 +529,12 @@ export default function UploadCore({
     });
   }, [value, tracking]);
 
-  // Auto mode: every entry that lands in the list starts uploading
-  // right away (initial value included) — exactly once per stay in the
-  // list; cancelled/failed files wait for an explicit retry. Manual
-  // mode leaves them idle for the handle to trigger. Echo entries sit
-  // at a terminal status, so they never take this path.
+  // Auto mode: every entry that lands in the list is requested right
+  // away (initial value included) — exactly once per stay in the list;
+  // the concurrency queue decides when it actually starts.
+  // Cancelled/failed files wait for an explicit retry. Manual mode
+  // leaves them idle for the handle to trigger. Echo entries sit at a
+  // terminal status, so they never take this path.
   useEffect(() => {
     if (!armed || manual) return;
     entries.forEach((e) => {
@@ -484,9 +579,16 @@ export default function UploadCore({
         });
       },
       abort: () => {
+        // Queued requests die with the in-flight ones — abort stops
+        // everything; the files stay listed at their current status
+        // waiting for a retry or a handle trigger.
+        pendingFiles.current.length = 0;
+        pendingUids.current.clear();
         controllers.current.forEach((controller) => controller.abort());
       },
       clear: () => {
+        pendingFiles.current.length = 0;
+        pendingUids.current.clear();
         controllers.current.forEach((controller) => controller.abort());
         controllers.current.clear();
         if (mountedRef.current) latestOnChange.current([]);
@@ -497,7 +599,17 @@ export default function UploadCore({
 
   const abortEntry = useCallback((file: UploadValueItem) => {
     const entry = entriesRef.current.find((e) => e.file === file);
-    if (entry) controllers.current.get(entry.uid)?.abort();
+    if (!entry) return;
+    if (pendingUids.current.has(entry.uid)) {
+      // Still queued (never started): drop it from the queue — no
+      // controller to abort, and a drain racing this removal must not
+      // start the file the caller is taking out.
+      const index = pendingFiles.current.indexOf(file as File);
+      if (index !== -1) pendingFiles.current.splice(index, 1);
+      pendingUids.current.delete(entry.uid);
+      return;
+    }
+    controllers.current.get(entry.uid)?.abort();
   }, []);
 
   // Remove/cancel both abort an in-flight upload and drop the file
@@ -615,7 +727,12 @@ export default function UploadCore({
            locale fallback so consumers can name the zone themselves */
         aria-label={strings.label}
         {...rest}
-        x-class={[zoneBase, droppable ? dropArea : clickArea, className]}
+        x-class={[
+          zoneBase,
+          droppable ? dropArea : clickArea,
+          classNames?.trigger,
+          className,
+        ]}
         data-dragover={droppable && dragOver ? 'true' : undefined}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
@@ -652,6 +769,7 @@ export default function UploadCore({
       {listEnabled && entries.length > 0 && (
         <UploadList
           entries={entries}
+          classNames={classNames}
           listType={listType}
           removeLabel={removeLabel}
           onPreview={onPreview}

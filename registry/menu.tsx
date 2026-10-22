@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/menu.css';
 
 export { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGroup, MenuDivider, MenuSub, MenuSubTrigger, MenuSubContent };
-export type { MenuProps, MenuDataItem, MenuItemProps, MenuCheckboxItemProps, MenuRadioGroupProps, MenuRadioItemProps, MenuGroupProps, MenuSubProps, MenuSubTriggerProps, MenuSubContentProps } from 'haze-ui';
+export type { MenuProps, MenuClassNames, MenuDataItem, MenuItemProps, MenuCheckboxItemProps, MenuRadioGroupProps, MenuRadioItemProps, MenuGroupProps, MenuSubProps, MenuSubTriggerProps, MenuSubContentProps } from 'haze-ui';

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
 
 import Calendar from './Calendar';
 
@@ -1405,5 +1405,98 @@ describe('Calendar cellRender', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Calendar classNames slots', () => {
+  it('applies root/header/weekday/day slot classes in the date mode', () => {
+    const { container } = render(
+      <Calendar
+        value='2025-01-15'
+        classNames={{
+          root: 'slot-root',
+          header: 'slot-header',
+          title: 'slot-title',
+          prev: 'slot-prev',
+          next: 'slot-next',
+          actions: 'slot-actions',
+          todayButton: 'slot-today',
+          month: 'slot-month',
+          weekdayRow: 'slot-weekday-row',
+          weekday: 'slot-weekday',
+          day: 'slot-day',
+        }}
+      />
+    );
+    const root = container.firstChild as HTMLElement;
+    expect(root).toHaveAttribute('data-slot', 'calendar');
+    expect(root).toHaveClass('slot-root');
+    const header = root.querySelector("[data-slot='header']")!;
+    expect(header).toHaveClass('slot-header');
+    expect(header.querySelector("[data-slot='prev']")).toHaveClass('slot-prev');
+    expect(header.querySelector("[data-slot='next']")).toHaveClass('slot-next');
+    expect(header.querySelector("[data-slot='actions']")).toHaveClass('slot-actions');
+    expect(
+      header.querySelector("[data-slot='today-button']")
+    ).toHaveClass('slot-today');
+    expect(
+      header.querySelector("[data-slot='title']")
+    ).toHaveClass('slot-title');
+    const grid = screen.getByRole('grid', { name: getMonthLabel(2025, 0) });
+    expect(grid).toHaveAttribute('data-slot', 'month');
+    expect(grid).toHaveClass('slot-month');
+    const weekdayRow = grid.querySelector("[data-slot='weekday-row']")!;
+    expect(weekdayRow).toHaveClass('slot-weekday-row');
+    expect(weekdayRow.querySelector("[data-slot='weekday']")).toHaveClass(
+      'slot-weekday'
+    );
+    const day = grid.querySelector<HTMLButtonElement>("[data-slot='day']")!;
+    expect(day).toHaveClass('slot-day');
+  });
+
+  it('applies month-mode grid and cell slot classes', () => {
+    render(
+      <Calendar
+        picker='month'
+        value='2025-03'
+        classNames={{
+          monthGrid: 'slot-month-grid',
+          monthCell: 'slot-month-cell',
+        }}
+      />
+    );
+    const grid = screen.getByRole('grid');
+    expect(grid).toHaveAttribute('data-slot', 'month-grid');
+    expect(grid).toHaveClass('slot-month-grid');
+    const cell = grid.querySelector<HTMLButtonElement>("[data-slot='month-cell']")!;
+    expect(cell).toHaveClass('slot-month-cell');
+  });
+
+  it('applies the toolbar slot class on the quick-select month grid', async () => {
+    const user = userEvent.setup();
+    render(
+      <Calendar value='2025-01-15' classNames={{ toolbar: 'slot-toolbar' }} />
+    );
+    await user.click(screen.getByRole('button', { name: getMonthTitleName(0) }));
+    const toolbar = document.querySelector("[data-slot='toolbar']")!;
+    expect(toolbar).toBeInTheDocument();
+    expect(toolbar).toHaveClass('slot-toolbar');
+  });
+});
+
+describe('Calendar ref forwarding', () => {
+  it('forwards ref to the root wrapper div', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Calendar value='2025-01-15' ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toBe(container.firstChild);
+    expect(ref.current).toHaveAttribute('data-slot', 'calendar');
+  });
+
+  it('forwards ref to the root wrapper div in the month mode', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { container } = render(<Calendar picker='month' ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toBe(container.firstChild);
   });
 });

@@ -1,0 +1,33 @@
+# Dependabot version updates: weekly dependency refresh for both the npm
+# dependency graph and the pinned action versions in .github/workflows.
+# npm updates are grouped into production (runtime `dependencies`, ship in
+# the published package) vs development (`devDependencies`) PRs, so a batch
+# of dev-tool bumps never mixes into — and masks the review of — a runtime
+# dependency change.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+    commit-message:
+      prefix: "chore(deps)"
+    # Runtime deps are size/ABI-sensitive (size-limit budgets, externalized
+    # peers); one PR per runtime bump keeps each gate run attributable.
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(ci)"

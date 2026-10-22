@@ -5,6 +5,8 @@ import { useId } from 'react';
 
 import { menuGroupLabel } from './menu-item-styles';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuGroupProps = {
   /** Non-interactive heading naming the group (aria-labelledby). */
   label: ReactNode;
@@ -24,9 +26,10 @@ const group = css`
  * stop skip it entirely.
  */
 export default function MenuGroup({ label, className, children }: MenuGroupProps) {
+  const classNames = useMenuClassNames();
   const labelId = useId();
   return (
-    <div data-slot='group' role='group' aria-labelledby={labelId} x-class={[group, className]}>
+    <div data-slot='group' role='group' aria-labelledby={labelId} x-class={[group, classNames?.group, className]}>
       <div id={labelId} data-slot='group-label' x-class={menuGroupLabel}>
         {label}
       </div>

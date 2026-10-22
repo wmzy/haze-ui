@@ -147,4 +147,85 @@ describe('Table', () => {
     });
     expect(results.violations).toEqual([]);
   });
+
+  it('applies classNames slots to every family part', () => {
+    render(
+      <Table
+        classNames={{
+          wrapper: 'slot-wrapper',
+          head: 'slot-head',
+          body: 'slot-body',
+          row: 'slot-row',
+          cell: 'slot-cell',
+        }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell as="th">H</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>C</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    );
+    expect(screen.getByRole('table').parentElement).toHaveClass(
+      'slot-wrapper'
+    );
+    const groups = screen.getAllByRole('rowgroup');
+    expect(groups[0]).toHaveClass('slot-head');
+    expect(groups[1]).toHaveClass('slot-body');
+    for (const row of screen.getAllByRole('row')) {
+      expect(row).toHaveClass('slot-row');
+    }
+    expect(screen.getByRole('cell')).toHaveClass('slot-cell');
+  });
+
+  it('lands slot classes before per-part className', () => {
+    render(
+      <Table classNames={{ row: 'slot-row' }}>
+        <TableBody>
+          <TableRow className="row-custom">
+            <TableCell>C</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    );
+    const row = screen.getByRole('row');
+    expect(row).toHaveClass('slot-row');
+    expect(row).toHaveClass('row-custom');
+    expect(
+      (row.className.match(/slot-row/g) ?? []).length
+    ).toBe(1);
+  });
+
+  it('does not leak slots to sub-components outside a Table', () => {
+    render(
+      <TableBody>
+        <TableRow>
+          <TableCell>C</TableCell>
+        </TableRow>
+      </TableBody>
+    );
+    expect(screen.getByRole('row')).not.toHaveClass('slot-row');
+    expect(screen.getByRole('cell')).not.toHaveClass('slot-cell');
+  });
+
+  it('forwards ref to the table element', () => {
+    function RefProbe() {
+      return (
+        <Table ref={(node) => { if (node) node.dataset.probe = 'set'; }}>
+          <TableBody>
+            <TableRow>
+              <TableCell>C</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+    }
+    render(<RefProbe />);
+    expect(screen.getByRole('table')).toHaveAttribute('data-probe', 'set');
+  });
 });

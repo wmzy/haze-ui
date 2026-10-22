@@ -419,6 +419,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
               </Link>
               {guideSummary(t.guideSummaries.figmaTokens)}
             </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
+                to='/guides/server-actions'
+                onClick={onNavigate}
+              >
+                {t.guides.serverActions}
+              </Link>
+              {guideSummary(t.guideSummaries.serverActions)}
+            </ListItem>
           </List>
         </Disclosure>
       </ListItem>

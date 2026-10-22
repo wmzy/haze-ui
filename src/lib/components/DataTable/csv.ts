@@ -1,6 +1,12 @@
-import type { ColumnVisibilityState, RowData } from '@tanstack/react-table';
+import type {
+  ColumnVisibilityState,
+  RowData,
+} from '@tanstack/react-table';
 
 import type { DataTableColumnDef } from './DataTable';
+import type { DataTableFiltersState } from './filters';
+
+import { applyColumnFilters } from './filters';
 
 /** Options for `dataTableToCsv`. */
 type DataTableCsvOptions = {
@@ -18,6 +24,13 @@ type DataTableCsvOptions = {
    * the table renders.
    */
   columnVisibility?: ColumnVisibilityState;
+  /**
+   * The table's header-filter state (the `filters` control's value): rows
+   * are filtered through the same engine the table uses before
+   * serialization, so the export mirrors the filtered rows exactly —
+   * pass the value straight from your control, like `columnVisibility`.
+   */
+  filters?: DataTableFiltersState;
 };
 
 /** The column id as TanStack derives it from a raw def: explicit `id`,
@@ -106,8 +119,10 @@ function csvEscape(text: string): string {
  * back to its id; grouped columns flatten to their leaves. Only exporting
  * columns contribute: display-only columns (no `accessorKey`/`accessorFn`)
  * are skipped, as are `meta.excludeFromExport` columns and columns hidden
- * in `options.columnVisibility`. A UTF-8 BOM is prepended by default so
- * Excel decodes non-ASCII text correctly (`bom: false` drops it).
+ * in `options.columnVisibility`; `options.filters` drops rows through
+ * the header filter menus' engine first. A UTF-8 BOM is prepended by
+ * default so Excel decodes non-ASCII text correctly (`bom: false` drops
+ * it).
  *
  * Pure string building — no DOM, no table instance — so it runs anywhere
  * the row data lives (client, worker, server) on the same `columns` array
@@ -135,10 +150,11 @@ function dataTableToCsv<TData extends RowData>(
     )
     .join(',');
 
-  const lines = rows.map((row) =>
-    leaves
-      .map((column) => csvEscape(csvCellText(csvCellValue(column, row))))
-      .join(',')
+  const lines = applyColumnFilters(rows, columns, options?.filters).map(
+    (row) =>
+      leaves
+        .map((column) => csvEscape(csvCellText(csvCellValue(column, row))))
+        .join(',')
   );
 
   const bom = options?.bom === false ? '' : '\uFEFF';

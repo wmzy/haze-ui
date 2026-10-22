@@ -1,12 +1,16 @@
 {
-  "generatedAt": "2026-10-21T05:40:13.960Z",
+  "generatedAt": "2026-10-22T10:39:05.093Z",
   "components": [
     {
       "component": "Accordion",
       "roles": [],
-      "aria": [],
-      "keys": [],
-      "testCount": 6
+      "aria": [
+        "aria-disabled"
+      ],
+      "keys": [
+        "Tab"
+      ],
+      "testCount": 21
     },
     {
       "component": "ActivityRail",
@@ -41,7 +45,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 7
+      "testCount": 9
     },
     {
       "component": "Anchor",
@@ -111,7 +115,7 @@
         "aria-label"
       ],
       "keys": [],
-      "testCount": 10
+      "testCount": 11
     },
     {
       "component": "BackToTop",
@@ -137,7 +141,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 10
+      "testCount": 12
     },
     {
       "component": "BottomSheet",
@@ -164,7 +168,7 @@
         "aria-current"
       ],
       "keys": [],
-      "testCount": 8
+      "testCount": 9
     },
     {
       "component": "Button",
@@ -180,6 +184,19 @@
       ],
       "keys": [],
       "testCount": 30
+    },
+    {
+      "component": "ButtonGroup",
+      "roles": [
+        "button",
+        "group",
+        "separator"
+      ],
+      "aria": [
+        "aria-orientation"
+      ],
+      "keys": [],
+      "testCount": 16
     },
     {
       "component": "Calendar",
@@ -206,14 +223,14 @@
         "PageDown",
         "PageUp"
       ],
-      "testCount": 126
+      "testCount": 131
     },
     {
       "component": "Card",
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 4
+      "testCount": 6
     },
     {
       "component": "Carousel",
@@ -257,7 +274,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 24
+      "testCount": 26
     },
     {
       "component": "Chart",
@@ -274,7 +291,7 @@
         "aria-busy"
       ],
       "keys": [],
-      "testCount": 61
+      "testCount": 65
     },
     {
       "component": "ChatContainer",
@@ -325,7 +342,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 7
+      "testCount": 10
     },
     {
       "component": "CodeBlock",
@@ -448,14 +465,15 @@
       "component": "ContextMenu",
       "roles": [
         "menu",
-        "menuitem"
+        "menuitem",
+        "separator"
       ],
       "aria": [],
       "keys": [
         "ArrowDown",
         "Escape"
       ],
-      "testCount": 16
+      "testCount": 19
     },
     {
       "component": "ConversationList",
@@ -463,6 +481,16 @@
       "aria": [],
       "keys": [],
       "testCount": 11
+    },
+    {
+      "component": "CopyButton",
+      "roles": [
+        "button",
+        "status"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 20
     },
     {
       "component": "Countdown",
@@ -519,7 +547,7 @@
         "PageUp",
         "Tab"
       ],
-      "testCount": 135
+      "testCount": 151
     },
     {
       "component": "DateField",
@@ -663,7 +691,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 74
+      "testCount": 77
     },
     {
       "component": "Ellipsis",
@@ -765,6 +793,15 @@
       "aria": [],
       "keys": [],
       "testCount": 17
+    },
+    {
+      "component": "Heatmap",
+      "roles": [
+        "img"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 15
     },
     {
       "component": "Highlight",
@@ -888,6 +925,17 @@
       "aria": [],
       "keys": [],
       "testCount": 17
+    },
+    {
+      "component": "InputGroup",
+      "roles": [
+        "button",
+        "combobox",
+        "textbox"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 13
     },
     {
       "component": "JsonView",
@@ -1021,7 +1069,21 @@
         "Home",
         "Tab"
       ],
-      "testCount": 56
+      "testCount": 61
+    },
+    {
+      "component": "Meter",
+      "roles": [
+        "meter"
+      ],
+      "aria": [
+        "aria-labelledby",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow"
+      ],
+      "keys": [],
+      "testCount": 15
     },
     {
       "component": "ModelPicker",
@@ -1042,6 +1104,27 @@
       "testCount": 13
     },
     {
+      "component": "NavigationMenu",
+      "roles": [
+        "button",
+        "list",
+        "navigation"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded"
+      ],
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight",
+        "End",
+        "Enter",
+        "Escape",
+        "Home"
+      ],
+      "testCount": 22
+    },
+    {
       "component": "NumberFormatter",
       "roles": [],
       "aria": [],
@@ -1056,7 +1139,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 17
+      "testCount": 19
     },
     {
       "component": "OTPInput",
@@ -1129,12 +1212,13 @@
         "progressbar"
       ],
       "aria": [
+        "aria-label",
         "aria-valuemax",
         "aria-valuemin",
         "aria-valuenow"
       ],
       "keys": [],
-      "testCount": 8
+      "testCount": 11
     },
     {
       "component": "PromptInput",
@@ -1272,7 +1356,7 @@
         "ArrowUp",
         "Enter"
       ],
-      "testCount": 33
+      "testCount": 38
     },
     {
       "component": "ScrollArea",
@@ -1302,7 +1386,9 @@
       ],
       "aria": [
         "aria-activedescendant",
+        "aria-autocomplete",
         "aria-busy",
+        "aria-disabled",
         "aria-expanded",
         "aria-haspopup",
         "aria-multiselectable",
@@ -1320,7 +1406,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 81
+      "testCount": 94
     },
     {
       "component": "Sidebar",
@@ -1519,7 +1605,7 @@
         "aria-checked"
       ],
       "keys": [],
-      "testCount": 19
+      "testCount": 21
     },
     {
       "component": "TabBar",
@@ -1548,7 +1634,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 11
+      "testCount": 15
     },
     {
       "component": "Tabs",
@@ -1575,7 +1661,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 58
+      "testCount": 68
     },
     {
       "component": "Tag",
@@ -1584,7 +1670,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 7
+      "testCount": 10
     },
     {
       "component": "TagGroup",
@@ -1660,6 +1746,24 @@
         "Tab"
       ],
       "testCount": 20
+    },
+    {
+      "component": "TimeGrid",
+      "roles": [
+        "radio"
+      ],
+      "aria": [
+        "aria-checked"
+      ],
+      "keys": [
+        "ArrowDown",
+        "ArrowRight",
+        "ArrowUp",
+        "End",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 16
     },
     {
       "component": "Timeline",
@@ -1765,7 +1869,7 @@
       "keys": [
         "Escape"
       ],
-      "testCount": 13
+      "testCount": 15
     },
     {
       "component": "Tour",
@@ -1824,7 +1928,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 126
+      "testCount": 130
     },
     {
       "component": "TreeSelect",
@@ -1873,7 +1977,7 @@
       "keys": [
         "Enter"
       ],
-      "testCount": 80
+      "testCount": 92
     },
     {
       "component": "VirtualList",

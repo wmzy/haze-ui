@@ -1,3 +1,5 @@
+import type {FormItemClassNames} from './FormItem';
+
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -22,6 +24,7 @@ type LayoutExtra = {
   layout?: 'vertical' | 'horizontal' | 'inline';
   labelWidth?: number | string;
   labelAlign?: 'left' | 'right';
+  classNames?: FormItemClassNames;
 };
 
 /**
@@ -170,5 +173,60 @@ describe('FormItem layout', () => {
       expect(input).toHaveAttribute('aria-describedby', alert.id);
       unmount();
     }
+  });
+});
+
+describe('FormItem classNames slots', () => {
+  it('applies root/label/control slot classes in the vertical layout', () => {
+    const {root, label, input} = renderItem({
+      classNames: {
+        root: 'slot-root',
+        label: 'slot-label',
+        control: 'slot-control'
+      }
+    });
+
+    expect(root).toHaveAttribute('data-slot', 'form-item');
+    expect(root).toHaveClass('slot-root');
+    expect(label).toHaveAttribute('data-slot', 'label');
+    expect(label).toHaveClass('slot-label');
+    // the control slot lands on the control element itself, not a wrapper
+    expect(input).toHaveClass('slot-control');
+  });
+
+  it('applies the controlColumn and error slot classes in the horizontal layout', async () => {
+    const user = userEvent.setup();
+    const {root, unmount} = renderItem({
+      layout: 'horizontal',
+      classNames: {controlColumn: 'slot-col', error: 'slot-error'}
+    });
+
+    const column = root.children[1] as HTMLElement;
+    expect(column).toHaveAttribute('data-slot', 'control-column');
+    expect(column).toHaveClass('slot-col');
+
+    await user.click(screen.getByRole('button', {name: 'Submit'}));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('data-slot', 'error');
+    expect(alert).toHaveClass('slot-error');
+    unmount();
+  });
+
+  it('merges classNames.control with asProps.className on the as channel', () => {
+    const form = createForm<Values>({initialValues: {name: '', email: ''}});
+    render(
+      <Form form={form} onSubmit={() => undefined}>
+        <FormItem
+          form={form}
+          name='email'
+          as={InputCore}
+          asProps={{className: 'from-as-props'}}
+          classNames={{control: 'slot-control'}}
+        />
+      </Form>
+    );
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('from-as-props');
+    expect(input).toHaveClass('slot-control');
   });
 });

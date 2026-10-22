@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Chip } from 'haze-ui';
+import { Chip, chipVariants } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/chip.css';
 
-export { Chip };
+export { Chip, chipVariants };
 export type { ChipProps } from 'haze-ui';

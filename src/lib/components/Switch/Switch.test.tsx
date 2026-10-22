@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 
 import Switch from './Switch';
 import SwitchCore from './SwitchCore';
+import { trackSizes, thumbSizes } from './index';
 
 describe('Switch', () => {
   it('renders with switch role', () => {
@@ -168,5 +169,24 @@ describe('Switch native form participation', () => {
     expect(bridge).toHaveAttribute('readonly');
     expect(bridge.tabIndex).toBe(-1);
     expect(bridge.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('trackSizes / thumbSizes exports', () => {
+  it('expose the per-size skin classes for composition', () => {
+    expect(Object.keys(trackSizes)).toEqual(['sm', 'md', 'lg']);
+    expect(Object.keys(thumbSizes)).toEqual(['sm', 'md', 'lg']);
+    for (const cls of [...Object.values(trackSizes), ...Object.values(thumbSizes)]) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('are the exact classes Switch wears', () => {
+    render(<Switch size="lg" aria-label="skin" />);
+    const sw = screen.getByRole('switch', { name: 'skin' });
+    expect(sw).toHaveClass(trackSizes.lg);
+    const thumb = sw.querySelector("[data-slot='thumb']");
+    expect(thumb).not.toBeNull();
+    expect(thumb).toHaveClass(thumbSizes.lg);
   });
 });

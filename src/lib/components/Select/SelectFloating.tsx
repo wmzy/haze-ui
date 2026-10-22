@@ -53,6 +53,16 @@ type SelectFloatingProps<T extends string | number = string> = {
   /** Multiple selection mode: chips in the trigger, toggling options,
    * panel stays open across picks. Single mode closes on pick. */
   multiple: boolean;
+  /**
+   * Tags mode (see SelectProps.tags in ./Select): implies multiple
+   * selection — the search input moves into the trigger, which renders
+   * the selected chips and the inline input as one field. Typing
+   * filters the panel's options; Enter commits the highlighted option
+   * or, when nothing matches, creates a new tag from the trimmed query
+   * (deduped against existing option values and the current
+   * selection). Backspace on an empty query removes the last chip.
+   */
+  tags?: boolean;
   /** Falls back to the `select.placeholder` locale string. */
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -103,6 +113,14 @@ type SelectFloatingProps<T extends string | number = string> = {
    */
   maxTagCount?: number;
   /**
+   * Multiple/tags mode only: once the selection reaches this count,
+   * options that are not currently selected are disabled — dimmed,
+   * `aria-disabled`, clicks and Enter rejected — until something is
+   * deselected. Selected options stay removable; the tags create row
+   * is suppressed at the cap. Single mode ignores it.
+   */
+  maxCount?: number;
+  /**
    * Render the options list through VirtualList so thousand-option
    * listboxes mount only the visible window (plus overscan) instead of
    * the full DOM list. `false`/omitted (default) keeps the plain DOM
@@ -110,8 +128,9 @@ type SelectFloatingProps<T extends string | number = string> = {
    */
   virtualized?: boolean | SelectVirtualizedConfig;
   className?: string;
-  /** Forwarded to the trigger `<button>` element. */
-  ref?: Ref<HTMLButtonElement>;
+  /** Forwarded to the trigger — the `<button>` element, or the inline
+   * `<input>` in tags mode. */
+  ref?: Ref<HTMLButtonElement | HTMLInputElement>;
   /**
    * Native passthrough re-hosted on the button trigger. The owning
    * SelectCore forwards its select-typed rest here — only the
@@ -153,7 +172,11 @@ const trigger = css`
     border-color: var(--haze-color-border-hover);
   }
 
-  &:focus {
+  /* :focus-within serves the tags-mode box (focus lands on its inline
+     input, never on the box itself); on the button trigger the two
+     pseudo-classes coincide — it has no focusable descendants. */
+  &:focus,
+  &:focus-within {
     outline: none;
     border-color: var(--haze-color-primary);
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
@@ -162,6 +185,15 @@ const trigger = css`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Tags-mode box: the div has no native disabled attribute — the
+     forwarded disabled state renders as aria-disabled and gates
+     pointer interaction (the inline input itself carries the real
+     disabled attribute, keeping it out of the tab order). */
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    pointer-events: none;
   }
 `;
 
@@ -195,6 +227,35 @@ const triggerLabel = css`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+`;
+
+/**
+ * The tags-mode trigger's inline search input (Mantine TagsInput /
+ * AntD mode="tags" shape): chromeless, growing into whatever inline
+ * space the chips leave — with a small floor so it stays typeable
+ * after the chips wrap. Focus feedback is the box's focus-within ring;
+ * the input itself must not draw a second outline.
+ */
+const inlineInput = css`
+  flex: 1 1 auto;
+  min-width: 4ch;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: inherit;
+  line-height: var(--haze-leading-normal);
+  cursor: text;
+
+  &::placeholder {
+    color: var(--haze-color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 /** One selected value: the Chip capsule plus its pointer-only remove ×. */
@@ -448,12 +509,20 @@ const optionRow = css`
   color: var(--haze-color-text);
   cursor: pointer;
 
-  &:hover {
+  /* maxCount cap: unselected options at the cap stay visible but
+     inert — no hover/active feedback, dimmed, not-allowed cursor. The
+     attribute gate keeps the plain rows byte-identical. */
+  &:hover:not([data-disabled]) {
     background: var(--haze-color-bg-subtle);
   }
 
-  &:active {
+  &:active:not([data-disabled]) {
     background: var(--haze-color-bg-muted);
+  }
+
+  &[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -544,6 +613,8 @@ export default function SelectFloating<T extends string | number = string>({
   onChange,
   entries,
   multiple,
+  tags = false,
+  maxCount,
   placeholder,
   searchable = false,
   clearable = false,
@@ -558,10 +629,26 @@ export default function SelectFloating<T extends string | number = string>({
   ...rest
 }: SelectFloatingProps<T>) {
   const strings = useStrings('select');
-  const selected: T[] = multiple && Array.isArray(value) ? value : [];
+  // The create row's copy reuses the Combobox section's localized
+  // `create` string — Select has no own key for it and layering a new
+  // one would ripple through every built-in locale pack for the same
+  // sentence.
+  const comboboxStrings = useStrings('combobox');
+  // Tags implies multiple semantics (chips, array value, toggling) on
+  // top of its own trigger shape — every `multiple` consumer below
+  // reads this resolved flag instead.
+  const isMulti = multiple || tags;
+  // Tags moves the search input into the trigger, so the panel-top
+  // search input renders only for searchable-without-tags.
+  const showPanelSearch = searchable && !tags;
+  const selected: T[] = isMulti && Array.isArray(value) ? value : [];
   // Single mode's raw value; '' is the empty sentinel for every T (the
   // uncontrolled default in ./Select) — 0 stays a real selection.
-  const selectedValue: T = !multiple && !Array.isArray(value) ? value : ('' as T);
+  const selectedValue: T = !isMulti && !Array.isArray(value) ? value : ('' as T);
+  // maxCount cap: unselected options are locked once the selection
+  // reaches it (selected entries stay removable).
+  const maxCountReached =
+    isMulti && maxCount !== undefined && selected.length >= maxCount;
   // Panel visibility stays internal to the trigger — the pointer-safe
   // open path lives in floating's onTriggerPointerDown/onTriggerClick.
   const [open, setOpen] = useControl(undefined, false);
@@ -571,15 +658,33 @@ export default function SelectFloating<T extends string | number = string>({
   const [query, setQuery] = useState('');
   const [prevQuery, setPrevQuery] = useState(query);
   const id = useId();
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  // The floating trigger host: the button in every mode but tags, the
+  // chip-box div there. HTMLElement-typed because of that split.
+  const triggerRef = useRef<HTMLElement>(null);
   // The consumer's ref rides the same trigger button the floating
   // behavior anchors on.
   const setTriggerRef = useCallback(
     (node: HTMLButtonElement | null) => mergeRefs(triggerRef, ref)(node),
     [triggerRef, ref]
   );
+  // Tags mode: the box hosts the floating anchor while the consumer's
+  // ref merges onto the focusable inline input instead.
+  const setTagsBoxRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      triggerRef.current = node;
+    },
+    [triggerRef]
+  );
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const setTagsInputRef = useCallback(
+    (node: HTMLInputElement | null) =>
+      mergeRefs(
+        searchRef,
+        ref as Ref<HTMLInputElement> | undefined
+      )(node),
+    [searchRef, ref]
+  );
   const activeOptionRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VirtualListHandle>(null);
 
@@ -611,9 +716,40 @@ export default function SelectFloating<T extends string | number = string>({
       : filterSelectEntries(entries, query);
   const visibleOptions = flattenSelectEntries(visibleEntries);
 
+  // Tags creation row (Combobox's creatable contract): offered when a
+  // non-blank query matches nothing — not while loading, not at the
+  // maxCount cap, not when the trimmed query already exists as an
+  // option value or a selected tag (dedupe: committing it would be a
+  // no-op, so it is not offered at all). It leads the navigable list,
+  // so keyboard and aria-set semantics treat it as a regular option.
+  const trimmedQuery = query.trim();
+  const createValue = trimmedQuery as T;
+  const showCreateItem =
+    tags &&
+    !loading &&
+    trimmedQuery !== '' &&
+    visibleOptions.length === 0 &&
+    !maxCountReached &&
+    !selected.includes(createValue) &&
+    !allOptions.some((o) => String(o.value) === trimmedQuery);
+  const createOption: SelectOptionData<T> | undefined = showCreateItem
+    ? {
+        value: createValue,
+        label: formatString(comboboxStrings.create, { query: trimmedQuery }),
+      }
+    : undefined;
+  // The entry set the panel renders and the keyboard walks: the
+  // consumer's filtered entries, with the create row prepended when
+  // offered. Non-tags paths are byte-identical (no row is layered).
+  const panelEntries: SelectEntryData<T>[] =
+    showCreateItem && createOption
+      ? [{ kind: 'option', option: createOption }, ...visibleEntries]
+      : visibleEntries;
+  const navigableOptions = flattenSelectEntries(panelEntries);
+
   // Flat index at which each entry's options begin — the bridge between
   // the grouped render structure and the flat keyboard/aria order.
-  const entryOffsets = visibleEntries.reduce<{ offsets: number[]; flat: number }>(
+  const entryOffsets = panelEntries.reduce<{ offsets: number[]; flat: number }>(
     (acc, entry) => ({
       offsets: [...acc.offsets, acc.flat],
       flat: acc.flat + (entry.kind === 'group' ? entry.options.length : 1),
@@ -630,7 +766,7 @@ export default function SelectFloating<T extends string | number = string>({
   // trigger's active descendant. No (or out-of-range) highlight omits
   // the attribute entirely.
   const activeDescendant =
-    open && visibleOptions[activeIndex] ? optionId(activeIndex) : undefined;
+    open && navigableOptions[activeIndex] ? optionId(activeIndex) : undefined;
 
   // The searchable panel hosts the listbox one level down (the search
   // input must not sit inside a listbox), so the trigger's
@@ -659,12 +795,13 @@ export default function SelectFloating<T extends string | number = string>({
   // Focus lands in the panel's search input whenever the searchable
   // popup is actually shown (gated on `shown` — focus on a still-hidden
   // popover is silently dropped by real engines), so typing filters
-  // straight away.
+  // straight away. Tags keeps focus in its always-mounted trigger
+  // input instead.
   useEffect(() => {
-    if (searchable && open && floating.shown) {
+    if (showPanelSearch && open && floating.shown) {
       searchRef.current?.focus();
     }
-  }, [searchable, open, floating.shown]);
+  }, [showPanelSearch, open, floating.shown]);
 
   // Remote-search report (Toast's latest-ref pattern: an inline arrow
   // has a fresh identity every parent render, so the callback rides a
@@ -698,15 +835,19 @@ export default function SelectFloating<T extends string | number = string>({
   // Enter right after typing picks it without an arrow press first).
   if (query !== prevQuery) {
     setPrevQuery(query);
-    setActiveIndex(visibleOptions.length > 0 ? 0 : -1);
+    setActiveIndex(navigableOptions.length > 0 ? 0 : -1);
   }
 
   const toggleOption = (optionValue: T) => {
-    onChange(
-      selected.includes(optionValue)
-        ? selected.filter((v) => v !== optionValue)
-        : [...selected, optionValue]
-    );
+    if (selected.includes(optionValue)) {
+      onChange(selected.filter((v) => v !== optionValue));
+      return;
+    }
+    // maxCount rejection: the click/keyboard paths also carry the
+    // visual disabled state, but the guard here is what enforces it
+    // for controlled and uncontrolled consumers alike.
+    if (maxCountReached) return;
+    onChange([...selected, optionValue]);
   };
 
   const removeValue = (optionValue: T) => {
@@ -717,31 +858,64 @@ export default function SelectFloating<T extends string | number = string>({
     allOptions.find((o) => o.value === optionValue)?.label ?? optionValue;
 
   const clearValue = () => {
-    onChange(multiple ? [] : ('' as T));
+    onChange(isMulti ? [] : ('' as T));
+  };
+
+  /** Tags creation: append the trimmed query as a new tag and clear the
+   * input so the next keystroke starts fresh. Dedupe is guaranteed by
+   * the offer condition (showCreateItem), the includes check is belt
+   * and braces for programmatic callers. */
+  const commitCreate = () => {
+    if (!selected.includes(createValue)) {
+      onChange([...selected, createValue]);
+    }
+    setQuery('');
+  };
+
+  /** Focus return target after a close-from-panel path: the trigger
+   * button everywhere, the inline input in tags mode (focus already
+   * lives there and should survive the close). */
+  const returnFocus = () => {
+    if (tags) searchRef.current?.focus();
+    else triggerRef.current?.focus();
   };
 
   /** Pick one option: multiple toggles and keeps the panel open, single
    * commits the value, closes the panel and returns focus to the
-   * trigger. */
+   * trigger. The tags create row routes to commitCreate instead of the
+   * toggle semantics (re-creating an existing tag must not deselect
+   * it). */
   const choose = (optionValue: T) => {
-    if (multiple) {
+    if (showCreateItem && optionValue === createValue) {
+      commitCreate();
+      return;
+    }
+    if (isMulti) {
       toggleOption(optionValue);
+      // Tags keeps typing: the query that produced the pick is spent.
+      if (tags) setQuery('');
       return;
     }
     onChange(optionValue);
     setOpen(false);
-    triggerRef.current?.focus();
+    returnFocus();
   };
 
   const moveActive = (delta: 1 | -1) => {
     setActiveIndex((i) =>
-      delta === 1 ? Math.min(i + 1, visibleOptions.length - 1) : Math.max(i - 1, 0)
+      delta === 1
+        ? Math.min(i + 1, navigableOptions.length - 1)
+        : Math.max(i - 1, 0)
     );
   };
 
   const jumpActive = (key: 'Home' | 'End') => {
     setActiveIndex(
-      visibleOptions.length === 0 ? -1 : key === 'Home' ? 0 : visibleOptions.length - 1
+      navigableOptions.length === 0
+        ? -1
+        : key === 'Home'
+          ? 0
+          : navigableOptions.length - 1
     );
   };
 
@@ -764,27 +938,59 @@ export default function SelectFloating<T extends string | number = string>({
       // reports the legacy 'Space' key name — accept both.
       (e.key === 'Enter' || e.key === ' ' || e.key === 'Space') &&
       open &&
-      visibleOptions[activeIndex]
+      navigableOptions[activeIndex]
     ) {
       // Suppress the button's native activation, or the follow-up click
       // would run onTriggerClick and close the panel mid-selection.
       // With no highlight (fresh open), fall through to the click path
       // so Enter/Space keep toggling the panel like any button.
       e.preventDefault();
-      choose(visibleOptions[activeIndex].value);
+      choose(navigableOptions[activeIndex].value);
     } else if (e.key === 'Escape') {
       setOpen(false);
     } else if (e.key === 'Backspace') {
       // Keyboard parity for the pointer-only affordances: multiple
       // drops the most recently selected chip, single (clearable)
       // empties the value — see chipRemove/clearBtn.
-      if (multiple && selected.length > 0) {
+      if (isMulti && selected.length > 0) {
         e.preventDefault();
         onChange(selected.slice(0, -1));
-      } else if (!multiple && clearable && selectedValue !== '') {
+      } else if (!isMulti && clearable && selectedValue !== '') {
         e.preventDefault();
         clearValue();
       }
+    }
+  };
+
+  // The tags trigger's inline input owns focus permanently (panel open
+  // or closed), so it drives the full navigation itself: arrows/Home/End
+  // also open the panel from the closed state, Enter commits the
+  // highlighted row (option or create row — both are plain rows in
+  // `navigableOptions`), Escape closes while keeping focus in the
+  // field, and Backspace on an empty query removes the last chip
+  // (Combobox parity — the pointer-only chip × has no keyboard twin).
+  const handleTagsKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setOpen(true);
+      moveActive(e.key === 'ArrowDown' ? 1 : -1);
+    } else if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      setOpen(true);
+      jumpActive(e.key);
+    } else if (e.key === 'Enter') {
+      // Always suppressed — an unhandled Enter in the input would
+      // submit an enclosing form.
+      e.preventDefault();
+      if (navigableOptions[activeIndex]) {
+        choose(navigableOptions[activeIndex].value);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setOpen(false);
+    } else if (e.key === 'Backspace' && query === '' && selected.length > 0) {
+      e.preventDefault();
+      onChange(selected.slice(0, -1));
     }
   };
 
@@ -803,13 +1009,13 @@ export default function SelectFloating<T extends string | number = string>({
       // Always suppressed while the popup is open — an unhandled Enter
       // in the input would submit an enclosing form.
       e.preventDefault();
-      if (visibleOptions[activeIndex]) {
-        choose(visibleOptions[activeIndex].value);
+      if (navigableOptions[activeIndex]) {
+        choose(navigableOptions[activeIndex].value);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
       setOpen(false);
-      triggerRef.current?.focus();
+      returnFocus();
     }
   };
 
@@ -818,9 +1024,14 @@ export default function SelectFloating<T extends string | number = string>({
   // active styling, choosing). `i` is the flat index across groups —
   // the same coordinate aria-activedescendant and the keyboard use.
   const renderOption = (option: SelectOptionData<T>, i: number) => {
-    const isSelected = multiple
+    const isSelected = isMulti
       ? selected.includes(option.value)
       : option.value === selectedValue;
+    // The create row is neither toggleable-disabled (it is suppressed
+    // at the cap instead) nor checkbox-carrying — it is a commit
+    // affordance, not a set member.
+    const isCreateRow = showCreateItem && i === 0;
+    const rowDisabled = isMulti && maxCountReached && !isSelected && !isCreateRow;
     return (
       <div
         key={option.value}
@@ -829,18 +1040,22 @@ export default function SelectFloating<T extends string | number = string>({
         role='option'
         id={optionId(i)}
         aria-selected={isSelected}
-        aria-setsize={visibleOptions.length}
+        aria-disabled={rowDisabled || undefined}
+        data-disabled={rowDisabled || undefined}
+        aria-setsize={navigableOptions.length}
         aria-posinset={i + 1}
         x-class={[
           optionRow,
           i === activeIndex && optionActive,
-          !multiple && isSelected && optionSelected,
+          !isMulti && isSelected && optionSelected,
           virtual && virtualRow,
           classNames?.option,
         ]}
-        onClick={() => choose(option.value)}
+        onClick={() => {
+          if (!rowDisabled) choose(option.value);
+        }}
       >
-        {multiple && (
+        {isMulti && !isCreateRow && (
           <span
             aria-hidden='true'
             data-slot='indicator'
@@ -852,7 +1067,8 @@ export default function SelectFloating<T extends string | number = string>({
     );
   };
 
-  const showClear = clearable && (multiple ? selected.length > 0 : selectedValue !== '');
+  const showClear =
+    clearable && (isMulti ? selected.length > 0 : selectedValue !== '');
 
   const clearAffordance = showClear ? (
     <span
@@ -867,56 +1083,65 @@ export default function SelectFloating<T extends string | number = string>({
         // so an open panel stays open and a closed one stays closed).
         e.stopPropagation();
         clearValue();
-        triggerRef.current?.focus();
+        returnFocus();
       }}
     >
       ×
     </span>
   ) : undefined;
 
-  const triggerBody = multiple ? (
-    selected.length === 0 ? (
+  // The chip set of a multiple/tags trigger, shared by both shapes —
+  // the overflow badge of `maxTagCount` included.
+  const chips = (
+    <>
+      {(maxTagCount === undefined
+        ? selected
+        : selected.slice(0, Math.max(maxTagCount, 0))
+      ).map((v) => (
+        <span data-slot='item' x-class={[chipItem, classNames?.item]} key={v}>
+          <Chip color='primary'>{labelFor(v)}</Chip>
+          <span
+            aria-hidden='true'
+            data-slot='item-remove'
+            x-class={chipRemove}
+            onClick={(e) => {
+              // Keep the trigger's open toggle out of this click —
+              // removing a chip must not close the panel.
+              e.stopPropagation();
+              removeValue(v);
+            }}
+          >
+            ×
+          </span>
+        </span>
+      ))}
+      {maxTagCount !== undefined && selected.length > Math.max(maxTagCount, 0) && (
+        <span
+          data-slot='overflow-badge'
+          x-class={overflowBadge}
+          title={selected
+            .slice(Math.max(maxTagCount, 0))
+            .map((v) => selectOptionText(labelFor(v)))
+            .join(', ')}
+        >
+          {formatString(strings.moreTags, {
+            count: selected.length - Math.max(maxTagCount, 0),
+          })}
+        </span>
+      )}
+    </>
+  );
+
+  const triggerBody = isMulti ? (
+    // Tags always renders the input (it carries the placeholder when
+    // the selection is empty), so the chip-less state is just the
+    // empty fragment there.
+    tags || selected.length > 0 ? (
+      chips
+    ) : (
       <span data-slot='placeholder' x-class={placeholderText}>
         {placeholder ?? strings.placeholder}
       </span>
-    ) : (
-      <>
-        {(maxTagCount === undefined
-          ? selected
-          : selected.slice(0, Math.max(maxTagCount, 0))
-        ).map((v) => (
-          <span data-slot='item' x-class={[chipItem, classNames?.item]} key={v}>
-            <Chip color='primary'>{labelFor(v)}</Chip>
-            <span
-              aria-hidden='true'
-              data-slot='item-remove'
-              x-class={chipRemove}
-              onClick={(e) => {
-                // Keep the trigger's open toggle out of this click —
-                // removing a chip must not close the panel.
-                e.stopPropagation();
-                removeValue(v);
-              }}
-            >
-              ×
-            </span>
-          </span>
-        ))}
-        {maxTagCount !== undefined && selected.length > Math.max(maxTagCount, 0) && (
-          <span
-            data-slot='overflow-badge'
-            x-class={overflowBadge}
-            title={selected
-              .slice(Math.max(maxTagCount, 0))
-              .map((v) => selectOptionText(labelFor(v)))
-              .join(', ')}
-          >
-            {formatString(strings.moreTags, {
-              count: selected.length - Math.max(maxTagCount, 0),
-            })}
-          </span>
-        )}
-      </>
     )
   ) : selectedValue === '' ? (
     <span data-slot='placeholder' x-class={placeholderText}>{placeholder ?? strings.placeholder}</span>
@@ -928,17 +1153,18 @@ export default function SelectFloating<T extends string | number = string>({
   // query without matches) renders a state block instead of the
   // listbox: an option-less element wearing role="listbox" is an axe
   // aria-required-children violation, and while loading the Spinner's
-  // role="status" announces the state on its own.
-  const hasVisibleOptions = !loading && visibleOptions.length > 0;
+  // role="status" announces the state on its own. The create row counts
+  // as a visible option (tags mode).
+  const hasVisibleOptions = !loading && navigableOptions.length > 0;
 
   const optionsList = virtual ? (
     <VirtualList
       ref={listRef}
       data-virtualized
-      items={visibleOptions}
+      items={navigableOptions}
       groups={
-        visibleEntries.some((entry) => entry.kind === 'group')
-          ? visibleEntries.flatMap((entry, ei) =>
+        panelEntries.some((entry) => entry.kind === 'group')
+          ? panelEntries.flatMap((entry, ei) =>
               entry.kind === 'group'
                 ? [
                     {
@@ -953,13 +1179,13 @@ export default function SelectFloating<T extends string | number = string>({
             )
           : undefined
       }
-      height={Math.min(LISTBOX_MAX_HEIGHT, visibleOptions.length * rowHeight)}
+      height={Math.min(LISTBOX_MAX_HEIGHT, navigableOptions.length * rowHeight)}
       itemHeight={rowHeight}
       overscan={overscan}
       renderItem={renderOption}
     />
   ) : (
-    visibleEntries.map((entry, ei) => {
+    panelEntries.map((entry, ei) => {
       const base = entryOffsets[ei] ?? 0;
       if (entry.kind === 'option') {
         return renderOption(entry.option, base);
@@ -982,35 +1208,125 @@ export default function SelectFloating<T extends string | number = string>({
     <div data-slot='empty' x-class={emptyBlock}>{strings.noMatch}</div>
   );
 
+  // Tags mode: the forwardable `disabled` rides the input (a div has
+  // no native disabled), the box mirrors it as aria-disabled for the
+  // visual + pointer gate (see the trigger css). The accessible name
+  // routes to the input too — the box div carries no role, so an
+  // aria-label spread there would name nothing.
+  const {
+    disabled: disabledProp,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    ...restWithoutDisabled
+  } = rest;
+  const disabled = Boolean(disabledProp);
+
+  // The tags inline input — the focusable field of the chip-box
+  // trigger (an input nested in a button would be invalid HTML, hence
+  // the div box). Focus opens the panel, typing filters and re-opens,
+  // and the input's own click keeps the panel open instead of letting
+  // the box's handler run for it.
+  const tagsInput = (
+    <input
+      ref={setTagsInputRef}
+      data-slot='input'
+      type='text'
+      role='combobox'
+      aria-haspopup='listbox'
+      aria-expanded={open}
+      aria-controls={id}
+      aria-autocomplete='list'
+      aria-activedescendant={activeDescendant}
+      aria-label={ariaLabel ?? placeholder ?? strings.placeholder}
+      aria-labelledby={ariaLabel ? undefined : ariaLabelledBy}
+      placeholder={selected.length === 0 ? (placeholder ?? strings.placeholder) : ''}
+      disabled={disabled}
+      value={query}
+      onChange={(e) => {
+        setQuery(e.target.value);
+        setOpen(true);
+      }}
+      onFocus={() => setOpen(true)}
+      // Clicking the field itself always means "open" (even when focus
+      // already sits here — e.g. after an Escape close — no focus event
+      // would fire), and the stop keeps the box's toggle from closing
+      // the panel from inside the field.
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(true);
+      }}
+      onKeyDown={handleTagsKeyDown}
+      x-class={[inlineInput, classNames?.searchInput]}
+    />
+  );
+
   return (
     <div x-class={wrapper}>
-      <button
-        // Spread first — the floating handlers below must win over a
-        // spread, or a stray onClick could disable the open toggle
-        // entirely (same rationale as SelectCore's onChange ordering).
-        {...rest}
-        ref={setTriggerRef}
-        data-slot='trigger'
-        type='button'
-        style={floating.triggerStyle}
-        role='combobox'
-        aria-haspopup='listbox'
-        aria-expanded={open}
-        aria-controls={searchable ? listboxId : id}
-        aria-activedescendant={activeDescendant}
-        data-clearable={clearable || undefined}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
-        onKeyDown={handleKeyDown}
-        x-class={[trigger, sizes[size], className, classNames?.trigger]}
-      >
-        {triggerBody}
-        {clearAffordance}
-        <span data-slot='icon' x-class={caret} aria-hidden='true'>
-          <ChevronDown />
-        </span>
-      </button>
-      {searchable ? (
+      {tags ? (
+        <div
+          // Spread first — the floating handlers below must win over a
+          // spread (same rationale as the button trigger). The select →
+          // button-typed rest needs the same element widening cast as
+          // SelectCore's mode boundary — only the handler generics
+          // differ between the two attribute sets.
+          {...(restWithoutDisabled as Omit<
+            ComponentPropsWithoutRef<'div'>,
+            'ref' | 'children' | 'contentEditable' | 'dangerouslySetInnerHTML'
+          >)}
+          ref={setTagsBoxRef}
+          data-slot='trigger'
+          style={floating.triggerStyle}
+          aria-disabled={disabled || undefined}
+          data-clearable={clearable || undefined}
+          onPointerDown={floating.onTriggerPointerDown}
+          onClick={() => {
+            // Tags boxes never toggle closed from inside: the field is
+            // for typing, so any box click (input, chips gutter, caret)
+            // means open — closing belongs to Escape and outside
+            // pointers (Mantine TagsInput contract). The refocus also
+            // survives the blur a gutter mousedown causes in real
+            // engines; its focus event re-opens in the same direction.
+            setOpen(true);
+            searchRef.current?.focus();
+          }}
+          x-class={[trigger, sizes[size], className, classNames?.trigger]}
+        >
+          {triggerBody}
+          {tagsInput}
+          {clearAffordance}
+          <span data-slot='icon' x-class={caret} aria-hidden='true'>
+            <ChevronDown />
+          </span>
+        </div>
+      ) : (
+        <button
+          // Spread first — the floating handlers below must win over a
+          // spread, or a stray onClick could disable the open toggle
+          // entirely (same rationale as SelectCore's onChange ordering).
+          {...rest}
+          ref={setTriggerRef}
+          data-slot='trigger'
+          type='button'
+          style={floating.triggerStyle}
+          role='combobox'
+          aria-haspopup='listbox'
+          aria-expanded={open}
+          aria-controls={searchable ? listboxId : id}
+          aria-activedescendant={activeDescendant}
+          data-clearable={clearable || undefined}
+          onPointerDown={floating.onTriggerPointerDown}
+          onClick={floating.onTriggerClick}
+          onKeyDown={handleKeyDown}
+          x-class={[trigger, sizes[size], className, classNames?.trigger]}
+        >
+          {triggerBody}
+          {clearAffordance}
+          <span data-slot='icon' x-class={caret} aria-hidden='true'>
+            <ChevronDown />
+          </span>
+        </button>
+      )}
+      {showPanelSearch ? (
         <FloatingPanel
           ref={panelRef}
           behavior={floating}
@@ -1043,7 +1359,7 @@ export default function SelectFloating<T extends string | number = string>({
               id={listboxId}
               data-slot='list'
               role='listbox'
-              aria-multiselectable={multiple || undefined}
+              aria-multiselectable={isMulti || undefined}
               aria-label={strings.listboxLabel}
               x-class={virtual ? undefined : listboxInner}
             >
@@ -1060,7 +1376,7 @@ export default function SelectFloating<T extends string | number = string>({
           placement='bottom-span'
           id={id}
           role={hasVisibleOptions ? 'listbox' : undefined}
-          aria-multiselectable={hasVisibleOptions && multiple ? 'true' : undefined}
+          aria-multiselectable={hasVisibleOptions && isMulti ? 'true' : undefined}
           aria-label={strings.listboxLabel}
           aria-busy={loading || undefined}
           visualClass={virtual ? listboxVirtual : listbox}

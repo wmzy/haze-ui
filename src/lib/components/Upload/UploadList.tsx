@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type {
+  UploadClassNames,
   UploadEntry,
   UploadListItemActions,
   UploadListItemRender,
@@ -29,6 +30,19 @@ type UploadListProps = {
   onRemove: (file: UploadValueItem) => void;
   onRetry: (file: UploadValueItem) => void;
   onCancel: (file: UploadValueItem) => void;
+  /**
+   * Semantic slot classes handed down from `<Upload>`/`<UploadCore>` —
+   * the `list`/`item`/`progress` slots of {@link UploadClassNames}
+   * this component owns.
+   */
+  classNames?: Pick<UploadClassNames, 'list' | 'item' | 'progress'>;
+  /**
+   * Forwarded to the list root `<ul>` (`data-slot='list'`) — the
+   * Upload family's DOM-ref surface (the `Upload`/`UploadCore` `ref`
+   * is the imperative `UploadHandle`, a command object, and the family
+   * renders no single root element).
+   */
+  ref?: Ref<HTMLUListElement>;
 };
 
 const listBase = css`
@@ -330,11 +344,14 @@ function DefaultRow({
   actions,
   removeLabel,
   thumb,
+  progressClassName,
 }: {
   entry: UploadEntry;
   actions: UploadListItemActions;
   removeLabel?: string;
   thumb?: ReactNode;
+  /** The `classNames.progress` slot handed down from UploadList. */
+  progressClassName?: string;
 }) {
   const strings = useStrings('upload');
   const { file, status, percent } = entry;
@@ -419,6 +436,7 @@ function DefaultRow({
           value={percent}
           size="sm"
           color={status === 'error' ? 'danger' : 'primary'}
+          className={progressClassName}
         />
       )}
     </>
@@ -480,11 +498,14 @@ function PictureCard({
   actions,
   removeLabel,
   onPreview,
+  progressClassName,
 }: {
   entry: UploadEntry;
   actions: UploadListItemActions;
   removeLabel?: string;
   onPreview?: (file: UploadValueItem) => void;
+  /** The `classNames.progress` slot handed down from UploadList. */
+  progressClassName?: string;
 }) {
   const strings = useStrings('upload');
   const { file, status, percent } = entry;
@@ -533,7 +554,7 @@ function PictureCard({
       )}
       {status === 'uploading' && (
         <div data-slot='mask' x-class={[cardMask]}>
-          <Progress value={percent} size="sm" />
+          <Progress value={percent} size="sm" className={progressClassName} />
           <span data-slot='status' x-class={[cardMaskPercent]}>{percent}%</span>
         </div>
       )}
@@ -589,18 +610,24 @@ export default function UploadList({
   onRemove,
   onRetry,
   onCancel,
+  classNames,
+  ref,
 }: UploadListProps) {
   const pictureCard = listType === 'picture-card';
   const pictureRow = listType === 'picture';
   return (
-    <ul data-slot='list' x-class={[pictureCard ? cardGrid : listBase]}>
+    <ul
+      ref={ref}
+      data-slot='list'
+      x-class={[pictureCard ? cardGrid : listBase, classNames?.list]}
+    >
       {entries.map((entry) => {
         const actions = actionsFor(entry, onRemove, onRetry, onCancel);
         return (
           <li
             key={entry.uid}
             data-slot='item'
-            x-class={[pictureCard ? cardBase : itemBase]}
+            x-class={[pictureCard ? cardBase : itemBase, classNames?.item]}
             data-status={entry.status}
           >
             {itemRender ? (
@@ -611,12 +638,14 @@ export default function UploadList({
                 actions={actions}
                 removeLabel={removeLabel}
                 onPreview={onPreview}
+                progressClassName={classNames?.progress}
               />
             ) : (
               <DefaultRow
                 entry={entry}
                 actions={actions}
                 removeLabel={removeLabel}
+                progressClassName={classNames?.progress}
                 thumb={
                   pictureRow ? (
                     <PictureThumb file={entry.file} onPreview={onPreview} />

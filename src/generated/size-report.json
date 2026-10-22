@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-20T14:41:24.256Z",
+  "generatedAt": "2026-10-22T15:23:52.649Z",
   "distAvailable": true,
   "families": [
     {
@@ -9,8 +9,8 @@
     },
     {
       "family": "accordion",
-      "cssBytes": 2291,
-      "cssGzipBytes": 743
+      "cssBytes": 2496,
+      "cssGzipBytes": 791
     },
     {
       "family": "activity-rail",
@@ -24,8 +24,8 @@
     },
     {
       "family": "alert",
-      "cssBytes": 1690,
-      "cssGzipBytes": 571
+      "cssBytes": 1760,
+      "cssGzipBytes": 573
     },
     {
       "family": "anchor",
@@ -74,8 +74,8 @@
     },
     {
       "family": "banner",
-      "cssBytes": 1195,
-      "cssGzipBytes": 490
+      "cssBytes": 1265,
+      "cssGzipBytes": 495
     },
     {
       "family": "bottom-sheet",
@@ -86,6 +86,11 @@
       "family": "breadcrumb",
       "cssBytes": 1070,
       "cssGzipBytes": 459
+    },
+    {
+      "family": "button-group",
+      "cssBytes": 1879,
+      "cssGzipBytes": 600
     },
     {
       "family": "button",
@@ -114,8 +119,8 @@
     },
     {
       "family": "chart",
-      "cssBytes": 876,
-      "cssGzipBytes": 429
+      "cssBytes": 2491,
+      "cssGzipBytes": 828
     },
     {
       "family": "chat-container",
@@ -139,8 +144,8 @@
     },
     {
       "family": "chip",
-      "cssBytes": 1371,
-      "cssGzipBytes": 501
+      "cssBytes": 1434,
+      "cssGzipBytes": 504
     },
     {
       "family": "code-block",
@@ -154,8 +159,8 @@
     },
     {
       "family": "color-picker",
-      "cssBytes": 5764,
-      "cssGzipBytes": 1171
+      "cssBytes": 9975,
+      "cssGzipBytes": 1627
     },
     {
       "family": "combobox",
@@ -188,6 +193,11 @@
       "cssGzipBytes": 486
     },
     {
+      "family": "copy-button",
+      "cssBytes": 958,
+      "cssGzipBytes": 414
+    },
+    {
       "family": "count-up",
       "cssBytes": 212,
       "cssGzipBytes": 180
@@ -199,8 +209,8 @@
     },
     {
       "family": "data-table",
-      "cssBytes": 6694,
-      "cssGzipBytes": 1524
+      "cssBytes": 7682,
+      "cssGzipBytes": 1633
     },
     {
       "family": "date-field",
@@ -303,6 +313,11 @@
       "cssGzipBytes": 414
     },
     {
+      "family": "heatmap",
+      "cssBytes": 1325,
+      "cssGzipBytes": 531
+    },
+    {
       "family": "hover-card",
       "cssBytes": 592,
       "cssGzipBytes": 346
@@ -328,6 +343,11 @@
       "cssGzipBytes": 578
     },
     {
+      "family": "inline-citation",
+      "cssBytes": 2319,
+      "cssGzipBytes": 721
+    },
+    {
       "family": "inline-completion",
       "cssBytes": 1920,
       "cssGzipBytes": 627
@@ -336,6 +356,11 @@
       "family": "inline-edit",
       "cssBytes": 985,
       "cssGzipBytes": 406
+    },
+    {
+      "family": "input-group",
+      "cssBytes": 1301,
+      "cssGzipBytes": 504
     },
     {
       "family": "input",
@@ -393,6 +418,11 @@
       "cssGzipBytes": 1582
     },
     {
+      "family": "meter",
+      "cssBytes": 1602,
+      "cssGzipBytes": 536
+    },
+    {
       "family": "model-picker",
       "cssBytes": 1345,
       "cssGzipBytes": 595
@@ -403,14 +433,19 @@
       "cssGzipBytes": 495
     },
     {
+      "family": "navigation-menu",
+      "cssBytes": 5782,
+      "cssGzipBytes": 1236
+    },
+    {
       "family": "number-input",
-      "cssBytes": 2126,
-      "cssGzipBytes": 635
+      "cssBytes": 2151,
+      "cssGzipBytes": 646
     },
     {
       "family": "otp-input",
-      "cssBytes": 790,
-      "cssGzipBytes": 375
+      "cssBytes": 948,
+      "cssGzipBytes": 463
     },
     {
       "family": "pagination",
@@ -423,14 +458,19 @@
       "cssGzipBytes": 326
     },
     {
+      "family": "plan",
+      "cssBytes": 2558,
+      "cssGzipBytes": 758
+    },
+    {
       "family": "popover",
       "cssBytes": 4245,
       "cssGzipBytes": 915
     },
     {
       "family": "progress",
-      "cssBytes": 1302,
-      "cssGzipBytes": 469
+      "cssBytes": 1407,
+      "cssGzipBytes": 473
     },
     {
       "family": "prompt-input",
@@ -443,14 +483,19 @@
       "cssGzipBytes": 218
     },
     {
+      "family": "queue",
+      "cssBytes": 2122,
+      "cssGzipBytes": 693
+    },
+    {
       "family": "radio",
       "cssBytes": 1790,
       "cssGzipBytes": 640
     },
     {
       "family": "rating",
-      "cssBytes": 914,
-      "cssGzipBytes": 429
+      "cssBytes": 1072,
+      "cssGzipBytes": 516
     },
     {
       "family": "resizable",
@@ -463,19 +508,29 @@
       "cssGzipBytes": 333
     },
     {
+      "family": "rich-text-editor",
+      "cssBytes": 4331,
+      "cssGzipBytes": 1061
+    },
+    {
+      "family": "schedule",
+      "cssBytes": 7635,
+      "cssGzipBytes": 1399
+    },
+    {
       "family": "scroll-area",
       "cssBytes": 584,
       "cssGzipBytes": 275
     },
     {
       "family": "segmented",
-      "cssBytes": 1792,
-      "cssGzipBytes": 612
+      "cssBytes": 1950,
+      "cssGzipBytes": 688
     },
     {
       "family": "select",
-      "cssBytes": 13284,
-      "cssGzipBytes": 2271
+      "cssBytes": 14325,
+      "cssGzipBytes": 2450
     },
     {
       "family": "sidebar",
@@ -534,8 +589,8 @@
     },
     {
       "family": "step-timeline",
-      "cssBytes": 1588,
-      "cssGzipBytes": 567
+      "cssBytes": 3921,
+      "cssGzipBytes": 1138
     },
     {
       "family": "stepper",
@@ -554,8 +609,8 @@
     },
     {
       "family": "switch",
-      "cssBytes": 2011,
-      "cssGzipBytes": 632
+      "cssBytes": 2197,
+      "cssGzipBytes": 727
     },
     {
       "family": "tab-bar",
@@ -569,8 +624,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 6155,
-      "cssGzipBytes": 1399
+      "cssBytes": 6324,
+      "cssGzipBytes": 1426
     },
     {
       "family": "tag-group",
@@ -579,13 +634,13 @@
     },
     {
       "family": "tag-input",
-      "cssBytes": 1901,
-      "cssGzipBytes": 634
+      "cssBytes": 2059,
+      "cssGzipBytes": 710
     },
     {
       "family": "tag",
-      "cssBytes": 1523,
-      "cssGzipBytes": 553
+      "cssBytes": 1600,
+      "cssGzipBytes": 559
     },
     {
       "family": "textarea",
@@ -596,6 +651,11 @@
       "family": "thinking-indicator",
       "cssBytes": 921,
       "cssGzipBytes": 433
+    },
+    {
+      "family": "time-grid",
+      "cssBytes": 1986,
+      "cssGzipBytes": 612
     },
     {
       "family": "time-picker",
@@ -690,7 +750,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 349488,
-    "cssGzipBytes": 36689
+    "cssBytes": 394166,
+    "cssGzipBytes": 42048
   }
 }

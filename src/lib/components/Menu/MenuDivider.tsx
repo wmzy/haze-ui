@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { useMenuClassNames } from './MenuContext';
+
 const divider = css`
   height: 1px;
   margin: var(--haze-space-1) 0;
@@ -7,5 +9,12 @@ const divider = css`
 `;
 
 export default function MenuDivider() {
-  return <div data-slot='separator' className={divider} role='separator' />;
+  const classNames = useMenuClassNames();
+  return (
+    <div
+      data-slot='separator'
+      x-class={[divider, classNames?.divider]}
+      role='separator'
+    />
+  );
 }

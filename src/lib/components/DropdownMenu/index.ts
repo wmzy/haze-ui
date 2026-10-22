@@ -11,6 +11,7 @@ export {default as DropdownMenuSub} from './DropdownMenuSub';
 export {default as DropdownMenuSubTrigger} from './DropdownMenuSubTrigger';
 export {default as DropdownMenuSubContent} from './DropdownMenuSubContent';
 export type {DropdownMenuProps, DropdownMenuHandle, DropdownMenuDataItem} from './DropdownMenu';
+export type {DropdownMenuClassNames} from './DropdownMenuContext';
 export type {DropdownMenuTriggerProps} from './DropdownMenuTrigger';
 export type {DropdownMenuContentProps} from './DropdownMenuContent';
 export type {DropdownMenuItemProps} from './DropdownMenuItem';

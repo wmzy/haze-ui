@@ -6,10 +6,8 @@
  * A module qualifies only when ALL of the following hold (verified by
  * reading the compiled dist output, not just the source):
  *   - no React hook calls anywhere in the module — useControl/useState/
- *     useEffect/useRef/useCallback and custom `use*` hooks alike. That is
- *     why Tag/Empty/Breadcrumb/AvatarGroup/Progress/Chip (they all call the
- *     useStrings context hook) and Avatar (useState for img error
- *     fallback) are NOT on the list;
+ *     useEffect/useRef/useCallback and custom `use*` hooks alike (the
+ *     remaining hook-driven exclusions are documented in the list below);
  *   - no top-level DOM/window access (module side effects must be
  *     server-safe);
  *   - every in-package import stays inside this set — the transitive
@@ -53,8 +51,11 @@ export const RSC_SAFE_MODULES = new Set([
   'components/Badge/badge-styles.ts',
   'components/Card/Card.tsx',
   'components/Card/index.ts',
-  'components/CodeBlock/CodeBlock.tsx',
-  'components/CodeBlock/index.ts',
+  // CodeBlock was here until wave 5's audit caught it going stale: the
+  // async highlighter feature (wave 1-4) added useState/useEffect/
+  // useMemo. The banner/list self-consistency test cannot see that (it
+  // only compares banners against list membership), so hook usage must
+  // be re-audited on every list touch.
   'components/Container/Container.tsx',
   'components/Container/index.ts',
   'components/Divider/Divider.tsx',
@@ -86,10 +87,75 @@ export const RSC_SAFE_MODULES = new Set([
   'components/Sparkline/Sparkline.tsx',
   'components/Sparkline/index.ts',
   'components/Sparkline/sparkline-styles.ts',
+  // Heatmap: pure render from props (labels are prop functions, no
+  // useStrings / no hooks of any kind); imports only its sibling
+  // styles module besides the classnames runtime.
+  'components/Heatmap/Heatmap.tsx',
+  'components/Heatmap/index.ts',
+  'components/Heatmap/heatmap-styles.ts',
   'components/Stat/Stat.tsx',
   'components/Stat/index.ts',
   'components/Typography/Typography.tsx',
   'components/Typography/index.ts',
+  // De-hooked for RSC safety: their only hook was useStrings, and a
+  // server tree could never source those strings from a client
+  // LocaleProvider anyway (context does not cross the RSC boundary).
+  // The copy became props with inlined English defaults — removeLabel
+  // (Tag/Chip), native aria-label defaults (Breadcrumb/Progress), an
+  // overflowLabel formatter (AvatarGroup). Note the use(LocaleContext)
+  // variant is structurally impossible: LocaleContext.ts calls
+  // createContext at module scope, the react-server condition of React
+  // does not even export createContext, so it can never join a safe
+  // closure.
+  'components/Tag/Tag.tsx',
+  'components/Tag/tag-styles.ts',
+  'components/Tag/index.ts',
+  'components/Chip/Chip.tsx',
+  'components/Chip/chip-styles.ts',
+  'components/Chip/index.ts',
+  'components/Breadcrumb/Breadcrumb.tsx',
+  'components/Breadcrumb/BreadcrumbItem.tsx',
+  'components/Breadcrumb/index.ts',
+  'components/Progress/Progress.tsx',
+  'components/Progress/progress-styles.ts',
+  'components/Progress/index.ts',
+  'components/AvatarGroup/AvatarGroup.tsx',
+  'components/AvatarGroup/index.ts',
+  // Still excluded, with reasons:
+  // - Empty: useStrings drives the visible default description text and
+  //   the `empty` section is the flagship of the LocaleProvider strings
+  //   override story (LocaleProvider.test.tsx layering tests + the
+  //   LocaleProvider demo both ride it) — de-hooking would orphan that.
+  // - Avatar: useState tracks the img onError fallback — genuinely
+  //   internal UI state, no props-only replacement exists.
+  // - ActivityRail / DateTimePicker / Queue / LoadingOverlay: hook-free
+  //   themselves but their closures reach client modules (Tooltip,
+  //   Datepicker, Spinner's useStrings).
+  //
+  // Verified hook-free additions below needed no source changes: pure
+  // presentational, imports stay inside the safe set. TabBar composes
+  // Badge; NavigationBar's NavLink wraps render in forwardRef — not a
+  // hook, and it renders fine on the server (ref is simply absent).
+  'components/Affix/Affix.tsx',
+  'components/Affix/index.ts',
+  'components/Descriptions/Descriptions.tsx',
+  'components/Descriptions/index.ts',
+  'components/List/List.tsx',
+  'components/List/ListItem.tsx',
+  'components/List/index.ts',
+  'components/NavigationBar/NavigationBar.tsx',
+  'components/NavigationBar/NavLink.tsx',
+  'components/NavigationBar/index.ts',
+  'components/Result/Result.tsx',
+  'components/Result/index.ts',
+  'components/ScrollArea/ScrollArea.tsx',
+  'components/ScrollArea/index.ts',
+  'components/StatusBar/StatusBar.tsx',
+  'components/StatusBar/index.ts',
+  'components/TabBar/TabBar.tsx',
+  'components/TabBar/index.ts',
+  'components/Timeline/Timeline.tsx',
+  'components/Timeline/index.ts',
 ]);
 
 /**

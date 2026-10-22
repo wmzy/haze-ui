@@ -8,7 +8,7 @@ import path from 'node:path';
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, createRef } from 'react';
 import { expect } from 'vitest';
 
 import SortableTree from './SortableTree';
@@ -188,6 +188,14 @@ describe('applyTreeMove', () => {
 });
 
 describe('SortableTree', () => {
+  it('passes the ref through to the wrapped tree root', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<SortableTree treeData={flatRoots} ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('role', 'tree');
+    expect(ref.current).toHaveAttribute('data-slot', 'tree');
+  });
+
   it('reorders same-level rows through the full keyboard flow', async () => {
     const user = userEvent.setup();
     render(<StatefulSortableTree initial={flatRoots} />);

@@ -25,4 +25,4 @@ import 'haze-ui/css/segmented.css';
 import 'haze-ui/css/spinner.css';
 
 export { Schedule };
-export type { ScheduleProps, ScheduleEvent, ScheduleView, ScheduleEventChange, ScheduleEventColor, ScheduleBusinessHours, ScheduleViewLabels } from 'haze-ui';
+export type { ScheduleProps, ScheduleClassNames, ScheduleEvent, ScheduleView, ScheduleEventChange, ScheduleEventColor, ScheduleBusinessHours, ScheduleViewLabels } from 'haze-ui';

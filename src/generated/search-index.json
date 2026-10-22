@@ -158,6 +158,23 @@
   },
   {
     "type": "page",
+    "label": "React 19 Actions",
+    "sublabel": "Guide",
+    "route": "/guides/server-actions",
+    "keywords": [
+      "server actions",
+      "useactionstate",
+      "useoptimistic",
+      "form action",
+      "formdata",
+      "next.js",
+      "pending",
+      "optimistic",
+      "React 19 Actions"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Design Tokens",
     "sublabel": "Reference",
     "route": "/tokens",
@@ -242,6 +259,18 @@
     "type": "component",
     "label": "Button",
     "route": "/components/button",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "ButtonGroup",
+    "route": "/components/button-group",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "CopyButton",
+    "route": "/components/copy-button",
     "keywords": []
   },
   {
@@ -489,6 +518,12 @@
   },
   {
     "type": "component",
+    "label": "InputGroup",
+    "route": "/components/input-group",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Mentions",
     "route": "/components/mentions",
     "keywords": []
@@ -569,6 +604,12 @@
     "type": "component",
     "label": "TagInput",
     "route": "/components/tag-input",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "TimeGrid",
+    "route": "/components/time-grid",
     "keywords": []
   },
   {
@@ -790,6 +831,12 @@
   },
   {
     "type": "component",
+    "label": "Meter",
+    "route": "/components/meter",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "QRCode",
     "route": "/components/qr-code",
     "keywords": []
@@ -804,6 +851,12 @@
     "type": "component",
     "label": "Sparkline",
     "route": "/components/sparkline",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "Heatmap",
+    "route": "/components/heatmap",
     "keywords": []
   },
   {
@@ -898,6 +951,12 @@
     "type": "component",
     "label": "NavigationBar",
     "route": "/components/navigation-bar",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "NavigationMenu",
+    "route": "/components/navigation-menu",
     "keywords": []
   },
   {
@@ -1218,6 +1277,36 @@
   },
   {
     "type": "section",
+    "label": "Basic",
+    "sublabel": "ButtonGroup",
+    "route": "/components/button-group"
+  },
+  {
+    "type": "section",
+    "label": "Sizes & variants",
+    "sublabel": "ButtonGroup",
+    "route": "/components/button-group"
+  },
+  {
+    "type": "section",
+    "label": "Split button",
+    "sublabel": "ButtonGroup",
+    "route": "/components/button-group"
+  },
+  {
+    "type": "section",
+    "label": "Separator",
+    "sublabel": "ButtonGroup",
+    "route": "/components/button-group"
+  },
+  {
+    "type": "section",
+    "label": "Vertical & disabled",
+    "sublabel": "ButtonGroup",
+    "route": "/components/button-group"
+  },
+  {
+    "type": "section",
     "label": "Sizes",
     "sublabel": "Input",
     "route": "/components/input"
@@ -1227,6 +1316,30 @@
     "label": "Disabled",
     "sublabel": "Input",
     "route": "/components/input"
+  },
+  {
+    "type": "section",
+    "label": "Search box",
+    "sublabel": "InputGroup",
+    "route": "/components/input-group"
+  },
+  {
+    "type": "section",
+    "label": "Text prefixes & suffixes",
+    "sublabel": "InputGroup",
+    "route": "/components/input-group"
+  },
+  {
+    "type": "section",
+    "label": "With Select",
+    "sublabel": "InputGroup",
+    "route": "/components/input-group"
+  },
+  {
+    "type": "section",
+    "label": "Sizes",
+    "sublabel": "InputGroup",
+    "route": "/components/input-group"
   },
   {
     "type": "section",
@@ -1261,6 +1374,18 @@
   {
     "type": "section",
     "label": "maxTagCount & clearable (multiple)",
+    "sublabel": "Select",
+    "route": "/components/select"
+  },
+  {
+    "type": "section",
+    "label": "Tags",
+    "sublabel": "Select",
+    "route": "/components/select"
+  },
+  {
+    "type": "section",
+    "label": "maxCount (multiple / tags)",
     "sublabel": "Select",
     "route": "/components/select"
   },
@@ -1789,6 +1914,12 @@
   {
     "type": "section",
     "label": "Enterprise: resize, filter, column menu & expansion",
+    "sublabel": "DataTable",
+    "route": "/components/data-table"
+  },
+  {
+    "type": "section",
+    "label": "Column filter menus",
     "sublabel": "DataTable",
     "route": "/components/data-table"
   },
@@ -2973,6 +3104,132 @@
     "label": "NavLink Props",
     "sublabel": "NavigationBar",
     "route": "/components/navigation-bar"
+  },
+  {
+    "type": "section",
+    "label": "Mega menu",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "Controlled activeValue",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "Plain links",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "stretchToTrigger",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "NavigationMenu Props",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "NavigationMenuItem Props",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "NavigationMenuTrigger Props",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "NavigationMenuContent Props",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "NavigationMenuList Props",
+    "sublabel": "NavigationMenu",
+    "route": "/components/navigation-menu"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "Meter",
+    "route": "/components/meter"
+  },
+  {
+    "type": "section",
+    "label": "Thresholds",
+    "sublabel": "Meter",
+    "route": "/components/meter"
+  },
+  {
+    "type": "section",
+    "label": "Custom scale (min / max)",
+    "sublabel": "Meter",
+    "route": "/components/meter"
+  },
+  {
+    "type": "section",
+    "label": "Sizes",
+    "sublabel": "Meter",
+    "route": "/components/meter"
+  },
+  {
+    "type": "section",
+    "label": "Basic",
+    "sublabel": "CopyButton",
+    "route": "/components/copy-button"
+  },
+  {
+    "type": "section",
+    "label": "Variants & labels",
+    "sublabel": "CopyButton",
+    "route": "/components/copy-button"
+  },
+  {
+    "type": "section",
+    "label": "Lazy value (getValue)",
+    "sublabel": "CopyButton",
+    "route": "/components/copy-button"
+  },
+  {
+    "type": "section",
+    "label": "Snippet",
+    "sublabel": "CopyButton",
+    "route": "/components/copy-button"
+  },
+  {
+    "type": "section",
+    "label": "Custom levels and labels",
+    "sublabel": "Heatmap",
+    "route": "/components/heatmap"
+  },
+  {
+    "type": "section",
+    "label": "Record data shape",
+    "sublabel": "Heatmap",
+    "route": "/components/heatmap"
+  },
+  {
+    "type": "section",
+    "label": "Step and columns",
+    "sublabel": "TimeGrid",
+    "route": "/components/time-grid"
+  },
+  {
+    "type": "section",
+    "label": "Disabled slots and 12-hour labels",
+    "sublabel": "TimeGrid",
+    "route": "/components/time-grid"
   },
   {
     "type": "section",
@@ -4278,6 +4535,30 @@
   },
   {
     "type": "prop",
+    "label": "max",
+    "sublabel": "AvatarGroup — Maximum avatars rendered before the overflow chip",
+    "route": "/components/avatar-group"
+  },
+  {
+    "type": "prop",
+    "label": "total",
+    "sublabel": "AvatarGroup — Overflow count shown instead of children count - max",
+    "route": "/components/avatar-group"
+  },
+  {
+    "type": "prop",
+    "label": "overflowLabel",
+    "sublabel": "AvatarGroup — Formats the \"+N\" overflow chip text; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own formatter",
+    "route": "/components/avatar-group"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "AvatarGroup — Native div attributes forwarded to the group element",
+    "route": "/components/avatar-group"
+  },
+  {
+    "type": "prop",
     "label": "threshold",
     "sublabel": "BackToTop — Scroll distance before showing (px)",
     "route": "/components/back-to-top"
@@ -4382,6 +4663,18 @@
     "type": "prop",
     "label": "children",
     "sublabel": "Breadcrumb — BreadcrumbItem elements",
+    "route": "/components/breadcrumb"
+  },
+  {
+    "type": "prop",
+    "label": "aria-label",
+    "sublabel": "Breadcrumb — Accessible name for the nav landmark; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label",
+    "route": "/components/breadcrumb"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "Breadcrumb — Native nav attributes forwarded to the root element",
     "route": "/components/breadcrumb"
   },
   {
@@ -4621,7 +4914,13 @@
   {
     "type": "prop",
     "label": "onClose",
-    "sublabel": "Chip — Close handler; shows close button when provided",
+    "sublabel": "Chip — Called when remove button is clicked; providing it shows the button",
+    "route": "/components/chip"
+  },
+  {
+    "type": "prop",
+    "label": "removeLabel",
+    "sublabel": "Chip — Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string",
     "route": "/components/chip"
   },
   {
@@ -5796,6 +6095,18 @@
   },
   {
     "type": "prop",
+    "label": "aria-label",
+    "sublabel": "Progress — Accessible name for the progressbar; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own label",
+    "route": "/components/progress"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "Progress — Native div attributes forwarded to the progressbar element",
+    "route": "/components/progress"
+  },
+  {
+    "type": "prop",
     "label": "value",
     "sublabel": "PromptInput — Free-text draft (auto-growing textarea)",
     "route": "/components/prompt-input"
@@ -6512,6 +6823,12 @@
     "type": "prop",
     "label": "onClose",
     "sublabel": "Tag — Called when close button is clicked",
+    "route": "/components/tag"
+  },
+  {
+    "type": "prop",
+    "label": "removeLabel",
+    "sublabel": "Tag — Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string",
     "route": "/components/tag"
   },
   {

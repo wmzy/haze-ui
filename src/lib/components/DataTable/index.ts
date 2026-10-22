@@ -1,6 +1,7 @@
 export { default as DataTable } from './DataTable';
 export type {
   DataTableProps,
+  DataTableClassNames,
   DataTableColumnDef,
   DataTableColumnMeta,
   DataTableVirtualized,
@@ -8,6 +9,7 @@ export type {
   DataTableSummaryCell,
   DataTableCellEditorProps,
 } from './DataTable';
+export type { DataTableFiltersState } from './filters';
 export { dataTableToCsv } from './csv';
 export type { DataTableCsvOptions } from './csv';
 export { dataTableSum, dataTableAvg, dataTableCount } from './summary';

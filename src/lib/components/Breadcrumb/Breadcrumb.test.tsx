@@ -14,6 +14,18 @@ describe('Breadcrumb', () => {
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
   });
 
+  it('accepts a custom aria-label and forwards native nav props', () => {
+    render(
+      <Breadcrumb aria-label="面包屑" data-testid="crumbs">
+        <BreadcrumbItem>Current</BreadcrumbItem>
+      </Breadcrumb>
+    );
+    expect(screen.getByRole('navigation', { name: '面包屑' })).toHaveAttribute(
+      'data-testid',
+      'crumbs'
+    );
+  });
+
   it('renders items with separators', () => {
     render(
       <Breadcrumb>

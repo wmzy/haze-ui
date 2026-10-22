@@ -43,7 +43,8 @@ export default function ContextMenuContent({
   children,
   className,
 }: ContextMenuContentProps) {
-  const { open, setOpen, x, y, contentRef, floating } = useContextMenuContext();
+  const { open, setOpen, x, y, contentRef, floating, classNames } =
+    useContextMenuContext();
 
   const handleKeyDown = useMenuKeyboard({
     menuRef: contentRef,
@@ -85,7 +86,9 @@ export default function ContextMenuContent({
       behavior={floating}
       role="menu"
       visualClass={content}
-      className={className}
+      className={
+        [className, classNames?.content].filter(Boolean).join(' ') || undefined
+      }
       style={{ left: x, top: y }}
       onKeyDown={handleKeyDown}
     >

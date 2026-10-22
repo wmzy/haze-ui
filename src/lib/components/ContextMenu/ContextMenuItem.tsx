@@ -41,7 +41,7 @@ const item = css`
 `;
 
 export default function ContextMenuItem({ children, onClick, disabled, className }: ContextMenuItemProps) {
-  const { setOpen } = useContextMenuContext();
+  const { setOpen, classNames } = useContextMenuContext();
 
   const handleClick = () => {
     if (disabled) return;
@@ -52,7 +52,7 @@ export default function ContextMenuItem({ children, onClick, disabled, className
   return (
     <button
       data-slot='menu-item'
-      x-class={[item, className]}
+      x-class={[item, classNames?.item, className]}
       type="button"
       role="menuitem"
       tabIndex={-1}

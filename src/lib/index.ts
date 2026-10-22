@@ -37,13 +37,17 @@ export type {
 export { Button, ButtonLink, buttonVariants, buttonSizes } from './components/Button';
 // eslint-disable-next-line @typescript-eslint/no-deprecated -- 主 barrel 必须透出 ButtonLinkProps，供消费方兼容旧签名
 export type { ButtonProps, ButtonLinkProps } from './components/Button';
+export { ButtonGroup, ButtonGroupSeparator, useButtonGroup } from './components/ButtonGroup';
+export type { ButtonGroupProps, ButtonGroupClassNames, ButtonGroupSeparatorProps, ButtonGroupValue } from './components/ButtonGroup';
+export { InputGroup, InputGroupAddon, useInputGroup } from './components/InputGroup';
+export type { InputGroupProps, InputGroupClassNames, InputGroupAddonProps, InputGroupValue } from './components/InputGroup';
 export { Input, InputCore } from './components/Input';
 export type { InputProps, InputCoreProps } from './components/Input';
 export { Select, Option, SelectCore, OptionGroup } from './components/Select';
 export type { SelectProps, SelectClassNames, OptionProps, SelectCoreProps, OptionGroupProps } from './components/Select';
 export { Checkbox, CheckboxCore } from './components/Checkbox';
 export type { CheckboxProps, CheckboxCoreProps } from './components/Checkbox';
-export { Switch, SwitchCore } from './components/Switch';
+export { Switch, SwitchCore, trackSizes, thumbSizes } from './components/Switch';
 export type { SwitchProps, SwitchCoreProps } from './components/Switch';
 export { Toggle, ToggleCore } from './components/Toggle';
 export type { ToggleProps, ToggleCoreProps } from './components/Toggle';
@@ -52,10 +56,10 @@ export type { BadgeProps } from './components/Badge';
 export { Dialog } from './components/Dialog';
 export type { DialogProps, DialogHandle, DialogClassNames } from './components/Dialog';
 export { Tooltip } from './components/Tooltip';
-export type { TooltipProps } from './components/Tooltip';
+export type { TooltipProps, TooltipClassNames } from './components/Tooltip';
 export { Popover } from './components/Popover';
 export type { PopoverProps, PopoverHandle, PopoverClassNames } from './components/Popover';
-export { Card } from './components/Card';
+export { Card, cardVariants } from './components/Card';
 export type { CardProps } from './components/Card';
 export { Radio, RadioGroup, RadioGroupCore } from './components/Radio';
 export type { RadioProps, RadioGroupProps, RadioGroupCoreProps } from './components/Radio';
@@ -63,7 +67,7 @@ export { Textarea, TextareaCore } from './components/Textarea';
 export type { TextareaProps, TextareaCoreProps } from './components/Textarea';
 export { Slider, SliderCore } from './components/Slider';
 export type { SliderProps, SliderCoreProps } from './components/Slider';
-export { Tabs, TabList, Tab, TabPanel, SortableTabList } from './components/Tabs';
+export { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariants } from './components/Tabs';
 export type {
   TabsProps,
   TabsClassNames,
@@ -77,8 +81,9 @@ export { Accordion, AccordionItem } from './components/Accordion';
 export type {
   AccordionProps,
   AccordionItemProps,
+  AccordionClassNames,
 } from './components/Accordion';
-export { Alert } from './components/Alert';
+export { Alert, alertVariants } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 export { ErrorBoundary } from './components/ErrorBoundary';
 export type {
@@ -87,7 +92,7 @@ export type {
 } from './components/ErrorBoundary';
 export { Avatar } from './components/Avatar';
 export type { AvatarProps } from './components/Avatar';
-export { Tag } from './components/Tag';
+export { Tag, tagVariants, tagSizes } from './components/Tag';
 export type { TagProps } from './components/Tag';
 export { Skeleton } from './components/Skeleton';
 export type { SkeletonProps } from './components/Skeleton';
@@ -105,8 +110,8 @@ export type {
 export { Disclosure } from './components/Disclosure';
 export type { DisclosureProps } from './components/Disclosure';
 export { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGroup, MenuDivider, MenuSub, MenuSubTrigger, MenuSubContent } from './components/Menu';
-export type { MenuProps, MenuDataItem, MenuItemProps, MenuCheckboxItemProps, MenuRadioGroupProps, MenuRadioItemProps, MenuGroupProps, MenuSubProps, MenuSubTriggerProps, MenuSubContentProps } from './components/Menu';
-export { NumberInput, NumberInputCore } from './components/NumberInput';
+export type { MenuProps, MenuClassNames, MenuDataItem, MenuItemProps, MenuCheckboxItemProps, MenuRadioGroupProps, MenuRadioItemProps, MenuGroupProps, MenuSubProps, MenuSubTriggerProps, MenuSubContentProps } from './components/Menu';
+export { NumberInput, NumberInputCore, inputSizes, btnSizes } from './components/NumberInput';
 export type { NumberInputProps, NumberInputCoreProps } from './components/NumberInput';
 export { FileInput } from './components/FileInput';
 export type { FileInputProps } from './components/FileInput';
@@ -125,6 +130,7 @@ export {
 } from './components/Table';
 export type {
   TableProps,
+  TableClassNames,
   TableHeadProps,
   TableBodyProps,
   TableRowProps,
@@ -149,8 +155,12 @@ export { Empty } from './components/Empty';
 export type { EmptyProps } from './components/Empty';
 export { Result } from './components/Result';
 export type { ResultProps, ResultStatus } from './components/Result';
-export { Progress } from './components/Progress';
+export { Progress, barSizes, circleSizes } from './components/Progress';
 export type { ProgressProps } from './components/Progress';
+export { Meter, trackSizes as meterTrackSizes } from './components/Meter';
+export type { MeterProps, MeterOwnProps, MeterClassNames, MeterThreshold, MeterTone } from './components/Meter';
+export { CopyButton, Snippet, iconSizes as copyButtonIconSizes } from './components/CopyButton';
+export type { CopyButtonProps, CopyButtonClassNames, SnippetProps, SnippetClassNames } from './components/CopyButton';
 export { Pagination } from './components/Pagination';
 export type { PaginationProps } from './components/Pagination';
 export { Grid, GridItem } from './components/Grid';
@@ -171,7 +181,7 @@ export type { CollapsibleProps, CollapsibleTriggerProps, CollapsibleContentProps
 export { Transfer, TransferCore } from './components/Transfer';
 export type { TransferProps, TransferItem, TransferCoreProps } from './components/Transfer';
 export { Upload, UploadCore } from './components/Upload';
-export type { UploadProps, UploadCoreProps, UploadHandle, UploadStatus, UploadFile, UploadValueItem, UploadFileStatus, UploadRequest, UploadRequestOptions, UploadListItemActions, UploadListItemRender } from './components/Upload';
+export type { UploadProps, UploadClassNames, UploadCoreProps, UploadHandle, UploadStatus, UploadFile, UploadValueItem, UploadFileStatus, UploadRequest, UploadRequestOptions, UploadListItemActions, UploadListItemRender } from './components/Upload';
 export { ColorPicker, ColorPickerCore } from './components/ColorPicker';
 export type { ColorPickerProps, ColorPickerCoreProps } from './components/ColorPicker';
 export type { ColorPickerPreset } from './components/ColorPicker';
@@ -191,10 +201,14 @@ export { Countdown } from './components/Countdown';
 export type { CountdownProps, CountdownParts } from './components/Countdown';
 export { Sparkline, sparklineToneStrokes, sparklineToneFills } from './components/Sparkline';
 export type { SparklineProps } from './components/Sparkline';
+export { Heatmap } from './components/Heatmap';
+export type { HeatmapProps, HeatmapClassNames, HeatmapDatum } from './components/Heatmap';
+export { TimeGrid } from './components/TimeGrid';
+export type { TimeGridProps, TimeGridClassNames } from './components/TimeGrid';
 export type { StatProps, StatGroupProps } from './components/Stat';
 export { Segmented, SegmentedCore } from './components/Segmented';
 export type { SegmentedProps, SegmentedCoreProps } from './components/Segmented';
-export { Chip } from './components/Chip';
+export { Chip, chipVariants } from './components/Chip';
 export type { ChipProps } from './components/Chip';
 export { ScrollArea } from './components/ScrollArea';
 export type { ScrollAreaProps } from './components/ScrollArea';
@@ -217,18 +231,27 @@ export type { PromptInputProps } from './components/PromptInput';
 export { InlineEdit } from './components/InlineEdit';
 export type { InlineEditProps } from './components/InlineEdit';
 export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from './components/DropdownMenu';
-export type { DropdownMenuProps, DropdownMenuDataItem, DropdownMenuTriggerProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuCheckboxItemProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuGroupProps, DropdownMenuSeparatorProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuSubContentProps, DropdownMenuHandle } from './components/DropdownMenu';
+export type { DropdownMenuProps, DropdownMenuClassNames, DropdownMenuDataItem, DropdownMenuTriggerProps, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuCheckboxItemProps, DropdownMenuRadioGroupProps, DropdownMenuRadioItemProps, DropdownMenuGroupProps, DropdownMenuSeparatorProps, DropdownMenuSubProps, DropdownMenuSubTriggerProps, DropdownMenuSubContentProps, DropdownMenuHandle } from './components/DropdownMenu';
 export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSeparator } from './components/ContextMenu';
-export type { ContextMenuProps, ContextMenuTriggerProps, ContextMenuContentProps, ContextMenuItemProps, ContextMenuSeparatorProps } from './components/ContextMenu';
+export type { ContextMenuProps, ContextMenuClassNames, ContextMenuTriggerProps, ContextMenuContentProps, ContextMenuItemProps, ContextMenuSeparatorProps } from './components/ContextMenu';
 export { NavigationBar, NavLink } from './components/NavigationBar';
 export type { NavigationBarProps, NavLinkProps } from './components/NavigationBar';
+export { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent } from './components/NavigationMenu';
+export type {
+  NavigationMenuProps,
+  NavigationMenuClassNames,
+  NavigationMenuListProps,
+  NavigationMenuItemProps,
+  NavigationMenuTriggerProps,
+  NavigationMenuContentProps,
+} from './components/NavigationMenu';
 export { BackToTop } from './components/BackToTop';
 export type { BackToTopProps } from './components/BackToTop';
 export { Affix } from './components/Affix';
 export type { AffixProps } from './components/Affix';
 export { Container } from './components/Container';
 export type { ContainerProps } from './components/Container';
-export { Banner } from './components/Banner';
+export { Banner, bannerVariants } from './components/Banner';
 export type { BannerProps } from './components/Banner';
 export { ConfirmDialog, confirm } from './components/ConfirmDialog';
 export type { ConfirmDialogProps, ConfirmOptions } from './components/ConfirmDialog';
@@ -264,6 +287,7 @@ export type { Direction } from './utils/direction';
 export { DataTable, dataTableSum, dataTableAvg, dataTableCount, dataTableToCsv } from './components/DataTable';
 export type {
   DataTableProps,
+  DataTableClassNames,
   DataTableColumnDef,
   DataTableColumnMeta,
   DataTableVirtualized,
@@ -271,11 +295,12 @@ export type {
   DataTableSummaryCell,
   DataTableCellEditorProps,
   DataTableCsvOptions,
+  DataTableFiltersState,
 } from './components/DataTable';
 
 // chart (recharts dependency + haze tokens)
 export { Chart } from './components/Chart';
-export type { ChartProps, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry, ChartGaugeThreshold, ChartWaffleSeries } from './components/Chart';
+export type { ChartProps, ChartClassNames, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry, ChartGaugeThreshold, ChartWaffleSeries } from './components/Chart';
 
 // display & overlay additions
 export { Kbd } from './components/Kbd';
@@ -287,6 +312,7 @@ export type {
   CalendarProps,
   CalendarPickerMode,
   CalendarCellRender,
+  CalendarClassNames,
 } from './components/Calendar';
 export { HoverCard } from './components/HoverCard';
 export type { HoverCardProps } from './components/HoverCard';
@@ -321,7 +347,7 @@ export type { SpoilerProps } from './components/Spoiler';
 export { DateTimePicker } from './components/DateTimePicker';
 export type { DateTimePickerProps } from './components/DateTimePicker';
 export { Cascader } from './components/Cascader';
-export type { CascaderProps, CascaderOption } from './components/Cascader';
+export type { CascaderProps, CascaderOption, CascaderClassNames } from './components/Cascader';
 export { Sidebar, SidebarGroup, SidebarItem, SidebarFooter, SidebarToggle } from './components/Sidebar';
 export type {
   SidebarProps,
@@ -379,7 +405,7 @@ export type { JsonViewProps, MoreLabelFn } from './components/JsonView';
 export { QRCode } from './components/QRCode';
 export type { QRCodeProps, QRCodeLevel } from './components/QRCode';
 export { Schedule } from './components/Schedule';
-export type { ScheduleProps, ScheduleEvent, ScheduleView, ScheduleEventChange, ScheduleEventColor, ScheduleBusinessHours, ScheduleViewLabels } from './components/Schedule';
+export type { ScheduleProps, ScheduleClassNames, ScheduleEvent, ScheduleView, ScheduleEventChange, ScheduleEventColor, ScheduleBusinessHours, ScheduleViewLabels } from './components/Schedule';
 export { RichTextEditor } from './components/RichTextEditor';
 export type { RichTextEditorProps, RichTextEditorHandle } from './components/RichTextEditor';
 export { Sources } from './components/Sources';
@@ -464,6 +490,7 @@ export type {
   FormItemBinding,
   FormItemOwnProps,
   FormItemProps,
+  FormItemClassNames,
   FormItemRawElement,
   FormItemRawElementBinding,
   FormInstance,

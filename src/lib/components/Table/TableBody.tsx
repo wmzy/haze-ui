@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { useTableClassNames } from './TableContext';
+
 type TableBodyProps = {
   className?: string;
   children: ReactNode;
@@ -16,7 +18,12 @@ const body = css`
 `;
 
 export default function TableBody({ className, children }: TableBodyProps) {
-  return <tbody data-slot="body" x-class={[body, className]}>{children}</tbody>;
+  const classNames = useTableClassNames();
+  return (
+    <tbody data-slot="body" x-class={[body, classNames?.body, className]}>
+      {children}
+    </tbody>
+  );
 }
 
 export type { TableBodyProps };

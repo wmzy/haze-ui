@@ -6,6 +6,8 @@ import { useMenuRadioItem } from '../../utils/menuRadio';
 
 import { menuItemDanger, menuItemIcon, menuItemIndicator, menuItemKbd } from './menu-item-styles';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuRadioItemProps = {
   /** Value this option selects in its MenuRadioGroup when activated. */
   value: string;
@@ -82,6 +84,7 @@ export default function MenuRadioItem({
   className,
   children,
 }: MenuRadioItemProps) {
+  const classNames = useMenuClassNames();
   const { checked, select } = useMenuRadioItem(value);
 
   return (
@@ -91,7 +94,7 @@ export default function MenuRadioItem({
       data-slot='menu-radio-item'
       aria-checked={checked}
       tabIndex={-1}
-      x-class={[item, danger && menuItemDanger, className]}
+      x-class={[item, danger && menuItemDanger, classNames?.radioItem, className]}
       disabled={disabled}
       onClick={select}
     >

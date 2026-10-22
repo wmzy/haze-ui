@@ -231,6 +231,13 @@ import DropdownMenuDemo from './demos/DropdownMenuDemo';
 import ContextMenuDemo from './demos/ContextMenuDemo';
 
 import NavigationBarDemo from './demos/NavigationBarDemo';
+import NavigationMenuDemo from './demos/NavigationMenuDemo';
+import ButtonGroupDemo from './demos/ButtonGroupDemo';
+import InputGroupDemo from './demos/InputGroupDemo';
+import MeterDemo from './demos/MeterDemo';
+import CopyButtonDemo from './demos/CopyButtonDemo';
+import HeatmapDemo from './demos/HeatmapDemo';
+import TimeGridDemo from './demos/TimeGridDemo';
 
 import BackToTopDemo from './demos/BackToTopDemo';
 
@@ -283,7 +290,9 @@ import DateTimePickerDemo from './demos/DateTimePickerDemo';
 // ─── Demo registry ─────────────────────────────────────────────
 const demos: Record<string, () => ReactNode> = {
   button: ButtonDemo,
+  'button-group': ButtonGroupDemo,
   input: InputDemo,
+  'input-group': InputGroupDemo,
   select: SelectDemo,
   checkbox: CheckboxDemo,
   switch: SwitchDemo,
@@ -377,6 +386,11 @@ const demos: Record<string, () => ReactNode> = {
   'dropdown-menu': DropdownMenuDemo,
   'context-menu': ContextMenuDemo,
   'navigation-bar': NavigationBarDemo,
+  'navigation-menu': NavigationMenuDemo,
+  meter: MeterDemo,
+  'copy-button': CopyButtonDemo,
+  heatmap: HeatmapDemo,
+  'time-grid': TimeGridDemo,
   'back-to-top': BackToTopDemo,
   affix: AffixDemo,
   container: ContainerDemo,

@@ -182,6 +182,20 @@ const DESCRIPTIONS = {
     'line/area/bar/pie charts over `recharts` (a haze-ui dependency), colors and axes on haze tokens; series cycle the semantic palette, `renderTooltip` customizes the tooltip.',
   Schedule:
     'calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.',
+  NavigationMenu:
+    'hover mega-menu navigation (WAI-ARIA disclosure navigation pattern): `NavigationMenuTrigger` opens `NavigationMenuContent` panels with a ~100ms intent dwell and ~300ms pointer grace, instantly switching between open panels; `activeValue` is controllable, Escape closes, left/right arrows traverse triggers.',
+  ButtonGroup:
+    'attached button bar — corners and seams merge via wrapper CSS while children stay real focusable `Button`s; group-wide `size`/`variant`/`disabled` fill in on children that leave them unset, `ButtonGroupSeparator` divides the bar (1px rule or a glyph/label).',
+  InputGroup:
+    'field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.',
+  Meter:
+    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid tone) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',
+  CopyButton:
+    'one-click copy button over Button\u2019s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.',
+  Heatmap:
+    'GitHub-style activity calendar: week columns × weekday rows of squares, `data` (array or Record) binned into `levels` intensity steps (default 4) and tinted via `color-mix` of primary↔bg-subtle — light/dark/brand themes follow automatically; `getLabel`/`getMonthLabel`/`getWeekdayLabel`/`summary` carry all i18n, RSC-safe (hook-free).',
+  TimeGrid:
+    'single-select `\'HH:mm\'` slot grid generated from `from`/`to` (inclusive) and a minute `step` (default 60): ARIA radiogroup of native buttons with roving tabindex, arrows move-and-select, `value` is ControlOrValue, `name` rides a hidden input bridge for FormData/server actions.',
   Chip: 'rounded status chip with optional icon and close button.',
   CodeBlock:
     'monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.',

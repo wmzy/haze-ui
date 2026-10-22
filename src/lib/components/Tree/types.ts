@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 /**
@@ -141,6 +141,14 @@ export type TreeProps = {
   selectedKeys?: ControlOrValue<string[]>;
   /** （受控）复选的节点 */
   checkedKeys?: ControlOrValue<string[]>;
+  /**
+   * Forwarded to the root `role="tree"` container `<div>` — the same
+   * node every render path (nested, virtualized, empty search) roots
+   * at. The roving-tabindex model keeps its internal handle alongside
+   * (merged), so a consumer ref observes without disturbing focus
+   * bookkeeping.
+   */
+  ref?: Ref<HTMLDivElement>;
   /** 自定义类名 */
   className?: string;
   /** 展开/收起回调 */

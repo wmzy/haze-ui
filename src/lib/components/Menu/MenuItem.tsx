@@ -4,6 +4,8 @@ import { css } from '@linaria/core';
 
 import { menuItemDanger, menuItemIcon, menuItemKbd } from './menu-item-styles';
 
+import { useMenuClassNames } from './MenuContext';
+
 type MenuItemOwnProps = {
   onSelect?: () => void;
   disabled?: boolean;
@@ -96,6 +98,7 @@ export default function MenuItem<T extends ElementType = 'button'>({
   as,
   ...rest
 }: MenuItemProps<T>) {
+  const classNames = useMenuClassNames();
   const Tag = (as ?? 'button');
   const isNativeButton = as === undefined || as === 'button';
   return (
@@ -104,7 +107,7 @@ export default function MenuItem<T extends ElementType = 'button'>({
       role='menuitem'
       data-slot='menu-item'
       tabIndex={-1}
-      x-class={[item, danger && menuItemDanger, className]}
+      x-class={[item, danger && menuItemDanger, classNames?.item, className]}
       {...(isNativeButton
         ? { disabled }
         : { 'aria-disabled': disabled || undefined })}

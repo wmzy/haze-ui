@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/table.css';
 
 export { Table, TableHead, TableBody, TableRow, TableCell };
-export type { TableProps, TableHeadProps, TableBodyProps, TableRowProps, TableCellProps } from 'haze-ui';
+export type { TableProps, TableClassNames, TableHeadProps, TableBodyProps, TableRowProps, TableCellProps } from 'haze-ui';

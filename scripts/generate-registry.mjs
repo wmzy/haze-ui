@@ -54,7 +54,13 @@
  * is carried over from the first manual iteration of this registry,
  * and a `base` meta item (type `registry:base`) references every
  * component item through `registryDependencies` — one command,
- * `shadcn add wmzy/haze-ui/base`, installs the whole design system.
+ * `npx shadcn add wmzy/haze-ui/base`, installs the whole design system.
+ * On top of those, `registry:block` items (login-block, dashboard-block,
+ * crud-block) vendor the docs-site full-page compositions from
+ * src/views/Blocks/blocks/ as consumer-owned source: '@/lib' imports
+ * rewritten to the 'haze-ui' barrel, the css closure prepended, npm deps
+ * (zod, react-use-control) declared, and every rendered component's
+ * wrapper item pulled in through registryDependencies.
  * Pure-logic exports (hooks, TOKEN_REGISTRY/COMPONENT_TOKENS,
  * LocaleProvider string packs, direction utils, the useControl
  * re-export, …) ship no css of their own and are skipped — the run log
@@ -444,6 +450,20 @@ const descriptions = {
   menu: 'Lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).',
   'model-picker': 'Controllable dropdown for selecting the active model.',
   'navigation-bar': 'Top nav bar with `brand` and `end` slots plus `NavLink` items.',
+  'navigation-menu':
+    'Hover mega-menu navigation bar: triggers open large content panels (link columns, card grids — any ReactNode) after an intent dwell with a pointer grace period; controllable `activeValue`, Escape closes, arrows traverse triggers.',
+  'button-group':
+    'Attached button bar: merged corners and seams, group-wide size/variant/disabled, separator sub-component.',
+  'input-group':
+    'Field cluster: prefix/suffix addons (icon, text, button) merged with Input/Select into one attached control.',
+  meter:
+    'Read-only semantic gauge: value normalized over min/max, threshold bands recolor track and bar, visible label + aria-labelledby, showValue readout, three track sizes.',
+  'copy-button':
+    'Copy-to-clipboard button (Button skin, useClipboard plumbing, copied-state feedback with SR announcement) plus Snippet: the inline mono code chip with a docked copy button.',
+  heatmap:
+    'GitHub-style activity calendar: week × weekday grid of squares, intensity-binned by value (levels prop), theme-aware color-mix scale, label props for all i18n.',
+  'time-grid':
+    "Single-select 'HH:mm' slot grid from a from/to window and minute step; radiogroup semantics with roving-tabindex arrow selection, controllable value, disabled slots.",
   'number-input': 'Numeric input with `min`/`max`/`step`.',
   'otp-input': 'One-time-password input of `length` segmented character boxes.',
   'pagination': 'Page navigation with controllable `page` and ellipsis windows.',
@@ -557,7 +577,8 @@ const descriptions = {
 // missing entry (same contract as the descriptions table).
 const CATEGORY_GROUPS = {
   general: [
-    'avatar', 'avatar-group', 'badge', 'button', 'count-up', 'countdown',
+    'avatar', 'avatar-group', 'badge', 'button', 'button-group',
+    'copy-button', 'count-up', 'countdown',
     'divider', 'ellipsis', 'icon', 'mark', 'tag', 'tag-group',
     'typography',
   ],
@@ -570,13 +591,14 @@ const CATEGORY_GROUPS = {
     'cascader', 'checkbox', 'color-picker', 'combobox', 'date-field',
     'datepicker',
     'date-range-picker', 'fieldset', 'file-input',
-    'form', 'image-crop', 'inline-edit', 'input', 'mentions',
+    'form', 'image-crop', 'inline-edit', 'input', 'input-group', 'mentions',
     'number-input', 'otp-input',
     'password-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
     // 'time-field' 无独立 css family——其样式并入 date-field（segmented-field
     // 引擎在 DateField 目录）+ time-picker 闭包，见 dist/css-manifest.json
-    'time-picker', 'toggle', 'transfer', 'tree-select', 'upload',
+    'time-grid', 'time-picker', 'toggle', 'transfer', 'tree-select',
+    'upload',
   ],
   overlay: [
     'bottom-sheet', 'confirm-dialog', 'context-menu', 'dialog', 'drawer',
@@ -584,15 +606,15 @@ const CATEGORY_GROUPS = {
   ],
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
-    'code-block', 'data-table', 'descriptions', 'image', 'indicator',
-    'json-view', 'kbd', 'list', 'progress', 'qr-code', 'schedule',
-    'sparkline', 'spoiler', 'stat', 'table', 'timeline', 'tree',
-    'virtual-list', 'watermark',
+    'code-block', 'data-table', 'descriptions', 'heatmap', 'image',
+    'indicator', 'json-view', 'kbd', 'list', 'meter', 'progress',
+    'qr-code', 'schedule', 'sparkline', 'spoiler', 'stat', 'table',
+    'timeline', 'tree', 'virtual-list', 'watermark',
   ],
   navigation: [
     'affix', 'anchor', 'back-to-top', 'breadcrumb', 'command',
-    'float-button', 'navigation-bar', 'pagination', 'stepper', 'tabs',
-    'toolbar', 'tour',
+    'float-button', 'navigation-bar', 'navigation-menu', 'pagination',
+    'stepper', 'tabs', 'toolbar', 'tour',
   ],
   feedback: [
     'alert', 'async-section', 'banner', 'empty', 'error-boundary',
@@ -697,6 +719,21 @@ const baseDocs = (itemCount) =>
     ...themeSection(TOKENS_FAMILY),
     '',
     `Details: ${REGISTRY_URL}`,
+  ].join('\n');
+
+const blockDocs = (block) =>
+  [
+    block.description,
+    '',
+    ...installSection(block.name),
+    '',
+    `The full-page source lands at \`components/block/haze/${block.name}.tsx\` (via the \`@block/\` target placeholder from \`components.json\`) — vendored, so you own and edit it. Component imports are rewritten to the \`haze-ui\` npm package, which is installed automatically${block.npmDependencies.length > 0 ? ` together with ${block.npmDependencies.map((d) => `\`${d}\``).join(' and ')}` : ''}.`,
+    '',
+    `The file imports the stylesheet of every component it renders (\`haze-ui/css/tokens.css\` + ${block.cssFamilies.length} component css files), so no extra stylesheet setup is needed.`,
+    '',
+    ...themeSection(TOKENS_FAMILY),
+    '',
+    `Live preview and source: https://wmzy.github.io/haze-ui/#/blocks — ${REGISTRY_URL}`,
   ].join('\n');
 
 // ---- assemble items ----------------------------------------------------
@@ -820,6 +857,161 @@ items.push({
   ],
   content: baseWrapper,
 });
+
+// ---- blocks (registry:block items vendored from the docs-site demos) --
+//
+// Component items ship thin wrappers (haze-ui stays a dependency); blocks
+// are the opposite: full-page compositions VENDORED into the consumer's
+// project — the shadcn block contract is "you own the page". The source
+// of truth is src/views/Blocks/blocks/*.tsx (the docs-site Blocks
+// gallery, deliberately self-contained: only '@/lib' + npm imports, all
+// layout glue as inline styles over --haze-* tokens). The generator
+// rewrites '@/lib…' imports to the published 'haze-ui' barrel, prepends
+// the css imports for the block's component closure and embeds the
+// result as files[].content.
+//
+// cssFamilies mirrors the per-block closure in src/views/Blocks/index.tsx
+// (the battle-tested list the StackBlitz export uses) — the run fails if
+// an entry is not a registry item, so the two lists cannot drift silently.
+const blocksDir = path.join(rootDir, 'src', 'views', 'Blocks', 'blocks');
+const BLOCKS = [
+  {
+    name: 'login-block',
+    source: 'LoginBlock.tsx',
+    title: 'Login block (brand panel + Card form loop, zod-validated)',
+    description:
+      'Full-page login: brand side panel plus a centered Card running the complete form loop — `useForm` + `Form` + `FormItem` over `InputCore`/`PasswordInputCore`/`CheckboxCore`, validated by one zod schema through `standardSchemaFormValidator`.',
+    cssFamilies: ['card', 'form', 'input', 'password-input', 'checkbox', 'button', 'alert'],
+    npmDependencies: ['zod', 'react-use-control'],
+    categories: ['blocks', 'authentication', 'form'],
+  },
+  {
+    name: 'dashboard-block',
+    source: 'DashboardBlock.tsx',
+    title: 'Dashboard block (AppShell + Sidebar + Stat row + DataTable)',
+    description:
+      'SaaS admin starter: `AppShell` + `Sidebar` navigation, `Breadcrumb` trail, a `Stat` card row and a `DataTable` with toolbar strip (density `Segmented` + `dataTableToCsv` export), client-side pagination and column toggling.',
+    cssFamilies: [
+      'app-shell', 'sidebar', 'tooltip', 'stat', 'data-table', 'checkbox',
+      'dropdown-menu', 'empty', 'input', 'pagination', 'skeleton', 'table',
+      'virtual-list', 'breadcrumb', 'button', 'badge', 'segmented', 'select',
+      'chip', 'spinner', 'visually-hidden',
+    ],
+    npmDependencies: ['react-use-control'],
+    categories: ['blocks', 'dashboard', 'data-display'],
+  },
+  {
+    name: 'crud-block',
+    source: 'CrudBlock.tsx',
+    title: 'CRUD block (Tree master → DataTable detail + Dialog form + Toast)',
+    description:
+      'Master–detail CRUD over local state: a `Tree` picks the team, the `DataTable` lists its pipelines, a `Dialog` hosts the zod-validated create/edit `Form`, `ConfirmDialog` guards deletes and `useToast` reports every mutation.',
+    cssFamilies: [
+      'tree', 'data-table', 'dialog', 'confirm-dialog', 'toast', 'form',
+      'input', 'select', 'button', 'badge', 'segmented', 'kbd', 'checkbox',
+      'dropdown-menu', 'empty', 'pagination', 'skeleton', 'spinner', 'table',
+      'virtual-list', 'visually-hidden',
+    ],
+    npmDependencies: ['zod', 'react-use-control'],
+    categories: ['blocks', 'data-display', 'form'],
+  },
+];
+
+// Every name the main barrel exports (values + types) — the vendored block
+// may only import from this set, otherwise the rewritten 'haze-ui' import
+// would not compile in the consumer's project.
+const barrelExports = new Set(
+  [...modules.values()].flatMap((mod) => [...mod.values, ...mod.types])
+);
+
+const blockSource = (block) => {
+  const file = path.join(blocksDir, block.source);
+  if (!existsSync(file)) {
+    fail(`block source "${path.relative(rootDir, file)}" does not exist — fix the BLOCKS entry`);
+  }
+  const raw = readFileSync(file, 'utf8');
+  // Blocks are self-contained by contract: after rewriting '@/lib…' to the
+  // published barrel, no '@/…' alias (docs-site code), no relative import
+  // (gallery plumbing) and no linaria css may remain — vendored source must
+  // build in a plain consumer project.
+  const vendored = raw.replace(/from\s+'@\/lib[^']*'/g, "from 'haze-ui'");
+  for (const m of vendored.matchAll(/from\s+'([^']*)'/g)) {
+    const spec = m[1];
+    if (spec.startsWith('@/') && spec !== 'haze-ui') {
+      fail(`block "${block.name}" imports '${spec}' — blocks may only depend on '@/lib' and npm packages`);
+    }
+    if (spec.startsWith('.')) {
+      fail(`block "${block.name}" has a relative import '${spec}' — blocks must be self-contained single files`);
+    }
+    if (spec === '@linaria/core') {
+      fail(`block "${block.name}" uses linaria css — vendored block source would not build in a consumer project (inline styles over --haze-* tokens only)`);
+    }
+  }
+  // Every named import from the rewritten barrel must exist in the public
+  // package (catches a block leaning on a non-exported symbol).
+  for (const m of vendored.matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+'haze-ui'/g)) {
+    for (const clause of m[1].split(',')) {
+      const words = clause.trim().split(/\s+/).filter(Boolean);
+      if (words.length === 0) continue;
+      const name = words[words.length - 1];
+      if (!barrelExports.has(name)) {
+        fail(`block "${block.name}" imports "${name}" which the haze-ui barrel does not export`);
+      }
+    }
+  }
+  const cssImports = [TOKENS_FAMILY, ...[...block.cssFamilies].sort()]
+    .filter((family, index, all) => all.indexOf(family) === index)
+    .map((family) => `import 'haze-ui/css/${family}.css';`)
+    .join('\n');
+  return `// haze-ui registry block — generated by scripts/generate-registry.mjs
+// from src/views/Blocks/blocks/${block.source}.
+//
+// Unlike the component items (thin re-export wrappers over the haze-ui npm
+// package), a block is VENDORED source: a full page you own and edit.
+// The component imports are rewritten from the docs site's '@/lib' alias
+// to the published 'haze-ui' package and every stylesheet of the page's
+// component closure is imported below, so the file is self-contained.
+// npm dependencies beyond haze-ui: ${block.npmDependencies.length > 0 ? block.npmDependencies.join(', ') : 'none'}.
+//
+// Theming (once per app): apply the token classes to a root element, e.g.
+//   import { lightTheme, spacing, typography } from 'haze-ui';
+//   <div className={\`\${lightTheme} \${spacing} \${typography}\`}>…</div>
+// (darkTheme is a drop-in swap).
+
+${cssImports}
+
+${vendored}`;
+};
+
+for (const block of BLOCKS) {
+  for (const family of block.cssFamilies) {
+    if (!families.has(family)) {
+      fail(`block "${block.name}" cssFamilies lists "${family}" which is not a registry item — fix the entry (mirror src/views/Blocks/index.tsx)`);
+    }
+  }
+  items.push({
+    name: block.name,
+    type: 'registry:block',
+    title: block.title,
+    description: block.description,
+    author: AUTHOR,
+    docs: blockDocs(block),
+    categories: block.categories,
+    dependencies: ['haze-ui', ...block.npmDependencies],
+    // The wrapper items of every component the page renders — resolved
+    // recursively by the CLI, each bringing its own stylesheet import and
+    // customization seam. Full GitHub item addresses, like the base item.
+    registryDependencies: block.cssFamilies.map(ghItem),
+    files: [
+      {
+        path: `registry/${block.name}.tsx`,
+        type: 'registry:block',
+        target: `@block/haze/${block.name}.tsx`,
+      },
+    ],
+    content: blockSource(block),
+  });
+}
 items.sort((a, b) => a.name.localeCompare(b.name));
 
 // ---- write the GitHub registry (root index + registry/ directory) -----
@@ -892,8 +1084,14 @@ const distItems = items
     docs,
     categories,
     dependencies,
-    registryDependencies, // undefined on non-base items — dropped by JSON.stringify
-    files: [{ path: `components/haze/${name}.tsx`, content, type }],
+    registryDependencies, // undefined on items without cross-item refs — dropped by JSON.stringify
+    files: [
+      {
+        path: `${type === 'registry:block' ? 'components/block/haze' : 'components/haze'}/${name}.tsx`,
+        content,
+        type,
+      },
+    ],
   }));
 writeFileSync(
   path.join(distDir, 'registry.json'),
@@ -1053,6 +1251,36 @@ if (baseItems.length !== 1) {
   }
 }
 
+// Block items: type `registry:block`, vendored single-file source, and
+// every registryDependency must resolve to a real item of this registry
+// (the wrapper items the CLI pulls in recursively). npm deps beyond
+// haze-ui (zod, react-use-control) are part of the contract the vendored
+// source relies on — checkItems already enforces haze-ui itself.
+const blockItems = githubIndex.items.filter((item) => item.type === 'registry:block');
+if (blockItems.length === 0) {
+  problems.push('registry.json: no registry:block items — the BLOCKS list in the generator is empty?');
+}
+for (const item of blockItems) {
+  if (item.files.length !== 1 || !item.files[0].path.endsWith('.tsx')) {
+    problems.push(`registry.json: block "${item.name}" must vendor exactly one .tsx source file`);
+  }
+  if (!Array.isArray(item.registryDependencies) || item.registryDependencies.length === 0) {
+    problems.push(`registry.json: block "${item.name}" has no registryDependencies — it must reference the wrapper items of its component closure`);
+  }
+  for (const dep of item.registryDependencies ?? []) {
+    if (!githubNames.has(dep.split('/').pop())) {
+      problems.push(`registry.json: block "${item.name}" registryDependency "${dep}" matches no item`);
+    }
+  }
+  const declared = new Set(item.dependencies);
+  const vendored = items.find((candidate) => candidate.name === item.name)?.content ?? '';
+  for (const pkg of ['zod', 'react-use-control']) {
+    if (vendored.includes(`from '${pkg}'`) && !declared.has(pkg)) {
+      problems.push(`registry.json: block "${item.name}" imports "${pkg}" but does not declare it in dependencies`);
+    }
+  }
+}
+
 if (problems.length > 0) {
   for (const problem of problems) console.error(`generate-registry: self-check failed — ${problem}`);
   process.exit(1);
@@ -1071,6 +1299,14 @@ console.log(
   `  base item: registryDependencies on ${baseReportItem.registryDependencies.length} component items ` +
     `(tokens + every css family) — npx shadcn@latest add wmzy/haze-ui/base installs the whole system`
 );
+const blockReportItems = items.filter((item) => item.type === 'registry:block');
+if (blockReportItems.length > 0) {
+  console.log(
+    `  blocks (${blockReportItems.length}): ${blockReportItems
+      .map((item) => `${item.name} ← ${item.registryDependencies.length} wrapper items`)
+      .join(', ')}`
+  );
+}
 if (peerItems.length > 0) {
   console.log(
     `  optional peers added: ${peerItems

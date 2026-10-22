@@ -9,6 +9,7 @@ import { ArrowLeftRight, Monitor, Moon, Play, Smartphone, Tablet } from 'lucide-
 import { Button, Icon, darkTheme } from '@/lib';
 
 import { resolveDemo } from './demo-sources';
+import PropsPlayground from './PropsPlayground';
 import { buildStackblitzProject } from './stackblitz';
 
 /*
@@ -256,42 +257,51 @@ export default function DemoPreview({
           </Button>
         </div>
       </div>
-      {live && demo ? (
-        <div className={embedArea}>
-          {viewport.width === null ? (
+      {/* Interactive props debugger (collapsible, default closed): sits
+       * between the toolbar and the sandbox so it never inherits the
+       * preview's dark/RTL scope. The render callback receives the demo
+       * node with the user's prop overrides applied when its root is a
+       * single clonable element. */}
+      <PropsPlayground name={name} demo={children}>
+        {(node) =>
+          live && demo ? (
+            <div className={embedArea}>
+              {viewport.width === null ? (
+                <div
+                  ref={mountRef}
+                  className={embedFrame}
+                  data-slot='stackblitz-embed'
+                  style={embedFrameStyle}
+                />
+              ) : (
+                <div className={constrained} style={{ maxWidth: viewport.width }}>
+                  <div
+                    ref={mountRef}
+                    className={embedFrame}
+                    data-slot='stackblitz-embed'
+                    style={embedFrameStyle}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
             <div
-              ref={mountRef}
-              className={embedFrame}
-              data-slot='stackblitz-embed'
-              style={embedFrameStyle}
-            />
-          ) : (
-            <div className={constrained} style={{ maxWidth: viewport.width }}>
-              <div
-                ref={mountRef}
-                className={embedFrame}
-                data-slot='stackblitz-embed'
-                style={embedFrameStyle}
-              />
+              ref={previewRef}
+              className={previewArea}
+              x-class={[dark && darkTheme]}
+              dir={rtl ? 'rtl' : 'ltr'}
+            >
+              {viewport.width === null ? (
+                node
+              ) : (
+                <div className={constrained} style={{ maxWidth: viewport.width }}>
+                  {node}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ) : (
-        <div
-          ref={previewRef}
-          className={previewArea}
-          x-class={[dark && darkTheme]}
-          dir={rtl ? 'rtl' : 'ltr'}
-        >
-          {viewport.width === null ? (
-            children
-          ) : (
-            <div className={constrained} style={{ maxWidth: viewport.width }}>
-              {children}
-            </div>
-          )}
-        </div>
-      )}
+          )
+        }
+      </PropsPlayground>
     </div>
   );
 }

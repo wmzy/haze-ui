@@ -50,6 +50,7 @@ export const zh: DeepPartial<SiteStrings> = {
     streamingA11y: '流式无障碍',
     motion: '动效预设',
     figmaTokens: 'Figma 中的设计令牌',
+    serverActions: 'React 19 Actions',
   },
   guideSummaries: {
     darkMode: '明暗两套 token 类、useDarkMode 钩子与运行时品牌主题。',
@@ -61,6 +62,8 @@ export const zh: DeepPartial<SiteStrings> = {
     motion: '基于 data-state 的进出场动画预设，挂在动效 token 之上。',
     figmaTokens:
       '把 W3C DTF 令牌导出接进 Tokens Studio 与 Figma Variables：流程与局限。',
+    serverActions:
+      '用原生 FormData、useActionState 与 useOptimistic 驾驭 haze-ui 的 Server Actions。',
   },
   blocks: {
     title: '页面区块',
@@ -125,6 +128,7 @@ export const zh: DeepPartial<SiteStrings> = {
       '头像堆叠：层叠排列，超出部分以 +N 溢出角标展示（max/total）。',
     Badge: '小型内联状态标签，支持变体与颜色。',
     Button: '操作按钮：variant/size/square 选项，底层为原生 <button>。',
+    ButtonGroup: '连体按钮栏：圆角与接缝合并，组级 size/variant/disabled 下发，附分隔子件。',
     CountUp:
       '数字滚动动画：rAF + 缓动插值逼近目标值，prefers-reduced-motion 时瞬时落位。',
     Countdown:
@@ -180,6 +184,11 @@ export const zh: DeepPartial<SiteStrings> = {
       '图片裁剪（配 Upload 用）：归一化裁剪区域可控，支持比例锁定与圆形头像遮罩，键盘可完整操作（方向键移动、Shift+方向键缩放）。',
     InlineEdit: '点击即原地编辑的文本值。',
     Input: '文本输入框：支持前后修饰，封装自 InputCore。',
+    InputGroup: '字段组合：前/后缀 addon（图标、文字、按钮）与 Input/Select 连为一体。',
+    Meter: '只读语义化仪表：值越过阈值边界时 track 与 bar 随之换色。',
+    CopyButton: '一键复制按钮，带「已复制」反馈态；附 Snippet 代码片段条。',
+    Heatmap: 'GitHub 风格活跃度热力图：格子按数值分箱着色，色阶跟随主题。',
+    TimeGrid: '按时段窗口与步长生成的时间格子选择器：方向键漫游并选中。',
     Mentions: '@提及输入：按触发字符从选项列表弹出建议。',
     NumberInput: '数字输入框，支持 min/max/step。',
     OTPInput: '一次性验证码输入：length 个分段字符格。',
@@ -265,6 +274,7 @@ export const zh: DeepPartial<SiteStrings> = {
     FloatButton:
       '悬浮操作按钮；FloatButtonGroup 将动作收纳在展开触发器之后，内建回顶与帮助图标。',
     NavigationBar: '顶部导航栏：brand 与 end 插槽。',
+    NavigationMenu: '悬停式大型导航菜单：触发器按意图延迟展开大面板，指针离开有宽限期；activeValue 可受控。',
     Pagination: '分页导航：page 可控，带省略号窗口。',
     Stepper: '步骤指示器，由 activeStep 驱动（Step 子项）。',
     Tabs: '选项卡面板切换，活动页签可控。',

@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import Tree from './Tree';
@@ -931,5 +932,33 @@ describe('Tree search filtering', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Tree ref forwarding', () => {
+  it('forwards the ref to the root tree container', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<Tree treeData={basicData} ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('role', 'tree');
+    expect(ref.current).toHaveAttribute('data-slot', 'tree');
+  });
+
+  it('forwards the ref on the virtualized path', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<Tree treeData={basicData} virtualized ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('role', 'tree');
+  });
+
+  it('keeps the roving-tabindex keyboard model working with a consumer ref attached', async () => {
+    const user = userEvent.setup();
+    const ref = createRef<HTMLDivElement>();
+    render(<Tree treeData={basicData} ref={ref} />);
+    const [first, second] = screen.getAllByRole('treeitem');
+    await user.tab();
+    expect(document.activeElement).toBe(first);
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(second);
   });
 });

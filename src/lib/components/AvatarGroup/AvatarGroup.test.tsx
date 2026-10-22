@@ -68,6 +68,11 @@ describe('AvatarGroup', () => {
     expect(frames[3]).toHaveTextContent('+2');
   });
 
+  it('formats the overflow chip through overflowLabel', () => {
+    render(<Group max={3} overflowLabel={(count) => `还有 ${count} 位`} />);
+    expect(screen.getByText('还有 2 位')).toBeInTheDocument();
+  });
+
   it('uses total as the overflow count when provided', () => {
     render(<Group max={2} total={99} />);
     expect(screen.getByText('A')).toBeInTheDocument();

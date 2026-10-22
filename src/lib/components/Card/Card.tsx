@@ -15,7 +15,8 @@ const base = css`
   color: var(--haze-color-text);
 `;
 
-const variants = {
+// eslint-disable-next-line react-refresh/only-export-components -- Card 目录按目录原子收录在 RSC-safe 名单（scripts/rsc-safe.mjs）里，拆 sibling styles 文件会让 Card/index.ts 的传递闭包跨客户端边界（dist-esm-contract 拦截）；皮肤常量与组件同文件导出是 TagGroup / Schedule 同款 suppression。
+export const variants = {
   elevated: css`
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-md);

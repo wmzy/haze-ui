@@ -51,8 +51,15 @@ type TabsContextValue = {
    *  every part (the strip chrome, each tab, the overflow areas). */
   variant: TabsVariant;
   /** Unmount inactive tab panels instead of keeping them alive and
-   *  hidden — see `destroyInactiveTabPane` on `<Tabs>`. */
+   * hidden — see `destroyInactiveTabPane` on `<Tabs>`. */
   destroyInactiveTabPane: boolean;
+  /** Defer each panel's first mount to its first activation — see
+   * `lazy` on `<Tabs>`. */
+  lazy: boolean;
+  /** Values that have been active at least once (seeded with the
+   *  initial value) — the lazy-mount ledger `TabPanel` consults
+   *  before mounting an inactive panel. */
+  activated: ReadonlySet<string>;
   /** Renders the strip-tail `+` button when set (TabList reads it). */
   addable: TabsAddable | undefined;
   classNames: TabsClassNames | undefined;

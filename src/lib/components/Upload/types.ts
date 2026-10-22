@@ -94,6 +94,29 @@ type UploadHandle = {
   clear: () => void;
 };
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape) for the Upload
+ * family: declared once on `<Upload>` (or `<UploadCore>`) and applied
+ * to the drop zone and handed down to the built-in list. Consumer
+ * classes are appended at the end of each part's class list; per-part
+ * `className` props remain for one-off tweaks and still land after the
+ * slot class.
+ */
+type UploadClassNames = {
+  /** The drop zone / click-to-pick area (`data-slot='drop-zone'`) —
+   *  the dashed drop area in droppable mode, the plain picker area
+   *  otherwise. The component renders no single root element: the zone
+   *  and the built-in list are siblings. */
+  trigger?: string;
+  /** The built-in list root `<ul>` (`data-slot='list'`) — only rendered
+   *  while `showUploadList` is on and files exist. */
+  list?: string;
+  /** Every list row / picture-card (`<li>`, `data-slot='item'`). */
+  item?: string;
+  /** Every progress bar in a row / card mask (the `Progress` element). */
+  progress?: string;
+}
+
 /** Internal tracked row: public status snapshot plus the stable uid the
  * list keys on (value items carry no serializable identity). Echo
  * entries hold their terminal `status`/`percent` from the
@@ -101,6 +124,7 @@ type UploadHandle = {
 type UploadEntry = UploadFileStatus & { uid: string };
 
 export type {
+  UploadClassNames,
   UploadStatus,
   UploadFile,
   UploadValueItem,

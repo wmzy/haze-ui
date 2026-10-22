@@ -2,6 +2,7 @@ import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 import type { MenuDataItem } from '../../utils/menuItems';
+import type { DropdownMenuClassNames } from './DropdownMenuContext';
 
 import { useCallback, useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { css } from '@linaria/core';
@@ -60,8 +61,20 @@ type DropdownMenuProps = {
    * trigger plus the content built from the data.
    */
   items?: MenuDataItem[];
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): declared once
+   * here and distributed to every family part through context (see
+   * {@link DropdownMenuClassNames}). Slot classes are appended at the
+   * end of each part's class list; per-part `className` props still
+   * land after the slot class. Not passing it renders identical output.
+   */
+  classNames?: DropdownMenuClassNames;
   children?: ReactNode;
   className?: string;
+  /** Imperative handle (`open`/`close`/`focusTrigger`) — the family
+   *  keeps its React 19 command-object ref; the root wrapper `<div>`
+   *  is reached through `classNames.root` styling or wrapper queries,
+   *  not a second DOM ref. */
   ref?: Ref<DropdownMenuHandle>;
 };
 
@@ -88,6 +101,7 @@ export default function DropdownMenu({
   onOpenChange,
   collisionPadding,
   items,
+  classNames,
   children,
   className,
   ref,
@@ -152,9 +166,13 @@ export default function DropdownMenu({
         contentId,
         focusRequestRef,
         floating,
+        classNames,
       }}
     >
-      <div data-slot='dropdown-menu' x-class={[wrapper, className]}>
+      <div
+        data-slot='dropdown-menu'
+        x-class={[wrapper, classNames?.root, className]}
+      >
         {items !== undefined ? (
           <>
             <DropdownMenuTrigger>⋯</DropdownMenuTrigger>

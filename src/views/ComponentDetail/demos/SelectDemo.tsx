@@ -90,6 +90,12 @@ export default function SelectDemo() {
     'vue',
     'svelte',
   ]);
+  // Tags-mode and maxCount examples.
+  const [freeTags, setFreeTags, freeTagsCtrl] = useControl<string[]>(
+    undefined,
+    []
+  );
+  const [capped, , cappedCtrl] = useControl<string[]>(undefined, []);
   // Number-valued generic usage: one control per mode, both typed as
   // numbers end to end.
   const [year, , yearCtrl] = useControl<number>(undefined, 2025);
@@ -132,8 +138,8 @@ export default function SelectDemo() {
       <h1>Select</h1>
       <p className={intro}>
         Dropdown selection with native &lt;select&gt; semantics, plus
-        searchable / grouped / clearable / loading / maxTagCount modes on
-        the floating listbox engine.
+        searchable / grouped / clearable / tags / maxCount / loading /
+        maxTagCount modes on the floating listbox engine.
       </p>
 
       <div className={section}>
@@ -311,6 +317,77 @@ export default function SelectDemo() {
       </div>
 
       <div className={section}>
+        <h2>Tags</h2>
+        <p style={noteStyle}>
+          <code>tags</code> implies multiple selection and moves the input
+          into the trigger: selected values render as chips beside the
+          field, typing filters the panel, and{' '}
+          <code>Enter</code> on an unmatched query creates a new tag from
+          it (a highlighted <code>Create &quot;…&quot;</code> row — deduped
+          against existing options and the selection).{' '}
+          <strong>Backspace</strong> on an empty field removes the last
+          chip; Escape closes the panel and keeps focus in the field.
+        </p>
+        <div className={fieldRow}>
+          <Select
+            tags
+            value={freeTagsCtrl}
+            placeholder='Pick or type frameworks…'
+          >
+            {FRAMEWORKS.map((framework) => (
+              <Option key={framework.value} value={framework.value}>
+                {framework.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div className={row}>
+          <span style={valueStyle}>
+            Value: {freeTags.length > 0 ? freeTags.join(', ') : '[]'}
+          </span>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={() => setFreeTags([])}
+            disabled={freeTags.length === 0}
+          >
+            Clear
+          </Button>
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>maxCount (multiple / tags)</h2>
+        <p style={noteStyle}>
+          <code>maxCount</code> caps the selection in multiple and tags
+          modes: once filled, the remaining options dim and carry{' '}
+          <code>aria-disabled</code> — clicks and Enter are rejected until
+          something is deselected. Selected options always stay removable;
+          the tags create row is suppressed at the cap.
+        </p>
+        <div className={fieldRow}>
+          <Select
+            multiple
+            maxCount={2}
+            value={cappedCtrl}
+            placeholder='Pick at most two…'
+          >
+            {FRAMEWORKS.map((framework) => (
+              <Option key={framework.value} value={framework.value}>
+                {framework.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div className={row}>
+          <span style={valueStyle}>
+            Selected: {capped.length}
+            {capped.length > 0 ? ` (${capped.join(', ')})` : ''}
+          </span>
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>Loading</h2>
         <p style={noteStyle}>
           <code>loading</code> marks the floating panel busy: the options
@@ -474,6 +551,15 @@ export default function SelectDemo() {
               focus moves there on open, and the input mirrors{' '}
               <strong>aria-activedescendant</strong> so screen readers
               announce highlight moves while typing
+            </li>
+            <li>
+              Tags mode renders the search input inside the trigger next
+              to the chips — it owns the combobox semantics, and the
+              create row is a plain listbox option
+            </li>
+            <li>
+              At a <strong>maxCount</strong> cap, locked options carry{' '}
+              <strong>aria-disabled</strong> and stay visible
             </li>
             <li>
               Option groups are native <strong>optgroup</strong> elements

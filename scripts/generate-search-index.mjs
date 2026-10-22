@@ -142,6 +142,22 @@ const PAGES = [
     zh: 'Figma 中的设计令牌',
   },
   {
+    label: 'React 19 Actions',
+    sublabel: 'Guide',
+    route: '/guides/server-actions',
+    keywords: [
+      'server actions',
+      'useactionstate',
+      'useoptimistic',
+      'form action',
+      'formdata',
+      'next.js',
+      'pending',
+      'optimistic',
+    ],
+    zh: 'React 19 Actions',
+  },
+  {
     label: 'Design Tokens',
     sublabel: 'Reference',
     route: '/tokens',

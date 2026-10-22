@@ -4,6 +4,7 @@ export {default as ContextMenuContent} from './ContextMenuContent';
 export {default as ContextMenuItem} from './ContextMenuItem';
 export {default as ContextMenuSeparator} from './ContextMenuSeparator';
 export type {ContextMenuProps} from './ContextMenu';
+export type {ContextMenuClassNames} from './ContextMenuContext';
 export type {ContextMenuTriggerProps} from './ContextMenuTrigger';
 export type {ContextMenuContentProps} from './ContextMenuContent';
 export type {ContextMenuItemProps} from './ContextMenuItem';

@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/accordion.css';
 
 export { Accordion, AccordionItem };
-export type { AccordionProps, AccordionItemProps } from 'haze-ui';
+export type { AccordionProps, AccordionItemProps, AccordionClassNames } from 'haze-ui';

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { TabsClassNames, TabsVariant, TabsAddable } from './TabsContext';
 import type { TabStatus } from './Tab';
@@ -10,6 +10,7 @@ import { TabsProvider } from './TabsContext';
 import Tab from './Tab';
 import TabList from './TabList';
 import TabPanel from './TabPanel';
+import { useActivatedTabs } from './tab-metas';
 
 /**
  * One tab of the data-driven `items` API on `<Tabs>`: the same affordances
@@ -59,6 +60,15 @@ type TabsProps = {
    */
   destroyInactiveTabPane?: boolean;
   /**
+   * `false` (default) mounts every panel eagerly (hidden behind
+   * `display: none` when inactive). `true` defers each panel's first
+   * mount to its first activation — `items` and compound paths alike.
+   * After the first activation `destroyInactiveTabPane` takes over
+   * again: keep the panel alive and hidden (`false`) or unmount it on
+   * every switch away (`true`).
+   */
+  lazy?: boolean;
+  /**
    * Renders the `+` button at the tail of the tab bar (outside the
    * tablist, so the strip keeps owning nothing but tabs). A real
    * button — a normal tab stop, Enter/Space activates. `onAdd` only
@@ -74,6 +84,13 @@ type TabsProps = {
    */
   classNames?: TabsClassNames;
   className?: string;
+  /**
+   * Forwarded to the root wrapper `<div data-slot='tabs'>` — layout
+   * measurement and `ref.current.focus()`-style element access reach
+   * the family root (the strip and panels keep their own internal
+   * handles).
+   */
+  ref?: Ref<HTMLDivElement>;
   /** Compound mode: `<TabList>` + `<TabPanel>`s. Omit when using `items`. */
   children?: ReactNode;
 };
@@ -89,12 +106,17 @@ export default function Tabs({
   variant = 'line',
   items,
   destroyInactiveTabPane = false,
+  lazy = false,
   addable,
   classNames,
   className,
+  ref,
   children,
 }: TabsProps) {
   const [value, setValue] = useControl(valueControl, '');
+  // Which panels have been activated at least once — the lazy-mount
+  // ledger, shared by the items and compound paths through context.
+  const activated = useActivatedTabs(value, lazy);
 
   const useItems = items !== undefined;
   if (useItems && children != null) {
@@ -133,13 +155,15 @@ export default function Tabs({
   );
 
   return (
-    <div data-slot='tabs' x-class={[base, className, classNames?.root]}>
+    <div ref={ref} data-slot='tabs' x-class={[base, className, classNames?.root]}>
       <TabsProvider
         value={{
           value,
           setValue,
           variant,
           destroyInactiveTabPane,
+          lazy,
+          activated,
           addable,
           classNames,
         }}

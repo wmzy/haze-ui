@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { expect, vi } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createRef } from 'react';
 
 import { floatingHidden } from '../../utils/floating';
 
@@ -10,17 +11,20 @@ import TabList from './TabList';
 import Tab from './Tab';
 import TabPanel from './TabPanel';
 import Tabs, { type TabData } from './Tabs';
+import { tabVariants, listVariants } from './index';
 
 
 function TabsFixture({
   defaultValue = 'one',
   variant,
   destroyInactiveTabPane,
+  lazy,
   addable,
 }: {
   defaultValue?: string;
   variant?: 'line' | 'card' | 'pill';
   destroyInactiveTabPane?: boolean;
+  lazy?: boolean;
   addable?: { onAdd?: () => void; addLabel?: string };
 }) {
   return (
@@ -28,6 +32,7 @@ function TabsFixture({
       value={defaultValue}
       variant={variant}
       destroyInactiveTabPane={destroyInactiveTabPane}
+      lazy={lazy}
       addable={addable}
     >
       <TabList>
@@ -728,6 +733,93 @@ describe('Tabs destroyInactiveTabPane', () => {
 });
 
 // ---------------------------------------------------------------------------
+// lazy: panels mount on first activation (then keep-alive or destroy
+// per destroyInactiveTabPane) — items and compound paths alike
+// ---------------------------------------------------------------------------
+
+describe('Tabs lazy panels', () => {
+  it('mounts only the initially active panel', () => {
+    render(<TabsFixture lazy />);
+    expect(screen.getByText('Panel 1')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 2')).toBeNull();
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+  });
+
+  it('mounts a panel on first activation and keeps it alive afterwards', async () => {
+    const user = userEvent.setup();
+    render(<TabsFixture lazy />);
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.getByText('Panel 2')).toBeInTheDocument();
+    // panel 1 stays mounted (hidden) after its activation — the lazy
+    // counterpart of the default keep-alive
+    expect(screen.getByText('Panel 1')).toBeInTheDocument();
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(2);
+    await user.click(screen.getByRole('tab', { name: 'Tab 1' }));
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(2);
+  });
+
+  it('preserves panel state across switches once a lazy panel has mounted', async () => {
+    const user = userEvent.setup();
+    render(
+      <Tabs value="one" lazy>
+        <TabList>
+          <Tab value="one">Tab 1</Tab>
+          <Tab value="two">Tab 2</Tab>
+        </TabList>
+        <TabPanel value="one">Panel 1</TabPanel>
+        <TabPanel value="two">
+          <input aria-label="second panel input" />
+        </TabPanel>
+      </Tabs>
+    );
+    // never activated: the input does not exist yet
+    expect(screen.queryByLabelText('second panel input')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    await user.type(screen.getByLabelText('second panel input'), 'kept');
+    await user.click(screen.getByRole('tab', { name: 'Tab 1' }));
+    // activated once: the panel stays mounted (hidden) with its state
+    expect(screen.getByLabelText('second panel input')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.getByLabelText('second panel input')).toHaveValue('kept');
+  });
+
+  it('combines with destroyInactiveTabPane: inactive panels unmount even after activation', async () => {
+    const user = userEvent.setup();
+    render(<TabsFixture lazy destroyInactiveTabPane />);
+    expect(screen.queryByText('Panel 2')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.getByText('Panel 2')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 1')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: 'Tab 1' }));
+    expect(screen.getByText('Panel 1')).toBeInTheDocument();
+    expect(screen.queryByText('Panel 2')).toBeNull();
+  });
+
+  it('applies lazy to the items path', async () => {
+    const user = userEvent.setup();
+    render(<Tabs value="one" lazy items={sampleItems} />);
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+    expect(screen.getByText('Panel One')).toBeInTheDocument();
+    expect(screen.queryByText('Panel Two')).toBeNull();
+    await user.click(screen.getByRole('tab', { name: 'Item Two' }));
+    expect(screen.getByText('Panel Two')).toBeInTheDocument();
+    // panel one stays mounted after its activation; the disabled tab
+    // three was never activatable, so its panel never mounts
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(2);
+    expect(screen.queryByText('Panel Three')).toBeNull();
+  });
+
+  it('has no axe violations with lazy panels', async () => {
+    const { axe } = await import('jest-axe');
+    render(<TabsFixture lazy />);
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // addable: the strip-tail + button
 // ---------------------------------------------------------------------------
 
@@ -760,5 +852,63 @@ describe('Tabs addable', () => {
       <TabsFixture addable={{ onAdd: () => undefined, addLabel: 'New tab' }} />
     );
     expect(screen.getByRole('button', { name: 'New tab' })).toBeInTheDocument();
+  });
+});
+
+describe('Tabs ref forwarding', () => {
+  it('forwards the ref to the root container div', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <Tabs ref={ref} value="one">
+        <TabList>
+          <Tab value="one">Tab 1</Tab>
+        </TabList>
+        <TabPanel value="one">Panel 1</TabPanel>
+      </Tabs>
+    );
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('data-slot', 'tabs');
+  });
+
+  it('forwards the ref on the items path too', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <Tabs
+        ref={ref}
+        value="one"
+        items={[{ value: 'one', label: 'Tab 1', panel: 'Panel 1' }]}
+      />
+    );
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('data-slot', 'tabs');
+  });
+});
+
+describe('tabVariants / listVariants exports', () => {
+  it('expose the per-variant tab and strip skin classes for composition', () => {
+    expect(Object.keys(tabVariants)).toEqual(['line', 'card', 'pill']);
+    expect(Object.keys(listVariants)).toEqual(['line', 'card', 'pill']);
+    for (const skin of Object.values(tabVariants)) {
+      for (const cls of [skin.idle, skin.active]) {
+        expect(cls).toBeTruthy();
+      }
+    }
+    for (const cls of Object.values(listVariants)) {
+      expect(cls).toBeTruthy();
+    }
+  });
+
+  it('are the exact classes the strip and its tabs wear', () => {
+    render(<TabsFixture variant="card" />);
+    expect(screen.getByRole('tablist')).toHaveClass(listVariants.card);
+    const active = screen.getByRole('tab', { name: 'Tab 1' });
+    expect(active).toHaveClass(tabVariants.card.idle);
+    expect(active).toHaveClass(tabVariants.card.active);
+    expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveClass(
+      tabVariants.card.idle
+    );
+    expect(screen.getByRole('tab', { name: 'Tab 2' })).not.toHaveClass(
+      tabVariants.card.active
+    );
   });
 });

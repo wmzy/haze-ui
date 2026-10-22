@@ -21,6 +21,25 @@ jobs:
       - run: pnpm install
       - run: pnpm lint
       - run: pnpm test
+      # Supply-chain visibility, non-blocking: production deps only (dev-only
+      # advisories never ship in the package) and never fails CI — the exit
+      # code is preserved so failures surface as a job warning annotation,
+      # and the full report is appended to the job summary for triage.
+      - name: Dependency audit (production, non-blocking)
+        continue-on-error: true
+        run: |
+          set +e
+          report="$(mktemp)"
+          pnpm audit --prod | tee "$report"
+          code="${PIPESTATUS[0]}"
+          {
+            echo '## pnpm audit --prod (non-blocking)'
+            echo ''
+            echo '```text'
+            cat "$report"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"
       - run: pnpm typecheck
       - run: pnpm build
       - run: npm run size
@@ -76,6 +95,14 @@ jobs:
       - run: pnpm install
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-failure-artifacts
+          path: |
+            e2e/__snapshots__
+            e2e/test-results
+          retention-days: 14
 
   # Real VoiceOver screen reader smoke (macOS only, via guidepup): the
   # AT layer axe cannot see — that dialogs, menus, and toasts are

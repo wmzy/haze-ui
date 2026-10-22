@@ -40,6 +40,46 @@ type CascaderVirtualizedConfig = {
   overscan?: number;
 };
 
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape): keys mirror the
+ * data-slot each part carries (`today-button`-style kebab slots surface
+ * as camelCase keys). Consumer classes are appended at the end of each
+ * part's class list (able to override component defaults); slots not
+ * rendered by the current mode (search input, loading/empty blocks,
+ * virtualized columns) are ignored.
+ */
+type CascaderClassNames = {
+  /** The root wrapper `<div>` (no data-slot — the family's root). */
+  root?: string;
+  /** The trigger `<button>` (`data-slot='trigger'`). */
+  trigger?: string;
+  /** The path-label row inside the trigger (`data-slot='value'`). */
+  value?: string;
+  /** Placeholder text while no value is committed (`data-slot='placeholder'`). */
+  placeholder?: string;
+  /** Path separators between levels (`data-slot='separator'`), and the
+   * option chevrons / trigger caret (`data-slot='icon'`). */
+  separator?: string;
+  /** The trigger caret and option chevrons (`data-slot='icon'`). */
+  icon?: string;
+  /** The floating drill-down panel (`data-slot='content'`). */
+  content?: string;
+  /** Search input of the remote-search panel (`data-slot='input'`). */
+  input?: string;
+  /** Columns host of the searchable panel (`data-slot='columns'`). */
+  columns?: string;
+  /** One drill-down column (`data-slot='column'`). */
+  column?: string;
+  /** One option row button (`data-slot='option'`). */
+  option?: string;
+  /** An option's label span (`data-slot='label'`). */
+  label?: string;
+  /** Loading state block (`data-slot='loading'`). */
+  loading?: string;
+  /** No-match block of the searchable panel (`data-slot='empty'`). */
+  empty?: string;
+};
+
 type CascaderProps = {
   /** Full option tree; each level becomes one column in the drill-down panel. */
   options: CascaderOption[];
@@ -82,6 +122,9 @@ type CascaderProps = {
    */
   virtualized?: boolean | CascaderVirtualizedConfig;
   className?: string;
+  /** Slot classes (see {@link CascaderClassNames}); each key lands on the
+   * part carrying the matching data-slot, after the component defaults. */
+  classNames?: CascaderClassNames;
   /**
    * Forwarded to the trigger `<button>` (not the root div) — the element
    * form bridges and `ref.current.focus()` reach.
@@ -405,6 +448,7 @@ export default function Cascader({
   loading = false,
   virtualized,
   className,
+  classNames,
   ref,
   ...rest
 }: CascaderProps) {
@@ -790,13 +834,13 @@ export default function Cascader({
         aria-expanded={hasChildren ? inPath : undefined}
         aria-setsize={virtual ? columns[level]?.length : undefined}
         aria-posinset={virtual ? index + 1 : undefined}
-        x-class={[item, inPath && itemInPath, virtual && virtualRow]}
+        x-class={[item, inPath && itemInPath, virtual && virtualRow, classNames?.option]}
         onClick={() => activate(option, level)}
         onMouseEnter={() => handleItemEnter(option, level)}
       >
-        <span data-slot='label' x-class={itemLabel}>{option.label}</span>
+        <span data-slot='label' x-class={[itemLabel, classNames?.label]}>{option.label}</span>
         {hasChildren && (
-          <span role='img' data-slot='icon' x-class={chevron} aria-label={strings.expand}>
+          <span role='img' data-slot='icon' x-class={[chevron, classNames?.icon]} aria-label={strings.expand}>
             <ChevronRight />
           </span>
         )}
@@ -814,7 +858,7 @@ export default function Cascader({
       data-slot='column'
       role='menu'
       data-haze-cascader-column={level}
-      x-class={[column, virtual && columnVirtual]}
+      x-class={[column, virtual && columnVirtual, classNames?.column]}
     >
       {virtual ? (
         <VirtualList
@@ -836,18 +880,18 @@ export default function Cascader({
   ));
 
   const panelBody = loading ? (
-    <div data-slot='loading' x-class={loadingBlock}>
+    <div data-slot='loading' x-class={[loadingBlock, classNames?.loading]}>
       <Spinner size='sm' />
       <span>{searchStrings.loading}</span>
     </div>
   ) : searchMode && options.length === 0 ? (
-    <div data-slot='empty' x-class={emptyBlock}>{searchStrings.noMatch}</div>
+    <div data-slot='empty' x-class={[emptyBlock, classNames?.empty]}>{searchStrings.noMatch}</div>
   ) : (
     columnsBody
   );
 
   return (
-    <div x-class={[wrapper, className]} {...rest}>
+    <div x-class={[wrapper, className, classNames?.root]} {...rest}>
       <button
         ref={setTriggerRef}
         data-slot='trigger'
@@ -856,26 +900,26 @@ export default function Cascader({
         aria-haspopup='menu'
         aria-expanded={open}
         aria-controls={id}
-        x-class={trigger}
+        x-class={[trigger, classNames?.trigger]}
         onPointerDown={floating.onTriggerPointerDown}
         onClick={floating.onTriggerClick}
         onKeyDown={handleTriggerKeyDown}
       >
-        <span data-slot='value' x-class={triggerValue}>
+        <span data-slot='value' x-class={[triggerValue, classNames?.value]}>
           {selectedPath.length === 0 ? (
-            <span data-slot='placeholder' x-class={triggerPlaceholder}>{placeholder}</span>
+            <span data-slot='placeholder' x-class={[triggerPlaceholder, classNames?.placeholder]}>{placeholder}</span>
           ) : (
             selectedPath.map((option, i) => (
               <Fragment key={option.value}>
                 {i > 0 && (
-                  <span data-slot='separator' x-class={separator}>{' / '}</span>
+                  <span data-slot='separator' x-class={[separator, classNames?.separator]}>{' / '}</span>
                 )}
                 {option.label}
               </Fragment>
             ))
           )}
         </span>
-        <span data-slot='icon' x-class={triggerCaret} aria-hidden='true'>
+        <span data-slot='icon' x-class={[triggerCaret, classNames?.icon]} aria-hidden='true'>
           <ChevronDown />
         </span>
       </button>
@@ -883,6 +927,7 @@ export default function Cascader({
         ref={setPanelRef}
         behavior={floating}
         placement='bottom'
+        className={classNames?.content}
         // Search mode re-hosts the menu role (and the trigger's
         // aria-controls target) on the columns wrapper — the search
         // input cannot sit inside a menu. Loading drops the role from
@@ -902,7 +947,7 @@ export default function Cascader({
               type='text'
               aria-label={searchStrings.searchLabel}
               placeholder={searchStrings.searchPlaceholder}
-              x-class={searchInput}
+              x-class={[searchInput, classNames?.input]}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -910,7 +955,7 @@ export default function Cascader({
               id={id}
               data-slot='columns'
               role={!loading && options.length > 0 ? 'menu' : undefined}
-              x-class={columnsStrip}
+              x-class={[columnsStrip, classNames?.columns]}
             >
               {panelBody}
             </div>
@@ -923,4 +968,4 @@ export default function Cascader({
   );
 }
 
-export type { CascaderProps, CascaderVirtualizedConfig };
+export type { CascaderProps, CascaderVirtualizedConfig, CascaderClassNames };

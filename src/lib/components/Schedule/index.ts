@@ -1,6 +1,7 @@
 export { default as Schedule } from './Schedule';
 export type {
   ScheduleProps,
+  ScheduleClassNames,
   ScheduleEvent,
   ScheduleView,
   ScheduleEventChange,

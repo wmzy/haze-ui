@@ -10,6 +10,7 @@ import {
   dropdownMenuItemIndicator,
   dropdownMenuItemKbd,
 } from './dropdown-menu-item-styles';
+import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuRadioItemProps = {
   /** Value this option selects in its DropdownMenuRadioGroup when activated. */
@@ -71,11 +72,12 @@ export default function DropdownMenuRadioItem({
   children,
 }: DropdownMenuRadioItemProps) {
   const { checked, select } = useMenuRadioItem(value);
+  const classNames = useDropdownMenuContext().classNames;
 
   return (
     <button
       data-slot='menu-radio-item'
-      x-class={[item, danger && dropdownMenuItemDanger, className]}
+      x-class={[item, danger && dropdownMenuItemDanger, classNames?.radioItem, className]}
       type="button"
       role="menuitemradio"
       aria-checked={checked}

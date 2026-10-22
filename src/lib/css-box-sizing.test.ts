@@ -39,6 +39,7 @@ const PANEL_FAMILIES = [
   'cascader',
   'command',
   'hover-card',
+  'navigation-menu',
   'sidebar',
   'app-shell',
 ] as const;

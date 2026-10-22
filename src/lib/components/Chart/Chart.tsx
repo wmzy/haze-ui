@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
 import type {
   ReferenceAreaProps,
@@ -28,6 +28,27 @@ import {
   resolveChartSeries,
   waffleTree,
 } from './chart-elements';
+
+/**
+ * Semantic slot classes (AntD v6 `classNames` shape) for Chart: the
+ * `wrapper` slot lands on the fixed-height root `<div>`; `tooltip` and
+ * `legend` land on the recharts Tooltip/Legend wrappers (and the
+ * waffle chart's built-in legend row). Slots for parts a chart does
+ * not render are ignored — `gauge` has neither tooltip nor legend, and
+ * `tooltip`/`legend` need `showTooltip`/`showLegend` on.
+ */
+type ChartClassNames = {
+  /** The fixed-height root wrapper (`data-slot='chart'`). */
+  wrapper?: string;
+  /** The recharts tooltip wrapper — only rendered while `showTooltip`
+   *  is on (never by `gauge`/`waffle`). */
+  tooltip?: string;
+  /** The legend row — the container Chart renders around the default
+   *  recharts legend while `showLegend` is on (recharts v3's own
+   *  wrapper takes no consumer class), or the waffle chart's built-in
+   *  legend (always rendered). */
+  legend?: string;
+}
 
 type ChartProps<T> = {
   /** Which chart family to render. `pie` maps each datum to one
@@ -123,6 +144,16 @@ type ChartProps<T> = {
    * placeholder; `false` opts out and renders the (blank) chart. The
    * fallback table is skipped in this state. */
   empty?: ReactNode;
+  /**
+   * Semantic slot classes (AntD v6 `classNames` shape): keyed by
+   * structural part (see {@link ChartClassNames}). Slot classes are
+   * appended at the end of each part's class list. Not passing it
+   * renders identical output.
+   */
+  classNames?: ChartClassNames;
+  /** Forwarded to the fixed-height root wrapper `<div>`
+   *  (`data-slot='chart'`). */
+  ref?: Ref<HTMLDivElement>;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
 
 /** Fixed-height container: ResponsiveContainer measures its parent, so the
@@ -257,9 +288,11 @@ export default function Chart<T>({
   fallbackTable = true,
   loading,
   empty,
+  classNames,
   'aria-label': ariaLabel,
   className,
   style,
+  ref,
   ...rest
 }: ChartProps<T>) {
   /* Waffle carries its shares inline in `series`; every other type reads
@@ -309,8 +342,9 @@ export default function Chart<T>({
 
   return (
     <div
+      ref={ref}
       data-slot='chart'
-      x-class={[root, className]}
+      x-class={[root, classNames?.wrapper, className]}
       style={{ height, ...style }}
       aria-busy={isLoading || undefined}
       {...rest}
@@ -344,7 +378,11 @@ export default function Chart<T>({
                 label,
               })
             ) : type === 'waffle' ? (
-              waffleTree({ series: waffleSeries, columns })
+              waffleTree({
+                series: waffleSeries,
+                columns,
+                legendClassName: classNames?.legend,
+              })
             ) : (
               chartTree({
                 type,
@@ -363,6 +401,8 @@ export default function Chart<T>({
                 referenceLines,
                 referenceAreas,
                 referenceDots,
+                tooltipClassName: classNames?.tooltip,
+                legendClassName: classNames?.legend,
               })
             )}
           </div>
@@ -439,6 +479,7 @@ export default function Chart<T>({
 
 export type {
   ChartProps,
+  ChartClassNames,
   ChartSeries,
   ChartTooltipEntry,
   ChartTooltipPayload,

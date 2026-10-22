@@ -1011,3 +1011,109 @@ describe('Menu axe with selection items', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('Menu classNames slots', () => {
+  it('applies every slot to its part', () => {
+    render(
+      <Menu
+        open
+        trigger="T"
+        classNames={{
+          root: 'slot-root',
+          trigger: 'slot-trigger',
+          panel: 'slot-panel',
+          item: 'slot-item',
+          checkboxItem: 'slot-checkbox',
+          radioItem: 'slot-radio',
+          group: 'slot-group',
+          divider: 'slot-divider',
+          sub: 'slot-sub',
+          subTrigger: 'slot-sub-trigger',
+          subContent: 'slot-sub-content',
+        }}
+      >
+        <MenuGroup label="View">
+          <MenuItem>Paste</MenuItem>
+          <MenuCheckboxItem checked>Status bar</MenuCheckboxItem>
+        </MenuGroup>
+        <MenuDivider />
+        <MenuRadioGroup value="light">
+          <MenuRadioItem value="light">Light</MenuRadioItem>
+        </MenuRadioGroup>
+        <MenuSub>
+          <MenuSubTrigger>Share</MenuSubTrigger>
+          <MenuSubContent>
+            <MenuItem>Link</MenuItem>
+          </MenuSubContent>
+        </MenuSub>
+      </Menu>
+    );
+    // two role="menu" panels render (the main panel plus the resident
+    // submenu panel) — the main one comes first in DOM order
+    const menus = screen.getAllByRole('menu');
+    expect(menus[0]).toHaveClass('slot-panel');
+    expect(menus[1]).toHaveClass('slot-sub-content');
+    expect(screen.getByText('Paste')).toHaveClass('slot-item');
+    expect(screen.getByRole('menuitemcheckbox')).toHaveClass('slot-checkbox');
+    expect(screen.getByRole('menuitemradio')).toHaveClass('slot-radio');
+    expect(screen.getByRole('group', { name: 'View' })).toHaveClass('slot-group');
+    expect(screen.getByRole('separator')).toHaveClass('slot-divider');
+    expect(screen.getByRole('menuitem', { name: 'Share' })).toHaveClass(
+      'slot-sub-trigger'
+    );
+    expect(screen.getByRole('menuitem', { name: 'Share' }).parentElement).toHaveClass(
+      'slot-sub'
+    );
+  });
+
+  it('applies root and trigger slots to the wrapper and trigger area', () => {
+    const { container } = render(
+      <Menu trigger="T" classNames={{ root: 'slot-root', trigger: 'slot-trigger' }}>
+        <MenuItem>X</MenuItem>
+      </Menu>
+    );
+    const root = container.querySelector("[data-slot='menu']");
+    expect(root).toHaveClass('slot-root');
+    const triggerArea = container.querySelector("[data-slot='trigger']");
+    expect(triggerArea).toHaveClass('slot-trigger');
+  });
+
+  it('lands the panel slot after the className prop class', () => {
+    render(
+      <Menu open trigger="T" className="custom" classNames={{ panel: 'slot-panel' }}>
+        <MenuItem>X</MenuItem>
+      </Menu>
+    );
+    const panel = screen.getByRole('menu');
+    expect(panel).toHaveClass('custom');
+    expect(panel).toHaveClass('slot-panel');
+  });
+
+  it('applies sub slots to the submenu wrapper and panel', () => {
+    render(
+      <Menu open trigger="T" classNames={{ sub: 'slot-sub', subContent: 'slot-sub-content' }}>
+        <MenuSub>
+          <MenuSubTrigger>Share</MenuSubTrigger>
+          <MenuSubContent>
+            <MenuItem>Link</MenuItem>
+          </MenuSubContent>
+        </MenuSub>
+      </Menu>
+    );
+  });
+
+  it('forwards ref to the root wrapper', () => {
+    render(
+      <Menu
+        ref={(node) => {
+          if (node) node.dataset.probe = 'set';
+        }}
+        trigger="T"
+      >
+        <MenuItem>X</MenuItem>
+      </Menu>
+    );
+    const root = document.querySelector("[data-slot='menu']");
+    expect(root).toHaveAttribute('data-probe', 'set');
+  });
+});

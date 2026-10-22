@@ -4,6 +4,8 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 
+import { inputSizes, btnSizes } from './number-input-styles';
+
 type NumberInputCoreProps = {
   value: number;
   onChange: (value: number) => void;
@@ -80,48 +82,6 @@ const stepBtn = css`
     cursor: not-allowed;
   }
 `;
-
-const inputSm = css`
-  padding: var(--haze-space-1);
-  font-size: var(--haze-text-sm);
-`;
-
-const inputMd = css`
-  padding: var(--haze-space-2);
-  font-size: var(--haze-text-sm);
-`;
-
-const inputLg = css`
-  padding: var(--haze-space-3);
-  font-size: var(--haze-text-base);
-`;
-
-const btnSm = css`
-  padding: 0 var(--haze-space-2);
-  font-size: var(--haze-text-sm);
-`;
-
-const btnMd = css`
-  padding: 0 var(--haze-space-3);
-  font-size: var(--haze-text-sm);
-`;
-
-const btnLg = css`
-  padding: 0 var(--haze-space-3);
-  font-size: var(--haze-text-base);
-`;
-
-const inputSizes = {
-  sm: inputSm,
-  md: inputMd,
-  lg: inputLg,
-} as const;
-
-const btnSizes = {
-  sm: btnSm,
-  md: btnMd,
-  lg: btnLg,
-} as const;
 
 export default function NumberInputCore({
   value,

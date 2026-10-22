@@ -49,8 +49,16 @@ export default function DropdownMenuContent({
   align = 'start',
   className,
 }: DropdownMenuContentProps) {
-  const { open, setOpen, triggerRef, contentRef, contentId, focusRequestRef, floating } =
-    useDropdownMenuContext();
+  const {
+    open,
+    setOpen,
+    triggerRef,
+    contentRef,
+    contentId,
+    focusRequestRef,
+    floating,
+    classNames,
+  } = useDropdownMenuContext();
 
   const closeMenu = useCallback(() => {
     setOpen(false);
@@ -95,7 +103,9 @@ export default function DropdownMenuContent({
       id={contentId}
       role="menu"
       visualClass={content}
-      className={className}
+      className={
+        [className, classNames?.content].filter(Boolean).join(' ') || undefined
+      }
       onKeyDown={handleKeyDown}
     >
       {children}

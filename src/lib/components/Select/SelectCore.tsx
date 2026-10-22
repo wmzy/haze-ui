@@ -32,12 +32,24 @@ type SelectCoreProps<T extends string | number = string> = {
    */
   placeholder?: string;
   /**
-   * Multiple selection mode: the native `<select>` is replaced by a
-   * button trigger rendering the selected values as removable Chips,
-   * opening a floating multi-select listbox. Default (`false`) keeps
-   * the native single-select path untouched.
+   * Multiple selection mode (see SelectFloatingProps.multiple): chips
+   * in the trigger, toggling options, panel stays open across picks.
+   * Default (`false`) keeps the native single-select path untouched.
    */
   multiple?: boolean;
+  /**
+   * Tags mode (see SelectProps.tags in ./Select): implies multiple and
+   * searchable — routes to the floating engine with the inline search
+   * input in the trigger. Ignored by the native single-select path.
+   */
+  tags?: boolean;
+  /**
+   * Multiple/tags mode only: cap the selectable count — unselected
+   * options disable once the cap is reached (see
+   * SelectFloatingProps.maxCount). The native single-select path
+   * ignores it.
+   */
+  maxCount?: number;
   /**
    * Swap the single-mode native `<select>` for the floating listbox
    * engine (the one `multiple` uses) with a search input at the top of
@@ -95,7 +107,7 @@ type SelectCoreProps<T extends string | number = string> = {
    * and clearable single mode, the trigger `<button>` when `multiple`
    * or `searchable` render the floating engine.
    */
-  ref?: Ref<HTMLSelectElement | HTMLButtonElement>;
+  ref?: Ref<HTMLSelectElement | HTMLButtonElement | HTMLInputElement>;
 } & Omit<
   ComponentPropsWithoutRef<'select'>,
   'value' | 'onChange' | 'size' | 'multiple'
@@ -214,6 +226,8 @@ export default function SelectCore<T extends string | number = string>({
   onChange,
   onNativeChange,
   multiple = false,
+  tags = false,
+  maxCount,
   searchable = false,
   clearable = false,
   loading = false,
@@ -238,14 +252,16 @@ export default function SelectCore<T extends string | number = string>({
     [selectRef, ref]
   );
 
-  if (multiple || searchable) {
+  if (multiple || searchable || tags) {
     return (
       <SelectFloating<T>
-        ref={ref as Ref<HTMLButtonElement> | undefined}
+        ref={ref as Ref<HTMLButtonElement | HTMLInputElement> | undefined}
         value={value}
         onChange={onChange}
         entries={extractSelectEntries<T>(children)}
         multiple={multiple}
+        tags={tags}
+        maxCount={maxCount}
         searchable={searchable}
         clearable={clearable}
         loading={loading}
@@ -273,7 +289,7 @@ export default function SelectCore<T extends string | number = string>({
   // Single mode's value is the raw T (the empty sentinel stays '' for
   // every T — the uncontrolled default in ./Select); a stray array is
   // normalized to empty, the same contract as the floating path. (The
-  // multiple||searchable early return above already narrowed multiple
+  // multiple/searchable/tags early return above already narrowed multiple
   // away, so only the array check remains.)
   const selectedValue = (!Array.isArray(value) ? value : '') as T;
 

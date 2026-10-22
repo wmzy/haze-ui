@@ -24,4 +24,4 @@ import 'haze-ui/css/empty.css';
 import 'haze-ui/css/spinner.css';
 
 export { Chart };
-export type { ChartProps, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry, ChartGaugeThreshold, ChartWaffleSeries } from 'haze-ui';
+export type { ChartProps, ChartClassNames, ChartSeries, ChartType, ChartTooltipPayload, ChartTooltipEntry, ChartGaugeThreshold, ChartWaffleSeries } from 'haze-ui';

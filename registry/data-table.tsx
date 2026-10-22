@@ -20,15 +20,18 @@ import { DataTable, dataTableSum, dataTableAvg, dataTableCount, dataTableToCsv }
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/data-table.css';
+import 'haze-ui/css/button.css';
 import 'haze-ui/css/checkbox.css';
 import 'haze-ui/css/dropdown-menu.css';
 import 'haze-ui/css/empty.css';
 import 'haze-ui/css/input.css';
 import 'haze-ui/css/pagination.css';
+import 'haze-ui/css/popover.css';
 import 'haze-ui/css/skeleton.css';
+import 'haze-ui/css/spinner.css';
 import 'haze-ui/css/table.css';
 import 'haze-ui/css/virtual-list.css';
 import 'haze-ui/css/visually-hidden.css';
 
 export { DataTable, dataTableSum, dataTableAvg, dataTableCount, dataTableToCsv };
-export type { DataTableProps, DataTableColumnDef, DataTableColumnMeta, DataTableVirtualized, DataTableSummary, DataTableSummaryCell, DataTableCellEditorProps, DataTableCsvOptions } from 'haze-ui';
+export type { DataTableProps, DataTableClassNames, DataTableColumnDef, DataTableColumnMeta, DataTableVirtualized, DataTableSummary, DataTableSummaryCell, DataTableCellEditorProps, DataTableCsvOptions, DataTableFiltersState } from 'haze-ui';
