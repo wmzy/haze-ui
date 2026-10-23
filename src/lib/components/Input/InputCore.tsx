@@ -2,6 +2,8 @@ import type {ComponentPropsWithoutRef, ReactNode, Ref} from 'react';
 
 import {css} from '@linaria/core';
 
+import {sizes} from './input-styles';
+
 type InputCoreProps = {
   value: string;
   onChange: (value: string) => void;
@@ -73,21 +75,6 @@ const base = css`
     }
   }
 `;
-
-const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-4);
-    font-size: var(--haze-text-base);
-  `,
-} as const;
 
 /* The wrapper only exists when sections are present (sections render
  * as absolute overlays inside it). Bare inputs match the pre-section

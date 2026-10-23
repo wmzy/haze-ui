@@ -195,7 +195,7 @@ function SchemaForm() {
       </Form>
       {submitted ? (
         <>
-          <Alert variant='success'>
+          <Alert color='success'>
             Schema passed — parsed values (zod transforms applied) below.
           </Alert>
           <CodeBlock language='json'>
@@ -570,7 +570,7 @@ export default function FormDemo() {
         </Form>
         {submitted ? (
           <>
-            <Alert variant='success'>
+            <Alert color='success'>
               Submitted — getValues() returned the values below.
             </Alert>
             <CodeBlock language='json'>

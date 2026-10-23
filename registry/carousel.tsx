@@ -22,4 +22,4 @@ import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/carousel.css';
 
 export { Carousel, CarouselSlide };
-export type { CarouselProps, CarouselSlideProps } from 'haze-ui';
+export type { CarouselProps, CarouselSlideProps, CarouselHandle } from 'haze-ui';

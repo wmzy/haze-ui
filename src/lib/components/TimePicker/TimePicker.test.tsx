@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import LocaleProvider from '../LocaleProvider/LocaleProvider';
+import ConfigProvider from '../ConfigProvider/ConfigProvider';
 
 import TimePicker from './TimePicker';
 import TimePickerCore from './TimePickerCore';
@@ -240,6 +241,56 @@ describe('TimePicker use12Hours', () => {
         name: 'AM',
       })
     ).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+describe('TimePicker (ConfigProvider defaults)', () => {
+  it('adds the seconds column from the config format', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ TimePicker: { format: 'HH:mm:ss' } }}>
+        <TimePicker value='14:30:45' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.getByRole('listbox', { name: 'Second' })).toBeInTheDocument();
+  });
+
+  it('lets an explicit format prop beat the config', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ TimePicker: { format: 'HH:mm:ss' } }}>
+        <TimePicker value='14:30' format='HH:mm' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      screen.queryByRole('listbox', { name: 'Second' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the 12-hour clock from the config use12Hours', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ TimePicker: { use12Hours: true } }}>
+        <TimePicker value='15:20' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.getByRole('listbox', { name: 'AM/PM' })).toBeInTheDocument();
+  });
+
+  it('lets an explicit use12Hours={false} beat the config', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ TimePicker: { use12Hours: true } }}>
+        <TimePicker value='15:20' use12Hours={false} />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      screen.queryByRole('listbox', { name: 'AM/PM' })
+    ).not.toBeInTheDocument();
   });
 });
 

@@ -4,7 +4,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 // the file basename, and a shared `styles` basename collides with
 // Button/styles.ts (identical `haze-styles__*` selectors cross-wire the
 // two components' rules in dev AND collide in dist css)
-import { base, toneFills, toneStrokes } from './sparkline-styles';
+import { base, colorStrokes, colorFills } from './sparkline-styles';
 
 /**
  * Sparkline — a stateless inline-SVG mini trend chart (no recharts, no
@@ -31,11 +31,11 @@ type SparklineProps = {
   /** `area` adds a translucent token fill under the line. */
   variant?: 'line' | 'area';
   /** Semantic stroke color for the trend. */
-  tone?: 'primary' | 'success' | 'danger' | 'warning' | 'info';
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   className?: string;
   // `children` is omitted on purpose: the paths are the component, foreign
   // SVG children would fight the normalized geometry.
-} & Omit<ComponentPropsWithoutRef<'svg'>, 'children'>;
+} & Omit<ComponentPropsWithoutRef<'svg'>, 'children' | 'color'>;
 
 /** Square viewBox both axes are normalized into. */
 const VIEW = 100;
@@ -76,7 +76,7 @@ export default function Sparkline({
   width = 96,
   height = 28,
   variant = 'line',
-  tone = 'primary',
+  color = 'primary',
   className,
   ...rest
 }: SparklineProps) {
@@ -104,12 +104,12 @@ export default function Sparkline({
       aria-hidden={labeled ? undefined : true}
     >
       {hasPlot && variant === 'area' && (
-        <path d={buildAreaPath(linePath)} x-class={[toneFills[tone]]} stroke='none' />
+        <path d={buildAreaPath(linePath)} x-class={[colorFills[color]]} stroke='none' />
       )}
       {hasPlot && (
         <path
           d={linePath}
-          x-class={[toneStrokes[tone]]}
+          x-class={[colorStrokes[color]]}
           fill='none'
           stroke-width='2'
           stroke-linecap='round'

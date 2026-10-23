@@ -5,6 +5,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactElement,
   ReactNode,
+  Ref,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
@@ -15,6 +16,7 @@ import {
   isValidElement,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
 } from 'react';
 import { useControl } from 'react-use-control';
@@ -22,6 +24,25 @@ import { useControl } from 'react-use-control';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { getDirection } from '../../utils/direction';
+
+/**
+ * Imperative handle exposed through the React 19 `ref` prop (same API
+ * choice as VirtualList/Dialog). All three methods only write the active
+ * index through the same control path the arrows and dots use, so
+ * controlled/uncontrolled semantics stay intact and the slide effect
+ * (scrollIntoView / data-active swap) remains single-sourced.
+ */
+type CarouselHandle = {
+  /** Step to the next slide (wraps past the last). */
+  next: () => void;
+  /** Step to the previous slide (wraps before the first). */
+  prev: () => void;
+  /**
+   * Jump to `index` — floored and clamped into the slide range, driving
+   * the same value path as the dot buttons.
+   */
+  scrollTo: (index: number) => void;
+};
 
 type CarouselProps = {
   value?: ControlOrValue<number>;
@@ -33,6 +54,12 @@ type CarouselProps = {
   pauseOnHover?: boolean;
   className?: string;
   children: ReactNode;
+  /**
+   * Imperative handle: `next()` / `prev()` step with wrap-around,
+   * `scrollTo(index)` jumps (floored, clamped into the slide range).
+   * Writes go through the same control path as the arrows/dots.
+   */
+  ref?: Ref<CarouselHandle>;
 };
 
 /** 拖拽接管前的位移容差（px）：更小的移动按普通点击对待。 */
@@ -173,6 +200,7 @@ export default function Carousel({
   pauseOnHover = false,
   className,
   children,
+  ref,
 }: CarouselProps) {
   const [current, setCurrent] = useControl(valueControl, 0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -194,8 +222,38 @@ export default function Carousel({
       });
   }, [current, fade]);
 
-  const goPrev = () => setCurrent((prev) => (prev - 1 + count) % count);
-  const goNext = () => setCurrent((prev) => (prev + 1) % count);
+  // useCallback 保证句柄身份稳定（Dialog 的 [flipOpen] 依赖先例）。
+  const goPrev = useCallback(
+    () => setCurrent((prev) => (prev - 1 + count) % count),
+    [count, setCurrent]
+  );
+  const goNext = useCallback(
+    () => setCurrent((prev) => (prev + 1) % count),
+    [count, setCurrent]
+  );
+
+  // Imperative surface: `ref.current?.next()/prev()/scrollTo(i)`. 只写
+  // active index——上方的 value effect 独占地执行滚动/fade 切换，与箭头、
+  // 圆点、方向键共用同一条控制路径，controlled/uncontrolled 语义不变。
+  useImperativeHandle(
+    ref,
+    () => ({
+      // 空轮播无可翻页；% 0 会得到 NaN 索引。
+      next: () => {
+        if (count === 0) return;
+        goNext();
+      },
+      prev: () => {
+        if (count === 0) return;
+        goPrev();
+      },
+      scrollTo: (index: number) => {
+        if (count === 0) return;
+        setCurrent(Math.max(0, Math.min(count - 1, Math.floor(index))));
+      },
+    }),
+    [goNext, goPrev, count, setCurrent]
+  );
 
   // ── autoPlay 引擎（Toast 的剩余预算模式）────────────────────
   // 暂停源：拖拽/按压会话恒暂停（手势优先于放映）；悬停与焦点仅在
@@ -531,4 +589,4 @@ export default function Carousel({
   );
 }
 
-export type { CarouselProps };
+export type { CarouselProps, CarouselHandle };

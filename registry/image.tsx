@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Image } from 'haze-ui';
+import { Image, ImagePreviewGroup } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/image.css';
 
-export { Image };
-export type { ImageProps, ImagePreviewConfig } from 'haze-ui';
+export { Image, ImagePreviewGroup };
+export type { ImageProps, ImagePreviewConfig, ImagePreviewGroupProps } from 'haze-ui';

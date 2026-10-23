@@ -87,7 +87,7 @@ const initials = (name: string) =>
 
 const priorityBadge = (priority: Priority) => (
   <Badge
-    variant={priority === 'P0' ? 'danger' : priority === 'P1' ? 'warning' : 'default'}
+    color={priority === 'P0' ? 'danger' : priority === 'P1' ? 'warning' : 'default'}
   >
     {priority}
   </Badge>

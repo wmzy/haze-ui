@@ -107,6 +107,10 @@ import MenuDemo from './demos/MenuDemo';
 
 import NumberInputDemo from './demos/NumberInputDemo';
 
+import MaskedInputDemo from './demos/MaskedInputDemo';
+
+import PhoneInputDemo from './demos/PhoneInputDemo';
+
 import FileInputDemo from './demos/FileInputDemo';
 
 import ToastDemo from './demos/ToastDemo';
@@ -379,6 +383,8 @@ const demos: Record<string, () => ReactNode> = {
   'date-range-picker': DateRangePickerDemo,
   'otp-input': OTPInputDemo,
   'password-input': PasswordInputDemo,
+  'masked-input': MaskedInputDemo,
+  'phone-input': PhoneInputDemo,
   'tag-input': TagInputDemo,
   mentions: MentionsDemo,
   'prompt-input': PromptInputDemo,

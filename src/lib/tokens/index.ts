@@ -1,4 +1,4 @@
-export {lightTheme, darkTheme} from './colors';
+export {lightTheme, darkTheme, autoTheme} from './colors';
 export {spacing} from './spacing';
 export {compact} from './density';
 export {motion} from './motion';

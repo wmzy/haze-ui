@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Input,
+  autoTheme,
   darkTheme,
 } from '@/lib';
 import { createBrandTheme } from '@/lib/tokens';
@@ -87,6 +88,25 @@ function ThemeIslandsDemo({
         {darkText}
         <Button size='sm'>Button</Button>
         <Input size='sm' placeholder='Input' aria-label='Dark island input' />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Zero-JS autoTheme island: the container carries autoTheme alone — the
+ * complete light set plus the dark set re-declared inside a
+ * prefers-color-scheme media block. No hook, no state: whatever the OS
+ * appearance is right now, that is what resolves.
+ */
+function AutoThemeDemo({title, text}: {title: string; text: string}) {
+  return (
+    <div className={islandRow}>
+      <div x-class={[island, autoTheme]}>
+        <strong>{title}</strong>
+        {text}
+        <Button size='sm'>Button</Button>
+        <Input size='sm' placeholder='Input' aria-label='Auto island input' />
       </div>
     </div>
   );
@@ -219,6 +239,8 @@ export default function DarkModeGuide() {
     islandLightText = '',
     islandDarkTitle = '',
     islandDarkText = '',
+    autoIslandTitle = '',
+    autoIslandText = '',
     runtimeIslandLightText = '',
     runtimeIslandDarkText = '',
     runtimeValidHint = '',
@@ -238,6 +260,9 @@ export default function DarkModeGuide() {
               darkTitle={islandDarkTitle}
               darkText={islandDarkText}
             />
+          ),
+          'auto-theme': (
+            <AutoThemeDemo title={autoIslandTitle} text={autoIslandText} />
           ),
           'runtime-brand': (
             <RuntimeBrandDemo

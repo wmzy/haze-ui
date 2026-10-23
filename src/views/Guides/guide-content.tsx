@@ -662,6 +662,48 @@ const darkModeEn: GuideDoc = {
       ])
     ),
     sec(
+      'auto-theme',
+      'autoTheme — zero-JS system following',
+      p([
+        'When you do not need a toggle at all, ',
+        code('autoTheme'),
+        ' collapses the two classes into one: it carries the complete light token set and re-declares the complete dark set inside a ',
+        code('prefers-color-scheme: dark'),
+        ' media block, so the container follows the OS appearance with zero JavaScript — no hydration wait, no flash, no storage:',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { autoTheme, spacing, typography } from 'haze-ui';
+
+// <html> follows the OS color scheme — resolves before any JS loads
+<html className={\`\${autoTheme} \${spacing} \${typography}\`}>
+  <body>…</body>
+</html>
+
+// scoped works the same way — a system-following island
+<div className={autoTheme}>…</div>`
+      ),
+      slot('auto-theme'),
+      caption([
+        'Flip your OS appearance — this island follows live, with no JS behind it. The two islands above are static; only this one tracks the system.',
+      ]),
+      note([
+        'The media block re-declares every custom property on the same class, so the relative-color interaction states re-derive inside it — and the eager-resolution caveat carries over unchanged: override ',
+        code('--haze-color-primary'),
+        ' on the element that carries ',
+        code('autoTheme'),
+        ', not on a bare descendant. It is still one theme class: when ',
+        code('useDarkMode'),
+        ' or next-themes later takes over the switch, they ',
+        strong('replace'),
+        ' it with ',
+        code('lightTheme'),
+        '/',
+        code('darkTheme'),
+        ' (a class swap — never stack them on the same element).',
+      ])
+    ),
+    sec(
       'brand-presets',
       'Brand presets',
       p([
@@ -931,6 +973,8 @@ export function HazeThemeSync() {
     islandLightText: 'Tokens resolve to the light palette everywhere inside.',
     islandDarkTitle: 'darkTheme',
     islandDarkText: 'One class on the container — every descendant re-resolves.',
+    autoIslandTitle: 'autoTheme (follows your OS)',
+    autoIslandText: 'One class, both palettes — the media query picks. No JS.',
     runtimeIslandLightText: 'Generated at runtime from the seed above.',
     runtimeIslandDarkText: 'Derived dark: same hue, lifted lightness.',
     runtimeValidHint: 'dark mode derived automatically (oklch l +0.2)',
@@ -985,6 +1029,48 @@ const darkModeZh: GuideDoc = {
         '而非样式，它们绝不与你的 CSS 打架：你的规则保持其特异性，只是在子树内重新解析 ',
         code('var(--haze-*)'),
         ' 引用。从深色祖先继承自定义属性，正是上面的孤岛零逐组件深色模式代码的运作方式。',
+      ])
+    ),
+    sec(
+      'auto-theme',
+      'autoTheme——零 JS 系统跟随',
+      p([
+        '当你完全不需要开关时，',
+        code('autoTheme'),
+        ' 把两个类合而为一：它携带完整的浅色 token 集，并在 ',
+        code('prefers-color-scheme: dark'),
+        ' 媒体块里重新声明完整的深色集，容器因此以零 JavaScript 跟随系统外观——不等 hydration、不闪白、无存储：',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { autoTheme, spacing, typography } from 'haze-ui';
+
+// <html> follows the OS color scheme — resolves before any JS loads
+<html className={\`\${autoTheme} \${spacing} \${typography}\`}>
+  <body>…</body>
+</html>
+
+// scoped works the same way — a system-following island
+<div className={autoTheme}>…</div>`
+      ),
+      slot('auto-theme'),
+      caption([
+        '切换你的系统外观——这座孤岛实时跟随，背后没有任何 JS。上面的两座孤岛是静态的，只有这座追踪系统。',
+      ]),
+      note([
+        '媒体块在同一个类上重新声明每个自定义属性，相对色交互态随之在块内重新派生——急切解析的注意事项原样沿用：覆盖 ',
+        code('--haze-color-primary'),
+        ' 要落在携带 ',
+        code('autoTheme'),
+        ' 的那个元素上，而不是裸后代。它仍然是一个主题类：当 ',
+        code('useDarkMode'),
+        ' 或 next-themes 之后接管切换时，它们会用 ',
+        code('lightTheme'),
+        '/',
+        code('darkTheme'),
+        ' ',
+        strong('替换'),
+        '它（类互换——绝不在同一元素上叠加）。',
       ])
     ),
     sec(
@@ -1257,6 +1343,8 @@ export function HazeThemeSync() {
     islandLightText: '内部所有 token 都解析为浅色色板。',
     islandDarkTitle: 'darkTheme',
     islandDarkText: '容器上一个类——所有后代重新解析。',
+    autoIslandTitle: 'autoTheme（跟随你的系统）',
+    autoIslandText: '一个类、两套色板——由媒体查询选择。无 JS。',
     runtimeIslandLightText: '在运行时由上面的种子生成。',
     runtimeIslandDarkText: '派生的深色：同色相、提升亮度。',
     runtimeValidHint: '深色模式自动派生（oklch l +0.2）',

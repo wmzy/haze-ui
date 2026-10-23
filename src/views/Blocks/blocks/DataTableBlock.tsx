@@ -75,7 +75,7 @@ const initials = (name: string) =>
     .slice(0, 2);
 
 const statusBadge = (status: InstanceStatus) => {
-  const variant =
+  const color =
     status === 'healthy'
       ? 'success'
       : status === 'degraded'
@@ -83,7 +83,7 @@ const statusBadge = (status: InstanceStatus) => {
         : status === 'rebooting'
           ? 'info'
           : 'default';
-  return <Badge variant={variant}>{status}</Badge>;
+  return <Badge color={color}>{status}</Badge>;
 };
 
 const uptimeCell = (value: number) => (
@@ -262,7 +262,7 @@ export default function DataTableBlock() {
 
       {selectedCount > 0 && (
         <div data-slot='data-table-bulk-bar' style={barStyle}>
-          <Badge variant='info'>{selectedCount} selected</Badge>
+          <Badge color='info'>{selectedCount} selected</Badge>
           <Button
             size='sm'
             variant='outline'

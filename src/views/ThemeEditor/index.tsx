@@ -579,7 +579,7 @@ function ThemeEditorInner() {
               <div key={t.id} className={themeItem}>
                 <span className={themeItemName}>
                   {t.name}
-                  {editingId === t.id && <Badge size="sm" variant="info" style={{marginLeft: 8}}>editing</Badge>}
+                  {editingId === t.id && <Badge size="sm" color="info" style={{marginLeft: 8}}>editing</Badge>}
                 </span>
                 <span className={themeItemCount}>
                   {countTokens(t.tokens)} overrides
@@ -745,10 +745,10 @@ function ThemeEditorInner() {
             <div className={previewSection}>
               <p>Badges</p>
               <Flex gap="var(--haze-space-2)" style={{flexWrap: 'wrap'}}>
-                <Badge variant="info">Info</Badge>
-                <Badge variant="success">Success</Badge>
-                <Badge variant="warning">Warning</Badge>
-                <Badge variant="danger">Danger</Badge>
+                <Badge color="info">Info</Badge>
+                <Badge color="success">Success</Badge>
+                <Badge color="warning">Warning</Badge>
+                <Badge color="danger">Danger</Badge>
               </Flex>
             </div>
 

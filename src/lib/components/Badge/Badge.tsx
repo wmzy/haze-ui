@@ -1,28 +1,32 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode, Ref } from 'react';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
 // the file basename, and a shared `styles` basename collides with
 // Button/styles.ts (identical `haze-styles__*` selectors cross-wire the
 // two components' rules in dev AND collide in dist css)
-import { base, sizes, variants } from './badge-styles';
+import { base, sizes, colors } from './badge-styles';
 
 type BadgeProps = {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  /** Semantic status color. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md';
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
+  /** Forwarded to the root span (data-slot='badge'). */
+  ref?: Ref<HTMLSpanElement>;
 };
 
 export default function Badge({
-  variant = 'default',
+  color = 'default',
   size = 'md',
   className,
   style,
   children,
+  ref,
 }: BadgeProps) {
   return (
-    <span data-slot="badge" x-class={[base, variants[variant], sizes[size], className]} style={style}>
+    <span ref={ref} data-slot="badge" x-class={[base, colors[color], sizes[size], className]} style={style}>
       {children}
     </span>
   );

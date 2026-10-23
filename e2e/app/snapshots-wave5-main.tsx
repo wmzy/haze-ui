@@ -253,19 +253,19 @@ mountPage(
           value={42}
           label="Bandwidth"
           showValue
-          thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]}
+          thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]}
         />
         <Meter
           value={72}
           label="Bandwidth"
           showValue
-          thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]}
+          thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]}
         />
         <Meter
           value={93}
           label="Bandwidth"
           showValue
-          thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]}
+          thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]}
         />
         <Meter value={230} min={0} max={512} label="Storage (GB)" showValue />
       </div>

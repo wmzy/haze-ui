@@ -165,6 +165,10 @@ const zhCN: HazeStrings = {
     reset: '重置',
     rotate: '旋转',
     close: '关闭',
+    prevImage: '上一张',
+    nextImage: '下一张',
+    counter: '{current} / {total}',
+    thumbnail: '查看第 {index} 张（共 {total} 张）：{alt}',
   },
   inlineEdit: {
     placeholder: '点击编辑',
@@ -209,6 +213,11 @@ const zhCN: HazeStrings = {
     label: '密码',
     show: '显示密码',
     hide: '隐藏密码',
+  },
+  phoneInput: {
+    placeholder: '电话号码',
+    countryLabel: '国家/地区',
+    invalid: '无效的电话号码',
   },
   progress: {
     label: '进度',

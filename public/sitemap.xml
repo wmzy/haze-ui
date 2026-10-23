@@ -105,6 +105,8 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/date-range-picker</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/otp-input</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/password-input</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/masked-input</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/phone-input</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/tag-input</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/mentions</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/prompt-input</loc></url>

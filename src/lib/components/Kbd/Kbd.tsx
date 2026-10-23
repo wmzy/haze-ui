@@ -1,9 +1,11 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
 type KbdProps = {
   size?: 'sm' | 'md';
+  /** Forwarded to the root kbd element (data-slot='kbd'). */
+  ref?: Ref<HTMLElement>;
 } & Omit<ComponentPropsWithoutRef<'kbd'>, 'size'>;
 
 const base = css`
@@ -33,8 +35,8 @@ const sizes = {
   `,
 } as const;
 
-export default function Kbd({ size = 'md', className, ...rest }: KbdProps) {
-  return <kbd data-slot="kbd" x-class={[base, sizes[size], className]} {...rest} />;
+export default function Kbd({ size = 'md', className, ref, ...rest }: KbdProps) {
+  return <kbd ref={ref} data-slot="kbd" x-class={[base, sizes[size], className]} {...rest} />;
 }
 
 export type { KbdProps };

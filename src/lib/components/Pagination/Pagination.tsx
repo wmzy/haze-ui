@@ -7,6 +7,9 @@ import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
+import { sizes } from './pagination-styles';
 
 type PaginationProps = {
   page?: ControlOrValue<number>;
@@ -211,16 +214,6 @@ const jumperInput = css`
   }
 `;
 
-const sizes = {
-  sm: css`
-    & button, & select, & input { min-width: 2rem; height: 2rem; font-size: var(--haze-text-xs); }
-  `,
-  md: css``,
-  lg: css`
-    & button, & select, & input { min-width: 40px; height: 40px; font-size: var(--haze-text-base); }
-  `,
-} as const;
-
 /** Pages a jump-marker click moves (antd precedent). */
 const ELLIPSIS_JUMP = 5;
 
@@ -251,7 +244,7 @@ export default function Pagination({
   simple = false,
   ellipsisJump = false,
   onPageChange,
-  size = 'md',
+  size,
   className,
   ...rest
 }: PaginationProps) {
@@ -259,6 +252,10 @@ export default function Pagination({
   const [pageSize, setPageSize] = useControl(pageSizeControl, 10);
   const [draft, setDraft] = useControl(undefined, simple ? '1' : '');
   const strings = useStrings('pagination');
+  // Three tiers: explicit prop → ConfigProvider `Pagination.size` →
+  // built-in 'md' (a missing provider stays byte-identical).
+  const config = useConfigDefaults('Pagination');
+  const resolvedSize = size ?? config.size ?? 'md';
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pages = getPageNumbers(page, totalPages);
 
@@ -301,7 +298,7 @@ export default function Pagination({
     : [...baseOptions, pageSize].sort((a, b) => a - b);
 
   return (
-    <nav data-slot='pagination' x-class={[nav, sizes[size], className]} {...rest}>
+    <nav data-slot='pagination' x-class={[nav, sizes[resolvedSize], className]} {...rest}>
       {showTotal ? (
         <span data-slot='total' x-class={[auxText]}>
           {showTotal(total, [rangeStart, rangeEnd])}

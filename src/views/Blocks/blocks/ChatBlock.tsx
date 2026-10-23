@@ -369,7 +369,7 @@ export default function ChatBlock() {
             </div>
           </div>
           <span style={{ flex: 1 }} />
-          {phase === 'idle' ? <Badge>Ready</Badge> : <Badge variant='info'>Generating…</Badge>}
+          {phase === 'idle' ? <Badge>Ready</Badge> : <Badge color='info'>Generating…</Badge>}
         </header>
 
         {/* ChatContainer owns the scrollport; role="log" makes the whole

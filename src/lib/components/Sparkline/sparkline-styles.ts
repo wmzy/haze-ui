@@ -1,7 +1,7 @@
 import {css} from '@linaria/core';
 
 /**
- * Shared Sparkline skin — the base class plus tone→stroke / tone→fill
+ * Shared Sparkline skin — the base class plus color→stroke / color→fill
  * variant maps the `Sparkline` component wears. Living in their own module
  * keeps the component file free of style internals (react-refresh
  * boundary) and lets the maps ship as public constants
@@ -17,8 +17,9 @@ export const base = css`
   overflow: visible;
 `;
 
-/** Stroke color per tone; worn by the line path. */
-export const toneStrokes = {
+/** Stroke color per semantic color; worn by the line path. */
+export const colorStrokes = {
+  default: css`stroke: var(--haze-color-text-secondary);`,
   primary: css`stroke: var(--haze-color-primary);`,
   success: css`stroke: var(--haze-color-success);`,
   danger: css`stroke: var(--haze-color-danger);`,
@@ -26,8 +27,9 @@ export const toneStrokes = {
   info: css`stroke: var(--haze-color-info);`,
 } as const;
 
-/** Translucent area fill per tone; worn by the fill path of the `area` variant. */
-export const toneFills = {
+/** Translucent area fill per semantic color; worn by the fill path of the `area` variant. */
+export const colorFills = {
+  default: css`fill: color-mix(in oklab, var(--haze-color-text-secondary) 12%, transparent);`,
   primary: css`fill: color-mix(in oklab, var(--haze-color-primary) 12%, transparent);`,
   success: css`fill: color-mix(in oklab, var(--haze-color-success) 12%, transparent);`,
   danger: css`fill: color-mix(in oklab, var(--haze-color-danger) 12%, transparent);`,

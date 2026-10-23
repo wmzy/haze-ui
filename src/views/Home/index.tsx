@@ -646,7 +646,7 @@ export default function Home() {
   return (
     <div className={wrapper}>
       <section className={hero}>
-        <Badge variant='info'>v1.0</Badge>
+        <Badge color='info'>v1.0</Badge>
         <h1 className={title}>{t.home.hero.title}</h1>
         <p className={subtitle}>
           {fill(t.home.hero.subtitle, { count: componentCount })}
@@ -905,9 +905,9 @@ function ComponentWall() {
           <h3 className={wallCaption}>Badge</h3>
           <div className={wallDemo}>
             <Badge>Default</Badge>
-            <Badge variant='success'>Success</Badge>
-            <Badge variant='warning'>Warning</Badge>
-            <Badge variant='danger'>Danger</Badge>
+            <Badge color='success'>Success</Badge>
+            <Badge color='warning'>Warning</Badge>
+            <Badge color='danger'>Danger</Badge>
           </div>
         </Card>
 
@@ -956,9 +956,9 @@ function ComponentWall() {
           <h3 className={wallCaption}>Tag</h3>
           <div className={wallDemo}>
             <Tag>Default</Tag>
-            <Tag variant='primary'>New</Tag>
-            <Tag variant='success'>Stable</Tag>
-            <Tag variant='danger' closable>
+            <Tag color='primary'>New</Tag>
+            <Tag color='success'>Stable</Tag>
+            <Tag color='danger' closable>
               Deprecated
             </Tag>
           </div>

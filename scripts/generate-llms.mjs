@@ -55,7 +55,7 @@ const DESCRIPTIONS = {
     'user avatar with image, size variants and fallback content when the image is missing.',
   AvatarGroup:
     'stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).',
-  Badge: 'small inline status label with variant and color options.',
+  Badge: 'small inline status label with a semantic `color` prop.',
   Button:
     'action button with `variant`/`size`/`square` options; native `<button>` under the hood.',
   CountUp:
@@ -66,7 +66,7 @@ const DESCRIPTIONS = {
   Ellipsis:
     'interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.',
   Icon: 'inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.',
-  Tag: 'compact status label with variant color and an optional close button.',
+  Tag: 'compact status label with semantic `color` and an optional close button.',
   TagGroup:
     'flex-wrap container laying out Tag children with consistent gap; `sortable` + `onReorder(nextOrder)` for dnd-kit drag reordering.',
   Typography: 'text primitives: `Title`, `Text`, `Paragraph` on typography tokens.',
@@ -83,7 +83,7 @@ const DESCRIPTIONS = {
   Resizable:
     'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence.',
   ScrollArea:
-    'scrollable region with custom-styled thin scrollbars and `maxHeight`.',
+    'scrollable region with overlay scrollbar thumbs: `maxHeight` sugar one-liner or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` composition; `type` = `hover`/`always`/`scroll` thumb visibility, keyboard-focusable viewport, draggable/pageable tracks, RTL-mirrored thumbs.',
   Sidebar:
     'app sidebar shell with controllable collapsed state (`aside` + rail width tokens).',
   Splitter:
@@ -123,12 +123,16 @@ const DESCRIPTIONS = {
   Indicator:
     'corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.',
   Input: 'text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.',
+  MaskedInput:
+    'masked text input enforcing a pattern (`9` digit, `a` letter, `A` uppercase letter, `*` alphanumeric, `\\` escape); literals render as typed, `unmask()` extracts the raw slot content.',
   Mentions:
     'mentions input with trigger-character suggestions picked from an option list.',
   NumberInput: 'numeric input with `min`/`max`/`step`.',
   OTPInput:
     'one-time-password input of `length` segmented character boxes.',
   PasswordInput: 'text input with a visibility reveal toggle.',
+  PhoneInput:
+    'international phone input on libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` helper.',
   Radio:
     'radio option and group with controllable selection.',
   Rating: 'star rating with half-step support.',
@@ -189,7 +193,7 @@ const DESCRIPTIONS = {
   InputGroup:
     'field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.',
   Meter:
-    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid tone) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',
+    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid color) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',
   CopyButton:
     'one-click copy button over Button\u2019s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.',
   Heatmap:
@@ -203,7 +207,7 @@ const DESCRIPTIONS = {
     'feature table on `@tanstack/react-table` (sorting, row selection, client or `manual` pagination); `dataTableToCsv` exports the rows.',
   Descriptions:
     'definition-list description groups (`dl`/`dt`/`dd` on CSS Grid): `items` pairs, `columns`, `bordered`, `size`.',
-  Image: 'image with fallback and `aspectRatio`/`objectFit` control.',
+  Image: 'image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',
   JsonView:
     'collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.',
   Kbd: 'keyboard key-cap styling for shortcuts.',
@@ -212,7 +216,7 @@ const DESCRIPTIONS = {
   QRCode:
     'QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.',
   Sparkline:
-    'inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.',
+    'inline-SVG mini trend chart (line/area variants, semantic stroke colors); stateless, recharts-free and RSC-safe.',
   Stat: 'metric display with title, value and trend indicator.',
   Table: 'styled semantic table (`striped`, `bordered`).',
   Timeline: 'vertical timeline container for `TimelineItem` children.',
@@ -248,7 +252,7 @@ const DESCRIPTIONS = {
   AsyncSection:
     'declarative loading / error / content states for async data.',
   Banner:
-    'dismissible top banner with info/success/warning/danger variants.',
+    'dismissible top banner with semantic status colors.',
   Empty: 'empty-state placeholder with image and description.',
   ErrorBoundary:
     'render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.',
@@ -319,7 +323,7 @@ const DESCRIPTIONS = {
   LocaleProvider:
     'supplies UI string packs (built-in English, zh-CN and ja-JP) to locale-aware components; `direction` (explicit or locale-derived) feeds `useDirection()`; `createStrings(base, overrides)` derives packs without forking the table. RTL locales (ar/he/fa/…) are derived automatically.',
   ConfigProvider:
-    'component prop-default overrides (Button size, Toast duration/placement, Tooltip delay, HoverCard open/close delay) read via `useConfigDefaults()`; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',
+    'per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',
   SwipeAction:
     'swipe-to-reveal row actions on left/right edges with a commit threshold.',
 };
@@ -438,7 +442,7 @@ scales (gray/blue/green/amber/red × light/dark) plus semantic aliases. Interact
 states (hover/active/subtle/focus-ring/border-hover) are **CSS relative-color formulas**
 — \`oklch(from var(--haze-color-primary) calc(l - 0.045) c h)\` — so overriding
 \`--haze-color-primary\` on a theme class re-derives the whole interaction family at
-runtime, no rebuild. Themes ship as classes: apply \`lightTheme\` (or \`darkTheme\`) plus
+runtime, no rebuild. Themes ship as classes: apply \`lightTheme\` (or \`darkTheme\`, or the zero-JS system-following \`autoTheme\`) plus
 \`spacing\` and \`typography\` to a root element. Browser baseline: Chrome/Edge 119+,
 Safari 16.4+, Firefox 128+ (relative-color syntax, no hex fallbacks).
 The registry also ships as [W3C Design Tokens](https://tr.designtokens.org/) JSON —
@@ -470,6 +474,15 @@ auto-degrading without engine support or under reduced motion.
 the focus-scope hooks and the \`computeFloatingPosition\` collision math — for
 component authors assembling their own panels. Same source, same version as
 the styled library; stable public API with the same semver commitment.
+
+## Locale packs
+
+\`haze-ui/locales\` re-exports the string packs standalone — \`enUS\` (the same
+object as \`defaultStrings\`), \`zhCN\`, \`jaJP\`, \`deDE\`, \`frFR\`, \`esES\`, \`itIT\`,
+\`ptBR\`, \`ruRU\`, \`koKR\`, \`arSA\`, plus \`createStrings(base, overrides)\` and the
+\`HazeStrings\`/\`LocaleProviderProps\` types — for bundle-splitting a single pack
+or type-checking a custom one. No components travel with the import; the
+\`LocaleProvider\` itself stays on the main entry.
 
 ## Forms: react-f0rm integration
 

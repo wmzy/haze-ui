@@ -1,6 +1,8 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
-import { css } from '@linaria/core';
+import {css} from '@linaria/core';
+
+import {sizes} from './textarea-styles';
 
 type TextareaCoreProps = {
   value: string;
@@ -63,21 +65,6 @@ const base = css`
     }
   }
 `;
-
-const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-4);
-    font-size: var(--haze-text-base);
-  `,
-} as const;
 
 export default function TextareaCore({
   value,

@@ -29,6 +29,7 @@ export const solidColors = {
   success: css`background: var(--haze-color-success-subtle); color: var(--haze-color-success);`,
   warning: css`background: var(--haze-color-warning-subtle); color: var(--haze-color-warning);`,
   danger: css`background: var(--haze-color-danger-subtle); color: var(--haze-color-danger);`,
+  info: css`background: var(--haze-color-info-subtle); color: var(--haze-color-info);`,
 } as const;
 
 export const outlineColors = {
@@ -37,6 +38,7 @@ export const outlineColors = {
   success: css`border: 1px solid var(--haze-color-success); color: var(--haze-color-success);`,
   warning: css`border: 1px solid var(--haze-color-warning); color: var(--haze-color-warning);`,
   danger: css`border: 1px solid var(--haze-color-danger); color: var(--haze-color-danger);`,
+  info: css`border: 1px solid var(--haze-color-info); color: var(--haze-color-info);`,
 } as const;
 
 /**

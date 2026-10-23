@@ -7,9 +7,9 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-155 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+157 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 90 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 88 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -55,13 +55,13 @@ re-deriving file names.
 
 - **Avatar** — user avatar with image, size variants and fallback content when the image is missing.
 - **AvatarGroup** — stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).
-- **Badge** — small inline status label with variant and color options.
+- **Badge** — small inline status label with a semantic `color` prop.
 - **Button** — action button with `variant`/`size`/`square` options; native `<button>` under the hood.
 - **ButtonGroup** — attached button bar — corners and seams merge via wrapper CSS while children stay real focusable `Button`s; group-wide `size`/`variant`/`disabled` fill in on children that leave them unset, `ButtonGroupSeparator` divides the bar (1px rule or a glyph/label).
 - **CopyButton** — one-click copy button over Button’s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.
 - **Divider** — content separator line, horizontal or vertical.
 - **Icon** — inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.
-- **Tag** — compact status label with variant color and an optional close button.
+- **Tag** — compact status label with semantic `color` and an optional close button.
 - **TagGroup** — flex-wrap container laying out Tag children with consistent gap; `sortable` + `onReorder(nextOrder)` for dnd-kit drag reordering.
 - **Typography** — text primitives: `Title`, `Text`, `Paragraph` on typography tokens.
 - **Ellipsis** — interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.
@@ -81,7 +81,7 @@ re-deriving file names.
 - **Grid** — CSS grid layout primitive.
 - **Masonry** — pinboard layout: JS greedy column distribution balances children across `columns` (order-first, shortest-column-next).
 - **Resizable** — split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence.
-- **ScrollArea** — scrollable region with custom-styled thin scrollbars and `maxHeight`.
+- **ScrollArea** — scrollable region with overlay scrollbar thumbs: `maxHeight` sugar one-liner or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` composition; `type` = `hover`/`always`/`scroll` thumb visibility, keyboard-focusable viewport, draggable/pageable tracks, RTL-mirrored thumbs.
 - **Sidebar** — app sidebar shell with controllable collapsed state (`aside` + rail width tokens).
 - **Splitter** — multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, opt-in per-pane `collapsible` (divider collapse/expand triggers with pre-collapse restore, localized labels), keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.
 - **StatusBar** — VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.
@@ -105,10 +105,12 @@ re-deriving file names.
 - **InlineEdit** — click-to-edit text value in place.
 - **Input** — text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.
 - **InputGroup** — field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.
+- **MaskedInput** — masked text input enforcing a pattern (`9` digit, `a` letter, `A` uppercase letter, `*` alphanumeric, `\` escape); literals render as typed, `unmask()` extracts the raw slot content.
 - **Mentions** — mentions input with trigger-character suggestions picked from an option list.
 - **NumberInput** — numeric input with `min`/`max`/`step`.
 - **OTPInput** — one-time-password input of `length` segmented character boxes.
 - **PasswordInput** — text input with a visibility reveal toggle.
+- **PhoneInput** — international phone input on libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` helper.
 - **Radio / RadioGroup** — radio option and group with controllable selection.
 - **Rating** — star rating with half-step support.
 - **RichTextEditor** — Tiptap-powered rich text editor (a haze-ui dependency) with built-in formatting toolbar and controllable HTML `value`.
@@ -151,16 +153,16 @@ re-deriving file names.
 - **CodeBlock** — monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.
 - **DataTable** — feature table on `@tanstack/react-table` (sorting, row selection, client or `manual` pagination); `dataTableToCsv` exports the rows.
 - **Descriptions** — definition-list description groups (`dl`/`dt`/`dd` on CSS Grid): `items` pairs, `columns`, `bordered`, `size`.
-- **Image** — image with fallback and `aspectRatio`/`objectFit` control.
+- **Image** — image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).
 - **Indicator** — corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.
 - **JsonView** — collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.
 - **Kbd** — keyboard key-cap styling for shortcuts.
 - **List** — styled `ul`/`ol`/plain list variants.
 - **Progress** — progress bar or circle driven by a percentage `value`.
-- **Meter** — read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid tone) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.
+- **Meter** — read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid color) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.
 - **QRCode** — QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.
 - **Schedule** — calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.
-- **Sparkline** — inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.
+- **Sparkline** — inline-SVG mini trend chart (line/area variants, semantic stroke colors); stateless, recharts-free and RSC-safe.
 - **Heatmap** — GitHub-style activity calendar: week columns × weekday rows of squares, `data` (array or Record) binned into `levels` intensity steps (default 4) and tinted via `color-mix` of primary↔bg-subtle — light/dark/brand themes follow automatically; `getLabel`/`getMonthLabel`/`getWeekdayLabel`/`summary` carry all i18n, RSC-safe (hook-free).
 - **Spoiler** — collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.
 - **Stat** — metric display with title, value and trend indicator.
@@ -190,7 +192,7 @@ re-deriving file names.
 
 - **Alert** — inline status message box.
 - **AsyncSection** — declarative loading / error / content states for async data.
-- **Banner** — dismissible top banner with info/success/warning/danger variants.
+- **Banner** — dismissible top banner with semantic status colors.
 - **Empty** — empty-state placeholder with image and description.
 - **ErrorBoundary** — render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.
 - **Result** — result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.
@@ -226,7 +228,7 @@ re-deriving file names.
 ### Utilities
 
 - **Collapsible** — unstyled open/close container with controllable `open` state.
-- **ConfigProvider** — component prop-default overrides (Button size, Toast duration/placement, Tooltip delay, HoverCard open/close delay) read via `useConfigDefaults()`; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.
+- **ConfigProvider** — per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.
 - **Disclosure** — summary-header disclosure panel (details/summary semantics).
 - **Fullscreen** — wrap-mode Fullscreen API binding around a single trigger child with controllable `fullscreen` state; `useFullscreen()` hook also exported.
 - **LocaleProvider** — supplies UI string packs (built-in English, zh-CN and ja-JP) to locale-aware components; `direction` (explicit or locale-derived) feeds `useDirection()`; `createStrings(base, overrides)` derives packs without forking the table. RTL locales (ar/he/fa/…) are derived automatically.
@@ -240,7 +242,7 @@ scales (gray/blue/green/amber/red × light/dark) plus semantic aliases. Interact
 states (hover/active/subtle/focus-ring/border-hover) are **CSS relative-color formulas**
 — `oklch(from var(--haze-color-primary) calc(l - 0.045) c h)` — so overriding
 `--haze-color-primary` on a theme class re-derives the whole interaction family at
-runtime, no rebuild. Themes ship as classes: apply `lightTheme` (or `darkTheme`) plus
+runtime, no rebuild. Themes ship as classes: apply `lightTheme` (or `darkTheme`, or the zero-JS system-following `autoTheme`) plus
 `spacing` and `typography` to a root element. Browser baseline: Chrome/Edge 119+,
 Safari 16.4+, Firefox 128+ (relative-color syntax, no hex fallbacks).
 The registry also ships as [W3C Design Tokens](https://tr.designtokens.org/) JSON —
@@ -272,6 +274,15 @@ auto-degrading without engine support or under reduced motion.
 the focus-scope hooks and the `computeFloatingPosition` collision math — for
 component authors assembling their own panels. Same source, same version as
 the styled library; stable public API with the same semver commitment.
+
+## Locale packs
+
+`haze-ui/locales` re-exports the string packs standalone — `enUS` (the same
+object as `defaultStrings`), `zhCN`, `jaJP`, `deDE`, `frFR`, `esES`, `itIT`,
+`ptBR`, `ruRU`, `koKR`, `arSA`, plus `createStrings(base, overrides)` and the
+`HazeStrings`/`LocaleProviderProps` types — for bundle-splitting a single pack
+or type-checking a custom one. No components travel with the import; the
+`LocaleProvider` itself stays on the main entry.
 
 ## Forms: react-f0rm integration
 

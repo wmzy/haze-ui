@@ -1,4 +1,5 @@
 import { expect } from 'vitest';
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -36,6 +37,12 @@ describe('Tag', () => {
     expect(screen.getByRole('button', { name: '标签移除' })).toBeInTheDocument();
   });
 
+  it('forwards the ref onto the root span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(<Tag ref={ref}>Label</Tag>);
+    expect(ref.current).toBe(screen.getByText('Label'));
+  });
+
   it('calls onClose when close button is clicked', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
@@ -60,13 +67,14 @@ describe('Tag', () => {
 });
 
 describe('tagVariants / tagSizes exports', () => {
-  it('exposes the variant and size skin classes for composition', () => {
+  it('exposes the color and size skin classes for composition', () => {
     expect(Object.keys(tagVariants)).toEqual([
       'default',
       'primary',
       'success',
       'warning',
       'danger',
+      'info',
     ]);
     expect(Object.keys(tagSizes)).toEqual(['sm', 'md']);
     for (const cls of [...Object.values(tagVariants), ...Object.values(tagSizes)]) {
@@ -75,9 +83,16 @@ describe('tagVariants / tagSizes exports', () => {
   });
 
   it('are the exact classes Tag wears', () => {
-    render(<Tag variant="primary" size="sm">Skin</Tag>);
+    render(<Tag color="primary" size="sm">Skin</Tag>);
     const tag = screen.getByText('Skin');
     expect(tag).toHaveClass(tagVariants.primary);
     expect(tag).toHaveClass(tagSizes.sm);
+  });
+
+  it('maps the info color onto the tag', () => {
+    const { container } = render(
+      <Tag color="info" size="sm">Info</Tag>
+    );
+    expect(container.firstChild).toHaveClass(tagVariants.info);
   });
 });

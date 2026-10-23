@@ -159,7 +159,7 @@ export const ja: DeepPartial<SiteStrings> = {
       'ピンボードレイアウト：JS の貪欲分配で子要素を列間でバランス（順序優先、次に最短列へ）。',
     Resizable:
       'ドラッグ可能な仕切りを持つ分割ペイングループ（ResizableGroup、水平/垂直）。パネルごとの px defaultSize/minSize/maxSize、折りたたみ可能パネル、永続化用 onResizeCommit。',
-    ScrollArea: 'カスタム細スクロールバーと maxHeight を備えたスクロール領域。',
+    ScrollArea: 'オーバーレイのスクロールバーサムを備えたスクロール領域。maxHeight のショートハンドまたは Viewport/Scrollbar の合成、hover/always/scroll 表示モード、キーボードフォーカス可能なビューポート。',
     Sidebar:
       '折りたたみ状態を制御可能なアプリサイドバーのシェル（aside とレール幅トークン）。',
     Splitter:
@@ -204,6 +204,10 @@ export const ja: DeepPartial<SiteStrings> = {
     NumberInput: '数値入力。min/max/step に対応。',
     OTPInput: 'length 個の分かれた文字枠によるワンタイムパスワード入力。',
     PasswordInput: '可視性の切替表示付きテキスト入力。',
+    MaskedInput:
+      'パターン（9 数字、a 英字、A 大文字、* 英数字、\\ エスケープ）で入力を制限するマスク入力。unmask() で生の値を取り出せます。',
+    PhoneInput:
+      '国際電話番号入力：国セレクトと番号フィールドを連結、E.164 形式の値、libphonenumber-js による検証。',
     Radio: 'ラジオオプションとグループ。選択を制御可能。',
     Rating: 'スターレーティング。ハーフステップに対応。',
     RichTextEditor: 'Tiptap ベースのリッチテキストエディター。書式設定ツールバー内蔵、HTML 値は制御可能。',

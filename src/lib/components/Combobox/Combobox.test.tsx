@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import Combobox from './Combobox';
+import ComboboxGroup from './ComboboxGroup';
+import ComboboxOption from './ComboboxOption';
 
 const OPTIONS = [
   { value: 'apple', label: 'Apple' },
@@ -1179,5 +1181,163 @@ describe('Combobox generics', () => {
     // Runtime: the stray string matches no option — the input still
     // renders its placeholder state.
     expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+});
+
+describe('Combobox children authoring form', () => {
+  it('renders compound children identically to the options form', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <Combobox placeholder="Search fruit">
+        <ComboboxOption value="apple">Apple</ComboboxOption>
+        <ComboboxOption value="banana">Banana</ComboboxOption>
+        <ComboboxOption value="cherry">Cherry</ComboboxOption>
+      </Combobox>
+    );
+    await user.click(screen.getByRole('combobox'));
+    const viaChildren = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(viaChildren.map((o) => o.textContent)).toEqual([
+      'Apple',
+      'Banana',
+      'Cherry',
+    ]);
+    // Set semantics match the options form flat across the list.
+    expect(viaChildren[0]).toHaveAttribute('aria-setsize', '3');
+    expect(viaChildren[2]).toHaveAttribute('aria-posinset', '3');
+    unmount();
+
+    render(<Combobox options={OPTIONS} />);
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      within(screen.getByRole('listbox'))
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual(['Apple', 'Banana', 'Cherry']);
+  });
+
+  it('composes data options ahead of compound children', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox options={[{ value: 'mango', label: 'Mango' }]}>
+        <ComboboxOption value="apple">Apple</ComboboxOption>
+      </Combobox>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      within(screen.getByRole('listbox'))
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual(['Mango', 'Apple']);
+  });
+
+  it('extracts ComboboxGroup sections from children', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox>
+        <ComboboxGroup label="Fruits">
+          <ComboboxOption value="apple">Apple</ComboboxOption>
+          <ComboboxOption value="banana">Banana</ComboboxOption>
+        </ComboboxGroup>
+        <ComboboxOption value="carrot">Carrot</ComboboxOption>
+      </Combobox>
+    );
+    await user.click(screen.getByRole('combobox'));
+    const fruits = screen.getByRole('group', { name: 'Fruits' });
+    expect(within(fruits).getAllByRole('option')).toHaveLength(2);
+    // The groupless child stays a direct listbox row after the group.
+    const options = screen.getAllByRole('option');
+    expect(options.map((o) => o.textContent)).toEqual([
+      'Apple',
+      'Banana',
+      'Carrot',
+    ]);
+    // Filtering the children-authored corpus hides the emptied group.
+    await user.type(screen.getByRole('combobox'), 'car');
+    expect(
+      screen.queryByRole('group', { name: 'Fruits' })
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+  });
+
+  it('selects a children-authored option through the keyboard path', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox>
+        <ComboboxOption value="apple">Apple</ComboboxOption>
+        <ComboboxOption value="banana">Banana</ComboboxOption>
+      </Combobox>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    expect(input).toHaveValue('Banana');
+  });
+});
+
+describe('Combobox disabled options', () => {
+  const DISABLED_OPTIONS = [
+    { value: 'apple', label: 'Apple', disabled: true },
+    { value: 'banana', label: 'Banana' },
+  ];
+
+  it('renders aria-disabled rows that clicks and Enter reject', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Combobox options={DISABLED_OPTIONS} onValuesChange={onValuesChange} />
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    const disabledRow = screen.getByRole('option', { name: 'Apple' });
+    expect(disabledRow).toHaveAttribute('aria-disabled', 'true');
+    await user.click(disabledRow);
+    expect(input).toHaveValue('');
+    expect(onValuesChange).not.toHaveBeenCalled();
+    // Keyboard: the highlight lands on the disabled row, but Enter is
+    // rejected — the panel stays open with nothing selected. (The row
+    // click blurred focus to body in jsdom; refocus the field first.)
+    input.focus();
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(input).toHaveValue('');
+    expect(onValuesChange).not.toHaveBeenCalled();
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    // The next row commits normally.
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(input).toHaveValue('Banana');
+    expect(onValuesChange).toHaveBeenCalledWith('banana');
+  });
+
+  it('keeps disabled rows filterable but inert in the children form too', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox>
+        <ComboboxOption value="apple" disabled>
+          Apple
+        </ComboboxOption>
+        <ComboboxOption value="banana">Banana</ComboboxOption>
+      </Combobox>
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.type(input, 'app');
+    const disabledRow = screen.getByRole('option', { name: 'Apple' });
+    expect(disabledRow).toHaveAttribute('aria-disabled', 'true');
+    await user.click(disabledRow);
+    expect(input).toHaveValue('app');
+  });
+
+  it('has no axe violations with a disabled row present', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Combobox options={DISABLED_OPTIONS} placeholder="Search fruit" />
+    );
+    const input = screen.getByRole('combobox');
+    await user.click(input);
+    await user.keyboard('{ArrowDown}');
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
   });
 });

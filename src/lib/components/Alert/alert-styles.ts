@@ -1,10 +1,10 @@
 import {css} from '@linaria/core';
 
 /**
- * Shared Alert skin — the base and variant classes the `Alert`
+ * Shared Alert skin — the base and color classes the `Alert`
  * component wears. Living in their own module keeps the component file
  * free of style internals (react-refresh boundary) and lets the
- * variants map ship as a public constant (`alertVariants`, the shadcn
+ * colors map ship as a public constant (`alertVariants`, the shadcn
  * `buttonVariants` precedent) for consumers composing custom elements
  * with the same skin; split-css groups the emitted CSS into
  * `haze-ui/css/alert.css` with them.
@@ -21,7 +21,18 @@ export const base = css`
   line-height: var(--haze-leading-normal);
 `;
 
-export const variants = {
+export const colors = {
+  default: css`
+    background: var(--haze-color-bg-muted);
+    color: var(--haze-color-text-secondary);
+    border: 1px solid var(--haze-color-border);
+  `,
+  primary: css`
+    background: var(--haze-color-primary-subtle);
+    color: var(--haze-color-primary);
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-primary) 25%, transparent);
+  `,
   info: css`
     background: var(--haze-color-info-subtle);
     color: var(--haze-color-info);

@@ -1,0 +1,192 @@
+[
+  {
+    "path": "package.json",
+    "action": "replace",
+    "anchor": "applied directly by NewFormInputs (kept in worktree): `libphonenumber-js: ^1.13.15` added to dependencies and pnpm-lock.yaml synced via `pnpm add libphonenumber-js@^1.13.15` (PhoneInput is an engine-wrapping component — regular dependency per the tree-shake-away policy). pnpm also re-sorted two pre-existing @semantic-release devDependencies alphabetically; content identical, no dependency change. NOTHING left to apply for this entry.",
+    "old": "",
+    "new": "",
+    "note": "ALREADY APPLIED — informational only. size-limit entry below still needs applying."
+  },
+  {
+    "path": "vite.config.mts",
+    "action": "insert-after",
+    "anchor": "          '@tiptap/pm',",
+    "content": [
+      "          // regular dependency (PhoneInput's engine) — same rule:",
+      "          // libphonenumber-js ships CJS, bundling it would leak a",
+      "          // require() call into the pure-ESM dist (caught by the",
+      "          // bare-node ESM contract test)",
+      "          'libphonenumber-js',"
+    ],
+    "note": "Precedent comment mirrors the tiptap/qrcode entries above."
+  },
+  {
+    "path": "src/lib/index.ts",
+    "action": "insert-after",
+    "anchor": "export type { OTPInputProps, OTPInputCoreProps } from './components/OTPInput';",
+    "content": [
+      "export { MaskedInput, MaskedInputCore, unmask } from './components/MaskedInput';",
+      "export type { MaskedInputProps, MaskedInputCoreProps } from './components/MaskedInput';"
+    ],
+    "note": "Mirrors the Input/InputCore export pair; unmask is the pure helper."
+  },
+  {
+    "path": "src/lib/index.ts",
+    "action": "insert-after",
+    "anchor": "export type { PasswordInputProps, PasswordInputCoreProps } from './components/PasswordInput';",
+    "content": [
+      "export { PhoneInput, isValidPhone } from './components/PhoneInput';",
+      "export type { PhoneInputProps } from './components/PhoneInput';"
+    ],
+    "note": "isValidPhone is the pure libphonenumber-js validity helper (no state leaks)."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "insert-before",
+    "anchor": "  Mentions:",
+    "content": [
+      "  MaskedInput:",
+      "    'masked text input enforcing a pattern (`9` digit, `a` letter, `A` uppercase letter, `*` alphanumeric, `\\\\` escape); literals render as typed, `unmask()` extracts the raw slot content.',"
+    ],
+    "note": "DESCRIPTIONS is a build:demo hard gate."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "insert-after",
+    "anchor": "  PasswordInput: 'text input with a visibility reveal toggle.',",
+    "content": [
+      "  PhoneInput:",
+      "    'international phone input on libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` helper.',"
+    ],
+    "note": ""
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "insert-after",
+    "anchor": "  'password-input': 'Text input with a visibility reveal toggle.',",
+    "content": [
+      "  'phone-input':",
+      "    'International phone input backed by libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` pure helper.',"
+    ],
+    "note": "Registry descriptions are keyed by css family — MaskedInput has no own Linaria css (reuses Input styles) so it correctly gets NO entry here."
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "replace",
+    "anchor": "form CATEGORY_GROUPS list",
+    "old": "    'password-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',",
+    "new": "    'password-input', 'phone-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',",
+    "note": "phone-input has its own Linaria family (PhoneInput/phone-input-styles.ts) so it needs the form-family listing; masked-input has none."
+  },
+  {
+    "path": "src/views/Layout/component-groups.ts",
+    "action": "replace",
+    "anchor": "Mentions Forms entry",
+    "old": "      { name: 'Mentions', route: 'mentions' },",
+    "new": "      { name: 'MaskedInput', route: 'masked-input' },\n      { name: 'Mentions', route: 'mentions' },",
+    "note": "Forms section entry."
+  },
+  {
+    "path": "src/views/Layout/component-groups.ts",
+    "action": "replace",
+    "anchor": "Radio Forms entry",
+    "old": "      { name: 'Radio', route: 'radio' },",
+    "new": "      { name: 'PhoneInput', route: 'phone-input' },\n      { name: 'Radio', route: 'radio' },",
+    "note": "Forms section entry."
+  },
+  {
+    "path": "src/views/ComponentDetail/index.tsx",
+    "action": "insert-after",
+    "anchor": "import NumberInputDemo from './demos/NumberInputDemo';",
+    "content": [
+      "import MaskedInputDemo from './demos/MaskedInputDemo';",
+      "",
+      "import PhoneInputDemo from './demos/PhoneInputDemo';"
+    ],
+    "note": "Blank line matches the existing import style."
+  },
+  {
+    "path": "src/views/ComponentDetail/index.tsx",
+    "action": "insert-after",
+    "anchor": "  'password-input': PasswordInputDemo,",
+    "content": [
+      "  'masked-input': MaskedInputDemo,",
+      "  'phone-input': PhoneInputDemo,"
+    ],
+    "note": "Demos map; demo-sources.ts resolves sources automatically via import.meta.glob."
+  },
+  {
+    "path": "src/views/i18n/en.ts",
+    "action": "insert-after",
+    "anchor": "  PasswordInput: 'Text input with a visibility reveal toggle.',",
+    "content": [
+      "  MaskedInput:",
+      "    'Masked text input enforcing a pattern (9 digit, a letter, A uppercase, * alphanumeric, \\\\ escape); unmask() extracts the raw slot content.',",
+      "  PhoneInput:",
+      "    'International phone input: country select joined seamlessly to the number field, E.164 value, libphonenumber-js validation.',"
+    ],
+    "note": "en dictionary (2-space indent at this level)."
+  },
+  {
+    "path": "src/views/i18n/zh.ts",
+    "action": "insert-after",
+    "anchor": "    PasswordInput: '密码输入框，带明文切换。',",
+    "content": [
+      "    MaskedInput:",
+      "      '按模式约束输入的掩码文本框（9 数字、a 字母、A 大写、* 字母数字、\\\\ 转义），unmask() 提取原始内容。',",
+      "    PhoneInput:",
+      "      '国际电话输入：国家选择器与号码输入框无缝拼接，E.164 值，基于 libphonenumber-js 校验。',"
+    ],
+    "note": "zh dictionary (4-space indent)."
+  },
+  {
+    "path": "src/views/i18n/ja.ts",
+    "action": "insert-after",
+    "anchor": "    PasswordInput: '可視性の切替表示付きテキスト入力。',",
+    "content": [
+      "    MaskedInput:",
+      "      'パターン（9 数字、a 英字、A 大文字、* 英数字、\\\\ エスケープ）で入力を制限するマスク入力。unmask() で生の値を取り出せます。',",
+      "    PhoneInput:",
+      "      '国際電話番号入力：国セレクトと番号フィールドを連結、E.164 形式の値、libphonenumber-js による検証。',"
+    ],
+    "note": "ja dictionary (4-space indent)."
+  },
+  {
+    "path": "src/views/i18n/de.ts",
+    "action": "insert-after",
+    "anchor": "    PasswordInput: 'Texteingabe mit Sichtbarkeits-Umschalter.',",
+    "content": [
+      "    MaskedInput:",
+      "      'Maskiertes Textfeld nach Muster (9 Ziffer, a Buchstabe, A Großbuchstabe, * alphanumerisch, \\\\ Escape); unmask() liefert die Rohzeichen.',",
+      "    PhoneInput:",
+      "      'Internationale Telefonnummerneingabe: Länderauswahl und Nummernfeld verbunden, E.164-Wert, Validierung via libphonenumber-js.',"
+    ],
+    "note": "de dictionary (4-space indent)."
+  },
+  {
+    "path": "src/views/i18n/fr.ts",
+    "action": "insert-after",
+    "anchor": "    PasswordInput: 'Champ texte avec bascule de visibilité.',",
+    "content": [
+      "    MaskedInput:",
+      "      'Saisie texte masquée selon un motif (9 chiffre, a lettre, A majuscule, * alphanumérique, \\\\ échappement) ; unmask() extrait le contenu brut.',",
+      "    PhoneInput:",
+      "      'Saisie de téléphone internationale : sélecteur de pays et champ numéro joints, valeur E.164, validation libphonenumber-js.',"
+    ],
+    "note": "fr dictionary (4-space indent)."
+  },
+  {
+    "path": "package.json",
+    "action": "insert-after",
+    "anchor": "      \"name\": \"CSS family ratchet: sparkline\",\n      \"path\": \"dist/css/sparkline.css\",\n      \"limit\": \"0.3 KB\",\n      \"gzip\": true\n    },",
+    "content": [
+      "    {",
+      "      \"name\": \"CSS family ratchet: phone-input\",",
+      "      \"path\": \"dist/css/phone-input.css\",",
+      "      \"limit\": \"1 KB\",",
+      "      \"gzip\": true",
+      "    },"
+    ],
+    "note": "PROVISIONAL generous limit — after `pnpm build`, measure dist/css/phone-input.css with `node zlib gzipSync level 9` (size-limit file-plugin semantics) and ratchet to measured + ~60B, per the family-ratchet protocol. MaskedInput has no css family → no entry. The dist/haze-ui.css aggregate ratchet also grows by the new family's classes — re-measure at收口 (phone-input-styles.ts is ~1.5KB raw)."
+  }
+]

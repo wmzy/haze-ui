@@ -10,6 +10,10 @@ import OptionGroup from './OptionGroup';
 export type SelectOptionData<T extends string | number = string> = {
   value: T;
   label: ReactNode;
+  /** Option-level disabled state (from `<Option disabled>` or the
+   * data-driven `options` prop): the row renders dimmed/aria-disabled
+   * and both the click and keyboard pick paths reject it. */
+  disabled?: boolean;
 };
 
 /**
@@ -26,6 +30,7 @@ export type SelectEntryData<T extends string | number = string> =
  * extraction is concerned. */
 type OptionLikeProps = {
   value?: string | number | readonly string[];
+  disabled?: boolean;
   children?: ReactNode;
 };
 
@@ -61,11 +66,17 @@ export function extractSelectOptions<T extends string | number = string>(
       return extractSelectOptions<T>(child.props.children);
     }
     if (!isOptionElement(child)) return [];
-    const { value, children: label } = child.props;
+    const { value, disabled, children: label } = child.props;
     if (value === undefined || Array.isArray(value)) return [];
     // The JSX prop holds the raw value — only the DOM stringifies it
     // (the native single-mode path maps it back; see SelectCore).
-    return [{ value: value as T, label: label ?? String(value) }];
+    return [
+      {
+        value: value as T,
+        label: label ?? String(value),
+        disabled: disabled === true,
+      },
+    ];
   });
 }
 
@@ -92,10 +103,17 @@ export function extractSelectEntries<T extends string | number = string>(
       ];
     }
     if (!isOptionElement(child)) return [];
-    const { value, children: label } = child.props;
+    const { value, disabled, children: label } = child.props;
     if (value === undefined || Array.isArray(value)) return [];
     return [
-      { kind: 'option', option: { value: value as T, label: label ?? String(value) } },
+      {
+        kind: 'option',
+        option: {
+          value: value as T,
+          label: label ?? String(value),
+          disabled: disabled === true,
+        },
+      },
     ];
   });
 }

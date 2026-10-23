@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
 import { useState } from 'react';
@@ -9,6 +9,8 @@ type AvatarProps = {
   size?: 'sm' | 'md' | 'lg';
   fallback?: ReactNode;
   className?: string;
+  /** Forwarded to the root span (data-slot='avatar'). */
+  ref?: Ref<HTMLSpanElement>;
 };
 
 const base = css`
@@ -55,11 +57,12 @@ export default function Avatar({
   size = 'md',
   fallback,
   className,
+  ref,
 }: AvatarProps) {
   const [error, setError] = useState(false);
 
   return (
-    <span data-slot="avatar" x-class={[base, sizes[size], className]}>
+    <span ref={ref} data-slot="avatar" x-class={[base, sizes[size], className]}>
       {src && !error ? (
         <img
           data-slot="img"

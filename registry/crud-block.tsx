@@ -175,13 +175,13 @@ const pipelineValidator =
   standardSchemaFormValidator<PipelineFormValues>(pipelineSchema);
 
 function statusBadge(status: PipelineStatus) {
-  const variant =
+  const color =
     status === 'healthy' ? 'success' : status === 'degraded' ? 'warning' : 'default';
-  return <Badge variant={variant}>{status}</Badge>;
+  return <Badge color={color}>{status}</Badge>;
 }
 
 function scheduleBadge(schedule: Schedule) {
-  return <Badge variant={schedule === '15m' ? 'info' : 'default'}>{schedule}</Badge>;
+  return <Badge color={schedule === '15m' ? 'info' : 'default'}>{schedule}</Badge>;
 }
 
 /**
@@ -473,7 +473,7 @@ function CrudScreen() {
           >
             Event pipelines
           </h2>
-          <Badge variant='info'>{rows.length}</Badge>
+          <Badge color='info'>{rows.length}</Badge>
           <span style={{ flex: 1 }} />
           <span
             style={{

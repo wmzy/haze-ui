@@ -246,6 +246,39 @@ export default function SelectDemo() {
       </div>
 
       <div className={section}>
+        <h2>Options prop</h2>
+        <p style={noteStyle}>
+          The data-driven <code>options</code> array replaces authored{' '}
+          <code>&lt;Option&gt;</code> children (the Menu <code>items</code>{' '}
+          shape): plain <code>{'{value, label, disabled}'}</code> entries
+          and labelled <code>{'{label, options}'}</code> groups render
+          through the same components, so every mode behaves identically
+          to the children form. Both forms compose — data options first,
+          children after.
+        </p>
+        <div className={fieldRow}>
+          <Select
+            options={[
+              ...FRAMEWORKS.slice(0, 2),
+              { value: 'solid', label: 'Solid (deprecated)', disabled: true },
+              { label: 'Others', options: FRAMEWORKS.slice(2) },
+            ]}
+            placeholder='Data-driven…'
+          />
+        </div>
+        <div className={fieldRow}>
+          <Select
+            multiple
+            options={[
+              { label: 'Compile-time', options: FRAMEWORKS.slice(0, 2) },
+              { label: 'Runtime', options: FRAMEWORKS.slice(2) },
+            ]}
+            placeholder='Grouped data…'
+          />
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>Multiple selection</h2>
         <p style={noteStyle}>
           <code>multiple</code> swaps the native control for a Chip trigger

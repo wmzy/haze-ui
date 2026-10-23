@@ -146,6 +146,8 @@ describe('guide pages locale smoke', () => {
       renderAt(<DarkModeGuide />, 'en');
       expect(screen.getByRole('heading', { level: 1, name: 'Dark mode' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'The theme classes' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'autoTheme — zero-JS system following' })).toBeInTheDocument();
+      expect(screen.getByText(/follows the OS appearance with zero JavaScript/)).toBeInTheDocument();
       expect(screen.getByText(/Tokens resolve to the light palette/)).toBeInTheDocument();
       expect(screen.getByText(/npx haze-ui-theme/)).toBeInTheDocument();
     });
@@ -154,7 +156,9 @@ describe('guide pages locale smoke', () => {
       renderAt(<DarkModeGuide />, 'zh');
       expect(screen.getByRole('heading', { level: 1, name: '深色模式' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: '两个主题类' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'autoTheme——零 JS 系统跟随' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: '与 next-themes 互操作' })).toBeInTheDocument();
+      expect(screen.getByText(/以零 JavaScript 跟随系统外观/)).toBeInTheDocument();
       expect(screen.getByText(/内部所有 token 都解析为浅色色板/)).toBeInTheDocument();
       // Code samples stay in English.
       expect(screen.getByText(/npx haze-ui-theme/)).toBeInTheDocument();

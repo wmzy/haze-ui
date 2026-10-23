@@ -168,6 +168,10 @@ const ptBR: HazeStrings = {
     reset: 'Redefinir',
     rotate: 'Girar',
     close: 'Fechar',
+    prevImage: 'Imagem anterior',
+    nextImage: 'Próxima imagem',
+    counter: '{current} / {total}',
+    thumbnail: 'Ver imagem {index} de {total}: {alt}',
   },
   inlineEdit: {
     placeholder: 'Clique para editar',
@@ -212,6 +216,11 @@ const ptBR: HazeStrings = {
     label: 'Senha',
     show: 'Mostrar senha',
     hide: 'Ocultar senha',
+  },
+  phoneInput: {
+    placeholder: 'Número de telefone',
+    countryLabel: 'País/região',
+    invalid: 'Número de telefone inválido',
   },
   progress: {
     label: 'Progresso',

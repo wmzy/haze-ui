@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import Sparkline from './Sparkline';
-import { toneFills, toneStrokes } from './sparkline-styles';
+import { colorFills, colorStrokes } from './sparkline-styles';
 
 const DATA = [3, 7, 4, 9, 6];
 
@@ -72,35 +72,42 @@ describe('Sparkline', () => {
     expect(single.querySelectorAll('path').length).toBe(0);
   });
 
-  it('maps tone to the stroke and fill variant classes', () => {
-    const { container } = render(<Sparkline data={DATA} tone='danger' />);
+  it('maps color to the stroke and fill variant classes', () => {
+    const { container } = render(<Sparkline data={DATA} color='danger' />);
     const line = container.querySelectorAll('path').item(0);
-    expect(line).toHaveClass(toneStrokes.danger);
-    expect(line).not.toHaveClass(toneStrokes.primary);
+    expect(line).toHaveClass(colorStrokes.danger);
+    expect(line).not.toHaveClass(colorStrokes.primary);
 
     const { container: area } = render(
-      <Sparkline data={DATA} variant='area' tone='success' />,
+      <Sparkline data={DATA} variant='area' color='success' />,
     );
     const paths = area.querySelectorAll('path');
-    expect(paths.item(0)).toHaveClass(toneFills.success);
-    expect(paths.item(1)).toHaveClass(toneStrokes.success);
+    expect(paths.item(0)).toHaveClass(colorFills.success);
+    expect(paths.item(1)).toHaveClass(colorStrokes.success);
   });
 
-  it('exposes the tone skin maps for composition', () => {
-    expect(Object.keys(toneStrokes)).toEqual([
+  it('exposes the color skin maps for composition', () => {
+    expect(Object.keys(colorStrokes)).toEqual([
+      'default',
       'primary',
       'success',
       'danger',
       'warning',
       'info',
     ]);
-    expect(Object.keys(toneFills)).toEqual([
+    expect(Object.keys(colorFills)).toEqual([
+      'default',
       'primary',
       'success',
       'danger',
       'warning',
       'info',
     ]);
+  });
+
+  it('maps the neutral default color onto the line', () => {
+    const { container } = render(<Sparkline data={DATA} color='default' />);
+    expect(container.querySelector('path')).toHaveClass(colorStrokes.default);
   });
 
   it('is hidden from the accessibility tree by default', () => {
@@ -166,7 +173,7 @@ describe('Sparkline', () => {
       <Sparkline
         data={DATA}
         variant='area'
-        tone='success'
+        color='success'
         aria-label='Weekly signups trend'
       />,
     );

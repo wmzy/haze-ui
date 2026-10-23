@@ -2,27 +2,35 @@ import type { DrawerClassNames } from '../Drawer/Drawer';
 import type { SelectClassNames } from '../Select/Select';
 import type { ComboboxClassNames } from '../Combobox/Combobox';
 import type { TagGroupClassNames } from '../TagGroup/TagGroup';
+import type { MenuClassNames } from '../Menu/MenuContext';
 import type { ToastPlacement } from '../Toast/ToastContainer';
+import type { CalendarPickerMode } from '../Calendar/Calendar';
+import type { TimePickerFormat } from '../TimePicker/time';
 
 import { createContext } from 'react';
 
 /**
- * Component default overrides, keyed by the exported component name —
- * a simplified AntD-v6 `ConfigProvider` channel scoped to prop defaults
- * (theming stays on the token classes, i18n on `LocaleProvider`).
+ * THE registration record for ConfigProvider prop defaults: one entry
+ * per wired component, keyed by the exported component name, holding
+ * the partial props that component resolves config-side. Adding a
+ * component is one entry here plus the component's own
+ * `useConfigDefaults('Name')` read — nothing else (the merge below and
+ * the accessor in useConfigDefaults.ts are generic over this record).
  *
+ * A simplified AntD-v6 `ConfigProvider` channel scoped to prop defaults
+ * (theming stays on the token classes, i18n on `LocaleProvider`).
  * Each section names the defaults of one component; an explicit prop on
  * the component itself always beats anything set here, and a missing
  * provider leaves every component on its built-in defaults.
  */
-type HazeConfig = {
-  /** `Button` prop defaults. */
-  Button?: {
+type ComponentDefaultsSections = {
+  /** `Button` prop defaults (CopyButton reads the same section). */
+  Button: {
     /** Default `size` when the prop is omitted (built-in `'md'`). */
     size?: 'sm' | 'md' | 'lg';
   };
   /** `ButtonLink` prop defaults — the anchor wearing Button's skin. */
-  ButtonLink?: {
+  ButtonLink: {
     /** Default `size` when the prop is omitted (built-in `'md'`). */
     size?: 'sm' | 'md' | 'lg';
   };
@@ -32,7 +40,7 @@ type HazeConfig = {
    * own 3000ms default regardless of config. `loading()` toasts keep
    * their persistent (0ms) semantics — config never re-arms them.
    */
-  Toast?: {
+  Toast: {
     /** Auto-dismiss budget in ms when a call omits `duration` (3000). */
     duration?: number;
     /** Viewport edge the stack is pinned to (`'bottom-right'`). */
@@ -41,12 +49,12 @@ type HazeConfig = {
     maxCount?: number;
   };
   /** `Tooltip` prop defaults. */
-  Tooltip?: {
+  Tooltip: {
     /** Hover/focus delay in ms before the tooltip appears (150). */
     delay?: number;
   };
   /** `HoverCard` prop defaults. */
-  HoverCard?: {
+  HoverCard: {
     /** Hover/focus dwell in ms before the card opens (200). */
     openDelay?: number;
     /**
@@ -57,28 +65,100 @@ type HazeConfig = {
     closeDelay?: number;
   };
   /** `Drawer` slot classes — merged under an explicit `classNames` prop. */
-  Drawer?: { classNames?: DrawerClassNames };
+  Drawer: { classNames?: DrawerClassNames };
   /** `Select` slot classes — merged under an explicit `classNames` prop. */
-  Select?: { classNames?: SelectClassNames };
+  Select: { classNames?: SelectClassNames };
   /** `Combobox` slot classes — merged under an explicit `classNames` prop. */
-  Combobox?: { classNames?: ComboboxClassNames };
+  Combobox: { classNames?: ComboboxClassNames };
   /** `TagGroup` slot classes — merged under an explicit `classNames` prop. */
-  TagGroup?: { classNames?: TagGroupClassNames };
+  TagGroup: { classNames?: TagGroupClassNames };
+  /** `Input` prop defaults. */
+  Input: {
+    /** Default `size` when the prop is omitted (built-in `'md'`). */
+    size?: 'sm' | 'md' | 'lg';
+  };
+  /** `Textarea` prop defaults. */
+  Textarea: {
+    /** Default `size` when the prop is omitted (built-in `'md'`). */
+    size?: 'sm' | 'md' | 'lg';
+  };
+  /** `NumberInput` prop defaults. */
+  NumberInput: {
+    /** Default `size` when the prop is omitted (built-in `'md'`). */
+    size?: 'sm' | 'md' | 'lg';
+    /** Default increment/decrement `step` (built-in `1`). */
+    step?: number;
+  };
+  /** `Datepicker` prop defaults. */
+  Datepicker: {
+    /** Calendar granularity when the prop is omitted (built-in `'date'`). */
+    picker?: CalendarPickerMode;
+    /** First day of the week for the day grid (locale-derived). */
+    weekStartsOn?: 0 | 1;
+  };
+  /** `TimePicker` prop defaults. */
+  TimePicker: {
+    /** Column granularity / value serialization (built-in `'HH:mm'`). */
+    format?: TimePickerFormat;
+    /** 12-hour clock + AM/PM column, value stays 24-hour (built-in off). */
+    use12Hours?: boolean;
+  };
+  /** `Menu` slot classes — merged under an explicit `classNames` prop. */
+  Menu: { classNames?: MenuClassNames };
+  /** `Pagination` prop defaults. */
+  Pagination: {
+    /** Default `size` when the prop is omitted (built-in `'md'`). */
+    size?: 'sm' | 'md' | 'lg';
+  };
+  /** `Table` prop defaults. */
+  Table: {
+    /** Zebra-stripe even body rows (built-in off). */
+    striped?: boolean;
+    /** Full cell borders on every th/td (built-in off). */
+    bordered?: boolean;
+  };
 };
+
+/**
+ * Component default overrides, keyed by the exported component name —
+ * every section of {@link ComponentDefaultsSections}, optional.
+ */
+type HazeConfig = {
+  [Section in keyof ComponentDefaultsSections]?: ComponentDefaultsSections[Section];
+};
+
+/**
+ * Global spacing density. `'compact'` re-declares the spacing scale at
+ * 75% (tokens/density.ts) inside density-aware components; `'normal'`
+ * is the built-in scale. Carried in context, not DOM — each density-
+ * aware component (Table today) applies the token classes itself.
+ */
+type HazeDensity = 'normal' | 'compact';
 
 /**
  * The fully merged config visible below a `ConfigProvider`. The
  * provider resolves nesting itself (inner sections shallow-merge over
- * outer ones), so the context always carries one flat value — consumers
- * never walk a chain.
+ * outer ones; an inner `density` wins, an unset one inherits), so the
+ * context always carries one flat value — consumers never walk a chain.
  */
-const ConfigContext = createContext<HazeConfig | undefined>(undefined);
+type ConfigContextValue = {
+  /** Merged component defaults (see {@link HazeConfig}). */
+  defaults: HazeConfig;
+  /** Resolved spacing density (`'normal'` with no provider). */
+  density: HazeDensity;
+};
+
+const ConfigContext = createContext<ConfigContextValue | undefined>(undefined);
 
 /**
  * Per-section shallow merge for nested providers: keys the inner
  * provider names win, keys it leaves unset keep the outer value, and
  * sections present on only one side pass through untouched. Pure — no
  * DOM access, SSR-safe.
+ *
+ * Generic over the registration record: the section keys come from the
+ * two records themselves, so registering a new section in
+ * `ComponentDefaultsSections` needs no edit here.
  */
 function mergeConfig(
   outer: HazeConfig | undefined,
@@ -86,20 +166,21 @@ function mergeConfig(
 ): HazeConfig {
   if (outer === undefined) return inner ?? {};
   if (inner === undefined) return outer;
-  // Section-wise shallow merge, inner wins. Explicit sections (instead of
-  // a union-keyed loop) keep the assignment type-safe without casts.
-  return {
-    Button: { ...(outer.Button ?? {}), ...(inner.Button ?? {}) },
-    ButtonLink: { ...(outer.ButtonLink ?? {}), ...(inner.ButtonLink ?? {}) },
-    Toast: { ...(outer.Toast ?? {}), ...(inner.Toast ?? {}) },
-    Tooltip: { ...(outer.Tooltip ?? {}), ...(inner.Tooltip ?? {}) },
-    HoverCard: { ...(outer.HoverCard ?? {}), ...(inner.HoverCard ?? {}) },
-    Drawer: { ...(outer.Drawer ?? {}), ...(inner.Drawer ?? {}) },
-    Select: { ...(outer.Select ?? {}), ...(inner.Select ?? {}) },
-    Combobox: { ...(outer.Combobox ?? {}), ...(inner.Combobox ?? {}) },
-    TagGroup: { ...(outer.TagGroup ?? {}), ...(inner.TagGroup ?? {}) },
-  };
+  const sectionKeys = [
+    ...new Set([
+      ...(Object.keys(outer) as (keyof HazeConfig)[]),
+      ...(Object.keys(inner) as (keyof HazeConfig)[]),
+    ]),
+  ];
+  // fromEntries' index-signature result is assignable to the all-optional
+  // HazeConfig shape; each section value is a plain spread record.
+  return Object.fromEntries(
+    sectionKeys.map((key) => [
+      key,
+      { ...(outer[key] ?? {}), ...(inner[key] ?? {}) },
+    ])
+  );
 }
 
 export { ConfigContext, mergeConfig };
-export type { HazeConfig };
+export type { HazeConfig, HazeDensity, ConfigContextValue, ComponentDefaultsSections };

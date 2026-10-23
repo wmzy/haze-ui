@@ -3,6 +3,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import NumberInputCore from './NumberInputCore';
 
 type NumberInputProps = {
@@ -29,6 +31,11 @@ export default function NumberInput({
 }: NumberInputProps) {
   const [value, setValue] = useControl(valueControl, 0);
 
+  // Three tiers per wired prop: explicit prop → ConfigProvider
+  // `NumberInput` section → NumberInputCore's built-ins ('md', step 1).
+  // A missing provider stays byte-identical.
+  const config = useConfigDefaults('NumberInput');
+
   return (
     <NumberInputCore
       ref={ref}
@@ -37,8 +44,8 @@ export default function NumberInput({
       onNativeChange={onChange}
       min={min}
       max={max}
-      step={step}
-      size={size}
+      step={step ?? config.step}
+      size={size ?? config.size}
       className={className}
       {...rest}
     />

@@ -19,9 +19,11 @@ export default function MarkDemo() {
         <h2>Tones</h2>
         <div className={row}>
           <Mark>warning</Mark>
+          <Mark color='default'>default</Mark>
           <Mark color='primary'>primary</Mark>
           <Mark color='success'>success</Mark>
           <Mark color='danger'>danger</Mark>
+          <Mark color='info'>info</Mark>
         </div>
       </div>
 

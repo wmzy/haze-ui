@@ -1,0 +1,46 @@
+[
+  {
+    "path": ".github/workflows/deploy.yml",
+    "action": "replace",
+    "anchor": {
+      "old": "permissions:\n  contents: read\n  pages: write\n  id-token: write",
+      "new": "permissions:\n  contents: write\n  pages: write\n  id-token: write"
+    },
+    "content": [],
+    "note": "VersionedDocs: the workflow now force-pushes the deployed tree to the gh-pages branch (archive ledger) after deploy-pages succeeds; needs contents:write. pages/id-token unchanged for deploy-pages."
+  },
+  {
+    "path": ".github/workflows/deploy.yml",
+    "action": "insert-after",
+    "anchor": "        run: npm run build:demo",
+    "content": "\n      - name: Carry forward archived docs (/v/*)\n        run: |\n          set -euo pipefail\n          # gh-pages 分支是「当前已部署站点」的账本：每次部署成功后由本\n          # 工作流推回。首次运行分支尚不存在，跳过即可（幂等）。\n          if git fetch --no-tags --depth=1 origin gh-pages; then\n            git worktree add --detach gh-pages-tree FETCH_HEAD\n            if [ -f gh-pages-tree/version.json ]; then\n              echo \"Previously published: $(node -p \"require('./gh-pages-tree/version.json').version\")\"\n            fi\n            if [ -d gh-pages-tree/v ]; then\n              mkdir -p dist/v\n              cp -a gh-pages-tree/v/. dist/v/\n            fi\n          else\n            echo 'No gh-pages branch yet — first deploy, nothing to carry forward.'\n          fi\n\n      - name: Snapshot this release under /v/{version}/\n        run: |\n          set -euo pipefail\n          VERSION=$(node -p \"require('./dist/version.json').version\")\n          if [ \"$VERSION\" = \"dev\" ]; then\n            echo 'No git tag available (dev build) — skipping versioned snapshot.'\n            exit 0\n          fi\n          if [ -e \"dist/v/$VERSION\" ]; then\n            echo \"/v/$VERSION/ already archived — version unchanged, skipping re-archive.\"\n            exit 0\n          fi\n          # 按版本 base 重建一份文档：快照的资源与路由都指向自身路径，\n          # 与主站互不干扰（直接拷贝旧 dist 会因 base/路由烘焙进 bundle\n          # 而无法在 /v/{version}/ 下运行）。\n          BABEL_ENV=development BUILD_DEMO=true pnpm exec vite build \\\n            --base=\"/haze-ui/v/$VERSION/\" --outDir \"dist/v/$VERSION\"\n          cp src/generated/version.json \"dist/v/$VERSION/version.json\"\n          cp llms.txt llms-full.txt \"dist/v/$VERSION/\"\n          echo \"Archived /v/$VERSION/.\"",
+    "note": "VersionedDocs: two steps between 'Build docs site' and configure-pages. (1) Carry forward the previous /v/* archives from the gh-pages ledger branch (skips gracefully on first run when the branch does not exist). (2) Archive THIS release under /v/{version}/ by rebuilding the docs with a versioned --base — a plain copy of the old dist cannot work because the base path and router baseUrl are baked into the bundle at build time (router would 404 on /v/... and index.html would load the CURRENT site's assets). Skips on dev builds (no tag) and when the version is unchanged (docs-only redeploy). All shell blocks validated with bash -n; full flow simulated for first-run / new-version / unchanged-version / dev scenarios; --base equals-form verified against the real vite 8 binary."
+  },
+  {
+    "path": ".github/workflows/deploy.yml",
+    "action": "insert-after",
+    "anchor": "        uses: actions/deploy-pages@v4",
+    "content": "\n      - name: Record deployed tree on the gh-pages branch\n        run: |\n          set -euo pipefail\n          # 账本更新：让下一次部署能取回本次的 /v/* 归档与根 version.json。\n          # 在 deploy-pages 成功之后执行，部署失败时账本不超前于线上。\n          cd dist\n          git init -q -b gh-pages\n          git config user.name 'github-actions[bot]'\n          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'\n          git add -A\n          git commit -qm \"docs: deploy $(node -p \"require('./version.json').version\")\"\n          git push -qf \"https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git\" gh-pages:gh-pages\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}",
+    "note": "VersionedDocs: gh-pages branch is a pure ledger mirroring the deployed artifact tree (deploy-pages serves from the artifact, the branch is never the serving source, so no Pages settings change). Runs after deploy-pages so a failed deploy never advances the ledger. Nested git init inside dist/ happens after upload-pages-artifact, so no .git ever lands in the served tarball."
+  },
+  {
+    "path": "package.json",
+    "action": "replace",
+    "anchor": {
+      "old": "cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/\",",
+      "new": "cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/ && cp src/generated/version.json dist/version.json\","
+    },
+    "content": [],
+    "note": "VersionedDocs: emit version.json at the demo dist root (same stamp write-version.mjs already produces for the bundled UI). The workflow reads it to know the version being published; the gh-pages ledger copy serves as the OLD deployed version on subsequent runs."
+  },
+  {
+    "path": "src/views/Changelog/index.tsx",
+    "action": "replace",
+    "anchor": {
+      "old": "        <a href={sourceUrl} target='_blank' rel='noreferrer'>\n          view the source at that tag\n        </a>\n        .\n      </p>",
+      "new": "        <a href={sourceUrl} target='_blank' rel='noreferrer'>\n          view the source at that tag\n        </a>\n        . Every release's docs are archived as a read-only snapshot under{' '}\n        <code>{'/v/{version}/'}</code>\n        {versionInfo.gitTag && (\n          <>\n            {' — '}\n            <a href={`${import.meta.env.BASE_URL}v/${versionInfo.version}/`}>\n              snapshot of this version\n            </a>\n          </>\n        )}\n        .\n      </p>"
+    },
+    "content": [],
+    "note": "VersionedDocs: 'Docs versions' hint on the Changelog page (where the header VersionBadge links to) explaining the /v/{version}/ convention — archived snapshots are read-only. Links to this build's snapshot via BASE_URL so it is correct for the /haze-ui/ project-pages deployment; link only rendered when a real git tag exists (skipped for dev builds)."
+  }
+]

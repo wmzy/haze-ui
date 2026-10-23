@@ -1764,3 +1764,225 @@ describe('Select maxCount', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('Select options prop', () => {
+  const DATA = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'cherry', label: 'Cherry' },
+  ];
+
+  const GROUPED_DATA = [
+    {
+      label: 'Citrus',
+      options: [
+        { value: 'orange', label: 'Orange' },
+        { value: 'lemon', label: 'Lemon' },
+      ],
+    },
+    {
+      label: 'Berries',
+      options: [
+        { value: 'strawberry', label: 'Strawberry' },
+        { value: 'raspberry', label: 'Raspberry' },
+      ],
+    },
+  ];
+
+  it('renders identically to the children form in native single mode', () => {
+    const { container: viaOptions } = render(
+      <Select aria-label="fruit" options={DATA} />
+    );
+    const { container: viaChildren } = render(
+      <Select aria-label="fruit">{FRUITS}</Select>
+    );
+    expect(viaOptions.querySelector('select')!.innerHTML).toBe(
+      viaChildren.querySelector('select')!.innerHTML
+    );
+  });
+
+  it('renders identically to the children form on the floating listbox', async () => {
+    const user = userEvent.setup();
+    render(<Select multiple aria-label="fruit" options={DATA} />);
+    await user.click(screen.getByRole('combobox'));
+    const viaOptions = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(viaOptions.map((o) => o.textContent)).toEqual([
+      'Apple',
+      'Banana',
+      'Cherry',
+    ]);
+    // Set semantics match the children form flat across the list.
+    expect(viaOptions[0]).toHaveAttribute('aria-setsize', '3');
+    expect(viaOptions[2]).toHaveAttribute('aria-posinset', '3');
+  });
+
+  it('selects data options by click and through the keyboard path', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select
+        multiple
+        onValuesChange={onValuesChange}
+        aria-label="fruit"
+        options={DATA}
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: 'Banana' }));
+    expect(onValuesChange).toHaveBeenCalledWith(['banana']);
+    // Keyboard: walk the highlight across all three rows to Cherry and
+    // commit it with Enter (multiple toggling keeps the panel open).
+    trigger.focus();
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+    expect(onValuesChange).toHaveBeenLastCalledWith(['banana', 'cherry']);
+    expect(
+      screen.getByRole('option', { name: 'Cherry' })
+    ).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('keeps the searchable filter working over data options', async () => {
+    const user = userEvent.setup();
+    render(<Select searchable aria-label="fruit" options={DATA} />);
+    await user.click(screen.getByRole('combobox'));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Search options' }),
+      'ban'
+    );
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('option', { name: 'Banana' })).toBeInTheDocument();
+  });
+
+  it('disables data options on the native path', () => {
+    render(
+      <Select
+        aria-label="fruit"
+        options={[
+          { value: 'apple', label: 'Apple', disabled: true },
+          ...DATA.slice(1),
+        ]}
+      />
+    );
+    expect(screen.getByRole('option', { name: 'Apple' })).toBeDisabled();
+    expect(screen.getByRole('option', { name: 'Banana' })).toBeEnabled();
+  });
+
+  it('renders disabled floating rows inert to clicks and Enter', async () => {
+    const user = userEvent.setup();
+    const onValuesChange = vi.fn();
+    render(
+      <Select
+        multiple
+        onValuesChange={onValuesChange}
+        aria-label="fruit"
+        options={[
+          { value: 'apple', label: 'Apple', disabled: true },
+          ...DATA.slice(1),
+        ]}
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+    const disabledRow = screen.getByRole('option', { name: 'Apple' });
+    expect(disabledRow).toHaveAttribute('aria-disabled', 'true');
+    await user.click(disabledRow);
+    expect(onValuesChange).not.toHaveBeenCalled();
+    // Keyboard: the highlight lands on the disabled row, but Enter is
+    // rejected — selection and panel state stay untouched.
+    trigger.focus();
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onValuesChange).not.toHaveBeenCalled();
+    expect(disabledRow).toHaveAttribute('aria-selected', 'false');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('renders grouped data as native optgroups with working selection', async () => {
+    const user = userEvent.setup();
+    render(<Select aria-label="fruit" options={GROUPED_DATA} />);
+    expect(screen.getByRole('group', { name: 'Citrus' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Berries' })).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole('combobox'), 'strawberry');
+    expect(screen.getByRole('combobox')).toHaveValue('strawberry');
+  });
+
+  it('renders grouped data on the floating path with continuous keyboard order', async () => {
+    const user = userEvent.setup();
+    render(<Select multiple aria-label="fruit" options={GROUPED_DATA} />);
+    const trigger = screen.getByRole('combobox');
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(trigger).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Orange' }).id
+    );
+    // End jumps across the group boundary into the last option.
+    await user.keyboard('{End}');
+    expect(trigger).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Raspberry' }).id
+    );
+    const groups = within(screen.getByRole('listbox')).getAllByRole('group');
+    expect(groups.map((g) => g.getAttribute('aria-label'))).toEqual([
+      'Citrus',
+      'Berries',
+    ]);
+  });
+
+  it('composes options ahead of children and tolerates an empty options array', async () => {
+    const user = userEvent.setup();
+    const first = render(
+      <Select
+        multiple
+        aria-label="fruit"
+        options={[{ value: 'orange', label: 'Orange' }]}
+      >
+        <Option value="apple">Apple</Option>
+      </Select>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      within(screen.getByRole('listbox'))
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual(['Orange', 'Apple']);
+    first.unmount();
+
+    render(
+      <Select multiple aria-label="veggie" options={[]}>
+        <Option value="carrot">Carrot</Option>
+      </Select>
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(
+      within(screen.getByRole('listbox')).getAllByRole('option')
+    ).toHaveLength(1);
+  });
+
+  it('has no axe violations with data options, groups and a disabled row', async () => {
+    const { axe } = await import('jest-axe');
+    const user = userEvent.setup();
+    render(
+      <Select
+        multiple
+        aria-label="fruit"
+        options={[
+          {
+            label: 'Citrus',
+            options: [
+              { value: 'orange', label: 'Orange' },
+              { value: 'lemon', label: 'Lemon', disabled: true },
+            ],
+          },
+        ]}
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});

@@ -164,7 +164,7 @@ export const fr: DeepPartial<SiteStrings> = {
     Resizable:
       'Groupe de panneaux divisés avec séparateurs déplaçables (ResizableGroup, horizontal ou vertical) ; defaultSize/minSize/maxSize en px par panneau, panneaux repliables et onResizeCommit pour la persistance.',
     ScrollArea:
-      'Zone défilante avec barres de défilement fines et stylées, et maxHeight.',
+      'Zone défilante à curseurs superposés : sucre maxHeight ou composition Viewport/Scrollbar ; visibilité hover/always/scroll, viewport focalisable au clavier.',
     Sidebar:
       'Coque de barre latérale d’application avec état replié contrôlable (aside + tokens de largeur de rail).',
     Splitter:
@@ -211,6 +211,10 @@ export const fr: DeepPartial<SiteStrings> = {
     NumberInput: 'Saisie numérique avec min/max/step.',
     OTPInput: 'Saisie de mot de passe à usage unique en length cases segmentées.',
     PasswordInput: 'Champ texte avec bascule de visibilité.',
+    MaskedInput:
+      'Saisie texte masquée selon un motif (9 chiffre, a lettre, A majuscule, * alphanumérique, \\ échappement) ; unmask() extrait le contenu brut.',
+    PhoneInput:
+      'Saisie de téléphone internationale : sélecteur de pays et champ numéro joints, valeur E.164, validation libphonenumber-js.',
     Radio: 'Option radio et groupe avec sélection contrôlable.',
     Rating: 'Notation par étoiles avec prise en charge des demi-étoiles.',
     RichTextEditor: 'Éditeur de texte riche basé sur Tiptap, avec barre de formatage intégrée et valeur HTML contrôlable.',

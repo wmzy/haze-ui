@@ -65,10 +65,15 @@
   ],
   "AlertProps": [
     {
-      "name": "variant",
-      "type": "'info' | 'success' | 'warning' | 'danger'",
+      "name": "color",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'info'",
-      "description": "Color variant"
+      "description": "Semantic status color"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLDivElement>",
+      "description": "Forwarded to the root div (data-slot='alert')"
     },
     {
       "name": "visible",
@@ -284,6 +289,11 @@
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLSpanElement>",
+      "description": "Forwarded to the root span (data-slot='avatar')"
     }
   ],
   "AvatarGroupProps": [
@@ -335,10 +345,15 @@
   ],
   "BadgeProps": [
     {
-      "name": "variant",
-      "type": "'default' | 'success' | 'warning' | 'danger' | 'info'",
+      "name": "color",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'default'",
-      "description": "Color variant"
+      "description": "Semantic status color"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLSpanElement>",
+      "description": "Forwarded to the root span (data-slot='badge')"
     },
     {
       "name": "size",
@@ -369,10 +384,10 @@
       "description": "Close handler; shows close button when provided"
     },
     {
-      "name": "variant",
-      "type": "'info' | 'success' | 'warning' | 'danger'",
+      "name": "color",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'info'",
-      "description": "Color variant"
+      "description": "Semantic status color"
     },
     {
       "name": "className",
@@ -383,6 +398,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Banner content"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLDivElement>",
+      "description": "Forwarded to the root div (data-slot='banner')"
     }
   ],
   "BottomSheetProps": [
@@ -558,6 +578,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "CarouselSlide elements"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<CarouselHandle>",
+      "description": "Imperative handle: next()/prev() step with wrap-around, scrollTo(index) jumps (floored, clamped into the slide range) — writes go through the same control path as the arrows/dots"
     }
   ],
   "ChatContainerProps": [
@@ -681,9 +706,9 @@
     },
     {
       "name": "color",
-      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger'",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'default'",
-      "description": "Color scheme"
+      "description": "Semantic status color"
     },
     {
       "name": "icon",
@@ -710,6 +735,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Chip content"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLSpanElement>",
+      "description": "Forwarded to the root span (data-slot='chip')"
     }
   ],
   "CodeBlockProps": [
@@ -822,8 +852,13 @@
     },
     {
       "name": "options",
-      "type": "{value: string; label: string}[]",
-      "description": "List of options"
+      "type": "{value: string; label: string; disabled?: boolean; group?: string}[]",
+      "description": "Data-driven option entries; optional when compound children supply the rows — options render first, children after. `disabled` rows stay visible but inert; `group` clusters consecutive options under a heading"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Compound <ComboboxOption> rows (optionally inside <ComboboxGroup> sections), flattening into the same option data as `options`"
     },
     {
       "name": "placeholder",
@@ -1184,6 +1219,12 @@
       "description": "Called when the dialog is closed"
     },
     {
+      "name": "keepMounted",
+      "type": "boolean",
+      "default": "false",
+      "description": "Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen"
+    },
+    {
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
@@ -1264,6 +1305,12 @@
       "name": "onClose",
       "type": "() => void",
       "description": "Called when the drawer is closed"
+    },
+    {
+      "name": "keepMounted",
+      "type": "boolean",
+      "default": "false",
+      "description": "Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen"
     },
     {
       "name": "className",
@@ -1659,6 +1706,13 @@
       "description": "All native input attributes"
     }
   ],
+  "KbdProps": [
+    {
+      "name": "ref",
+      "type": "Ref<HTMLElement>",
+      "description": "Forwarded to the root kbd element (data-slot='kbd')"
+    }
+  ],
   "ListProps": [
     {
       "name": "variant",
@@ -2045,9 +2099,14 @@
     },
     {
       "name": "color",
-      "type": "'primary' | 'success' | 'warning' | 'danger'",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'primary'",
-      "description": "Color variant"
+      "description": "Semantic status color"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLDivElement>",
+      "description": "Forwarded to the root element (data-slot='progress')"
     },
     {
       "name": "aria-label",
@@ -2290,7 +2349,12 @@
     {
       "name": "children",
       "type": "ReactNode",
-      "description": "<Option> elements"
+      "description": "Compound <Option>/<OptionGroup> children; composes after the data-driven `options` entries"
+    },
+    {
+      "name": "options",
+      "type": "Array<{value: string; label: ReactNode; disabled?: boolean} | {label: string; options: {value: string; label: ReactNode; disabled?: boolean}[]}>",
+      "description": "Data-driven option entries (Menu `items` shape): plain options and labelled groups rendered through the same components as children — identical behavior in every mode"
     },
     {
       "name": "virtualized",
@@ -2390,6 +2454,11 @@
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLSpanElement>",
+      "description": "Forwarded to the root span (data-slot='spinner')"
     }
   ],
   "StatGroupProps": [
@@ -2911,10 +2980,15 @@
   ],
   "TagProps": [
     {
-      "name": "variant",
-      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger'",
+      "name": "color",
+      "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
       "default": "'default'",
-      "description": "Color variant"
+      "description": "Semantic status color"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLSpanElement>",
+      "description": "Forwarded to the root span (data-slot='tag')"
     },
     {
       "name": "size",

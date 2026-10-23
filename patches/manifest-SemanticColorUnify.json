@@ -1,0 +1,107 @@
+[
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"info\">Info</Badge>",
+    "content": "<Badge color=\"info\">Info</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename (prop-only, no visual change)"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"success\">Success</Badge>",
+    "content": "<Badge color=\"success\">Success</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"warning\">Warning</Badge>",
+    "content": "<Badge color=\"warning\">Warning</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"danger\">Danger</Badge>",
+    "content": "<Badge color=\"danger\">Danger</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Tag variant=\"primary\">oklch</Tag>",
+    "content": "<Tag color=\"primary\">oklch</Tag>",
+    "note": "SemanticColorUnify: Tag variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Tag variant=\"success\">passing</Tag>",
+    "content": "<Tag color=\"success\">passing</Tag>",
+    "note": "SemanticColorUnify: Tag variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Tag variant=\"danger\" closable>",
+    "content": "<Tag color=\"danger\" closable>",
+    "note": "SemanticColorUnify: Tag variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"success\">Passing</Badge>",
+    "content": "<Badge color=\"success\">Passing</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-main.tsx",
+    "action": "replace",
+    "anchor": "<Badge variant=\"danger\">Failing</Badge>",
+    "content": "<Badge color=\"danger\">Failing</Badge>",
+    "note": "SemanticColorUnify: Badge variant→color rename"
+  },
+  {
+    "path": "e2e/app/snapshots-wave5-main.tsx",
+    "action": "replace",
+    "anchor": "thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]}",
+    "content": "thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]}",
+    "note": "SemanticColorUnify: Meter threshold tone→color rename; this exact line appears 3 times (values 42/72/93) — replace ALL occurrences"
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "  Badge: 'small inline status label with variant and color options.',",
+    "content": "  Badge: 'small inline status label with a semantic `color` prop.',",
+    "note": "SemanticColorUnify: description referenced the removed variant prop"
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "  Tag: 'compact status label with variant color and an optional close button.',",
+    "content": "  Tag: 'compact status label with semantic `color` and an optional close button.',",
+    "note": "SemanticColorUnify: description referenced the removed variant prop"
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid tone) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',",
+    "content": "    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid color) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',",
+    "note": "SemanticColorUnify: Meter threshold field renamed tone→color"
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "    'inline-SVG mini trend chart (line/area variants, semantic tone colors); stateless, recharts-free and RSC-safe.',",
+    "content": "    'inline-SVG mini trend chart (line/area variants, semantic stroke colors); stateless, recharts-free and RSC-safe.',",
+    "note": "SemanticColorUnify: Sparkline tone prop renamed to color"
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "    'dismissible top banner with info/success/warning/danger variants.',",
+    "content": "    'dismissible top banner with semantic status colors.',",
+    "note": "SemanticColorUnify: Banner variant prop renamed to color"
+  }
+]

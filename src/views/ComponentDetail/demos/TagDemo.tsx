@@ -22,13 +22,14 @@ export default function TagDemo() {
       </p>
 
       <div className={section}>
-        <h2>Variants</h2>
+        <h2>Colors</h2>
         <div className={row}>
-          <Tag variant='default'>Default</Tag>
-          <Tag variant='primary'>Primary</Tag>
-          <Tag variant='success'>Success</Tag>
-          <Tag variant='warning'>Warning</Tag>
-          <Tag variant='danger'>Danger</Tag>
+          <Tag color='default'>Default</Tag>
+          <Tag color='primary'>Primary</Tag>
+          <Tag color='success'>Success</Tag>
+          <Tag color='warning'>Warning</Tag>
+          <Tag color='danger'>Danger</Tag>
+          <Tag color='info'>Info</Tag>
         </div>
       </div>
 

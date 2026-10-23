@@ -9,7 +9,30 @@ import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { NativeHiddenFields } from '../../utils/native-form';
 
+import Option from './Option';
+import OptionGroup from './OptionGroup';
 import SelectCore from './SelectCore';
+
+/**
+ * One entry of the data-driven `options` prop (the Menu `items`
+ * precedent): a plain option, or a labelled group — the
+ * `<OptionGroup>` structure as data. Rendered through the same
+ * components the compound children API uses, so every mode (native
+ * single select, floating listbox, groups, filtering) treats both
+ * authoring forms identically.
+ */
+type SelectOption<T extends string | number = string> =
+  | {
+      /** Raw option value — the same contract as `<Option value>`. */
+      value: T;
+      label: ReactNode;
+      disabled?: boolean;
+    }
+  | {
+      /** Group heading (the `<OptionGroup label>` structure as data). */
+      label: string;
+      options: { value: T; label: ReactNode; disabled?: boolean }[];
+    };
 
 /**
  * Semantic slot classes (AntD v6 `classNames` shape), following the
@@ -116,6 +139,16 @@ type SelectProps<T extends string | number = string> = {
    */
   onValuesChange?: (value: T | T[]) => void;
   /**
+   * Data-driven alternative to composed children (the Menu `items`
+   * precedent): plain `{value, label, disabled}` options and labelled
+   * `{label, options}` groups, rendered through the same `<Option>` /
+   * `<OptionGroup>` components the compound API uses — every mode
+   * (native select, floating listbox, search filtering, groups)
+   * behaves identically to the children form. Composes with children:
+   * the data options render first, the children after.
+   */
+  options?: SelectOption<T>[];
+  /**
    * Placeholder text for the floating triggers (falls back to the
    * `select.placeholder` locale string). A native `<select>` has no
    * placeholder attribute, so plain single mode consumes and drops it.
@@ -144,8 +177,44 @@ type SelectProps<T extends string | number = string> = {
    * `FormItem` usage never passes it, so both worlds coexist.
    */
   name?: string;
-  children: ReactNode;
+  /**
+   * Compound `<Option>` / `<OptionGroup>` children (the historical
+   * authoring form). Optional when `options` supplies the entries;
+   * both forms compose — `options` render first, children after.
+   */
+  children?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'select'>, 'value' | 'size' | 'multiple' | 'name'>;
+
+/** Renders the data-driven `options` through the family's own compound
+ * components — Menu's `renderMenuDataItems` pattern: the entries are
+ * never a second rendering path, they compose into the same children
+ * the extraction pipeline already walks. */
+function renderSelectOptions<T extends string | number = string>(
+  options: SelectOption<T>[]
+): ReactNode {
+  return options.map((entry, index) => {
+    if ('options' in entry) {
+      return (
+        <OptionGroup key={`group-${entry.label}-${index}`} label={entry.label}>
+          {entry.options.map((option) => (
+            <Option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
+              {option.label}
+            </Option>
+          ))}
+        </OptionGroup>
+      );
+    }
+    return (
+      <Option key={entry.value} value={entry.value} disabled={entry.disabled}>
+        {entry.label}
+      </Option>
+    );
+  });
+}
 
 export default function Select<T extends string | number = string>({
   value: valueControl,
@@ -161,6 +230,7 @@ export default function Select<T extends string | number = string>({
   size,
   className,
   classNames,
+  options,
   children,
   onChange,
   onValuesChange,
@@ -216,6 +286,9 @@ export default function Select<T extends string | number = string>({
         placeholder={placeholder}
         {...rest}
       >
+        {/* Data-driven options compose ahead of the compound children —
+         * one authoring pipeline, no second rendering path. */}
+        {options !== undefined ? renderSelectOptions(options) : null}
         {children}
       </SelectCore>
       <NativeHiddenFields name={name} values={formEntries} />
@@ -223,4 +296,4 @@ export default function Select<T extends string | number = string>({
   );
 }
 
-export type { SelectClassNames, SelectProps };
+export type { SelectClassNames, SelectProps, SelectOption };

@@ -54,13 +54,14 @@ export default function SparklineDemo() {
       </div>
 
       <div className={section}>
-        <h2>Tones</h2>
+        <h2>Colors</h2>
         <div className={row}>
-          <Sparkline data={up} tone='primary' variant='area' />
-          <Sparkline data={up} tone='success' variant='area' />
-          <Sparkline data={down} tone='danger' variant='area' />
-          <Sparkline data={jittery} tone='warning' />
-          <Sparkline data={jittery} tone='info' />
+          <Sparkline data={up} color='default' />
+          <Sparkline data={up} color='primary' variant='area' />
+          <Sparkline data={up} color='success' variant='area' />
+          <Sparkline data={down} color='danger' variant='area' />
+          <Sparkline data={jittery} color='warning' />
+          <Sparkline data={jittery} color='info' />
         </div>
       </div>
 
@@ -84,7 +85,7 @@ export default function SparklineDemo() {
           <Stat
             title='Error rate'
             value='-0.4pt'
-            prefix={<Sparkline data={down} width={96} height={28} tone='danger' variant='area' />}
+            prefix={<Sparkline data={down} width={96} height={28} color='danger' variant='area' />}
           />
         </StatGroup>
       </div>

@@ -163,7 +163,7 @@ export const de: DeepPartial<SiteStrings> = {
     Resizable:
       'Split-Pane-Gruppe mit ziehbaren Trennern (ResizableGroup, horizontal oder vertikal); px defaultSize/minSize/maxSize je Panel, einklappbare Panels und onResizeCommit für die Persistenz.',
     ScrollArea:
-      'Scrollbarer Bereich mit eigen gestylten schmalen Scrollbars und maxHeight.',
+      'Scrollbarer Bereich mit Overlay-Scrollbalken: maxHeight-Kurzform oder Viewport/Scrollbar-Komposition; hover/always/scroll-Sichtbarkeit, tastaturfokussierbarer Viewport.',
     Sidebar:
       'App-Sidebar-Hülle mit steuerbarem Einklappzustand (aside + Rail-Breiten-Tokens).',
     Splitter:
@@ -210,6 +210,10 @@ export const de: DeepPartial<SiteStrings> = {
     NumberInput: 'Numerische Eingabe mit min/max/step.',
     OTPInput: 'Einmalpasswort-Eingabe aus length segmentierten Zeichenboxen.',
     PasswordInput: 'Texteingabe mit Sichtbarkeits-Umschalter.',
+    MaskedInput:
+      'Maskiertes Textfeld nach Muster (9 Ziffer, a Buchstabe, A Großbuchstabe, * alphanumerisch, \\ Escape); unmask() liefert die Rohzeichen.',
+    PhoneInput:
+      'Internationale Telefonnummerneingabe: Länderauswahl und Nummernfeld verbunden, E.164-Wert, Validierung via libphonenumber-js.',
     Radio: 'Radio-Option und -Gruppe mit steuerbarer Auswahl.',
     Rating: 'Sternebewertung mit Halb-Schritt-Unterstützung.',
     RichTextEditor: 'Rich-Text-Editor auf Tiptap-Basis mit integrierter Formatierungs-Toolbar und steuerbarem HTML-Wert.',

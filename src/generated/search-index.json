@@ -524,6 +524,12 @@
   },
   {
     "type": "component",
+    "label": "MaskedInput",
+    "route": "/components/masked-input",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Mentions",
     "route": "/components/mentions",
     "keywords": []
@@ -547,6 +553,12 @@
     "type": "component",
     "label": "PasswordInput",
     "route": "/components/password-input",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "PhoneInput",
+    "route": "/components/phone-input",
     "keywords": []
   },
   {
@@ -1367,6 +1379,12 @@
   },
   {
     "type": "section",
+    "label": "Options prop",
+    "sublabel": "Select",
+    "route": "/components/select"
+  },
+  {
+    "type": "section",
     "label": "Multiple selection",
     "sublabel": "Select",
     "route": "/components/select"
@@ -1439,7 +1457,7 @@
   },
   {
     "type": "section",
-    "label": "Variants",
+    "label": "Colors",
     "sublabel": "Badge",
     "route": "/components/badge"
   },
@@ -1458,6 +1476,12 @@
   {
     "type": "section",
     "label": "classNames slots",
+    "sublabel": "Dialog",
+    "route": "/components/dialog"
+  },
+  {
+    "type": "section",
+    "label": "keepMounted",
     "sublabel": "Dialog",
     "route": "/components/dialog"
   },
@@ -1619,7 +1643,7 @@
   },
   {
     "type": "section",
-    "label": "Variants",
+    "label": "Colors",
     "sublabel": "Alert",
     "route": "/components/alert"
   },
@@ -1643,7 +1667,7 @@
   },
   {
     "type": "section",
-    "label": "Variants",
+    "label": "Colors",
     "sublabel": "Tag",
     "route": "/components/tag"
   },
@@ -1698,6 +1722,12 @@
   {
     "type": "section",
     "label": "Preview",
+    "sublabel": "Image",
+    "route": "/components/image"
+  },
+  {
+    "type": "section",
+    "label": "Gallery",
     "sublabel": "Image",
     "route": "/components/image"
   },
@@ -1832,6 +1862,12 @@
     "label": "List Props",
     "sublabel": "List",
     "route": "/components/list"
+  },
+  {
+    "type": "section",
+    "label": "Children & disabled options",
+    "sublabel": "Combobox",
+    "route": "/components/combobox"
   },
   {
     "type": "section",
@@ -1992,6 +2028,12 @@
   {
     "type": "section",
     "label": "Auto-play with pause on hover",
+    "sublabel": "Carousel",
+    "route": "/components/carousel"
+  },
+  {
+    "type": "section",
+    "label": "Imperative handle",
     "sublabel": "Carousel",
     "route": "/components/carousel"
   },
@@ -2837,7 +2879,7 @@
   },
   {
     "type": "section",
-    "label": "Tones",
+    "label": "Colors",
     "sublabel": "Sparkline",
     "route": "/components/sparkline"
   },
@@ -2894,6 +2936,30 @@
     "label": "With Close",
     "sublabel": "Chip",
     "route": "/components/chip"
+  },
+  {
+    "type": "section",
+    "label": "Sugar — maxHeight one-liner",
+    "sublabel": "ScrollArea",
+    "route": "/components/scroll-area"
+  },
+  {
+    "type": "section",
+    "label": "Compound composition",
+    "sublabel": "ScrollArea",
+    "route": "/components/scroll-area"
+  },
+  {
+    "type": "section",
+    "label": "Scrollbar modes — type hover / always / scroll",
+    "sublabel": "ScrollArea",
+    "route": "/components/scroll-area"
+  },
+  {
+    "type": "section",
+    "label": "Keyboard",
+    "sublabel": "ScrollArea",
+    "route": "/components/scroll-area"
   },
   {
     "type": "section",
@@ -2966,6 +3032,36 @@
     "label": "disabledDate",
     "sublabel": "DateRangePicker",
     "route": "/components/date-range-picker"
+  },
+  {
+    "type": "section",
+    "label": "Card number & date",
+    "sublabel": "MaskedInput",
+    "route": "/components/masked-input"
+  },
+  {
+    "type": "section",
+    "label": "Sizes",
+    "sublabel": "MaskedInput",
+    "route": "/components/masked-input"
+  },
+  {
+    "type": "section",
+    "label": "Slots",
+    "sublabel": "MaskedInput",
+    "route": "/components/masked-input"
+  },
+  {
+    "type": "section",
+    "label": "Sizes",
+    "sublabel": "PhoneInput",
+    "route": "/components/phone-input"
+  },
+  {
+    "type": "section",
+    "label": "Preselecting a country",
+    "sublabel": "PhoneInput",
+    "route": "/components/phone-input"
   },
   {
     "type": "section",
@@ -3239,7 +3335,7 @@
   },
   {
     "type": "section",
-    "label": "Variants",
+    "label": "Colors",
     "sublabel": "Banner",
     "route": "/components/banner"
   },
@@ -3780,6 +3876,18 @@
   {
     "type": "section",
     "label": "Tooltip delay",
+    "sublabel": "ConfigProvider",
+    "route": "/components/config-provider"
+  },
+  {
+    "type": "section",
+    "label": "Field defaults",
+    "sublabel": "ConfigProvider",
+    "route": "/components/config-provider"
+  },
+  {
+    "type": "section",
+    "label": "Global density",
     "sublabel": "ConfigProvider",
     "route": "/components/config-provider"
   },
@@ -4391,8 +4499,14 @@
   },
   {
     "type": "prop",
-    "label": "variant",
-    "sublabel": "Alert — Color variant",
+    "label": "color",
+    "sublabel": "Alert — Semantic status color",
+    "route": "/components/alert"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Alert — Forwarded to the root div (data-slot='alert')",
     "route": "/components/alert"
   },
   {
@@ -4535,6 +4649,12 @@
   },
   {
     "type": "prop",
+    "label": "ref",
+    "sublabel": "Avatar — Forwarded to the root span (data-slot='avatar')",
+    "route": "/components/avatar"
+  },
+  {
+    "type": "prop",
     "label": "max",
     "sublabel": "AvatarGroup — Maximum avatars rendered before the overflow chip",
     "route": "/components/avatar-group"
@@ -4571,8 +4691,14 @@
   },
   {
     "type": "prop",
-    "label": "variant",
-    "sublabel": "Badge — Color variant",
+    "label": "color",
+    "sublabel": "Badge — Semantic status color",
+    "route": "/components/badge"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Badge — Forwarded to the root span (data-slot='badge')",
     "route": "/components/badge"
   },
   {
@@ -4601,14 +4727,20 @@
   },
   {
     "type": "prop",
-    "label": "variant",
-    "sublabel": "Banner — Color variant",
+    "label": "color",
+    "sublabel": "Banner — Semantic status color",
     "route": "/components/banner"
   },
   {
     "type": "prop",
     "label": "children",
     "sublabel": "Banner — Banner content",
+    "route": "/components/banner"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Banner — Forwarded to the root div (data-slot='banner')",
     "route": "/components/banner"
   },
   {
@@ -4793,6 +4925,12 @@
   },
   {
     "type": "prop",
+    "label": "ref",
+    "sublabel": "Carousel — Imperative handle: next()/prev() step with wrap-around, scrollTo(index) jumps (floored, clamped into the slide range) — writes go through the same control path as the arrows/dots",
+    "route": "/components/carousel"
+  },
+  {
+    "type": "prop",
     "label": "virtualized",
     "sublabel": "Cascader — Window each cascading panel list with VirtualList for large option trees",
     "route": "/components/cascader"
@@ -4902,7 +5040,7 @@
   {
     "type": "prop",
     "label": "color",
-    "sublabel": "Chip — Color scheme",
+    "sublabel": "Chip — Semantic status color",
     "route": "/components/chip"
   },
   {
@@ -4927,6 +5065,12 @@
     "type": "prop",
     "label": "children",
     "sublabel": "Chip — Chip content",
+    "route": "/components/chip"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Chip — Forwarded to the root span (data-slot='chip')",
     "route": "/components/chip"
   },
   {
@@ -5034,7 +5178,13 @@
   {
     "type": "prop",
     "label": "options",
-    "sublabel": "Combobox — List of options",
+    "sublabel": "Combobox — Data-driven option entries; optional when compound children supply the rows — options render first, children after. `disabled` rows stay visible but inert; `group` clusters consecutive options under a heading",
+    "route": "/components/combobox"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "Combobox — Compound <ComboboxOption> rows (optionally inside <ComboboxGroup> sections), flattening into the same option data as `options`",
     "route": "/components/combobox"
   },
   {
@@ -5393,6 +5543,12 @@
   },
   {
     "type": "prop",
+    "label": "keepMounted",
+    "sublabel": "Dialog — Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen",
+    "route": "/components/dialog"
+  },
+  {
+    "type": "prop",
     "label": "children",
     "sublabel": "Dialog — Dialog content",
     "route": "/components/dialog"
@@ -5449,6 +5605,12 @@
     "type": "prop",
     "label": "onClose",
     "sublabel": "Drawer — Called when the drawer is closed",
+    "route": "/components/drawer"
+  },
+  {
+    "type": "prop",
+    "label": "keepMounted",
+    "sublabel": "Drawer — Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen",
     "route": "/components/drawer"
   },
   {
@@ -5762,6 +5924,12 @@
     "label": "...rest",
     "sublabel": "Input — All native input attributes",
     "route": "/components/input"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Kbd — Forwarded to the root kbd element (data-slot='kbd')",
+    "route": "/components/kbd"
   },
   {
     "type": "prop",
@@ -6090,7 +6258,13 @@
   {
     "type": "prop",
     "label": "color",
-    "sublabel": "Progress — Color variant",
+    "sublabel": "Progress — Semantic status color",
+    "route": "/components/progress"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Progress — Forwarded to the root element (data-slot='progress')",
     "route": "/components/progress"
   },
   {
@@ -6330,7 +6504,13 @@
   {
     "type": "prop",
     "label": "children",
-    "sublabel": "Select — <Option> elements",
+    "sublabel": "Select — Compound <Option>/<OptionGroup> children; composes after the data-driven `options` entries",
+    "route": "/components/select"
+  },
+  {
+    "type": "prop",
+    "label": "options",
+    "sublabel": "Select — Data-driven option entries (Menu `items` shape): plain options and labelled groups rendered through the same components as children — identical behavior in every mode",
     "route": "/components/select"
   },
   {
@@ -6415,6 +6595,12 @@
     "type": "prop",
     "label": "size",
     "sublabel": "Spinner — Spinner size (16px / 24px / 32px)",
+    "route": "/components/spinner"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Spinner — Forwarded to the root span (data-slot='spinner')",
     "route": "/components/spinner"
   },
   {
@@ -6803,8 +6989,14 @@
   },
   {
     "type": "prop",
-    "label": "variant",
-    "sublabel": "Tag — Color variant",
+    "label": "color",
+    "sublabel": "Tag — Semantic status color",
+    "route": "/components/tag"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Tag — Forwarded to the root span (data-slot='tag')",
     "route": "/components/tag"
   },
   {

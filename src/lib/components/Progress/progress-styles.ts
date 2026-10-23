@@ -42,10 +42,12 @@ export const barFill = css`
 `;
 
 export const colorMap = {
+  default: css`background: var(--haze-color-text-secondary);`,
   primary: css`background: var(--haze-color-primary);`,
   success: css`background: var(--haze-color-success);`,
   warning: css`background: var(--haze-color-warning);`,
   danger: css`background: var(--haze-color-danger);`,
+  info: css`background: var(--haze-color-info);`,
 } as const;
 
 export const circleBase = css`
@@ -84,8 +86,10 @@ export const circleFill = css`
 `;
 
 export const circleColorMap = {
+  default: css`stroke: var(--haze-color-text-secondary);`,
   primary: css`stroke: var(--haze-color-primary);`,
   success: css`stroke: var(--haze-color-success);`,
   warning: css`stroke: var(--haze-color-warning);`,
   danger: css`stroke: var(--haze-color-danger);`,
+  info: css`stroke: var(--haze-color-info);`,
 } as const;

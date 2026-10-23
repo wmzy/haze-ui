@@ -1,10 +1,10 @@
 import {css} from '@linaria/core';
 
 /**
- * Shared Badge skin — the base, variant and size classes the `Badge`
+ * Shared Badge skin — the base, color and size classes the `Badge`
  * component wears. Living in their own module keeps the component file
  * free of style internals (react-refresh boundary) and lets the
- * variants/sizes maps ship as public constants (`badgeVariants` /
+ * colors/sizes maps ship as public constants (`badgeVariants` /
  * `badgeSizes`, the shadcn `buttonVariants` precedent) for consumers
  * composing custom elements with the same skin; split-css groups the
  * emitted CSS into `haze-ui/css/badge.css` with them.
@@ -20,10 +20,14 @@ export const base = css`
   white-space: nowrap;
 `;
 
-export const variants = {
+export const colors = {
   default: css`
     background: var(--haze-color-bg-muted);
     color: var(--haze-color-text-secondary);
+  `,
+  primary: css`
+    background: var(--haze-color-primary-subtle);
+    color: var(--haze-color-primary);
   `,
   success: css`
     background: var(--haze-color-success-subtle);

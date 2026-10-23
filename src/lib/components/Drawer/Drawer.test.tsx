@@ -223,6 +223,127 @@ describe('Drawer', () => {
   });
 });
 
+describe('Drawer keepMounted', () => {
+  function Harness({ keepMounted = true }: { keepMounted?: boolean }) {
+    const [, setOpen, openCtrl] = useControl(undefined, false);
+    return (
+      <>
+        <button onClick={() => setOpen(true)}>Open drawer</button>
+        <Drawer open={openCtrl} keepMounted={keepMounted}>
+          <label>
+            Draft
+            <input data-testid='draft' />
+          </label>
+        </Drawer>
+      </>
+    );
+  }
+
+  it('renders dormant (hidden + inert) from the first frame when it starts closed', () => {
+    render(<Harness />);
+    const drawer = screen.getByRole<HTMLDialogElement>('dialog', {
+      hidden: true,
+    });
+    expect(screen.getByTestId('draft')).toBeInTheDocument();
+    expect(drawer).toHaveAttribute('data-state', 'closed');
+    expect(drawer).toHaveAttribute('hidden');
+    expect(drawer).toHaveAttribute('inert');
+  });
+
+  it('applies hidden + inert after the exit settles and drops them on reopen', async () => {
+    render(<Harness />);
+    const opener = screen.getByText('Open drawer');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const drawer = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(drawer).toHaveAttribute('open'));
+    expect(drawer).not.toHaveAttribute('hidden');
+
+    act(() => {
+      fireEvent.click(drawer);
+    });
+    expect(drawer).toHaveAttribute('data-state', 'closed');
+    // 退场播放中：open 属性仍在，hidden 不能提前挂（会掐断滑动退场）
+    expect(drawer).toHaveAttribute('open');
+    expect(drawer).not.toHaveAttribute('hidden');
+
+    await waitFor(() => expect(drawer).not.toHaveAttribute('open'));
+    // settle 后休眠：常驻 + hidden + inert（排除出 AT 树与 Tab 序）
+    expect(drawer).toHaveAttribute('data-state', 'closed');
+    expect(drawer).toHaveAttribute('hidden');
+    expect(drawer).toHaveAttribute('inert');
+
+    act(() => {
+      fireEvent.click(opener);
+    });
+    await waitFor(() => expect(drawer).toHaveAttribute('open'));
+    expect(drawer).toHaveAttribute('data-state', 'open');
+    expect(drawer).not.toHaveAttribute('hidden');
+    expect(drawer).not.toHaveAttribute('inert');
+  });
+
+  it('keeps draft input content across close and reopen', async () => {
+    render(<Harness />);
+    const opener = screen.getByText('Open drawer');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    fireEvent.change(screen.getByTestId('draft'), {
+      target: { value: 'half-written' },
+    });
+
+    const drawer = screen.getByRole<HTMLDialogElement>('dialog');
+    act(() => {
+      fireEvent.click(drawer);
+    });
+    await waitFor(() => expect(drawer).toHaveAttribute('hidden'));
+    expect(screen.getByTestId('draft')).toHaveValue('half-written');
+
+    act(() => {
+      fireEvent.click(opener);
+    });
+    await waitFor(() => expect(drawer).not.toHaveAttribute('hidden'));
+    expect(screen.getByTestId('draft')).toHaveValue('half-written');
+  });
+
+  it('restores focus to the opener while the dormant panel is inert', async () => {
+    render(<Harness />);
+    const opener = screen.getByText('Open drawer');
+    opener.focus();
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const drawer = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(drawer).toHaveAttribute('open'));
+
+    act(() => {
+      fireEvent.click(drawer);
+    });
+    await waitFor(() => expect(drawer).toHaveAttribute('hidden'));
+    // 焦点归还 opener；scope 随 open 停用，休眠面板 inert、不困焦
+    expect(opener).toHaveFocus();
+    expect(drawer).toHaveAttribute('inert');
+  });
+
+  it('default (no keepMounted): the closed panel never carries hidden or inert', async () => {
+    render(<Harness keepMounted={false} />);
+    const opener = screen.getByText('Open drawer');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const drawer = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(drawer).toHaveAttribute('open'));
+
+    act(() => {
+      fireEvent.click(drawer);
+    });
+    await waitFor(() => expect(drawer).not.toHaveAttribute('open'));
+    expect(drawer).not.toHaveAttribute('hidden');
+    expect(drawer).not.toHaveAttribute('inert');
+  });
+});
+
 describe('Drawer imperative handle', () => {
   it('opens and closes through the handle', async () => {
     const ref = createRef<DrawerHandle>();

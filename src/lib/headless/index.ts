@@ -156,14 +156,18 @@ export type FloatingPanelProps = Parameters<typeof FloatingPanel>[0];
 /**
  * Keeps a single child mounted while its exit animation runs: the child
  * receives `data-state="open" | "closed"` (render your enter/exit
- * transitions on it) and unmounts only after the exit settles. This is
- * the engine behind haze-ui's animated panels, modals and collapsibles.
+ * transitions on it) and unmounts only after the exit settles — or,
+ * with `keepMounted`, stays mounted dormant behind `hidden` + `inert`.
+ * This is the engine behind haze-ui's animated panels, modals and
+ * collapsibles.
  */
 export { Presence };
 
 /**
  * Props accepted by {@link Presence}: `present`, a single-element
- * `children`, and an optional `onExited` callback.
+ * `children`, an optional `onExited` callback, and `keepMounted` to
+ * keep the child mounted (dormant behind `hidden` + `inert`) after the
+ * exit settles.
  */
 export type { PresenceProps } from '../utils/presence';
 

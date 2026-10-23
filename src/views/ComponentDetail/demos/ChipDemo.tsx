@@ -23,6 +23,7 @@ export default function ChipDemo() {
           <Chip color='success'>Success</Chip>
           <Chip color='warning'>Warning</Chip>
           <Chip color='danger'>Danger</Chip>
+          <Chip color='info'>Info</Chip>
         </div>
       </div>
 
@@ -33,6 +34,7 @@ export default function ChipDemo() {
           <Chip variant='outline' color='primary'>Primary</Chip>
           <Chip variant='outline' color='success'>Success</Chip>
           <Chip variant='outline' color='danger'>Danger</Chip>
+          <Chip variant='outline' color='info'>Info</Chip>
         </div>
       </div>
 

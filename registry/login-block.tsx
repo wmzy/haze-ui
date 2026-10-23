@@ -80,7 +80,7 @@ function LoginForm() {
         }}
       >
         {signedIn && (
-          <Alert variant='success'>Signed in — the schema passed for this workspace.</Alert>
+          <Alert color='success'>Signed in — the schema passed for this workspace.</Alert>
         )}
         <FormItem
           form={form}

@@ -98,7 +98,12 @@ type SelectCoreProps<T extends string | number = string> = {
    * native `<select>` ignores it — it handles long lists natively.
    */
   virtualized?: boolean | SelectVirtualizedConfig;
-  children: ReactNode;
+  /**
+   * Compound `<Option>` / `<OptionGroup>` children — the owning Select
+   * composes its data-driven `options` in here ahead of them. Optional
+   * for callers supplying entries entirely another way.
+   */
+  children?: ReactNode;
   className?: string;
   /** Slot classes (see SelectProps.classNames in ./Select). */
   classNames?: SelectClassNames;

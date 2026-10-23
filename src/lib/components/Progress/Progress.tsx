@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import {
   barBase,
@@ -16,9 +16,12 @@ type ProgressProps = {
   value?: number;
   variant?: 'bar' | 'circle';
   size?: 'sm' | 'md' | 'lg';
-  color?: 'primary' | 'success' | 'warning' | 'danger';
+  /** Semantic fill color. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   className?: string;
-} & Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'className'>;
+  /** Forwarded to the root element (data-slot='progress'). */
+  ref?: Ref<HTMLDivElement>;
+} & Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'className' | 'color'>;
 
 const strokeWidths = { sm: 3, md: 4, lg: 5 };
 const circleRadius = { sm: 13, md: 20, lg: 27 };
@@ -30,6 +33,7 @@ export default function Progress({
   color = 'primary',
   'aria-label': ariaLabel = 'Progress',
   className,
+  ref,
   ...rest
 }: ProgressProps) {
   const clamped = Math.max(0, Math.min(100, value));
@@ -42,6 +46,7 @@ export default function Progress({
 
     return (
       <div
+        ref={ref}
         role="progressbar"
         data-slot="progress"
         aria-label={ariaLabel}
@@ -77,6 +82,7 @@ export default function Progress({
 
   return (
     <div
+      ref={ref}
       role="progressbar"
       data-slot="progress"
       aria-label={ariaLabel}

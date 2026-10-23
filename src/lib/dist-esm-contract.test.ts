@@ -169,14 +169,15 @@ distContract('dist 发布契约：Node ESM / vitest 可直接 import', () => {
       }
     });
 
-    it('barrel / form / headless / 有状态组件 / 浮层原语仍注入 use client', () => {
+    it('barrel / form / headless / locales / 有状态组件 / 浮层原语仍注入 use client', () => {
       // 根 barrel re-export 全量组件（含状态组件），必须保持客户端边界；
-      // form/headless（hooks）、Switch/Button（useControl/内部状态）、
-      // utils/floating（浮层原语）同理。
+      // form/headless（hooks）、locales（与 LocaleProvider pack 同等待遇）、
+      // Switch/Button（useControl/内部状态）、utils/floating（浮层原语）同理。
       const mustBeClient = [
         'index.js',
         'form/index.js',
         'headless/index.js',
+        'locales/index.js',
         'components/Switch/Switch.js',
         'components/Switch/index.js',
         'components/Button/Button.js',

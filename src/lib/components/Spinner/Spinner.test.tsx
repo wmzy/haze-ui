@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
 import Spinner from './Spinner';
@@ -21,6 +22,13 @@ describe('Spinner', () => {
   it('renders an SVG', () => {
     const { container } = render(<Spinner />);
     expect(container.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('attaches ref to the root span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(<Spinner ref={ref} />);
+    expect(ref.current).toBe(screen.getByRole('status'));
+    expect(ref.current).toHaveAttribute('data-slot', 'spinner');
   });
 
   it('has no axe violations', async () => {

@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 import { base, solidColors, outlineColors, iconStyle, closeBtn } from './chip-styles';
 
 type ChipProps = {
   variant?: 'solid' | 'outline';
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+  /** Semantic status color. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   icon?: ReactNode;
   onClose?: () => void;
   /**
@@ -15,6 +16,8 @@ type ChipProps = {
   removeLabel?: string;
   className?: string;
   children: ReactNode;
+  /** Forwarded to the root span (data-slot='chip'). */
+  ref?: Ref<HTMLSpanElement>;
 };
 
 export default function Chip({
@@ -25,11 +28,12 @@ export default function Chip({
   removeLabel = 'Remove',
   className,
   children,
+  ref,
 }: ChipProps) {
   const colorClass = variant === 'outline' ? outlineColors[color] : solidColors[color];
 
   return (
-    <span data-slot="chip" x-class={[base, colorClass, className]}>
+    <span ref={ref} data-slot="chip" x-class={[base, colorClass, className]}>
       {icon && <span data-slot="icon" x-class={[iconStyle]}>{icon}</span>}
       {children}
       {onClose && (

@@ -16,10 +16,10 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { ScrollArea } from 'haze-ui';
+import { ScrollArea, Scrollbar, ScrollThumb, ScrollViewport } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/scroll-area.css';
 
-export { ScrollArea };
-export type { ScrollAreaProps } from 'haze-ui';
+export { ScrollArea, Scrollbar, ScrollThumb, ScrollViewport };
+export type { ScrollAreaProps, ScrollbarMode, ScrollbarProps, ScrollThumbProps, ScrollViewportProps } from 'haze-ui';

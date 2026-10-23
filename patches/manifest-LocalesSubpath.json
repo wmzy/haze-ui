@@ -1,0 +1,47 @@
+[
+  {
+    "path": "vite.config.mts",
+    "action": "replace",
+    "anchor": "libEntries group array",
+    "old": "...['components', 'form', 'headless', 'tokens'].flatMap((group) =>",
+    "new": "...['components', 'form', 'headless', 'locales', 'tokens'].flatMap((group) =>",
+    "note": "LocalesSubpath: registers src/lib/locales/index.ts as a lib entry so dist/locales/index.js exists for the ./locales subpath. The flatMap's non-components branch appends the group's own index.ts, so no other change is needed here."
+  },
+  {
+    "path": "vite.config.mts",
+    "action": "replace",
+    "anchor": "libEntries comment above the array (was already stale: headless missing)",
+    "old": "// package's `exports` subpaths (./components/*, ./form, ./tokens) point",
+    "new": "// package's `exports` subpaths (./components/*, ./form, ./headless, ./locales, ./tokens) point",
+    "note": "LocalesSubpath: keep the comment accurate while touching the array below it."
+  },
+  {
+    "path": "package.json",
+    "action": "insert-after",
+    "anchor": "      \"default\": \"./dist/headless/index.js\"\n    },",
+    "content": "    \"./locales\": {\n      \"types\": \"./dist/types/locales/index.d.ts\",\n      \"import\": \"./dist/locales/index.js\",\n      \"default\": \"./dist/locales/index.js\"\n    },",
+    "note": "LocalesSubpath: new ./locales subpath mirroring ./headless's shape exactly. Depends on the vite.config.mts libEntries entry (dist/locales/index.js); dist/types/locales/index.d.ts comes free from tsconfig.lib.json (includes src/lib, rootDir src/lib)."
+  },
+  {
+    "path": "src/lib/dist-esm-contract.test.ts",
+    "action": "insert-after",
+    "anchor": "        'headless/index.js',",
+    "content": "        'locales/index.js',",
+    "note": "LocalesSubpath: add the new entry root to the mustBeClient sample — guards that dist/locales/index.js exists (catches a dropped libEntries registration; nothing else asserts subpath entry existence) and keeps the 'use client' banner. locales/index.ts is NOT on the RSC-safe list — same treatment as the LocaleProvider pack modules today — so the default banner applies and the general non-safe assertion also covers it."
+  },
+  {
+    "path": "src/lib/dist-esm-contract.test.ts",
+    "action": "replace",
+    "anchor": "mustBeClient it() name enumerating the sample roots",
+    "old": "    it('barrel / form / headless / 有状态组件 / 浮层原语仍注入 use client', () => {",
+    "new": "    it('barrel / form / headless / locales / 有状态组件 / 浮层原语仍注入 use client', () => {",
+    "note": "LocalesSubpath: keep the test name's enumeration in sync with the array addition above."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "insert-before",
+    "anchor": "## Forms: react-f0rm integration",
+    "content": "## Locale packs\n\n\\`haze-ui/locales\\` re-exports the string packs standalone — \\`enUS\\` (the same\nobject as \\`defaultStrings\\`), \\`zhCN\\`, \\`jaJP\\`, \\`deDE\\`, \\`frFR\\`, \\`esES\\`, \\`itIT\\`,\n\\`ptBR\\`, \\`ruRU\\`, \\`koKR\\`, \\`arSA\\`, plus \\`createStrings(base, overrides)\\` and the\n\\`HazeStrings\\`/\\`LocaleProviderProps\\` types — for bundle-splitting a single pack\nor type-checking a custom one. No components travel with the import; the\n\\`LocaleProvider\\` itself stays on the main entry.\n\n",
+    "note": "LocalesSubpath: one short section for the new subpath, slotted after the Headless primitives section (the spot where subpaths are documented). Backticks are escaped as \\` because the surrounding llms template is a JS template literal."
+  }
+]

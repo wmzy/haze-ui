@@ -1,0 +1,86 @@
+[
+  {
+    "path": "src/lib/headless/index.ts",
+    "action": "replace",
+    "anchor": [
+      "/**",
+      " * Keeps a single child mounted while its exit animation runs: the child",
+      " * receives `data-state=\"open\" | \"closed\"` (render your enter/exit",
+      " * transitions on it) and unmounts only after the exit settles. This is",
+      " * the engine behind haze-ui's animated panels, modals and collapsibles.",
+      " */",
+      "export { Presence };"
+    ],
+    "content": [
+      "/**",
+      " * Keeps a single child mounted while its exit animation runs: the child",
+      " * receives `data-state=\"open\" | \"closed\"` (render your enter/exit",
+      " * transitions on it) and unmounts only after the exit settles — or,",
+      " * with `keepMounted`, stays mounted dormant behind `hidden` + `inert`.",
+      " * This is the engine behind haze-ui's animated panels, modals and",
+      " * collapsibles.",
+      " */",
+      "export { Presence };"
+    ],
+    "note": "Presence keepMounted mode (KeepMountedPresence task): mention dormant semantics in the headless subpath doc."
+  },
+  {
+    "path": "src/lib/headless/index.ts",
+    "action": "replace",
+    "anchor": [
+      "/**",
+      " * Props accepted by {@link Presence}: `present`, a single-element",
+      " * `children`, and an optional `onExited` callback.",
+      " */"
+    ],
+    "content": [
+      "/**",
+      " * Props accepted by {@link Presence}: `present`, a single-element",
+      " * `children`, an optional `onExited` callback, and `keepMounted` to",
+      " * keep the child mounted (dormant behind `hidden` + `inert`) after the",
+      " * exit settles.",
+      " */"
+    ],
+    "note": "Keep the prop enumeration in sync with the new keepMounted prop."
+  },
+  {
+    "path": "src/generated/props-docs.json",
+    "action": "insert-after",
+    "anchor": [
+      "    {",
+      "      \"name\": \"onClose\",",
+      "      \"type\": \"() => void\",",
+      "      \"description\": \"Called when the dialog is closed\"",
+      "    },"
+    ],
+    "content": [
+      "    {",
+      "      \"name\": \"keepMounted\",",
+      "      \"type\": \"boolean\",",
+      "      \"default\": \"false\",",
+      "      \"description\": \"Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen\"",
+      "    },"
+    ],
+    "note": "DialogProps docs (KeepMountedPresence task): insert keepMounted after the onClose entry. Anchor line 'Called when the dialog is closed' is unique in the file (verified)."
+  },
+  {
+    "path": "src/generated/props-docs.json",
+    "action": "insert-after",
+    "anchor": [
+      "    {",
+      "      \"name\": \"onClose\",",
+      "      \"type\": \"() => void\",",
+      "      \"description\": \"Called when the drawer is closed\"",
+      "    },"
+    ],
+    "content": [
+      "    {",
+      "      \"name\": \"keepMounted\",",
+      "      \"type\": \"boolean\",",
+      "      \"default\": \"false\",",
+      "      \"description\": \"Keep content mounted when closed: after the exit animation the panel carries hidden + inert (excluded from AT and tab order), so drafts and inner state survive reopen\"",
+      "    },"
+    ],
+    "note": "DrawerProps docs (KeepMountedPresence task): insert keepMounted after the onClose entry. Anchor line 'Called when the drawer is closed' is unique in the file (verified)."
+  }
+]

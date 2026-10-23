@@ -187,8 +187,8 @@
             "required": false
           },
           {
-            "name": "variant",
-            "type": "'info' | 'success' | 'warning' | 'danger'",
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -205,6 +205,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
           }
         ]
       },
@@ -462,6 +467,11 @@
             "name": "className",
             "type": "string",
             "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
           }
         ]
       },
@@ -532,8 +542,8 @@
       "propsTypes": {
         "BadgeProps": [
           {
-            "name": "variant",
-            "type": "'info' | 'success' | 'warning' | 'danger' | 'default'",
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -555,6 +565,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
           }
         ]
       },
@@ -580,8 +595,8 @@
             "required": false
           },
           {
-            "name": "variant",
-            "type": "'info' | 'success' | 'warning' | 'danger'",
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -592,6 +607,11 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
             "required": false
           }
         ]
@@ -1008,6 +1028,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<CarouselHandle>",
+            "required": false
           }
         ],
         "CarouselSlideProps": [
@@ -1456,7 +1481,7 @@
           },
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'default' | 'primary'",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -1483,6 +1508,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
           }
         ]
       },
@@ -1778,6 +1808,11 @@
             "required": false
           },
           {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "id",
             "type": "string",
             "required": false
@@ -1827,7 +1862,12 @@
           {
             "name": "options",
             "type": "ComboboxOptionData<T>[]",
-            "required": true
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
           },
           {
             "name": "multiple",
@@ -2107,6 +2147,11 @@
             "required": false
           },
           {
+            "name": "density",
+            "type": "HazeDensity",
+            "required": false
+          },
+          {
             "name": "children",
             "type": "ReactNode",
             "required": true
@@ -2166,7 +2211,7 @@
           },
           {
             "name": "variant",
-            "type": "'danger' | 'default'",
+            "type": "'default' | 'danger'",
             "required": false
           },
           {
@@ -3419,6 +3464,11 @@
             "required": false
           },
           {
+            "name": "keepMounted",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "className",
             "type": "string",
             "required": false
@@ -3554,6 +3604,11 @@
           {
             "name": "classNames",
             "type": "DrawerClassNames",
+            "required": false
+          },
+          {
+            "name": "keepMounted",
+            "type": "boolean",
             "required": false
           },
           {
@@ -4433,7 +4488,7 @@
           },
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "type": "'primary' | 'success' | 'warning' | 'danger'",
             "required": false
           }
         ]
@@ -4533,9 +4588,32 @@
       "routeKey": "image",
       "cssFamily": "image",
       "imports": [
-        "Image"
+        "Image",
+        "ImagePreviewGroup"
       ],
       "propsTypes": {
+        "ImagePreviewGroupProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "index",
+            "type": "ControlOrValue<number>",
+            "required": false
+          },
+          {
+            "name": "preview",
+            "type": "boolean | ImagePreviewConfig",
+            "required": false
+          },
+          {
+            "name": "showThumbnails",
+            "type": "boolean",
+            "required": false
+          }
+        ],
         "ImagePreviewProps": [
           {
             "name": "src",
@@ -4559,6 +4637,21 @@
           },
           {
             "name": "rotate",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "images",
+            "type": "readonly GalleryImage[]",
+            "required": false
+          },
+          {
+            "name": "index",
+            "type": "ControlOrValue<number>",
+            "required": false
+          },
+          {
+            "name": "showThumbnails",
             "type": "boolean",
             "required": false
           }
@@ -4695,7 +4788,7 @@
           },
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "type": "'primary' | 'success' | 'warning' | 'danger'",
             "required": false
           },
           {
@@ -5048,6 +5141,11 @@
             "name": "size",
             "type": "'sm' | 'md'",
             "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLElement>",
+            "required": false
           }
         ]
       },
@@ -5241,7 +5339,7 @@
         "MarkProps": [
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           }
         ]
@@ -5264,6 +5362,100 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "MaskedInput": {
+      "routeKey": "masked-input",
+      "cssFamily": "masked-input",
+      "imports": [
+        "MaskedInput",
+        "MaskedInputCore",
+        "unmask",
+        "formatMask",
+        "parseMask",
+        "applyEdit"
+      ],
+      "propsTypes": {
+        "MaskedInputCoreProps": [
+          {
+            "name": "value",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": true
+          },
+          {
+            "name": "onNativeChange",
+            "type": "ChangeEventHandler<HTMLInputElement, HTMLInputElement> | undefined",
+            "required": false
+          },
+          {
+            "name": "mask",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "leftSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "rightSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ],
+        "MaskedInputProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "mask",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "leftSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "rightSection",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
             "required": false
           }
         ]
@@ -6353,6 +6545,54 @@
       },
       "otherTypes": {}
     },
+    "PhoneInput": {
+      "routeKey": "phone-input",
+      "cssFamily": "phone-input",
+      "imports": [
+        "PhoneInput",
+        "isValidPhone"
+      ],
+      "propsTypes": {
+        "PhoneInputProps": [
+          {
+            "name": "value",
+            "type": "ControlOrValue<string>",
+            "required": false
+          },
+          {
+            "name": "country",
+            "type": "ControlOrValue<CountryCode>",
+            "required": false
+          },
+          {
+            "name": "onCountryChange",
+            "type": "(country: CountryCode) => void",
+            "required": false
+          },
+          {
+            "name": "onChange",
+            "type": "(value: string) => void",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Plan": {
       "routeKey": "plan",
       "cssFamily": "plan",
@@ -6482,12 +6722,17 @@
           },
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'primary'",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
             "required": false
           }
         ]
@@ -7119,13 +7364,26 @@
       "routeKey": "scroll-area",
       "cssFamily": "scroll-area",
       "imports": [
-        "ScrollArea"
+        "ScrollArea",
+        "Scrollbar",
+        "ScrollThumb",
+        "ScrollViewport"
       ],
       "propsTypes": {
         "ScrollAreaProps": [
           {
             "name": "maxHeight",
             "type": "string | number",
+            "required": false
+          },
+          {
+            "name": "type",
+            "type": "ScrollbarMode",
+            "required": false
+          },
+          {
+            "name": "label",
+            "type": "string",
             "required": false
           },
           {
@@ -7137,6 +7395,67 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
+          }
+        ],
+        "ScrollThumbProps": [
+          {
+            "name": "orientation",
+            "type": "Orientation",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
+          }
+        ],
+        "ScrollViewportProps": [
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
+          }
+        ],
+        "ScrollbarProps": [
+          {
+            "name": "orientation",
+            "type": "Orientation",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
           }
         ]
       },
@@ -7330,7 +7649,7 @@
           {
             "name": "children",
             "type": "ReactNode",
-            "required": true
+            "required": false
           },
           {
             "name": "className",
@@ -7492,6 +7811,11 @@
             "required": false
           },
           {
+            "name": "options",
+            "type": "SelectOption<T>[]",
+            "required": false
+          },
+          {
             "name": "placeholder",
             "type": "string",
             "required": false
@@ -7519,7 +7843,7 @@
           {
             "name": "children",
             "type": "ReactNode",
-            "required": true
+            "required": false
           }
         ]
       },
@@ -7926,8 +8250,8 @@
             "required": false
           },
           {
-            "name": "tone",
-            "type": "'info' | 'success' | 'warning' | 'danger' | 'primary'",
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -7955,6 +8279,11 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
             "required": false
           }
         ]
@@ -8800,8 +9129,8 @@
       "propsTypes": {
         "TagProps": [
           {
-            "name": "variant",
-            "type": "'success' | 'warning' | 'danger' | 'default' | 'primary'",
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
             "required": false
           },
           {
@@ -8833,6 +9162,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
+            "required": false
           }
         ]
       },
@@ -9532,7 +9866,7 @@
           },
           {
             "name": "color",
-            "type": "'success' | 'warning' | 'danger' | 'default' | 'primary'",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger'",
             "required": false
           },
           {
@@ -9591,7 +9925,7 @@
         "ToastProps": [
           {
             "name": "variant",
-            "type": "'info' | 'success' | 'warning' | 'danger' | 'loading'",
+            "type": "'success' | 'warning' | 'danger' | 'info' | 'loading'",
             "required": false
           },
           {

@@ -1,10 +1,10 @@
 import {css} from '@linaria/core';
 
 /**
- * Shared Tag skin — the base, variant and size classes the `Tag`
+ * Shared Tag skin — the base, color and size classes the `Tag`
  * component wears. Living in their own module keeps the component file
  * free of style internals (react-refresh boundary) and lets the
- * variants/sizes maps ship as public constants (`tagVariants` /
+ * colors/sizes maps ship as public constants (`tagVariants` /
  * `tagSizes`, the shadcn `buttonVariants` precedent) for consumers
  * composing custom elements with the same skin; split-css groups the
  * emitted CSS into `haze-ui/css/tag.css` with them.
@@ -21,7 +21,7 @@ export const base = css`
   white-space: nowrap;
 `;
 
-export const variants = {
+export const colors = {
   default: css`
     background: var(--haze-color-bg-muted);
     color: var(--haze-color-text-secondary);
@@ -41,6 +41,10 @@ export const variants = {
   danger: css`
     background: var(--haze-color-danger-subtle);
     color: var(--haze-color-danger);
+  `,
+  info: css`
+    background: var(--haze-color-info-subtle);
+    color: var(--haze-color-info);
   `,
 } as const;
 

@@ -2,10 +2,12 @@ import type { ReactElement } from 'react';
 
 import { expect } from 'vitest';
 import { render, screen, fireEvent, act, waitFor, within } from '@testing-library/react';
+import { useControl } from 'react-use-control';
 
 import LocaleProvider from '../LocaleProvider';
 
 import Image from './Image';
+import ImagePreviewGroup from './ImagePreviewGroup';
 
 beforeEach(() => {
   // jsdom does not implement showModal/close for HTMLDialogElement
@@ -334,6 +336,268 @@ describe('Image preview', () => {
   it('has no axe violations with the preview open', async () => {
     const { axe } = await import('jest-axe');
     openPreview();
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Image preview group', () => {
+  const GALLERY = [
+    { src: 'one.jpg', alt: 'One' },
+    { src: 'two.jpg', alt: 'Two' },
+    { src: 'three.jpg', alt: 'Three' },
+  ];
+
+  /** The gallery thumbnails — imgs outside the (always-mounted) dialog. */
+  const getThumb = (nth: number): HTMLElement => {
+    const thumbs = screen
+      .getAllByRole('img')
+      .filter((el) => el.closest('dialog') === null);
+    const thumb = thumbs[nth];
+    if (!thumb) throw new Error(`gallery thumbnail ${nth} not found`);
+    return thumb;
+  };
+
+  const renderGroup = (ui?: ReactElement) =>
+    render(
+      ui ?? (
+        <ImagePreviewGroup>
+          {GALLERY.map((image) => (
+            <Image key={image.src} src={image.src} alt={image.alt} preview />
+          ))}
+        </ImagePreviewGroup>
+      )
+    );
+
+  /** Renders, clicks the nth gallery thumbnail, returns the open dialog. */
+  const openGalleryAt = (nth: number, ui?: ReactElement) => {
+    renderGroup(ui);
+    fireEvent.click(getThumb(nth));
+    const dialog = getDialog();
+    expect(dialog).toHaveAttribute('open');
+    return dialog;
+  };
+
+  const getDialog = () =>
+    screen.getByRole<HTMLDialogElement>('dialog', { hidden: true });
+
+  /** The large image inside the preview dialog (strip thumbs carry no role). */
+  const getActiveImg = (dialog: HTMLDialogElement) =>
+    within(dialog).getByRole('img');
+
+  const getNext = (dialog: HTMLDialogElement) =>
+    within(dialog).getByRole('button', { name: 'Next image' });
+
+  const getPrev = (dialog: HTMLDialogElement) =>
+    within(dialog).getByRole('button', { name: 'Previous image' });
+
+  /** The nth strip button (aria-labels read 'View image n of 3: …'). */
+  const getStripButton = (dialog: HTMLDialogElement, nth: number) => {
+    const buttons = within(dialog).getAllByRole<HTMLButtonElement>('button', {
+      name: /View image/,
+    });
+    const button = buttons[nth];
+    if (!button) throw new Error(`strip button ${nth} not found`);
+    return button;
+  };
+
+  it('opens a single shared overlay on the clicked image', () => {
+    const dialog = openGalleryAt(1);
+    // One overlay for the whole group, not one per child Image.
+    expect(document.querySelectorAll('dialog')).toHaveLength(1);
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'two.jpg');
+    expect(dialog).toHaveAttribute('aria-label', 'Two');
+  });
+
+  it('navigates with the prev/next buttons and wraps at both ends', () => {
+    const dialog = openGalleryAt(0);
+    const counter = within(dialog).getByText('1 / 3');
+    fireEvent.click(getNext(dialog));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'two.jpg');
+    expect(counter).toHaveTextContent('2 / 3');
+    fireEvent.click(getPrev(dialog));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'one.jpg');
+    // wrap backwards from the first to the last…
+    fireEvent.click(getPrev(dialog));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'three.jpg');
+    expect(counter).toHaveTextContent('3 / 3');
+    // …and forwards from the last to the first
+    fireEvent.click(getNext(dialog));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'one.jpg');
+  });
+
+  it('navigates with ArrowLeft/ArrowRight and wraps at the ends', () => {
+    const dialog = openGalleryAt(0);
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'two.jpg');
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' });
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'one.jpg');
+    fireEvent.keyDown(dialog, { key: 'ArrowLeft' });
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'three.jpg');
+    expect(within(dialog).getByText('3 / 3')).toBeInTheDocument();
+  });
+
+  it('resets the transform when navigation switches images', () => {
+    const dialog = openGalleryAt(0);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Zoom in' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Rotate' }));
+    fireEvent.click(getNext(dialog));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'two.jpg');
+    expect(getActiveImg(dialog)).toHaveStyle({
+      transform: 'translate(0px, 0px) scale(1) rotate(0deg)',
+    });
+  });
+
+  it('syncs the thumbnail strip and jumps on thumbnail clicks', () => {
+    const dialog = openGalleryAt(0);
+    const first = getStripButton(dialog, 0);
+    const third = getStripButton(dialog, 2);
+    expect(within(dialog).getAllByRole('button', { name: /View image/ })).toHaveLength(3);
+    expect(first).toHaveAttribute('aria-current', 'true');
+    fireEvent.click(third);
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'three.jpg');
+    expect(first).not.toHaveAttribute('aria-current');
+    expect(third).toHaveAttribute('aria-current', 'true');
+    // navigation from the strip syncs back: next wraps to the first
+    fireEvent.click(getNext(dialog));
+    expect(first).toHaveAttribute('aria-current', 'true');
+    expect(third).not.toHaveAttribute('aria-current');
+  });
+
+  it('drops the thumbnail strip with showThumbnails=false', () => {
+    const dialog = openGalleryAt(
+      0,
+      <ImagePreviewGroup showThumbnails={false}>
+        {GALLERY.map((image) => (
+          <Image key={image.src} src={image.src} alt={image.alt} preview />
+        ))}
+      </ImagePreviewGroup>
+    );
+    expect(
+      within(dialog).queryAllByRole('button', { name: /View image/ })
+    ).toHaveLength(0);
+    expect(getNext(dialog)).toBeInTheDocument();
+    expect(within(dialog).getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  it('supports a controlled index control', () => {
+    function Harness() {
+      const [index, setIndex, control] = useControl(undefined, 1);
+      return (
+        <ImagePreviewGroup index={control}>
+          {GALLERY.map((image) => (
+            <Image key={image.src} src={image.src} alt={image.alt} preview />
+          ))}
+          <output data-testid="index">{index}</output>
+          <button type="button" onClick={() => setIndex(2)}>
+            jump
+          </button>
+        </ImagePreviewGroup>
+      );
+    }
+    const dialog = openGalleryAt(0, <Harness />);
+    // opening at child 0 commits through the control
+    expect(screen.getByTestId('index')).toHaveTextContent('0');
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'one.jpg');
+    // overlay navigation drives the control
+    fireEvent.click(getNext(dialog));
+    expect(screen.getByTestId('index')).toHaveTextContent('1');
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'two.jpg');
+    // external writes drive the overlay back
+    fireEvent.click(screen.getByRole('button', { name: 'jump' }));
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'three.jpg');
+    expect(within(dialog).getByText('3 / 3')).toBeInTheDocument();
+  });
+
+  it('keeps the single-image shape for a one-image group', () => {
+    const dialog = openGalleryAt(
+      0,
+      <ImagePreviewGroup>
+        <Image src="solo.jpg" alt="Solo" preview />
+      </ImagePreviewGroup>
+    );
+    expect(getActiveImg(dialog)).toHaveAttribute('src', 'solo.jpg');
+    expect(within(dialog).queryByRole('button', { name: 'Next image' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Previous image' })).toBeNull();
+    expect(within(dialog).queryByText(/\/ 1/)).toBeNull();
+    expect(
+      within(dialog).queryAllByRole('button', { name: /View image/ })
+    ).toHaveLength(0);
+  });
+
+  it('leaves preview={false} children out of the gallery', () => {
+    renderGroup(
+      <ImagePreviewGroup>
+        <Image src="one.jpg" alt="One" preview />
+        <Image src="skip.jpg" alt="Skip" />
+      </ImagePreviewGroup>
+    );
+    // the inert child never opens anything…
+    fireEvent.click(getThumb(1));
+    expect(getDialog()).not.toHaveAttribute('open');
+    // …while participating children open the shared overlay
+    fireEvent.click(getThumb(0));
+    expect(getDialog()).toHaveAttribute('open');
+    expect(getActiveImg(getDialog())).toHaveAttribute('src', 'one.jpg');
+  });
+
+  it('applies the group preview config to the shared overlay', () => {
+    const dialog = openGalleryAt(
+      0,
+      <ImagePreviewGroup preview={{ rotate: false }}>
+        {GALLERY.map((image) => (
+          <Image key={image.src} src={image.src} alt={image.alt} preview />
+        ))}
+      </ImagePreviewGroup>
+    );
+    expect(within(dialog).queryByRole('button', { name: 'Rotate' })).toBeNull();
+    expect(within(dialog).getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+  });
+
+  it('disables every child preview with preview={false} on the group', () => {
+    renderGroup(
+      <ImagePreviewGroup preview={false}>
+        <Image src="one.jpg" alt="One" preview />
+      </ImagePreviewGroup>
+    );
+    fireEvent.click(getThumb(0));
+    // no overlay anywhere: the group renders none and the child does
+    // not fall back to a standalone one
+    expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
+  });
+
+  it('sources gallery labels from the locale pack', () => {
+    const dialog = openGalleryAt(
+      0,
+      <LocaleProvider locale="zh-CN">
+        <ImagePreviewGroup>
+          {GALLERY.map((image) => (
+            <Image key={image.src} src={image.src} alt={image.alt} preview />
+          ))}
+        </ImagePreviewGroup>
+      </LocaleProvider>
+    );
+    expect(within(dialog).getByRole('button', { name: '上一张' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: '下一张' })).toBeInTheDocument();
+    expect(within(dialog).getByText('1 / 3')).toBeInTheDocument();
+  });
+
+  it('returns focus to the clicked image on close', async () => {
+    const dialog = openGalleryAt(2);
+    const cancel = new Event('cancel', { cancelable: true });
+    act(() => {
+      dialog.dispatchEvent(cancel);
+    });
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    expect(getThumb(2)).toHaveFocus();
+  });
+
+  it('has no axe violations with the gallery open', async () => {
+    const { axe } = await import('jest-axe');
+    openGalleryAt(1);
     const results = await axe(document.body, {
       rules: { region: { enabled: false } },
     });

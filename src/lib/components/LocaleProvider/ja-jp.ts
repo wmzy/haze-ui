@@ -165,6 +165,10 @@ const jaJP: HazeStrings = {
     reset: 'リセット',
     rotate: '回転',
     close: '閉じる',
+    prevImage: '前の画像',
+    nextImage: '次の画像',
+    counter: '{current} / {total}',
+    thumbnail: '画像 {index} / {total} を表示: {alt}',
   },
   inlineEdit: {
     placeholder: 'クリックして編集',
@@ -209,6 +213,11 @@ const jaJP: HazeStrings = {
     label: 'パスワード',
     show: 'パスワードを表示',
     hide: 'パスワードを隠す',
+  },
+  phoneInput: {
+    placeholder: '電話番号',
+    countryLabel: '国/地域',
+    invalid: '電話番号が無効です',
   },
   progress: {
     label: '進捗',

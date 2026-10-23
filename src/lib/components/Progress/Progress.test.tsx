@@ -1,7 +1,8 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
 import Progress from './Progress';
-import { barSizes, circleSizes } from './index';
+import { barSizes, circleSizes, colorMap, circleColorMap } from './progress-styles';
 
 describe('Progress', () => {
   it('renders a progressbar', () => {
@@ -47,6 +48,21 @@ describe('Progress', () => {
   it('clamps value to 0-100', () => {
     render(<Progress value={150} />);
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+  });
+
+  it('forwards the ref onto the root element in both variants', () => {
+    const ref = createRef<HTMLDivElement>();
+    const { rerender } = render(<Progress ref={ref} value={10} />);
+    expect(ref.current).toBe(screen.getByRole('progressbar'));
+    rerender(<Progress ref={ref} variant="circle" value={10} />);
+    expect(ref.current).toBe(screen.getByRole('progressbar'));
+  });
+
+  it('maps the info color onto the fill in both variants', () => {
+    const { rerender } = render(<Progress color="info" value={10} />);
+    expect(document.querySelector('[data-slot="fill"]')).toHaveClass(colorMap.info);
+    rerender(<Progress variant="circle" color="default" value={10} />);
+    expect(document.querySelector('[data-slot="fill"]')).toHaveClass(circleColorMap.default);
   });
 
   it('has no axe violations', async () => {

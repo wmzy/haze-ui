@@ -3,6 +3,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import InputCore from './InputCore';
 
 type InputProps = {
@@ -31,13 +33,17 @@ export default function Input({
 }: InputProps) {
   const [value, setValue] = useControl(valueControl, '');
 
+  // Three tiers: explicit prop → ConfigProvider `Input.size` →
+  // InputCore's built-in 'md' (a missing provider stays byte-identical).
+  const config = useConfigDefaults('Input');
+
   return (
     <InputCore
       ref={ref}
       value={value}
       onChange={setValue}
       onNativeChange={onChange}
-      size={size}
+      size={size ?? config.size}
       className={className}
       leftSection={leftSection}
       rightSection={rightSection}

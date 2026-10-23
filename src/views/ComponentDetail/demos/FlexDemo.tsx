@@ -33,8 +33,8 @@ export default function FlexDemo() {
         <h2>Demo</h2>
         <Flex gap='var(--haze-space-3)' align='center'>
           <Badge>Item 1</Badge>
-          <Badge variant='success'>Item 2</Badge>
-          <Badge variant='info'>Item 3</Badge>
+          <Badge color='success'>Item 2</Badge>
+          <Badge color='info'>Item 3</Badge>
         </Flex>
       </div>
 
@@ -42,7 +42,7 @@ export default function FlexDemo() {
         <h2>Column</h2>
         <Flex direction='column' gap='var(--haze-space-2)'>
           <Badge>Row A</Badge>
-          <Badge variant='warning'>Row B</Badge>
+          <Badge color='warning'>Row B</Badge>
         </Flex>
       </div>
 
@@ -63,8 +63,8 @@ export default function FlexDemo() {
         <h3>Stack — vertical rhythm</h3>
         <Flex direction='column' gap='var(--haze-space-3)'>
           <Badge>First</Badge>
-          <Badge variant='success'>Second</Badge>
-          <Badge variant='info'>Third</Badge>
+          <Badge color='success'>Second</Badge>
+          <Badge color='info'>Third</Badge>
         </Flex>
         <pre className={codeBlock}>{`<Flex direction='column' gap='var(--haze-space-3)'>
   <Badge>First</Badge>
@@ -75,13 +75,13 @@ export default function FlexDemo() {
         <h3>Group — inline row</h3>
         <Flex gap='var(--haze-space-3)' align='center'>
           <Badge>Save</Badge>
-          <Badge variant='success'>Publish</Badge>
-          <Badge variant='danger'>Delete</Badge>
+          <Badge color='success'>Publish</Badge>
+          <Badge color='danger'>Delete</Badge>
         </Flex>
         <pre className={codeBlock}>{`<Flex gap='var(--haze-space-3)' align='center'>
   <Badge>Save</Badge>
-  <Badge variant='success'>Publish</Badge>
-  <Badge variant='danger'>Delete</Badge>
+  <Badge color='success'>Publish</Badge>
+  <Badge color='danger'>Delete</Badge>
 </Flex>`}</pre>
 
         <h3>Wrap — rows that reflow</h3>
@@ -89,15 +89,15 @@ export default function FlexDemo() {
           <Badge>Tag 1</Badge>
           <Badge>Tag 2</Badge>
           <Badge>Tag 3</Badge>
-          <Badge variant='success'>Tag 4</Badge>
-          <Badge variant='success'>Tag 5</Badge>
-          <Badge variant='success'>Tag 6</Badge>
-          <Badge variant='warning'>Tag 7</Badge>
-          <Badge variant='warning'>Tag 8</Badge>
-          <Badge variant='warning'>Tag 9</Badge>
-          <Badge variant='danger'>Tag 10</Badge>
-          <Badge variant='danger'>Tag 11</Badge>
-          <Badge variant='danger'>Tag 12</Badge>
+          <Badge color='success'>Tag 4</Badge>
+          <Badge color='success'>Tag 5</Badge>
+          <Badge color='success'>Tag 6</Badge>
+          <Badge color='warning'>Tag 7</Badge>
+          <Badge color='warning'>Tag 8</Badge>
+          <Badge color='warning'>Tag 9</Badge>
+          <Badge color='danger'>Tag 10</Badge>
+          <Badge color='danger'>Tag 11</Badge>
+          <Badge color='danger'>Tag 12</Badge>
         </Flex>
         <pre className={codeBlock}>{`<Flex wrap gap='var(--haze-space-2)'>
   <Badge>Tag 1</Badge>

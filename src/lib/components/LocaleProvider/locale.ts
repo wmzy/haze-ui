@@ -164,6 +164,10 @@ const defaultStrings = {
     reset: 'Reset',
     rotate: 'Rotate',
     close: 'Close',
+    prevImage: 'Previous image',
+    nextImage: 'Next image',
+    counter: '{current} / {total}',
+    thumbnail: 'View image {index} of {total}: {alt}',
   },
   inlineEdit: {
     placeholder: 'Click to edit',
@@ -208,6 +212,11 @@ const defaultStrings = {
     label: 'Password',
     show: 'Show password',
     hide: 'Hide password',
+  },
+  phoneInput: {
+    placeholder: 'Phone number',
+    countryLabel: 'Country / region',
+    invalid: 'Invalid phone number',
   },
   progress: {
     label: 'Progress',

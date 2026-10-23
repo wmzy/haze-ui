@@ -1,0 +1,30 @@
+[
+  {
+    "path": "src/lib/index.ts",
+    "action": "insert-after",
+    "anchor": "export type { ImageProps, ImagePreviewConfig } from './components/Image';",
+    "content": "export { ImagePreviewGroup } from './components/Image';\nexport type { ImagePreviewGroupProps } from './components/Image';",
+    "note": "ImagePreviewGroup (AntD Image.PreviewGroup shape: shared gallery lightbox with prev/next arrows, n/total counter, ArrowLeft/ArrowRight wrap-around, keyboard-focusable thumbnail strip, ControlOrValue index) is exported from the components/Image barrel. MUST land before typecheck/build:demo — ImageDemo.tsx imports it from '@/lib' (currently the only tsc error in the tree)."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "  Image: 'image with fallback and `aspectRatio`/`objectFit` control.',",
+    "content": "  Image: 'image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',",
+    "note": "Surface the new ImagePreviewGroup export in the llms.txt component bullet (DESCRIPTIONS is keyed by sidebar entry; no new sidebar entry, so this is an in-place blurb update)."
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "replace",
+    "anchor": "  image: 'Image with fallback and `aspectRatio`/`objectFit` control.',",
+    "content": "  image: 'Image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',",
+    "note": "Same blurb update for the registry's per-css-family descriptions table (family 'image' already exists in CATEGORY_GROUPS; ImagePreviewGroup joins the existing family item automatically once pnpm build regenerates css-manifest.json — no structural registry change needed)."
+  },
+  {
+    "path": "package.json",
+    "action": "replace",
+    "anchor": "      \"limit\": \"42 KB\",\n      \"gzip\": true",
+    "content": "      \"limit\": \"42.5 KB\",\n      \"gzip\": true",
+    "note": "CONDITIONAL — apply only if `pnpm build && pnpm exec size-limit` trips the dist/haze-ui.css gzip aggregate after this wave. The Image gallery adds ~1.4KB raw CSS to the image family (nav arrows + counter + thumbnail strip); expected aggregate growth ~+0.3-0.4KB gzip. Current dist measures 42048B gzip / 30709B brotli by local zlib (size-limit's own accounting runs ~0.4-0.6KB lower), so gzip is the tight one (limit 42KB). The brotli aggregate (30.75KB limit) has ~0.6KB headroom and should stay green — if it does trip, use 31 KB."
+  }
+]

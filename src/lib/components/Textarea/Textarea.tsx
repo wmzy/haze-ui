@@ -3,6 +3,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import TextareaCore from './TextareaCore';
 
 type TextareaProps = {
@@ -23,13 +25,18 @@ export default function Textarea({
 }: TextareaProps) {
   const [value, setValue] = useControl(valueControl, '');
 
+  // Three tiers: explicit prop → ConfigProvider `Textarea.size` →
+  // TextareaCore's built-in 'md' (a missing provider stays
+  // byte-identical).
+  const config = useConfigDefaults('Textarea');
+
   return (
     <TextareaCore
       ref={ref}
       value={value}
       onChange={setValue}
       onNativeChange={onChange}
-      size={size}
+      size={size ?? config.size}
       className={className}
       {...rest}
     />

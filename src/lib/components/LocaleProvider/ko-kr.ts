@@ -167,6 +167,10 @@ const koKR: HazeStrings = {
     reset: '초기화',
     rotate: '회전',
     close: '닫기',
+    prevImage: '이전 이미지',
+    nextImage: '다음 이미지',
+    counter: '{current} / {total}',
+    thumbnail: '이미지 {index} / {total} 보기: {alt}',
   },
   inlineEdit: {
     placeholder: '클릭하여 편집',
@@ -211,6 +215,11 @@ const koKR: HazeStrings = {
     label: '비밀번호',
     show: '비밀번호 표시',
     hide: '비밀번호 숨기기',
+  },
+  phoneInput: {
+    placeholder: '전화번호',
+    countryLabel: '국가/지역',
+    invalid: '유효하지 않은 전화번호입니다',
   },
   progress: {
     label: '진행률',

@@ -4,6 +4,11 @@ import {
   Button,
   ButtonLink,
   ConfigProvider,
+  Input,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
   ToastContainer,
   Tooltip,
   useToast,
@@ -42,17 +47,19 @@ function ToastActions() {
 // ─── ConfigProvider ────────────────────────────────────────────
 export default function ConfigProviderDemo() {
   const [size, setSize] = useState<(typeof SIZES)[number]>('lg');
+  const [compact, setCompact] = useState(false);
 
   return (
     <>
       <h1>ConfigProvider</h1>
       <p className={intro}>
-        Library-wide component defaults through one provider — a scoped
-        take on the AntD v6 <code>ConfigProvider</code> idea. Components
-        read their section via <code>useConfigDefaults</code>; an explicit
-        prop still wins, nested providers shallow-merge per component
-        section with the inner one taking precedence, and with no provider
-        mounted every component keeps its built-in defaults.
+        Library-wide component defaults and spacing density through one
+        provider — a scoped take on the AntD v6{' '}
+        <code>ConfigProvider</code> idea. Every wired component reads its
+        section (keyed by exported name) via <code>useConfigDefaults</code>;
+        an explicit prop still wins, nested providers shallow-merge per
+        component section with the inner one taking precedence, and with no
+        provider mounted every component keeps its built-in defaults.
       </p>
 
       <div className={section}>
@@ -125,15 +132,68 @@ export default function ConfigProviderDemo() {
       </div>
 
       <div className={section}>
+        <h2>Field defaults</h2>
+        <p>
+          Form-field sections work the same way — <code>Input</code>,{' '}
+          <code>Textarea</code>, <code>NumberInput</code>,{' '}
+          <code>Pagination</code> take a <code>size</code>{' '}
+          (<code>NumberInput</code> also <code>step</code>),{' '}
+          <code>Datepicker</code> takes <code>picker</code>/{' '}
+          <code>weekStartsOn</code>, <code>TimePicker</code> takes{' '}
+          <code>format</code>/<code>use12Hours</code>.
+        </p>
+        <ConfigProvider defaults={{ Input: { size: 'lg' } }}>
+          <div className={row}>
+            <Input placeholder='size omitted — follows the provider' />
+            <Input size='sm' placeholder='size="sm" wins' />
+          </div>
+        </ConfigProvider>
+      </div>
+
+      <div className={section}>
+        <h2>Global density</h2>
+        <p>
+          The <code>density</code> knob re-declares the spacing scale at
+          75% inside density-aware components — <code>Table</code> today.
+          It rides the same context and nests the same way (an inner
+          provider&apos;s value wins); component-level sizing axes such as
+          DataTable&apos;s <code>size</code> stay separate and keep
+          winning.
+        </p>
+        <div className={fieldRow}>
+          <div className={row}>
+            <button onClick={() => setCompact(!compact)}>
+              {compact ? 'normal' : 'compact'}
+            </button>
+          </div>
+        </div>
+        <ConfigProvider density={compact ? 'compact' : 'normal'}>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>The table subtree reads the compact scale</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>when the provider says so</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </ConfigProvider>
+      </div>
+
+      <div className={section}>
         <h2>Usage</h2>
         <pre className={codeBlock}>{`import { ConfigProvider } from 'haze-ui';
 
 <ConfigProvider
+  density='compact'
   defaults={{
     Button: { size: 'lg' },
     ButtonLink: { size: 'lg' },
+    Input: { size: 'lg' },
     Toast: { duration: 1500, placement: 'top-right', maxCount: 3 },
     Tooltip: { delay: 400 },
+    Table: { striped: true },
   }}
 >
   <App />
@@ -141,9 +201,10 @@ export default function ConfigProviderDemo() {
         <h3>Wiring another component (library internals)</h3>
         <p>
           Sections are keyed by exported component name. To add one,
-          declare it on <code>HazeConfig</code> in{' '}
-          <code>ConfigContext.ts</code> and resolve each prop three-tier
-          inside the component:
+          register it in the <code>ComponentDefaultsSections</code> record
+          in <code>ConfigContext.ts</code> — one entry types the provider
+          prop, the nesting merge and the accessor at once — then resolve
+          each prop three-tier inside the component:
         </p>
         <pre className={codeBlock}>{`const config = useConfigDefaults('MyComponent');
 const size = sizeProp ?? config.size ?? 'md'; // prop → config → built-in`}</pre>

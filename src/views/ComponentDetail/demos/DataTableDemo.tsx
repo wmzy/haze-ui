@@ -50,9 +50,9 @@ const PEOPLE: EmployeeRow[] = [
 ];
 
 const statusBadge = (status: EmployeeStatus) => {
-  const variant =
+  const color =
     status === 'active' ? 'success' : status === 'away' ? 'warning' : 'default';
-  return <Badge variant={variant}>{status}</Badge>;
+  return <Badge color={color}>{status}</Badge>;
 };
 
 const baseColumns: DataTableColumnDef<EmployeeRow>[] = [

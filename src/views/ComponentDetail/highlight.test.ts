@@ -28,7 +28,7 @@ export default function Demo() {
   return (
     <div className='box' data-n={n}>
       <p>It doesn't break highlighting</p>
-      <Badge variant='success' />
+      <Badge color='success' />
       {items.map((i) => i < items.length && <span key={i}>{i}</span>)}
     </div>
   );
@@ -52,7 +52,7 @@ describe('tokenizeTsx', () => {
     // `Badge` also appears in the import list (plain) — the JSX usage is a tag.
     expect(tokensWith(SNIPPET, 'Badge').some((t) => t.kind === 'tag')).toBe(true);
     expect(tokensWith(SNIPPET, 'className')[0]!.kind).toBe('attr');
-    expect(tokensWith(SNIPPET, 'variant')[0]!.kind).toBe('attr');
+    expect(tokensWith(SNIPPET, 'color')[0]!.kind).toBe('attr');
   });
 
   it('tokenizes template literals with interpolation as string + expr', () => {

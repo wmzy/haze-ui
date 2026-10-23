@@ -1,28 +1,32 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
 
-import { base, variants, contentStyle, closeBtn } from './alert-styles';
+import { base, colors, contentStyle, closeBtn } from './alert-styles';
 
 type AlertProps = {
   visible?: ControlOrValue<boolean>;
   onClose?: () => void;
-  variant?: 'info' | 'success' | 'warning' | 'danger';
+  /** Semantic status color. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   closable?: boolean;
   className?: string;
   children: ReactNode;
+  /** Forwarded to the root div (data-slot='alert'). */
+  ref?: Ref<HTMLDivElement>;
 };
 
 export default function Alert({
   visible: visibleControl,
   onClose,
-  variant = 'info',
+  color = 'info',
   closable = false,
   className,
   children,
+  ref,
 }: AlertProps) {
   const [visible, setVisible] = useControl(visibleControl, true);
   const strings = useStrings('alert');
@@ -35,7 +39,7 @@ export default function Alert({
   };
 
   return (
-    <div role='alert' data-slot='alert' x-class={[base, variants[variant], className]}>
+    <div ref={ref} role='alert' data-slot='alert' x-class={[base, colors[color], className]}>
       <div data-slot='content' className={contentStyle}>{children}</div>
       {closable && (
         <button

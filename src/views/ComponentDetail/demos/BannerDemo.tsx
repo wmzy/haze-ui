@@ -13,15 +13,15 @@ export default function BannerDemo() {
   return (
     <>
       <h1>Banner</h1>
-      <p className={intro}>Dismissible alert banner with variant colors.</p>
+      <p className={intro}>Dismissible alert banner with semantic colors.</p>
 
       <div className={section}>
-        <h2>Variants</h2>
+        <h2>Colors</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--haze-space-2)' }}>
-          <Banner variant='info'>This is an informational banner.</Banner>
-          <Banner variant='success'>Operation completed successfully.</Banner>
-          <Banner variant='warning'>Please review your settings.</Banner>
-          <Banner variant='danger' onClose={noop}>Something went wrong.</Banner>
+          <Banner color='info'>This is an informational banner.</Banner>
+          <Banner color='success'>Operation completed successfully.</Banner>
+          <Banner color='warning'>Please review your settings.</Banner>
+          <Banner color='danger' onClose={noop}>Something went wrong.</Banner>
         </div>
       </div>
 

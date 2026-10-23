@@ -1,0 +1,81 @@
+[
+  {
+    "path": "src/lib/index.ts",
+    "action": "replace",
+    "anchor": "export { ScrollArea } from './components/ScrollArea';\nexport type { ScrollAreaProps } from './components/ScrollArea';",
+    "old": "export { ScrollArea } from './components/ScrollArea';\nexport type { ScrollAreaProps } from './components/ScrollArea';",
+    "new": "export { ScrollArea, Scrollbar, ScrollThumb, ScrollViewport } from './components/ScrollArea';\nexport type {\n  ScrollAreaProps,\n  ScrollbarMode,\n  ScrollbarProps,\n  ScrollThumbProps,\n  ScrollViewportProps,\n} from './components/ScrollArea';",
+    "note": "ScrollArea rebuilt as a compound family (root + ScrollViewport + Scrollbar + ScrollThumb). All parts live in the same css family 'scroll-area' (whole-directory split), so no other registry/manifest changes are needed for the parts."
+  },
+  {
+    "path": "scripts/rsc-safe.mjs",
+    "action": "replace",
+    "anchor": "  'components/ScrollArea/ScrollArea.tsx',\n  'components/ScrollArea/index.ts',\n  'components/StatusBar/StatusBar.tsx',",
+    "old": "  'components/ScrollArea/ScrollArea.tsx',\n  'components/ScrollArea/index.ts',\n  'components/StatusBar/StatusBar.tsx',",
+    "new": "  'components/StatusBar/StatusBar.tsx',",
+    "note": "ScrollArea is no longer RSC-safe: the rebuilt root uses hooks (useState/Children) and the barrel re-exports it. Keeping the entries would falsely publish hook-using modules as server-importable. No new entries needed (scroll-math.ts / ScrollAreaContext.ts are conservative-absent; a 'use client' banner on them is harmless)."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": "  ScrollArea:\n    'scrollable region with custom-styled thin scrollbars and `maxHeight`.',",
+    "old": "  ScrollArea:\n    'scrollable region with custom-styled thin scrollbars and `maxHeight`.',",
+    "new": "  ScrollArea:\n    'scrollable region with overlay scrollbar thumbs: `maxHeight` sugar one-liner or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` composition; `type` = `hover`/`always`/`scroll` thumb visibility, keyboard-focusable viewport, draggable/pageable tracks, RTL-mirrored thumbs.',",
+    "note": "Old text described the pre-rebuild thin-native-scrollbar wrapper."
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "replace",
+    "anchor": "  'scroll-area': 'Scrollable region with custom-styled thin scrollbars and `maxHeight`.',",
+    "old": "  'scroll-area': 'Scrollable region with custom-styled thin scrollbars and `maxHeight`.',",
+    "new": "  'scroll-area': 'Scrollable region with overlay scrollbar thumbs: `maxHeight` sugar or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` parts; `type` = `hover`/`always`/`scroll` visibility, keyboard-focusable viewport, RTL-mirrored thumbs.',",
+    "note": "Descriptions-table update for the rebuilt family; CATEGORY_GROUPS css-family entry unchanged ('scroll-area' already in layout)."
+  },
+  {
+    "path": "package.json",
+    "action": "insert-after",
+    "anchor": "      \"name\": \"CSS family ratchet: sparkline\",\n      \"path\": \"dist/css/sparkline.css\",\n      \"limit\": \"0.3 KB\",\n      \"gzip\": true\n    },",
+    "content": "    {\n      \"name\": \"CSS family ratchet: scroll-area\",\n      \"path\": \"dist/css/scroll-area.css\",\n      \"limit\": \"0.45 KB\",\n      \"gzip\": true\n    },",
+    "note": "ESTIMATE — calibrate against a real pnpm build + pnpm exec size-limit (the old scroll-area css was ~5 tiny rules; the rebuild adds root flex shell, hidden-native-scrollbar viewport + focus ring, 2 absolutely-positioned tracks, thumb base + 2 orientation variants + visibility/active/forced-colors arms — comparable to sparkline/result-size families, so ~0.3-0.45KB gzip expected)."
+  },
+  {
+    "path": "src/views/i18n/en.ts",
+    "action": "replace",
+    "anchor": "  ScrollArea:\n    'Scrollable region with custom-styled thin scrollbars and maxHeight.',",
+    "old": "  ScrollArea:\n    'Scrollable region with custom-styled thin scrollbars and maxHeight.',",
+    "new": "  ScrollArea:\n    'Scrollable region with overlay scrollbar thumbs: maxHeight sugar or compound Viewport/Scrollbar parts; hover/always/scroll visibility, keyboard-focusable viewport.',",
+    "note": "Doc-site one-liner refresh (keys unchanged, so the i18n mirror test is unaffected)."
+  },
+  {
+    "path": "src/views/i18n/zh.ts",
+    "action": "replace",
+    "anchor": "    ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',",
+    "old": "    ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',",
+    "new": "    ScrollArea: '滚动区域：覆盖式滚动条滑块，maxHeight 单行用法或 Viewport/Scrollbar 组合；hover/always/scroll 显隐模式，视口可键盘聚焦。',",
+    "note": "zh mirror of the en one-liner refresh."
+  },
+  {
+    "path": "src/views/i18n/de.ts",
+    "action": "replace",
+    "anchor": "    ScrollArea:\n      'Scrollbarer Bereich mit eigen gestylten schmalen Scrollbars und maxHeight.',",
+    "old": "    ScrollArea:\n      'Scrollbarer Bereich mit eigen gestylten schmalen Scrollbars und maxHeight.',",
+    "new": "    ScrollArea:\n      'Scrollbarer Bereich mit Overlay-Scrollbalken: maxHeight-Kurzform oder Viewport/Scrollbar-Komposition; hover/always/scroll-Sichtbarkeit, tastaturfokussierbarer Viewport.',",
+    "note": "de mirror of the en one-liner refresh."
+  },
+  {
+    "path": "src/views/i18n/fr.ts",
+    "action": "replace",
+    "anchor": "    ScrollArea:\n      'Zone défilante avec barres de défilement fines et stylées, et maxHeight.',",
+    "old": "    ScrollArea:\n      'Zone défilante avec barres de défilement fines et stylées, et maxHeight.',",
+    "new": "    ScrollArea:\n      'Zone défilante à curseurs superposés : sucre maxHeight ou composition Viewport/Scrollbar ; visibilité hover/always/scroll, viewport focalisable au clavier.',",
+    "note": "fr mirror of the en one-liner refresh."
+  },
+  {
+    "path": "src/views/i18n/ja.ts",
+    "action": "replace",
+    "anchor": "    ScrollArea: 'カスタム細スクロールバーと maxHeight を備えたスクロール領域。',",
+    "old": "    ScrollArea: 'カスタム細スクロールバーと maxHeight を備えたスクロール領域。',",
+    "new": "    ScrollArea: 'オーバーレイのスクロールバーサムを備えたスクロール領域。maxHeight のショートハンドまたは Viewport/Scrollbar の合成、hover/always/scroll 表示モード、キーボードフォーカス可能なビューポート。',",
+    "note": "ja mirror of the en one-liner refresh."
+  }
+]

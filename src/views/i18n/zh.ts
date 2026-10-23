@@ -151,7 +151,7 @@ export const zh: DeepPartial<SiteStrings> = {
     Masonry: '瀑布流布局：JS 贪心分配，先按顺序入列、再入最短列以保持平衡。',
     Resizable:
       '可拖拽分隔条的面板分组（ResizableGroup，支持水平/垂直）：面板级 px defaultSize/minSize/maxSize、可折叠面板与 onResizeCommit 持久化钩子。',
-    ScrollArea: '滚动区域：自定义细滚动条与 maxHeight。',
+    ScrollArea: '滚动区域：覆盖式滚动条滑块，maxHeight 单行用法或 Viewport/Scrollbar 组合；hover/always/scroll 显隐模式，视口可键盘聚焦。',
     Sidebar: '应用侧栏外壳，折叠状态可控（aside 与轨道宽度令牌）。',
     Splitter:
       'Splitter：多面板分栏布局（antd Splitter 语义）：分隔条隐式插入面板之间；sizes 以面板区百分比统一可控（ControlOrValue 数组），面板级 min/max 百分比约束，可选 collapsible 折叠面板（分隔条上的折叠/展开触发器，展开恢复折叠前占比），方向键 5% 步进与 Home/End，onSizesChange 实时回调；像素级面板请用 Resizable。',
@@ -193,6 +193,10 @@ export const zh: DeepPartial<SiteStrings> = {
     NumberInput: '数字输入框，支持 min/max/step。',
     OTPInput: '一次性验证码输入：length 个分段字符格。',
     PasswordInput: '密码输入框，带明文切换。',
+    MaskedInput:
+      '按模式约束输入的掩码文本框（9 数字、a 字母、A 大写、* 字母数字、\\ 转义），unmask() 提取原始内容。',
+    PhoneInput:
+      '国际电话输入：国家选择器与号码输入框无缝拼接，E.164 值，基于 libphonenumber-js 校验。',
     Radio: '单选按钮与单选组，选中项可控。',
     Rating: '星级评分，支持半星。',
     RichTextEditor: '基于 Tiptap 的富文本编辑器，内置格式化工具栏，HTML 值可控。',

@@ -433,7 +433,7 @@ const descriptions = {
   indicator:
     'Corner badge attached to a host element (avatar, icon button): dot or count label, tone + corner position, zero-badge hides unless `showZero`.',
   icon: 'Inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.',
-  image: 'Image with fallback and `aspectRatio`/`objectFit` control.',
+  image: 'Image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',
   'inline-edit': 'Click-to-edit text value in place.',
   input: 'Text input with adornments; `InputCore` is the headless form-bindable core.',
   kbd: 'Keyboard key-cap styling for shortcuts.',
@@ -468,6 +468,8 @@ const descriptions = {
   'otp-input': 'One-time-password input of `length` segmented character boxes.',
   'pagination': 'Page navigation with controllable `page` and ellipsis windows.',
   'password-input': 'Text input with a visibility reveal toggle.',
+  'phone-input':
+    'International phone input backed by libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` pure helper.',
   'popover': 'Floating popover anchored to a trigger element.',
   'prompt-input':
     'AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.',
@@ -485,7 +487,7 @@ const descriptions = {
     'Split-pane group with draggable dividers, horizontal or vertical; px sizing per panel with `onResizeCommit` for persistence.',
   result:
     'Result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.',
-  'scroll-area': 'Scrollable region with custom-styled thin scrollbars and `maxHeight`.',
+  'scroll-area': 'Scrollable region with overlay scrollbar thumbs: `maxHeight` sugar or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` parts; `type` = `hover`/`always`/`scroll` visibility, keyboard-focusable viewport, RTL-mirrored thumbs.',
   segmented: 'Segmented control selecting one option from a compact set.',
   select:
     'Dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.',
@@ -525,7 +527,7 @@ const descriptions = {
   toggle: 'Two-state pressed button (`aria-pressed`) with sizes and `square` icon mode.',
   'token-counter': 'Context-window token usage counter with budget progress.',
   tokens:
-    'Theme classes for haze-ui: `lightTheme`/`darkTheme` plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',
+    'Theme classes for haze-ui: `lightTheme`/`darkTheme`/`autoTheme` (zero-JS system-following) plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',
   'tool-call-card': 'Card presenting an agent tool call — name, input, output and running state.',
   toolbar:
     'Button group with toolbar a11y (roving tabindex): `ToolbarButton`, `ToolbarSeparator`, `ToolbarToggle`.',
@@ -593,7 +595,7 @@ const CATEGORY_GROUPS = {
     'date-range-picker', 'fieldset', 'file-input',
     'form', 'image-crop', 'inline-edit', 'input', 'input-group', 'mentions',
     'number-input', 'otp-input',
-    'password-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
+    'password-input', 'phone-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
     // 'time-field' 无独立 css family——其样式并入 date-field（segmented-field
     // 引擎在 DateField 目录）+ time-picker 闭包，见 dist/css-manifest.json
@@ -750,7 +752,7 @@ for (const [family, entry] of [...families].sort(([a], [b]) => a.localeCompare(b
     name: family,
     type,
     title: isTokens
-      ? 'Theme tokens (lightTheme / darkTheme / spacing / typography)'
+      ? 'Theme tokens (lightTheme / darkTheme / autoTheme / spacing / typography)'
       : entry.exports.join(' / '),
     description,
     author: AUTHOR,

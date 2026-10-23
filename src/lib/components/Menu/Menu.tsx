@@ -11,6 +11,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import MenuCheckboxItem from './MenuCheckboxItem';
 import MenuDivider from './MenuDivider';
@@ -39,7 +40,9 @@ type MenuProps = {
    * here and distributed to every family part through context (see
    * {@link MenuClassNames}). Slot classes are appended at the end of
    * each part's class list; per-part `className` props still land after
-   * the slot class. Not passing it renders identical output.
+   * the slot class. Not passing it renders identical output. A
+   * ConfigProvider `Menu.classNames` section merges under the prop,
+   * per key.
    */
   classNames?: MenuClassNames;
   className?: string;
@@ -109,6 +112,12 @@ export default function Menu({
   ref,
 }: MenuProps) {
   const [open, setOpen] = useControl(openControl, false);
+  // ConfigProvider `Menu.classNames` merges under the prop, per key —
+  // an explicit slot on the component wins over the provider's.
+  const config = useConfigDefaults('Menu');
+  const resolvedClassNames = config.classNames
+    ? { ...config.classNames, ...classNames }
+    : classNames;
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -137,13 +146,13 @@ export default function Menu({
   );
 
   return (
-    <MenuClassNamesProvider value={classNames}>
-      <div ref={ref} data-slot='menu' x-class={[container, classNames?.root]}>
+    <MenuClassNamesProvider value={resolvedClassNames}>
+      <div ref={ref} data-slot='menu' x-class={[container, resolvedClassNames?.root]}>
         <span
           ref={triggerRef}
           data-slot='trigger'
           style={floating.triggerStyle}
-          className={classNames?.trigger}
+          className={resolvedClassNames?.trigger}
           onPointerDown={floating.onTriggerPointerDown}
           onClick={floating.onTriggerClick}
         >
@@ -155,7 +164,7 @@ export default function Menu({
           placement="bottom"
           role="menu"
           visualClass={panel}
-          className={panelClassName(className, classNames?.panel)}
+          className={panelClassName(className, resolvedClassNames?.panel)}
           onKeyDown={handleKeyDown}
         >
           {items !== undefined ? renderMenuDataItems(items, menuFamily) : children}

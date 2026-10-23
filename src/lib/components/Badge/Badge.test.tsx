@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
 import Badge from './Badge';
@@ -24,7 +25,7 @@ describe('Badge', () => {
     render(
       <>
         <Badge>New</Badge>
-        <Badge variant="success">Saved</Badge>
+        <Badge color="success">Saved</Badge>
       </>
     );
     const results = await axe(document.body, {
@@ -32,12 +33,19 @@ describe('Badge', () => {
     });
     expect(results.violations).toEqual([]);
   });
+
+  it('forwards the ref onto the root span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(<Badge ref={ref}>New</Badge>);
+    expect(ref.current).toBe(screen.getByText('New'));
+  });
 });
 
 describe('badgeVariants / badgeSizes exports', () => {
-  it('exposes the variant and size skin classes for composition', () => {
+  it('exposes the color and size skin classes for composition', () => {
     expect(Object.keys(badgeVariants)).toEqual([
       'default',
+      'primary',
       'success',
       'warning',
       'danger',
@@ -50,9 +58,14 @@ describe('badgeVariants / badgeSizes exports', () => {
   });
 
   it('are the exact classes Badge wears', () => {
-    render(<Badge variant="success" size="sm">Saved</Badge>);
+    render(<Badge color="success" size="sm">Saved</Badge>);
     const badge = screen.getByText('Saved');
     expect(badge).toHaveClass(badgeVariants.success);
     expect(badge).toHaveClass(badgeSizes.sm);
+  });
+
+  it('maps the primary color onto the badge', () => {
+    render(<Badge color="primary">Primary</Badge>);
+    expect(screen.getByText('Primary')).toHaveClass(badgeVariants.primary);
   });
 });

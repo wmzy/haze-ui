@@ -1,10 +1,10 @@
 import {css} from '@linaria/core';
 
 /**
- * Shared Banner skin — the base and variant classes the `Banner`
+ * Shared Banner skin — the base and color classes the `Banner`
  * component wears. Living in their own module keeps the component file
  * free of style internals (react-refresh boundary) and lets the
- * variants map ship as a public constant (`bannerVariants`, the shadcn
+ * colors map ship as a public constant (`bannerVariants`, the shadcn
  * `buttonVariants` precedent) for consumers composing custom elements
  * with the same skin; split-css groups the emitted CSS into
  * `haze-ui/css/banner.css` with them.
@@ -28,7 +28,15 @@ export const banner = css`
   }
 `;
 
-export const variants = {
+export const colors = {
+  default: css`
+    background: var(--haze-color-bg-muted);
+    color: var(--haze-color-text-secondary);
+  `,
+  primary: css`
+    background: var(--haze-color-primary-subtle);
+    color: var(--haze-color-primary);
+  `,
   info: css`
     background: var(--haze-color-info-subtle);
     color: var(--haze-color-info);

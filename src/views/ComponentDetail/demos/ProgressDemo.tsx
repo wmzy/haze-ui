@@ -22,6 +22,7 @@ export default function ProgressDemo() {
           <Progress value={50} color='success' />
           <Progress value={75} color='warning' />
           <Progress value={90} color='danger' />
+          <Progress value={60} color='info' />
         </div>
       </div>
 

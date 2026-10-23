@@ -1,0 +1,72 @@
+[
+  {
+    "path": "src/lib/index.ts",
+    "action": "replace",
+    "anchor": {
+      "old": "export { lightTheme, darkTheme } from './tokens/colors';",
+      "new": "export { lightTheme, darkTheme, autoTheme } from './tokens/colors';"
+    },
+    "content": [],
+    "note": "Main barrel: export autoTheme exactly like lightTheme/darkTheme (same module). Required for `import { autoTheme } from 'haze-ui'`."
+  },
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": {
+      "old": "runtime, no rebuild. Themes ship as classes: apply \\`lightTheme\\` (or \\`darkTheme\\`) plus",
+      "new": "runtime, no rebuild. Themes ship as classes: apply \\`lightTheme\\` (or \\`darkTheme\\`, or the zero-JS system-following \\`autoTheme\\`) plus"
+    },
+    "content": [],
+    "note": "llms.txt theme prose: mention autoTheme alongside lightTheme/darkTheme. The anchor contains escaped backticks as they appear verbatim in the .mjs template literal."
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "replace",
+    "anchor": {
+      "old": "    'Theme classes for haze-ui: `lightTheme`/`darkTheme` plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',",
+      "new": "    'Theme classes for haze-ui: `lightTheme`/`darkTheme`/`autoTheme` (zero-JS system-following) plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',"
+    },
+    "content": [],
+    "note": "tokens registry item description. The export list itself is derived from the barrel + css-manifest automatically (no manual list); rerun pnpm build so css-manifest.json picks up the new autoTheme class, then generate-registry re-exports it in the tokens wrapper automatically."
+  },
+  {
+    "path": "scripts/generate-registry.mjs",
+    "action": "replace",
+    "anchor": {
+      "old": "      ? 'Theme tokens (lightTheme / darkTheme / spacing / typography)'",
+      "new": "      ? 'Theme tokens (lightTheme / darkTheme / autoTheme / spacing / typography)'"
+    },
+    "content": [],
+    "note": "tokens wrapper item title prose — keep in sync with the export list."
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "action": "replace",
+    "anchor": {
+      "old": "            for (const name of ['Button', 'Switch', 'FormItem', 'lightTheme', 'darkTheme']) {",
+      "new": "            for (const name of ['Button', 'Switch', 'FormItem', 'lightTheme', 'darkTheme', 'autoTheme']) {"
+    },
+    "content": [],
+    "note": "Release smoke: assert autoTheme survives the published ESM dist."
+  },
+  {
+    "path": "CLAUDE.md",
+    "action": "replace",
+    "anchor": {
+      "old": "- `colors.ts` — generated `lightTheme` / `darkTheme` Linaria classes",
+      "new": "- `colors.ts` — generated `lightTheme` / `darkTheme` / `autoTheme` (zero-JS system-following, dark set re-declared inside `prefers-color-scheme: dark`) Linaria classes"
+    },
+    "content": [],
+    "note": "Repo agent-context doc: keep the tokens file inventory honest. Optional."
+  },
+  {
+    "path": "package.json",
+    "action": "replace",
+    "anchor": {
+      "old": "    {\n      \"path\": \"dist/haze-ui.css\",\n      \"limit\": \"42 KB\",\n      \"gzip\": true\n    },",
+      "new": "    {\n      \"path\": \"dist/haze-ui.css\",\n      \"limit\": \"44 KB\",\n      \"gzip\": true\n    },"
+    },
+    "content": [],
+    "note": "Size ratchet: autoTheme adds ~29.5 KB raw to the tokens css family. Estimated from the stale dist (synthetic block appended: light decls + media-wrapped dark decls, same formatting): dist/haze-ui.css gzip 42048 -> ~44721 B (43.7 KB) worst case, brotli 30709 -> ~30745 B (30.0 KB). The brotli aggregate limit (30.75 KB) still holds; the gzip aggregate limit needs 42 -> 44 KB. Calibrate with `pnpm exec size-limit` after `pnpm build` (real emission sits the class next to lightTheme/darkTheme, so gzip dedupe may land below the worst case). dist/css/tokens.css: 58240 -> ~87728 raw, gzip 4244 -> ~4587, brotli 3035 -> ~3077 — no dedicated size-limit entry exists for the tokens family (aggregate covers it)."
+  }
+]

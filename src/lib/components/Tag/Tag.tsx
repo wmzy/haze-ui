@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
-import { base, variants, tagSizes, closeBtn } from './tag-styles';
+import { base, colors, tagSizes, closeBtn } from './tag-styles';
 
 type TagProps = {
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+  /** Semantic status color. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
   size?: 'sm' | 'md';
   closable?: boolean;
   onClose?: () => void;
@@ -15,19 +16,22 @@ type TagProps = {
   removeLabel?: string;
   className?: string;
   children: ReactNode;
+  /** Forwarded to the root span (data-slot='tag'). */
+  ref?: Ref<HTMLSpanElement>;
 };
 
 export default function Tag({
-  variant = 'default',
+  color = 'default',
   size = 'md',
   closable = false,
   onClose,
   removeLabel = 'Remove',
   className,
   children,
+  ref,
 }: TagProps) {
   return (
-    <span data-slot="tag" x-class={[base, variants[variant], tagSizes[size], className]}>
+    <span ref={ref} data-slot="tag" x-class={[base, colors[color], tagSizes[size], className]}>
       {children}
       {closable && (
         <button

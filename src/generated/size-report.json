@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-22T15:23:52.649Z",
+  "generatedAt": "2026-10-23T10:39:06.449Z",
   "distAvailable": true,
   "families": [
     {
       "family": "tokens",
-      "cssBytes": 58240,
-      "cssGzipBytes": 4244
+      "cssBytes": 66537,
+      "cssGzipBytes": 4347
     },
     {
       "family": "accordion",
@@ -24,8 +24,8 @@
     },
     {
       "family": "alert",
-      "cssBytes": 1760,
-      "cssGzipBytes": 573
+      "cssBytes": 2091,
+      "cssGzipBytes": 622
     },
     {
       "family": "anchor",
@@ -69,13 +69,13 @@
     },
     {
       "family": "badge",
-      "cssBytes": 1031,
-      "cssGzipBytes": 374
+      "cssBytes": 1135,
+      "cssGzipBytes": 387
     },
     {
       "family": "banner",
-      "cssBytes": 1265,
-      "cssGzipBytes": 495
+      "cssBytes": 1476,
+      "cssGzipBytes": 533
     },
     {
       "family": "bottom-sheet",
@@ -144,8 +144,8 @@
     },
     {
       "family": "chip",
-      "cssBytes": 1434,
-      "cssGzipBytes": 504
+      "cssBytes": 1527,
+      "cssGzipBytes": 515
     },
     {
       "family": "code-block",
@@ -164,8 +164,8 @@
     },
     {
       "family": "combobox",
-      "cssBytes": 7808,
-      "cssGzipBytes": 1428
+      "cssBytes": 7924,
+      "cssGzipBytes": 1460
     },
     {
       "family": "command",
@@ -334,8 +334,8 @@
     },
     {
       "family": "image",
-      "cssBytes": 3898,
-      "cssGzipBytes": 958
+      "cssBytes": 5775,
+      "cssGzipBytes": 1206
     },
     {
       "family": "indicator",
@@ -364,8 +364,8 @@
     },
     {
       "family": "input",
-      "cssBytes": 2242,
-      "cssGzipBytes": 703
+      "cssBytes": 2252,
+      "cssGzipBytes": 718
     },
     {
       "family": "json-view",
@@ -394,8 +394,8 @@
     },
     {
       "family": "mark",
-      "cssBytes": 616,
-      "cssGzipBytes": 269
+      "cssBytes": 800,
+      "cssGzipBytes": 304
     },
     {
       "family": "markdown-renderer",
@@ -419,8 +419,8 @@
     },
     {
       "family": "meter",
-      "cssBytes": 1602,
-      "cssGzipBytes": 536
+      "cssBytes": 1855,
+      "cssGzipBytes": 562
     },
     {
       "family": "model-picker",
@@ -449,13 +449,18 @@
     },
     {
       "family": "pagination",
-      "cssBytes": 3782,
-      "cssGzipBytes": 796
+      "cssBytes": 3825,
+      "cssGzipBytes": 810
     },
     {
       "family": "password-input",
       "cssBytes": 569,
       "cssGzipBytes": 326
+    },
+    {
+      "family": "phone-input",
+      "cssBytes": 793,
+      "cssGzipBytes": 370
     },
     {
       "family": "plan",
@@ -469,8 +474,8 @@
     },
     {
       "family": "progress",
-      "cssBytes": 1407,
-      "cssGzipBytes": 473
+      "cssBytes": 1536,
+      "cssGzipBytes": 497
     },
     {
       "family": "prompt-input",
@@ -519,8 +524,8 @@
     },
     {
       "family": "scroll-area",
-      "cssBytes": 584,
-      "cssGzipBytes": 275
+      "cssBytes": 1658,
+      "cssGzipBytes": 614
     },
     {
       "family": "segmented",
@@ -559,8 +564,8 @@
     },
     {
       "family": "sparkline",
-      "cssBytes": 679,
-      "cssGzipBytes": 257
+      "cssBytes": 787,
+      "cssGzipBytes": 274
     },
     {
       "family": "spinner",
@@ -619,8 +624,8 @@
     },
     {
       "family": "table",
-      "cssBytes": 856,
-      "cssGzipBytes": 381
+      "cssBytes": 878,
+      "cssGzipBytes": 387
     },
     {
       "family": "tabs",
@@ -639,13 +644,13 @@
     },
     {
       "family": "tag",
-      "cssBytes": 1600,
-      "cssGzipBytes": 559
+      "cssBytes": 1693,
+      "cssGzipBytes": 570
     },
     {
       "family": "textarea",
-      "cssBytes": 1642,
-      "cssGzipBytes": 533
+      "cssBytes": 1652,
+      "cssGzipBytes": 546
     },
     {
       "family": "thinking-indicator",
@@ -750,7 +755,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 394166,
-    "cssGzipBytes": 42048
+    "cssBytes": 407837,
+    "cssGzipBytes": 42853
   }
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T10:39:05.093Z",
+  "generatedAt": "2026-10-23T10:39:06.421Z",
   "components": [
     {
       "component": "Accordion",
@@ -45,7 +45,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 9
+      "testCount": 10
     },
     {
       "component": "Anchor",
@@ -106,7 +106,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 8
+      "testCount": 9
     },
     {
       "component": "AvatarGroup",
@@ -131,7 +131,7 @@
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 6
+      "testCount": 8
     },
     {
       "component": "Banner",
@@ -141,7 +141,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 12
+      "testCount": 13
     },
     {
       "component": "BottomSheet",
@@ -246,7 +246,7 @@
         "End",
         "Home"
       ],
-      "testCount": 34
+      "testCount": 39
     },
     {
       "component": "Cascader",
@@ -342,7 +342,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 10
+      "testCount": 11
     },
     {
       "component": "CodeBlock",
@@ -412,7 +412,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 81
+      "testCount": 88
     },
     {
       "component": "Command",
@@ -434,11 +434,17 @@
       "roles": [
         "button",
         "link",
-        "status"
+        "menu",
+        "menuitem",
+        "navigation",
+        "spinbutton",
+        "status",
+        "table",
+        "textbox"
       ],
       "aria": [],
       "keys": [],
-      "testCount": 27
+      "testCount": 41
     },
     {
       "component": "ConfirmDialog",
@@ -584,7 +590,7 @@
         "Escape",
         "Tab"
       ],
-      "testCount": 55
+      "testCount": 59
     },
     {
       "component": "DateRangePicker",
@@ -626,7 +632,7 @@
         "aria-labelledby"
       ],
       "keys": [],
-      "testCount": 27
+      "testCount": 32
     },
     {
       "component": "DiffViewer",
@@ -660,7 +666,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 24
+      "testCount": 29
     },
     {
       "component": "DropdownMenu",
@@ -841,10 +847,14 @@
         "img"
       ],
       "aria": [
+        "aria-current",
         "aria-label"
       ],
-      "keys": [],
-      "testCount": 28
+      "keys": [
+        "ArrowLeft",
+        "ArrowRight"
+      ],
+      "testCount": 42
     },
     {
       "component": "ImageCrop",
@@ -955,7 +965,7 @@
       "roles": [],
       "aria": [],
       "keys": [],
-      "testCount": 6
+      "testCount": 7
     },
     {
       "component": "List",
@@ -1008,6 +1018,17 @@
       "aria": [],
       "keys": [],
       "testCount": 15
+    },
+    {
+      "component": "MaskedInput",
+      "roles": [
+        "textbox"
+      ],
+      "aria": [],
+      "keys": [
+        "Backspace"
+      ],
+      "testCount": 36
     },
     {
       "component": "Masonry",
@@ -1175,6 +1196,21 @@
       "testCount": 12
     },
     {
+      "component": "PhoneInput",
+      "roles": [
+        "button",
+        "combobox",
+        "option",
+        "status",
+        "textbox"
+      ],
+      "aria": [
+        "aria-invalid"
+      ],
+      "keys": [],
+      "testCount": 16
+    },
+    {
       "component": "Plan",
       "roles": [
         "list",
@@ -1218,7 +1254,7 @@
         "aria-valuenow"
       ],
       "keys": [],
-      "testCount": 11
+      "testCount": 13
     },
     {
       "component": "PromptInput",
@@ -1361,9 +1397,11 @@
     {
       "component": "ScrollArea",
       "roles": [],
-      "aria": [],
+      "aria": [
+        "aria-label"
+      ],
       "keys": [],
-      "testCount": 5
+      "testCount": 38
     },
     {
       "component": "Segmented",
@@ -1406,7 +1444,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 94
+      "testCount": 104
     },
     {
       "component": "Sidebar",
@@ -1488,7 +1526,7 @@
         "aria-hidden"
       ],
       "keys": [],
-      "testCount": 16
+      "testCount": 17
     },
     {
       "component": "Spinner",
@@ -1499,7 +1537,7 @@
         "aria-label"
       ],
       "keys": [],
-      "testCount": 5
+      "testCount": 6
     },
     {
       "component": "Splitter",
@@ -1670,7 +1708,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 10
+      "testCount": 12
     },
     {
       "component": "TagGroup",
@@ -1792,7 +1830,7 @@
         "Enter",
         "Escape"
       ],
-      "testCount": 48
+      "testCount": 52
     },
     {
       "component": "Toast",

@@ -2,7 +2,7 @@ import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useFocusScope } from '../../utils/focus-scope';
@@ -59,6 +59,17 @@ type DrawerProps = {
   className?: string;
   /** Slot classes (see {@link DrawerClassNames}). */
   classNames?: DrawerClassNames;
+  /**
+   * 关闭后内容保持挂载（Radix `forceMount` / Ark `hideMode="hidden"`
+   * 语义）。`<dialog>` 元素本就常驻 DOM、children 随之常驻——表单
+   * 草稿与内部状态天然跨开关存活；本 prop 额外固化关闭态的可达性
+   * 契约：退场动画播完、原生 `close()` 落地后，面板带上 `hidden` +
+   * `inert`（在 UA 对非 open dialog 的 display:none 之外，把子树
+   * 显式排除出 AT 树与 Tab 序——消费者样式覆写关闭面板 display 的
+   * 场景依然安全），焦点逻辑随 `open` 关闭而停用；重开时属性移除、
+   * 进场动画重播。默认 `false`：不传时渲染输出与现有行为完全一致。
+   */
+  keepMounted?: boolean;
   children: ReactNode;
   ref?: Ref<DrawerHandle>;
 };
@@ -203,12 +214,23 @@ export default function Drawer({
   placement = 'right',
   onClose,
   viewTransition = false,
+  keepMounted = false,
   className,
   classNames,
   children,
   ref,
 }: DrawerProps) {
   const [open, setOpen] = useControl(openControl, false);
+  // keepMounted 的休眠标记：镜像原生 open 属性的缺席——退场动画播完、
+  // el.close() 真正落地后才置 true（提前挂 hidden 会用 display:none
+  // 掐断正在播放的退场动画）。重开的清除走 render-time 调整：与
+  // data-state 翻回 open 同一次提交清除，effect 里清会先画一帧 hidden。
+  const [panelDormant, setPanelDormant] = useState(!open);
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setPanelDormant(false);
+  }
   // ConfigProvider defaults merge under the prop — per-key: an explicit
   // classNames key on the component wins over the provider's.
   const config = useConfigDefaults('Drawer');
@@ -276,18 +298,28 @@ export default function Drawer({
       const settle = whenExitSettles(el);
       const finish = () => {
         // settle 期间被重新打开时 data-state 已翻回 open，本退场流作废
-        if (el.getAttribute('data-state') === 'closed') el.close();
+        if (el.getAttribute('data-state') === 'closed') {
+          el.close();
+          setPanelDormant(true);
+        }
       };
       if (settle) void settle.then(finish);
       else finish();
     }
   }, [open]);
 
+  // keepMounted 休眠态：关闭且原生面板已落地 close() 后，hidden + inert
+  // 把子树排除出 AT 树与 Tab 序（焦点 scope 随 open 停用，无困焦/归还）。
+  // 不传 keepMounted 时两个属性恒为 undefined，渲染输出与现有行为一致。
+  const dormant = keepMounted && panelDormant;
+
   return (
     <dialog
       ref={setDialogRef}
       data-slot='content'
       data-state={open ? 'open' : 'closed'}
+      hidden={dormant || undefined}
+      inert={dormant || undefined}
       x-class={[overlay, placements[placement], className, resolvedClassNames?.content]}
       onClose={() => {
         // 原生 close 事件到达时 DOM 已关闭（el.close() 已生效），这里

@@ -1,6 +1,10 @@
 import type { CSSProperties } from 'react';
 
-import { Carousel, CarouselSlide } from '@/lib';
+import type { CarouselHandle } from '@/lib';
+
+import { useRef } from 'react';
+
+import { Button, Carousel, CarouselSlide } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
@@ -34,6 +38,47 @@ function DemoSlides() {
         </CarouselSlide>
       ))}
     </>
+  );
+}
+
+function ImperativeControlsDemo() {
+  const carouselRef = useRef<CarouselHandle>(null);
+  return (
+    <div style={{ maxWidth: 480 }}>
+      <Carousel ref={carouselRef}>
+        <DemoSlides />
+      </Carousel>
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          justifyContent: 'center',
+          marginTop: 12,
+        }}
+      >
+        <Button
+          size='sm'
+          variant='outline'
+          onClick={() => carouselRef.current?.prev()}
+        >
+          Prev
+        </Button>
+        <Button
+          size='sm'
+          variant='outline'
+          onClick={() => carouselRef.current?.scrollTo(2)}
+        >
+          Go to slide 3
+        </Button>
+        <Button
+          size='sm'
+          variant='outline'
+          onClick={() => carouselRef.current?.next()}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -85,6 +130,19 @@ export default function CarouselDemo() {
             <DemoSlides />
           </Carousel>
         </div>
+      </div>
+
+      <div className={section}>
+        <h2>Imperative handle</h2>
+        <p className={intro}>
+          A <code>CarouselHandle</code> ref (React 19 ref-as-prop) drives the
+          carousel from outside: <code>next()</code> / <code>prev()</code> step
+          with wrap-around and <code>scrollTo(index)</code> jumps (floored and
+          clamped into the slide range). The handle writes through the same
+          control path as the arrows and dots, so <code>value</code>{' '}
+          consumers observe the updates like any user navigation.
+        </p>
+        <ImperativeControlsDemo />
       </div>
 
       <div className={section}>

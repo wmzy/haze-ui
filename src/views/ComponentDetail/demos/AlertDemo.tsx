@@ -20,7 +20,7 @@ export default function AlertDemo() {
       <p className={intro}>Contextual feedback messages for user actions.</p>
 
       <div className={section}>
-        <h2>Variants</h2>
+        <h2>Colors</h2>
         <div
           style={{
             display: 'flex',
@@ -29,17 +29,17 @@ export default function AlertDemo() {
             maxWidth: 480,
           }}
         >
-          <Alert variant='info'>This is an informational alert.</Alert>
-          <Alert variant='success'>Operation completed successfully.</Alert>
-          <Alert variant='warning'>Please review before proceeding.</Alert>
-          <Alert variant='danger'>An error occurred. Please try again.</Alert>
+          <Alert color='info'>This is an informational alert.</Alert>
+          <Alert color='success'>Operation completed successfully.</Alert>
+          <Alert color='warning'>Please review before proceeding.</Alert>
+          <Alert color='danger'>An error occurred. Please try again.</Alert>
         </div>
       </div>
 
       <div className={section}>
         <h2>Closable</h2>
         <div style={{ maxWidth: 480 }}>
-          <Alert key={key} variant='info' closable>
+          <Alert key={key} color='info' closable>
             This alert can be dismissed. Click the × button.
           </Alert>
           <Button

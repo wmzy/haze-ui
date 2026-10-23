@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { Button, Combobox } from '@/lib';
+import { Button, Combobox, ComboboxGroup, ComboboxOption } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
@@ -102,6 +102,40 @@ export default function ComboboxDemo() {
         <h2>Demo</h2>
         <div className={fieldRow}>
           <Combobox options={FRUITS} placeholder="Search fruits..." />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>Children &amp; disabled options</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          Options can also be authored as compound children —{' '}
+          <code>&lt;ComboboxOption&gt;</code> rows inside{' '}
+          <code>&lt;ComboboxGroup&gt;</code> sections — composing ahead of
+          any data <code>options</code>. Entries carrying{' '}
+          <code>disabled</code> stay visible and filterable but reject
+          clicks and Enter.
+        </p>
+        <div className={fieldRow}>
+          <Combobox
+            options={[{ value: 'mango', label: 'Mango' }]}
+            placeholder="Search produce..."
+          >
+            <ComboboxGroup label="Fruits">
+              <ComboboxOption value="apple">Apple</ComboboxOption>
+              <ComboboxOption value="banana" disabled>
+                Banana (out of stock)
+              </ComboboxOption>
+            </ComboboxGroup>
+            <ComboboxGroup label="Vegetables">
+              <ComboboxOption value="carrot">Carrot</ComboboxOption>
+            </ComboboxGroup>
+          </Combobox>
         </div>
       </div>
 

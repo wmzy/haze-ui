@@ -27,6 +27,11 @@
       "import": "./dist/headless/index.js",
       "default": "./dist/headless/index.js"
     },
+    "./locales": {
+      "types": "./dist/types/locales/index.d.ts",
+      "import": "./dist/locales/index.js",
+      "default": "./dist/locales/index.js"
+    },
     "./tokens": {
       "types": "./dist/types/tokens/index.d.ts",
       "import": "./dist/tokens/index.js",
@@ -65,7 +70,7 @@
   "scripts": {
     "start": "vite",
     "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json && node scripts/fix-dts-extensions.mjs && node scripts/generate-licenses.mjs",
-    "build:demo": "node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/",
+    "build:demo": "node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/ && cp src/generated/version.json dist/version.json",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
     "lint": "eslint --fix src *.mjs",
@@ -124,6 +129,7 @@
     "@tiptap/pm": "^3.32.0",
     "@tiptap/react": "^3.32.0",
     "@tiptap/starter-kit": "^3.32.0",
+    "libphonenumber-js": "^1.13.15",
     "qrcode": "^1.5.4",
     "react-f0rm": "^1.4.0",
     "react-use-control": "^1.6.0",
@@ -141,6 +147,8 @@
     "@native-router/core": "^1.17.0",
     "@native-router/react": "^1.16.1",
     "@playwright/test": "^1.63.0",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
     "@size-limit/esbuild": "^13.0.3",
     "@size-limit/file": "^13.0.3",
     "@stackblitz/sdk": "^1.11.1",
@@ -175,8 +183,6 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-icons": "^5.7.0",
-    "@semantic-release/changelog": "^7.0.0",
-    "@semantic-release/git": "^11.0.1",
     "semantic-release": "^25.0.9",
     "size-limit": "^13.0.3",
     "terser": "^5.51.2",
@@ -192,7 +198,7 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "6.05 KB"
+      "limit": "6.35 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
@@ -216,16 +222,16 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "19.5 KB"
+      "limit": "19.95 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "30.75 KB"
+      "limit": "31.25 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "42 KB",
+      "limit": "43 KB",
       "gzip": true
     },
     {
@@ -268,6 +274,12 @@
       "name": "CSS family ratchet: sparkline",
       "path": "dist/css/sparkline.css",
       "limit": "0.3 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: scroll-area",
+      "path": "dist/css/scroll-area.css",
+      "limit": "0.6 KB",
       "gzip": true
     },
     {

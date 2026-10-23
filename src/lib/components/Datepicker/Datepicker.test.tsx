@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 
+import ConfigProvider from '../ConfigProvider/ConfigProvider';
+
 import Datepicker from './Datepicker';
 import DatepickerCore from './DatepickerCore';
 
@@ -201,6 +203,57 @@ describe('Datepicker', () => {
     render(<Datepicker value="2025-01-15" locale="zh-CN" weekStartsOn={0} />);
     await user.click(screen.getByPlaceholderText('Select date'));
     expect(getWeekdayHeaders()).toEqual(getLocalizedWeekdays('zh-CN', 0));
+  });
+});
+
+describe('Datepicker (ConfigProvider defaults)', () => {
+  it('opens the config picker mode when the prop is omitted', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ Datepicker: { picker: 'month' } }}>
+        <Datepicker value='2026-03' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByPlaceholderText('Select date'));
+    expect(
+      screen.getByRole('grid', { name: 'Select month' })
+    ).toBeInTheDocument();
+  });
+
+  it('lets an explicit picker prop beat the config', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ Datepicker: { picker: 'month' } }}>
+        <Datepicker value='2026' picker='year' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByPlaceholderText('Select date'));
+    expect(screen.getByText('2020 – 2031')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('grid', { name: 'Select month' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('starts the week from the config weekStartsOn', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ Datepicker: { weekStartsOn: 1 } }}>
+        <Datepicker value='2025-01-15' />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByPlaceholderText('Select date'));
+    expect(getWeekdayHeaders()[0]).toBe('Mo');
+  });
+
+  it('lets an explicit weekStartsOn prop beat the config', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ Datepicker: { weekStartsOn: 1 } }}>
+        <Datepicker value='2025-01-15' weekStartsOn={0} />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByPlaceholderText('Select date'));
+    expect(getWeekdayHeaders()[0]).toBe('Su');
   });
 });
 

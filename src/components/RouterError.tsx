@@ -33,7 +33,7 @@ export default function RouterError({ error }: Props) {
   const router = useRouter();
   return (
     <section className={wrapper}>
-      <Alert variant='danger'>Something went wrong</Alert>
+      <Alert color='danger'>Something went wrong</Alert>
       <pre className={pre}>{error.stack}</pre>
       <Flex gap='var(--haze-space-3)'>
         <Button variant='outline' onClick={() => void refresh(router)}>

@@ -55,47 +55,47 @@ describe('Meter', () => {
     ).toBeNull();
   });
 
-  it('colors the band the value falls into (data-tone)', () => {
+  it('colors the band the value falls into (data-color)', () => {
     const { rerender } = render(
       <Meter
         value={20}
         thresholds={[
-          { at: 60, tone: 'warning' },
-          { at: 85, tone: 'danger' },
+          { at: 60, color: 'warning' },
+          { at: 85, color: 'danger' },
         ]}
       />,
     );
     const meter = screen.getByRole('meter');
-    // below the first bound: default tone
-    expect(meter).toHaveAttribute('data-tone', 'primary');
+    // below the first bound: default color
+    expect(meter).toHaveAttribute('data-color', 'primary');
 
     rerender(
       <Meter
         value={70}
         thresholds={[
-          { at: 60, tone: 'warning' },
-          { at: 85, tone: 'danger' },
+          { at: 60, color: 'warning' },
+          { at: 85, color: 'danger' },
         ]}
       />,
     );
-    expect(meter).toHaveAttribute('data-tone', 'warning');
+    expect(meter).toHaveAttribute('data-color', 'warning');
     expect(
       meter.querySelector('[data-slot="track"]'),
-    ).toHaveAttribute('data-tone', 'warning');
+    ).toHaveAttribute('data-color', 'warning');
     expect(
       meter.querySelector('[data-slot="bar"]'),
-    ).toHaveAttribute('data-tone', 'warning');
+    ).toHaveAttribute('data-color', 'warning');
 
     rerender(
       <Meter
         value={100}
         thresholds={[
-          { at: 60, tone: 'warning' },
-          { at: 85, tone: 'danger' },
+          { at: 60, color: 'warning' },
+          { at: 85, color: 'danger' },
         ]}
       />,
     );
-    expect(meter).toHaveAttribute('data-tone', 'danger');
+    expect(meter).toHaveAttribute('data-color', 'danger');
   });
 
   it('resolves threshold bands regardless of input order', () => {
@@ -103,17 +103,17 @@ describe('Meter', () => {
       <Meter
         value={70}
         thresholds={[
-          { at: 85, tone: 'danger' },
-          { at: 60, tone: 'warning' },
+          { at: 85, color: 'danger' },
+          { at: 60, color: 'warning' },
         ]}
       />,
     );
-    expect(screen.getByRole('meter')).toHaveAttribute('data-tone', 'warning');
+    expect(screen.getByRole('meter')).toHaveAttribute('data-color', 'warning');
   });
 
-  it('keeps the primary tone for a matched band without tone', () => {
+  it('keeps the primary color for a matched band without color', () => {
     render(<Meter value={70} thresholds={[{ at: 60 }]} />);
-    expect(screen.getByRole('meter')).toHaveAttribute('data-tone', 'primary');
+    expect(screen.getByRole('meter')).toHaveAttribute('data-color', 'primary');
   });
 
   it('wears the per-size track skin', () => {
@@ -173,7 +173,7 @@ describe('Meter', () => {
         value={70}
         label="CPU"
         showValue
-        thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]}
+        thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]}
       />,
     );
     let results = await axe(document.body, options);

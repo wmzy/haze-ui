@@ -1,0 +1,13 @@
+[
+  {
+    "path": "src/lib/index.ts",
+    "action": "replace",
+    "anchor": [
+      "export type { CarouselProps, CarouselSlideProps } from './components/Carousel';"
+    ],
+    "content": [
+      "export type { CarouselProps, CarouselSlideProps, CarouselHandle } from './components/Carousel';"
+    ],
+    "note": "CarouselHandle (imperative next/prev/scrollTo via React 19 ref-as-prop) now exported from the component dir barrel; demo CarouselDemo.tsx imports it from '@/lib', so this line must land before build:demo/typecheck. VirtualListHandle precedent."
+  }
+]

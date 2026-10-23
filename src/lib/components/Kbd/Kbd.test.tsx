@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
 import Kbd from './Kbd';
@@ -30,6 +31,14 @@ describe('Kbd', () => {
   it('forwards native props', () => {
     render(<Kbd title='Command'>⌘</Kbd>);
     expect(screen.getByTitle('Command')).toBeInTheDocument();
+  });
+
+  it('attaches ref to the root kbd element', () => {
+    const ref = createRef<HTMLElement>();
+    const { container } = render(<Kbd ref={ref}>⌘</Kbd>);
+    expect(ref.current).toBe(container.firstChild);
+    expect(ref.current?.nodeName).toBe('KBD');
+    expect(ref.current).toHaveAttribute('data-slot', 'kbd');
   });
 
   it('applies className', () => {

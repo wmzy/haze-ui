@@ -135,8 +135,8 @@ const validateRole: FieldValidator<MemberFormValues, 'role'> = zodResolver(
 );
 
 function roleBadge(role: MemberRole) {
-  if (role === 'admin') return <Badge variant='info'>{role}</Badge>;
-  if (role === 'editor') return <Badge variant='success'>{role}</Badge>;
+  if (role === 'admin') return <Badge color='info'>{role}</Badge>;
+  if (role === 'editor') return <Badge color='success'>{role}</Badge>;
   return <Badge>{role}</Badge>;
 }
 

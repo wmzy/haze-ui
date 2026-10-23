@@ -3,8 +3,8 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { css } from '@linaria/core';
 
 type MarkProps = {
-  /** Highlight tone — maps to the semantic status tokens. */
-  color?: 'warning' | 'primary' | 'success' | 'danger';
+  /** Semantic highlight color — maps to the status tokens. */
+  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 } & Omit<ComponentPropsWithoutRef<'mark'>, 'color'>;
 
 const base = css`
@@ -22,6 +22,11 @@ const base = css`
   }
 `;
 
+const neutral = css`
+  background: var(--haze-color-bg-muted);
+  color: var(--haze-color-text-secondary);
+`;
+
 const primary = css`
   background: var(--haze-color-primary-subtle);
   color: var(--haze-color-primary);
@@ -37,11 +42,18 @@ const danger = css`
   color: var(--haze-color-danger);
 `;
 
+const info = css`
+  background: var(--haze-color-info-subtle);
+  color: var(--haze-color-info);
+`;
+
 const colors = {
+  default: neutral,
   warning: base,
   primary,
   success,
   danger,
+  info,
 } as const;
 
 /**

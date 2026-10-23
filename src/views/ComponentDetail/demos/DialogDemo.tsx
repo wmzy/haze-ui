@@ -30,6 +30,8 @@ export default function DialogDemo() {
   const [, setOpen] = useControl(openCtrl);
   const [, , brandedCtrl] = useControl(undefined, false);
   const [, setBrandedOpen] = useControl(brandedCtrl);
+  const [, , keptCtrl] = useControl(undefined, false);
+  const [, setKeptOpen] = useControl(keptCtrl);
 
   return (
     <>
@@ -92,6 +94,58 @@ export default function DialogDemo() {
           >
             The panel border and title color come from the slot classes.
           </p>
+        </Dialog>
+      </div>
+
+      <div className={section}>
+        <h2>keepMounted</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          With <code>keepMounted</code> the closed panel carries{' '}
+          <code>hidden</code> + <code>inert</code> (excluded from the
+          accessibility tree and tab order) instead of relying on the UA
+          sheet alone — type a draft below, close, and reopen: the input
+          keeps its value.
+        </p>
+        <div className={row}>
+          <Button variant='outline' onClick={() => setKeptOpen(true)}>
+            Open kept-mounted dialog
+          </Button>
+        </div>
+        <Dialog
+          open={keptCtrl}
+          onClose={() => setKeptOpen(false)}
+          keepMounted
+          title='Draft survives'
+        >
+          <label
+            style={{
+              display: 'grid',
+              gap: 'var(--haze-space-2)',
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Draft
+            <input
+              style={{
+                padding: 'var(--haze-space-2) var(--haze-space-3)',
+                borderRadius: 'var(--haze-radius-md)',
+                border: '1px solid var(--haze-color-border)',
+              }}
+              placeholder='Type something, then close…'
+            />
+          </label>
+          <div style={{ marginTop: 'var(--haze-space-4)' }}>
+            <Button size='sm' variant='outline' onClick={() => setKeptOpen(false)}>
+              Close
+            </Button>
+          </div>
         </Dialog>
       </div>
 

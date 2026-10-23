@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import Avatar from './Avatar';
@@ -35,6 +36,13 @@ describe('Avatar', () => {
   it('applies className', () => {
     const { container } = render(<Avatar className="custom" />);
     expect(container.firstChild).toHaveClass('custom');
+  });
+
+  it('attaches ref to the root span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    const { container } = render(<Avatar ref={ref} alt="John" />);
+    expect(ref.current).toBe(container.firstChild);
+    expect(ref.current).toHaveAttribute('data-slot', 'avatar');
   });
 
   it('renders image with empty alt when alt is undefined', () => {

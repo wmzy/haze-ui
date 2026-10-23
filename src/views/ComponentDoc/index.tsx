@@ -279,11 +279,11 @@ function BadgeSection() {
     <div className={section} id='badge'>
       <h2>Badge</h2>
       <div className={row}>
-        <Badge variant='default'>Default</Badge>
-        <Badge variant='success'>Success</Badge>
-        <Badge variant='warning'>Warning</Badge>
-        <Badge variant='danger'>Danger</Badge>
-        <Badge variant='info'>Info</Badge>
+        <Badge color='default'>Default</Badge>
+        <Badge color='success'>Success</Badge>
+        <Badge color='warning'>Warning</Badge>
+        <Badge color='danger'>Danger</Badge>
+        <Badge color='info'>Info</Badge>
       </div>
     </div>
   );
@@ -461,10 +461,10 @@ function AlertSection() {
           maxWidth: 480,
         }}
       >
-        <Alert variant='info'>Informational alert.</Alert>
-        <Alert variant='success'>Success alert.</Alert>
-        <Alert variant='warning'>Warning alert.</Alert>
-        <Alert variant='danger'>Danger alert.</Alert>
+        <Alert color='info'>Informational alert.</Alert>
+        <Alert color='success'>Success alert.</Alert>
+        <Alert color='warning'>Warning alert.</Alert>
+        <Alert color='danger'>Danger alert.</Alert>
       </div>
     </div>
   );
@@ -489,11 +489,11 @@ function TagSection() {
     <div className={section} id='tag'>
       <h2>Tag</h2>
       <div className={row}>
-        <Tag variant='default'>Default</Tag>
-        <Tag variant='primary'>Primary</Tag>
-        <Tag variant='success'>Success</Tag>
-        <Tag variant='warning'>Warning</Tag>
-        <Tag variant='danger' closable>
+        <Tag color='default'>Default</Tag>
+        <Tag color='primary'>Primary</Tag>
+        <Tag color='success'>Success</Tag>
+        <Tag color='warning'>Warning</Tag>
+        <Tag color='danger' closable>
           Closable
         </Tag>
       </div>
@@ -576,8 +576,8 @@ function FlexSection() {
       <h2>Flex</h2>
       <Flex gap='var(--haze-space-3)' align='center'>
         <Badge>Item 1</Badge>
-        <Badge variant='success'>Item 2</Badge>
-        <Badge variant='info'>Item 3</Badge>
+        <Badge color='success'>Item 2</Badge>
+        <Badge color='info'>Item 3</Badge>
       </Flex>
     </div>
   );
@@ -1589,10 +1589,10 @@ function BannerSection() {
     <div className={section} id='banner'>
       <h2>Banner</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--haze-space-2)' }}>
-        <Banner variant='info'>This is an informational banner.</Banner>
-        <Banner variant='success'>Operation completed successfully.</Banner>
-        <Banner variant='warning'>Please review your settings.</Banner>
-        <Banner variant='danger' onClose={() => { /* dismiss */ }}>Something went wrong.</Banner>
+        <Banner color='info'>This is an informational banner.</Banner>
+        <Banner color='success'>Operation completed successfully.</Banner>
+        <Banner color='warning'>Please review your settings.</Banner>
+        <Banner color='danger' onClose={() => { /* dismiss */ }}>Something went wrong.</Banner>
       </div>
     </div>
   );

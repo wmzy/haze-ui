@@ -190,7 +190,7 @@ jobs:
               throw new Error('styles.css missing from package: ' + css);
             }
             const mod = await import('haze-ui');
-            for (const name of ['Button', 'Switch', 'FormItem', 'lightTheme', 'darkTheme']) {
+            for (const name of ['Button', 'Switch', 'FormItem', 'lightTheme', 'darkTheme', 'autoTheme']) {
               if (!(name in mod)) throw new Error('missing export: ' + name);
             }
             console.log('smoke ok —', Object.keys(mod).length, 'exports; css:', css);

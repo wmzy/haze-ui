@@ -159,6 +159,16 @@ export default function Changelog() {
         <a href={sourceUrl} target='_blank' rel='noreferrer'>
           view the source at that tag
         </a>
+        . Every release's docs are archived as a read-only snapshot under{' '}
+        <code>{'/v/{version}/'}</code>
+        {versionInfo.gitTag && (
+          <>
+            {' — '}
+            <a href={`${import.meta.env.BASE_URL}v/${versionInfo.version}/`}>
+              snapshot of this version
+            </a>
+          </>
+        )}
         .
       </p>
       {failed && (

@@ -3,10 +3,19 @@ import type { TableClassNames } from './TableContext';
 
 import { css } from '@linaria/core';
 
+import { compact } from '../../tokens/density';
+import { spacing } from '../../tokens/spacing';
+import { useConfigDefaults, useConfigDensity } from '../ConfigProvider/useConfigDefaults';
+
 import { TableClassNamesProvider } from './TableContext';
+import { borderedStyle, stripedStyle } from './table-styles';
 
 type TableProps = {
+  /** Zebra-stripe even body rows (default off, ConfigProvider
+   * `Table.striped` under it). */
   striped?: boolean;
+  /** Full cell borders on every th/td (default off, ConfigProvider
+   * `Table.bordered` under it). */
   bordered?: boolean;
   /**
    * Semantic slot classes (AntD v6 `classNames` shape): declared once
@@ -34,27 +43,33 @@ const base = css`
   color: var(--haze-color-text);
 `;
 
-const stripedStyle = css`
-  & tbody tr:nth-child(even) {
-    background: var(--haze-color-bg-subtle);
-  }
-`;
-
-const borderedStyle = css`
-  & th,
-  & td {
-    border: 1px solid var(--haze-color-border);
-  }
-`;
-
 export default function Table({
-  striped = false,
-  bordered = false,
+  striped,
+  bordered,
   classNames,
   className,
   children,
   ref,
 }: TableProps) {
+  // Three tiers per wired prop: explicit prop → ConfigProvider `Table`
+  // section → built-in off. A missing provider stays byte-identical.
+  const config = useConfigDefaults('Table');
+  const resolvedStriped = striped ?? config.striped ?? false;
+  const resolvedBordered = bordered ?? config.bordered ?? false;
+
+  // Global density (ConfigProvider `density`): 'compact' re-declares the
+  // spacing scale for the table subtree — a compact island. Both token
+  // classes land on the table element because unregistered custom
+  // properties substitute var() eagerly at the declaring element: the
+  // spacing class re-declares --haze-space-N there and compact answers
+  // the --haze-density-space-N references, independent of whatever the
+  // app root declared (see tokens/density.ts). 'normal' adds nothing —
+  // the table keeps the ambient scale (including a root-level compact).
+  // Table has no explicit density prop of its own (DataTable's
+  // sm/md/lg `size` is a different, padding-step axis that composes).
+  const density = useConfigDensity();
+  const compactIsland = density === 'compact';
+
   return (
     <TableClassNamesProvider value={classNames}>
       <div x-class={[wrapper, classNames?.wrapper]} data-slot="table-container">
@@ -63,8 +78,10 @@ export default function Table({
           data-slot="table"
           x-class={[
             base,
-            striped && stripedStyle,
-            bordered && borderedStyle,
+            resolvedStriped && stripedStyle,
+            resolvedBordered && borderedStyle,
+            compactIsland && spacing,
+            compactIsland && compact,
             className,
           ]}
         >

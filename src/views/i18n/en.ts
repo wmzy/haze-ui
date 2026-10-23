@@ -68,7 +68,7 @@ const COMPONENT_BLURBS = {
   Resizable:
     'Split-pane group with draggable dividers (ResizableGroup, horizontal or vertical); px defaultSize/minSize/maxSize per panel, collapsible panels and onResizeCommit for persistence.',
   ScrollArea:
-    'Scrollable region with custom-styled thin scrollbars and maxHeight.',
+    'Scrollable region with overlay scrollbar thumbs: maxHeight sugar or compound Viewport/Scrollbar parts; hover/always/scroll visibility, keyboard-focusable viewport.',
   Sidebar:
     'App sidebar shell with controllable collapsed state (aside + rail width tokens).',
   Splitter:
@@ -120,6 +120,10 @@ const COMPONENT_BLURBS = {
   NumberInput: 'Numeric input with min/max/step.',
   OTPInput: 'One-time-password input of length segmented character boxes.',
   PasswordInput: 'Text input with a visibility reveal toggle.',
+  MaskedInput:
+    'Masked text input enforcing a pattern (9 digit, a letter, A uppercase, * alphanumeric, \\ escape); unmask() extracts the raw slot content.',
+  PhoneInput:
+    'International phone input: country select joined seamlessly to the number field, E.164 value, libphonenumber-js validation.',
   Radio: 'Radio option and group with controllable selection.',
   Rating: 'Star rating with half-step support.',
   RichTextEditor:

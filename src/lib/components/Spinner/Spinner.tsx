@@ -1,3 +1,5 @@
+import type { Ref } from 'react';
+
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
@@ -5,6 +7,8 @@ import { useStrings } from '../LocaleProvider';
 type SpinnerProps = {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** Forwarded to the root span (data-slot='spinner'). */
+  ref?: Ref<HTMLSpanElement>;
 };
 
 const base = css`
@@ -66,10 +70,11 @@ const sizes = {
 export default function Spinner({
   size = 'md',
   className,
+  ref,
 }: SpinnerProps) {
   const strings = useStrings('spinner');
   return (
-    <span data-slot='spinner' role="status" aria-label={strings.loading} x-class={[base, sizes[size], className]}>
+    <span ref={ref} data-slot='spinner' role="status" aria-label={strings.loading} x-class={[base, sizes[size], className]}>
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle
           cx="12"

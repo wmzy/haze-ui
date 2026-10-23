@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -45,10 +46,16 @@ describe('Banner', () => {
     expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
   });
 
-  it('renders with different variants', () => {
-    const { container, rerender } = render(<Banner variant="success">Success</Banner>);
+  it('forwards the ref onto the root div', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<Banner ref={ref}>Message</Banner>);
+    expect(ref.current).toBe(screen.getByRole('alert'));
+  });
+
+  it('renders with different colors', () => {
+    const { container, rerender } = render(<Banner color="success">Success</Banner>);
     expect(container.firstChild).toBeInTheDocument();
-    rerender(<Banner variant="warning">Warning</Banner>);
+    rerender(<Banner color="warning">Warning</Banner>);
     expect(container.firstChild).toBeInTheDocument();
   });
 
@@ -63,7 +70,7 @@ describe('Banner', () => {
 
   it('has no axe violations when dismissible', async () => {
     const { axe } = await import('jest-axe');
-    render(<Banner variant="warning" onClose={() => undefined}>Cookies are used</Banner>);
+    render(<Banner color="warning" onClose={() => undefined}>Cookies are used</Banner>);
     const results = await axe(document.body, {
       rules: { region: { enabled: false } },
     });
@@ -72,15 +79,15 @@ describe('Banner', () => {
 });
 
 describe('bannerVariants exports', () => {
-  it('exposes the variant skin classes for composition', () => {
-    expect(Object.keys(bannerVariants)).toEqual(['info', 'success', 'warning', 'danger']);
+  it('exposes the color skin classes for composition', () => {
+    expect(Object.keys(bannerVariants)).toEqual(['default', 'primary', 'info', 'success', 'warning', 'danger']);
     for (const cls of Object.values(bannerVariants)) {
       expect(cls).toBeTruthy();
     }
   });
 
   it('is the exact class Banner wears', () => {
-    render(<Banner variant="danger">Skin</Banner>);
+    render(<Banner color="danger">Skin</Banner>);
     expect(screen.getByRole('alert')).toHaveClass(bannerVariants.danger);
   });
 });

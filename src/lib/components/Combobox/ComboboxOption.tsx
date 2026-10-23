@@ -7,6 +7,13 @@ type ComboboxOptionProps<T extends string | number = string> = {
   highlighted?: boolean;
   selected?: boolean;
   /**
+   * Option-level disabled state (from the `options` data or the
+   * declarative `disabled` prop): the row renders dimmed and
+   * `aria-disabled`, and both the click and keyboard pick paths reject
+   * it — the maxCount lock's inert-row contract.
+   */
+  disabled?: boolean;
+  /**
    * DOM id of this option — what the combobox input points at via
    * aria-activedescendant while the row holds the keyboard highlight.
    */
@@ -38,12 +45,21 @@ const option = css`
   cursor: pointer;
   transition: background var(--haze-duration-fast);
 
-  &:hover {
+  /* Option-level disabled: the row stays visible and filterable but
+     inert — no hover/active feedback, dimmed, not-allowed cursor (the
+     Select optionRow contract). The attribute gate keeps enabled rows
+     byte-identical. */
+  &:hover:not([data-disabled]) {
     background: var(--haze-color-bg-subtle);
   }
 
-  &:active {
+  &:active:not([data-disabled]) {
     background: var(--haze-color-bg-muted);
+  }
+
+  &[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -60,6 +76,7 @@ export default function ComboboxOption<T extends string | number = string>({
   value,
   highlighted = false,
   selected = false,
+  disabled = false,
   id,
   ref,
   setSize,
@@ -78,6 +95,8 @@ export default function ComboboxOption<T extends string | number = string>({
       // option and the selected value carry aria-selected=true — two
       // distinct concepts sharing the attribute's true state.
       aria-selected={selected || highlighted}
+      aria-disabled={disabled || undefined}
+      data-disabled={disabled || undefined}
       aria-setsize={setSize}
       aria-posinset={posInSet}
       x-class={[
@@ -86,7 +105,9 @@ export default function ComboboxOption<T extends string | number = string>({
         selected && selectedStyle,
         className,
       ]}
-      onClick={() => onSelect?.(value)}
+      onClick={() => {
+        if (!disabled) onSelect?.(value);
+      }}
     >
       {children}
     </div>

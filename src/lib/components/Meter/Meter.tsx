@@ -13,18 +13,20 @@ import {
 } from './meter-styles';
 
 /** One threshold band: at `at` (and above, until the next threshold)
- * the meter wears `tone`. */
+ * the meter wears `color`. */
 type MeterThreshold = {
   /** Lower bound of the band, in the same units as `value`/`min`/`max`. */
   at: number;
   /** Band color. Omitted keeps the default primary ink (a band that
    * only re-splits the scale without recoloring). */
-  tone?: 'success' | 'warning' | 'danger';
+  color?: MeterTone;
 };
 
-/** The resolved band tone: `primary` when no threshold band contains
- * the value (or the matching band omitted its tone). */
-type MeterTone = 'primary' | 'success' | 'warning' | 'danger';
+/** The resolved band color — the same six-value semantic axis the
+ * display family exposes as its `color` prop. `primary` when no
+ * threshold band contains the value (or the matching band omitted
+ * its color). */
+type MeterTone = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
 /** Semantic slot classes for Meter (AntD v6 `classNames` shape; keys
  * follow the data-slot names). */
@@ -76,16 +78,16 @@ type MeterProps = MeterOwnProps & {
  * `at` bound the value meets (input order never matters — a sorted
  * scan short-circuits at the first bound above the value).
  */
-function resolveTone(
+function resolveColor(
   value: number,
   thresholds: readonly MeterThreshold[],
 ): MeterTone {
-  let tone: MeterTone = 'primary';
+  let color: MeterTone = 'primary';
   for (const threshold of [...thresholds].sort((a, b) => a.at - b.at)) {
     if (value < threshold.at) break;
-    tone = threshold.tone ?? 'primary';
+    color = threshold.color ?? 'primary';
   }
-  return tone;
+  return color;
 }
 
 /**
@@ -118,7 +120,7 @@ export default function Meter({
   const clamped = Math.min(max, Math.max(min, value));
   const scale = max - min;
   const percent = scale > 0 ? ((clamped - min) / scale) * 100 : 0;
-  const tone = resolveTone(clamped, thresholds);
+  const color = resolveColor(clamped, thresholds);
   const hasLabel = label !== undefined && label !== null;
 
   return (
@@ -126,7 +128,7 @@ export default function Meter({
       ref={ref}
       role="meter"
       data-slot="meter"
-      data-tone={tone}
+      data-color={color}
       aria-valuenow={clamped}
       aria-valuemin={min}
       aria-valuemax={max}
@@ -160,12 +162,12 @@ export default function Meter({
       )}
       <div
         data-slot="track"
-        data-tone={tone}
+        data-color={color}
         x-class={[trackClass, trackSizes[size], classNames?.track]}
       >
         <div
           data-slot="bar"
-          data-tone={tone}
+          data-color={color}
           x-class={[barClass, classNames?.bar]}
           style={{ width: `${percent}%` }}
         />

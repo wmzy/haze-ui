@@ -20,8 +20,12 @@ import type { Control } from 'react-use-control';
 import type {
   AccordionClassNames,
   AccordionProps,
+  AlertProps,
+  BadgeProps,
+  BannerProps,
   ButtonProps,
   CheckboxProps,
+  ChipProps,
   ComboboxProps,
   DataTableFiltersState,
   DataTableProps,
@@ -29,10 +33,15 @@ import type {
   DialogProps,
   FileInputProps,
   InputProps,
+  MarkProps,
+  MeterThreshold,
   NumberInputProps,
+  ProgressProps,
   SelectClassNames,
   SelectProps,
+  SparklineProps,
   SwitchProps,
+  TagProps,
   TabsClassNames,
   TabsProps,
 } from './index';
@@ -154,10 +163,48 @@ describe('type contracts: skin exports', () => {
   });
 
   it('badgeVariants/badgeSizes keep exact keys with string values', () => {
-    expectTypeOf<keyof typeof badgeVariants>().toEqualTypeOf<'default' | 'success' | 'warning' | 'danger' | 'info'>();
+    expectTypeOf<keyof typeof badgeVariants>().toEqualTypeOf<'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'>();
     expectTypeOf<(typeof badgeVariants)[keyof typeof badgeVariants]>().toEqualTypeOf<LinariaClassName>();
     expectTypeOf<keyof typeof badgeSizes>().toEqualTypeOf<'sm' | 'md'>();
     expectTypeOf<(typeof badgeSizes)[keyof typeof badgeSizes]>().toEqualTypeOf<LinariaClassName>();
+  });
+});
+
+describe('type contracts: display-family semantic color axis', () => {
+  // The display family (Tag/Badge/Chip/Alert/Banner/Progress/Meter/
+  // Sparkline/Mark) shares one semantic axis: a `color` prop (for
+  // Meter: the threshold band field) over the same six-value union.
+  // `variant` stays the style axis wherever the component genuinely
+  // has more than one visual style (Chip solid/outline, Progress
+  // bar/circle, Sparkline line/area).
+  type SemanticColor = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+
+  it('exposes the same color union across the display family', () => {
+    // Optional props widen the indexed access with undefined — the
+    // axis itself must still be the identical six-value union.
+    expectTypeOf<TagProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<BadgeProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<ChipProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<AlertProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<BannerProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<ProgressProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<SparklineProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<MarkProps['color']>().toEqualTypeOf<SemanticColor | undefined>();
+    expectTypeOf<NonNullable<MeterThreshold['color']>>().toEqualTypeOf<SemanticColor>();
+  });
+
+  it('keeps variant as the style axis only', () => {
+    expectTypeOf<ChipProps['variant']>().toEqualTypeOf<'solid' | 'outline' | undefined>();
+    expectTypeOf<ProgressProps['variant']>().toEqualTypeOf<'bar' | 'circle' | undefined>();
+    expectTypeOf<SparklineProps['variant']>().toEqualTypeOf<'line' | 'area' | undefined>();
+    // No style axis on single-skin components — and no tone alias
+    // left behind on any of them.
+    expectTypeOf<TagProps>().not.toHaveProperty('variant');
+    expectTypeOf<TagProps>().not.toHaveProperty('tone');
+    expectTypeOf<BadgeProps>().not.toHaveProperty('variant');
+    expectTypeOf<AlertProps>().not.toHaveProperty('variant');
+    expectTypeOf<BannerProps>().not.toHaveProperty('variant');
+    expectTypeOf<SparklineProps>().not.toHaveProperty('tone');
   });
 });
 

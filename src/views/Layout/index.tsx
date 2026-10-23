@@ -29,6 +29,7 @@ import { sourceUrl, shortCommit, versionInfo } from '@/views/version-info';
 
 import SidebarSearch, { MatchText } from './SidebarSearch';
 import CommandPalette from './CommandPalette';
+import VersionBadge from './VersionBadge';
 import {
   ALIASES,
   COMPONENT_GROUPS,
@@ -132,18 +133,23 @@ const sidebar = css`
   }
 `;
 
-const brand = css`
+/* 品牌行：品牌字标 + 版本徽标（VersionBadge，链接 Changelog）。 */
+const brandRow = css`
   display: flex;
   align-items: center;
+  gap: var(--haze-space-2);
   height: 56px;
   padding: 0 var(--haze-space-4);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--haze-color-border);
+`;
+
+const brand = css`
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-lg);
   font-weight: var(--haze-weight-bold);
   color: var(--haze-color-primary);
   text-decoration: none;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--haze-color-border);
 `;
 
 const navArea = css`
@@ -673,9 +679,12 @@ export default function Layout() {
       </header>
       <div className={body}>
         <aside className={sidebar}>
-          <PrefetchLink className={brand} to='/'>
-            Haze UI
-          </PrefetchLink>
+          <div className={brandRow}>
+            <PrefetchLink className={brand} to='/'>
+              Haze UI
+            </PrefetchLink>
+            <VersionBadge />
+          </div>
           <nav className={navArea}>
             <SidebarNav search={search} onSearchChange={setSearch} />
           </nav>
@@ -686,9 +695,12 @@ export default function Layout() {
       </div>
       <Drawer open={drawerOpenCtrl} placement='left' onClose={closeDrawer}>
         <div className={drawerBody}>
-          <PrefetchLink className={brand} to='/' onClick={closeDrawer}>
-            Haze UI
-          </PrefetchLink>
+          <div className={brandRow}>
+            <PrefetchLink className={brand} to='/' onClick={closeDrawer}>
+              Haze UI
+            </PrefetchLink>
+            <VersionBadge onClick={closeDrawer} />
+          </div>
           <nav className={navArea}>
             <SidebarNav
               search={search}

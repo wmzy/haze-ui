@@ -57,13 +57,13 @@ const WORKSPACES: WorkspaceRow[] = [
 ];
 
 const planBadge = (plan: Plan) => {
-  const variant = plan === 'enterprise' ? 'success' : plan === 'pro' ? 'info' : 'default';
-  return <Badge variant={variant}>{plan}</Badge>;
+  const color = plan === 'enterprise' ? 'success' : plan === 'pro' ? 'info' : 'default';
+  return <Badge color={color}>{plan}</Badge>;
 };
 
 const statusBadge = (status: WorkspaceStatus) => {
-  const variant = status === 'healthy' ? 'success' : status === 'trial' ? 'default' : 'warning';
-  return <Badge variant={variant}>{status}</Badge>;
+  const color = status === 'healthy' ? 'success' : status === 'trial' ? 'default' : 'warning';
+  return <Badge color={color}>{status}</Badge>;
 };
 
 const columns: DataTableColumnDef<WorkspaceRow>[] = [
@@ -141,7 +141,7 @@ export default function DashboardBlock() {
               <Option value='lumen'>lumen-studio</Option>
               <Option value='ferrite'>ferrite-labs</Option>
             </Select>
-            <Badge variant='info'>ND</Badge>
+            <Badge color='info'>ND</Badge>
           </div>
         }
         sidebar={<DashboardSidebar />}

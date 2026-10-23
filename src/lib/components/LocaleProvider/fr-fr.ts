@@ -167,6 +167,10 @@ const frFR: HazeStrings = {
     reset: 'Réinitialiser',
     rotate: 'Pivoter',
     close: 'Fermer',
+    prevImage: 'Image précédente',
+    nextImage: 'Image suivante',
+    counter: '{current} / {total}',
+    thumbnail: 'Voir l’image {index} sur {total} : {alt}',
   },
   inlineEdit: {
     placeholder: 'Cliquer pour modifier',
@@ -211,6 +215,11 @@ const frFR: HazeStrings = {
     label: 'Mot de passe',
     show: 'Afficher le mot de passe',
     hide: 'Masquer le mot de passe',
+  },
+  phoneInput: {
+    placeholder: 'Numéro de téléphone',
+    countryLabel: 'Pays/région',
+    invalid: 'Numéro de téléphone non valide',
   },
   progress: {
     label: 'Progression',

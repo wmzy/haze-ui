@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { DialogHandle } from './Dialog';
 
 import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
@@ -239,6 +241,137 @@ describe('Dialog', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Dialog keepMounted', () => {
+  function Harness({ keepMounted = true, children }: { keepMounted?: boolean; children?: ReactNode }) {
+    const [, setOpen, openCtrl] = useControl(undefined, false);
+    return (
+      <>
+        <button onClick={() => setOpen(true)}>Open dialog</button>
+        <Dialog open={openCtrl} keepMounted={keepMounted}>
+          {children ?? <p>Dialog body</p>}
+        </Dialog>
+      </>
+    );
+  }
+
+  it('renders dormant (hidden + inert) from the first frame when it starts closed', () => {
+    render(<Harness />);
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog', {
+      hidden: true,
+    });
+    // 未开过：内容常驻但立即休眠（不闪现未隐藏的关闭帧）
+    expect(screen.getByText('Dialog body')).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('data-state', 'closed');
+    expect(dialog).toHaveAttribute('hidden');
+    expect(dialog).toHaveAttribute('inert');
+  });
+
+  it('applies hidden + inert after the exit settles and drops them on reopen', async () => {
+    render(<Harness />);
+    const opener = screen.getByText('Open dialog');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(dialog).toHaveAttribute('open'));
+    expect(dialog).not.toHaveAttribute('hidden');
+
+    // backdrop 点击路径：data-state 先翻 closed，退场 settle 后 el.close()
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    expect(dialog).toHaveAttribute('data-state', 'closed');
+    // 退场动画播放中：open 属性仍在，hidden 尚未挂上（display:none 会掐断动画）
+    expect(dialog).toHaveAttribute('open');
+    expect(dialog).not.toHaveAttribute('hidden');
+
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    // settle 后休眠：常驻 + hidden + inert（排除出 AT 树与 Tab 序）
+    expect(screen.getByText('Dialog body')).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('data-state', 'closed');
+    expect(dialog).toHaveAttribute('hidden');
+    expect(dialog).toHaveAttribute('inert');
+
+    act(() => {
+      fireEvent.click(opener);
+    });
+    await waitFor(() => expect(dialog).toHaveAttribute('open'));
+    expect(dialog).toHaveAttribute('data-state', 'open');
+    expect(dialog).not.toHaveAttribute('hidden');
+    expect(dialog).not.toHaveAttribute('inert');
+  });
+
+  it('keeps draft input content across close and reopen', async () => {
+    render(
+      <Harness>
+        <label>
+          Draft
+          <input data-testid='draft' />
+        </label>
+      </Harness>
+    );
+    const opener = screen.getByText('Open dialog');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const input = screen.getByTestId('draft');
+    fireEvent.change(input, { target: { value: 'half-written' } });
+
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    await waitFor(() => expect(dialog).toHaveAttribute('hidden'));
+    expect(screen.getByTestId('draft')).toHaveValue('half-written');
+
+    act(() => {
+      fireEvent.click(opener);
+    });
+    await waitFor(() => expect(dialog).not.toHaveAttribute('hidden'));
+    expect(screen.getByTestId('draft')).toHaveValue('half-written');
+  });
+
+  it('restores focus to the opener and leaves it outside the dormant panel', async () => {
+    render(<Harness />);
+    const opener = screen.getByText('Open dialog');
+    opener.focus();
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(dialog).toHaveAttribute('open'));
+
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    await waitFor(() => expect(dialog).toHaveAttribute('hidden'));
+    // 关闭后焦点归还 opener（scope 随 open 停用，休眠面板 inert 不再参与
+    // Tab 序），不会困在已关闭的内容里
+    expect(opener).toHaveFocus();
+    expect(dialog).toHaveAttribute('inert');
+    expect(document.activeElement).not.toBe(dialog);
+  });
+
+  it('default (no keepMounted): the closed panel never carries hidden or inert', async () => {
+    render(<Harness keepMounted={false} />);
+    const opener = screen.getByText('Open dialog');
+    act(() => {
+      fireEvent.click(opener);
+    });
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    await waitFor(() => expect(dialog).toHaveAttribute('open'));
+
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    // 未开 keepMounted：渲染输出与既有行为逐字节一致（dialog 常驻但由 UA
+    // 对非 open dialog 的 display:none 隐藏，不额外挂属性）
+    expect(dialog).not.toHaveAttribute('hidden');
+    expect(dialog).not.toHaveAttribute('inert');
   });
 });
 

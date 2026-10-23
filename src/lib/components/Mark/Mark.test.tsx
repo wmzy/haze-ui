@@ -9,18 +9,20 @@ describe('Mark', () => {
     expect(el.tagName).toBe('MARK');
   });
 
-  it('defaults to the warning tone and supports the status tones', () => {
+  it('defaults to the warning color and supports the semantic colors', () => {
     render(
       <>
         <Mark>w</Mark>
+        <Mark color='default'>n</Mark>
         <Mark color='primary'>p</Mark>
         <Mark color='success'>s</Mark>
         <Mark color='danger'>d</Mark>
+        <Mark color='info'>i</Mark>
       </>
     );
-    // each tone maps to a distinct skin class (classes are extracted
+    // each color maps to a distinct skin class (classes are extracted
     // names in tests — presence, not visuals, is the contract)
-    for (const text of ['w', 'p', 's', 'd']) {
+    for (const text of ['w', 'n', 'p', 's', 'd', 'i']) {
       expect(screen.getByText(text).className).toContain('haze-');
     }
   });

@@ -167,6 +167,10 @@ const ruRU: HazeStrings = {
     reset: 'Сбросить',
     rotate: 'Повернуть',
     close: 'Закрыть',
+    prevImage: 'Предыдущее изображение',
+    nextImage: 'Следующее изображение',
+    counter: '{current} / {total}',
+    thumbnail: 'Просмотр изображения {index} из {total}: {alt}',
   },
   inlineEdit: {
     placeholder: 'Нажмите, чтобы изменить',
@@ -211,6 +215,11 @@ const ruRU: HazeStrings = {
     label: 'Пароль',
     show: 'Показать пароль',
     hide: 'Скрыть пароль',
+  },
+  phoneInput: {
+    placeholder: 'Номер телефона',
+    countryLabel: 'Страна/регион',
+    invalid: 'Недействительный номер телефона',
   },
   progress: {
     label: 'Прогресс',

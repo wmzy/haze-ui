@@ -284,10 +284,10 @@ mountPage(
     <section data-snap="badge" className={section}>
       <div className={row}>
         <Badge>Default</Badge>
-        <Badge variant="info">Info</Badge>
-        <Badge variant="success">Success</Badge>
-        <Badge variant="warning">Warning</Badge>
-        <Badge variant="danger">Danger</Badge>
+        <Badge color="info">Info</Badge>
+        <Badge color="success">Success</Badge>
+        <Badge color="warning">Warning</Badge>
+        <Badge color="danger">Danger</Badge>
       </div>
     </section>
 
@@ -301,9 +301,9 @@ mountPage(
     <section data-snap="tag" className={section}>
       <div className={row}>
         <Tag>design-tokens</Tag>
-        <Tag variant="primary">oklch</Tag>
-        <Tag variant="success">passing</Tag>
-        <Tag variant="danger" closable>
+        <Tag color="primary">oklch</Tag>
+        <Tag color="success">passing</Tag>
+        <Tag color="danger" closable>
           flaky
         </Tag>
       </div>
@@ -589,8 +589,8 @@ mountPage(
         <div className={row}>
           <Button variant="solid">Solid</Button>
           <Button variant="outline">Outline</Button>
-          <Badge variant="success">Passing</Badge>
-          <Badge variant="danger">Failing</Badge>
+          <Badge color="success">Passing</Badge>
+          <Badge color="danger">Failing</Badge>
         </div>
       </section>
     </div>

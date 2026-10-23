@@ -1,27 +1,32 @@
 import type {
+  KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+
+import type { GalleryImage } from './ImageGalleryContext';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider/useStrings';
+import { formatString } from '../LocaleProvider/locale';
 import { useFocusScope } from '../../utils/focus-scope';
 import { whenExitSettles } from '../../utils/presence';
 
 /**
- * Fullscreen preview overlay for Image (`preview` prop). Internal part —
- * not exported from the directory barrel: it has no standalone use, every
- * knob rides on Image's `preview` config.
+ * Fullscreen preview overlay for Image (`preview` prop) and for
+ * ImagePreviewGroup's shared gallery. Internal part — not exported from
+ * the directory barrel: it has no standalone use, every knob rides on
+ * Image's `preview` config or the group's.
  *
  * Rendered as a native `<dialog>` driven by `showModal()`: top layer for
  * free, implicit `role="dialog"` + modal semantics, native Esc handling
  * (intercepted via `cancel` so every exit runs through the same animated
- * path as Dialog.tsx). The shared `open` control comes from Image so the
- * thumbnail's click can drive it.
+ * path as Dialog.tsx). The shared `open` control comes from the parent
+ * (Image or the group) so the thumbnail's click can drive it.
  */
 
 const SCALE_MIN = 0.25;
@@ -42,6 +47,19 @@ type ImagePreviewProps = {
   zoom?: boolean;
   /** The rotate control is available (default true). */
   rotate?: boolean;
+  /**
+   * Gallery entries, handed over by ImagePreviewGroup. Two or more
+   * switch the overlay into gallery mode: prev/next arrows flanking the
+   * image, an `n / total` counter in the toolbar, ArrowLeft/ArrowRight
+   * keys (wrap-around at both ends) and — unless `showThumbnails` is
+   * false — a keyboard-focusable thumbnail strip that stays in sync
+   * with the active entry.
+   */
+  images?: readonly GalleryImage[];
+  /** Active gallery entry, shared with the group (defaults to 0). */
+  index?: ControlOrValue<number>;
+  /** The thumbnail strip is rendered in gallery mode (default true). */
+  showThumbnails?: boolean;
 };
 
 const overlay = css`
@@ -196,6 +214,109 @@ const toolButton = css`
   }
 `;
 
+/* Flanking prev/next arrows (gallery mode), vertically centered at the
+   viewport edges — absolutely positioned so they never join the flex
+   centering that places the image. */
+const navButton = css`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--haze-space-10);
+  height: var(--haze-space-10);
+  padding: 0;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-full);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  cursor: pointer;
+
+  & svg {
+    width: var(--haze-space-5);
+    height: var(--haze-space-5);
+  }
+
+  &:hover {
+    background: var(--haze-color-bg-muted);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+const navPrev = css`
+  left: var(--haze-space-4);
+`;
+
+const navNext = css`
+  right: var(--haze-space-4);
+`;
+
+/* The n / total readout riding in the toolbar between the tools and
+   the close button. */
+const counter = css`
+  min-width: var(--haze-space-12);
+  padding-inline: var(--haze-space-2);
+  text-align: center;
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text-secondary);
+`;
+
+/* Bottom thumbnail strip (gallery mode): fit-content and centered like
+   the toolbar, scrolling horizontally when the entries overflow. */
+const thumbnailStrip = css`
+  position: absolute;
+  bottom: var(--haze-space-4);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
+  max-width: 90%;
+  display: flex;
+  align-items: center;
+  gap: var(--haze-space-2);
+  padding: var(--haze-space-2);
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-lg);
+  background: var(--haze-color-bg);
+  box-shadow: var(--haze-shadow-lg);
+  overflow-x: auto;
+`;
+
+const thumbnailButton = css`
+  display: block;
+  flex-shrink: 0;
+  width: var(--haze-space-16);
+  height: var(--haze-space-16);
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg-muted);
+  overflow: hidden;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+const thumbnailActive = css`
+  border-color: var(--haze-color-primary);
+`;
+
+const thumbnailImg = css`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
 const ZoomInIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -260,6 +381,36 @@ const CloseIcon = () => (
   </svg>
 );
 
+const ChevronLeftIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
 type DragState = {
   pointerId: number;
   startX: number;
@@ -274,13 +425,27 @@ export default function ImagePreview({
   open: openControl,
   zoom = true,
   rotate = true,
+  images,
+  index: indexControl,
+  showThumbnails = true,
 }: ImagePreviewProps) {
   const [open, setOpen] = useControl(openControl, false);
+  const [index, setIndex] = useControl(indexControl, 0);
   const strings = useStrings('image');
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+
+  // Gallery mode kicks in at two entries: with fewer there is nothing to
+  // navigate and the overlay stays in its single-image shape.
+  const galleryImages = images !== undefined && images.length > 0 ? images : null;
+  const total = galleryImages?.length ?? 1;
+  const galleryMode = total > 1;
+  // Clamped for display: a controlled index (or entries shrinking while
+  // the overlay is open) can point past the end.
+  const activeIndex = Math.min(Math.max(index, 0), total - 1);
+  const active: GalleryImage = galleryImages?.[activeIndex] ?? { src, alt };
 
   const internalRef = useRef<HTMLDialogElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -380,11 +545,37 @@ export default function ImagePreview({
     setOffset({ x: 0, y: 0 });
   };
 
+  /** Single funnel for every gallery navigation path. */
+  const goToImage = (next: number) => {
+    // Wrap-around at both ends: any offset lands inside 0..total-1.
+    setIndex(((next % total) + total) % total);
+    // The new image starts from the untouched transform (the same reset
+    // the close funnel performs) — index and transform must commit in
+    // one render, or the transition below animates the old pan/zoom
+    // collapsing onto the new image.
+    resetTransform();
+  };
+
+  // ArrowLeft/ArrowRight while the overlay is open. The dialog only
+  // receives keys while open (the UA sheet hides it otherwise), and the
+  // handler rides the dialog element so it works wherever focus sits
+  // inside — toolbar, arrows or thumbnail strip.
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDialogElement>) => {
+    if (!galleryMode) return;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goToImage(activeIndex - 1);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goToImage(activeIndex + 1);
+    }
+  };
+
   return (
     <dialog
       data-slot="image-preview"
       ref={setDialogRef}
-      aria-label={alt}
+      aria-label={active.alt}
       data-state={open ? 'open' : 'closed'}
       className={overlay}
       onCancel={(event) => {
@@ -404,6 +595,7 @@ export default function ImagePreview({
         setOffset({ x: 0, y: 0 });
       }}
       onClick={handleDialogClick}
+      onKeyDown={handleKeyDown}
     >
       <img
         data-slot="img"
@@ -412,8 +604,8 @@ export default function ImagePreview({
           zoom && (dragging ? imgPanning : imgPannable),
           !dragging && imgAnimated,
         ]}
-        src={src}
-        alt={alt}
+        src={active.src}
+        alt={active.alt}
         draggable={false}
         style={{
           transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale}) rotate(${rotation}deg)`,
@@ -423,6 +615,28 @@ export default function ImagePreview({
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       />
+      {galleryMode && (
+        <button
+          data-slot="prev-button"
+          type="button"
+          x-class={[navButton, navPrev]}
+          aria-label={strings.prevImage}
+          onClick={() => goToImage(activeIndex - 1)}
+        >
+          <ChevronLeftIcon />
+        </button>
+      )}
+      {galleryMode && (
+        <button
+          data-slot="next-button"
+          type="button"
+          x-class={[navButton, navNext]}
+          aria-label={strings.nextImage}
+          onClick={() => goToImage(activeIndex + 1)}
+        >
+          <ChevronRightIcon />
+        </button>
+      )}
       <div data-slot="toolbar" className={toolbar}>
         {zoom && (
           <>
@@ -468,6 +682,14 @@ export default function ImagePreview({
             <RotateIcon />
           </button>
         )}
+        {galleryMode && (
+          <span data-slot="counter" className={counter}>
+            {formatString(strings.counter, {
+              current: activeIndex + 1,
+              total,
+            })}
+          </span>
+        )}
         <button
           ref={closeRef}
           data-slot="close"
@@ -479,6 +701,32 @@ export default function ImagePreview({
           <CloseIcon />
         </button>
       </div>
+      {galleryImages !== null && total > 1 && showThumbnails && (
+        <div data-slot="thumbnails" className={thumbnailStrip}>
+          {galleryImages.map((image, i) => (
+            <button
+              key={`${image.src}-${i}`}
+              data-slot="thumbnail"
+              type="button"
+              x-class={[thumbnailButton, i === activeIndex && thumbnailActive]}
+              aria-label={formatString(strings.thumbnail, {
+                index: i + 1,
+                total,
+                alt: image.alt,
+              })}
+              aria-current={i === activeIndex ? 'true' : undefined}
+              onClick={() => goToImage(i)}
+            >
+              <img
+                src={image.src}
+                alt=""
+                className={thumbnailImg}
+                draggable={false}
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </dialog>
   );
 }

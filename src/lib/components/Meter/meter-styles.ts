@@ -9,10 +9,10 @@ import {css} from '@linaria/core';
  *
  * ## Threshold coloring
  *
- * The resolved tone rides a `data-tone` attribute on the root, track
- * and bar; the track washes with the tone's `-subtle` token while the
- * bar inks the full tone — attribute selectors (not per-tone classes)
- * so consumers can retarget bands with plain `[data-tone]` CSS.
+ * The resolved color rides a `data-color` attribute on the root, track
+ * and bar; the track washes with the color's `-subtle` token while the
+ * bar inks the full color — attribute selectors (not per-color classes)
+ * so consumers can retarget bands with plain `[data-color]` CSS.
  */
 
 export const root = css`
@@ -45,18 +45,22 @@ export const track = css`
   border-radius: var(--haze-radius-full);
   overflow: hidden;
 
-  /* The threshold band's tone washes the track (subtle variant); the
+  /* The threshold band's color washes the track (subtle variant); the
    * default (no band matched) keeps the neutral muted track. */
-  &[data-tone='success'] {
+  &[data-color='success'] {
     background: var(--haze-color-success-subtle);
   }
 
-  &[data-tone='warning'] {
+  &[data-color='warning'] {
     background: var(--haze-color-warning-subtle);
   }
 
-  &[data-tone='danger'] {
+  &[data-color='danger'] {
     background: var(--haze-color-danger-subtle);
+  }
+
+  &[data-color='info'] {
+    background: var(--haze-color-info-subtle);
   }
 
   /* Forced-colors: every fill color flattens onto Canvas — the meter
@@ -84,15 +88,23 @@ export const bar = css`
   transition: width var(--haze-duration-slow) ease;
   background: var(--haze-color-primary);
 
-  &[data-tone='success'] {
+  &[data-color='default'] {
+    background: var(--haze-color-text-secondary);
+  }
+
+  &[data-color='success'] {
     background: var(--haze-color-success);
   }
 
-  &[data-tone='warning'] {
+  &[data-color='warning'] {
     background: var(--haze-color-warning);
   }
 
-  &[data-tone='danger'] {
+  &[data-color='danger'] {
     background: var(--haze-color-danger);
+  }
+
+  &[data-color='info'] {
+    background: var(--haze-color-info);
   }
 `;

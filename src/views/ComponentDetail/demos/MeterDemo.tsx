@@ -18,7 +18,7 @@ export default function MeterDemo() {
         挂在根元素上，带 <code>aria-valuenow/min/max</code>。<code>value</code>{' '}
         按 <code>min</code>/<code>max</code> 归一成条宽；<code>thresholds</code>{' '}
         阈值段决定 track/bar 颜色——值越过某个 <code>at</code> 边界，仪表就换上该段的
-        tone（track 洗该色的 subtle 底、bar 实色）。
+        color（track 洗该色的 subtle 底、bar 实色）。
       </p>
 
       <div className={section}>
@@ -33,9 +33,9 @@ export default function MeterDemo() {
       <div className={section}>
         <h2>Thresholds</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--haze-space-3)', maxWidth: 400 }}>
-          <Meter value={42} label="Bandwidth" showValue thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]} />
-          <Meter value={72} label="Bandwidth" showValue thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]} />
-          <Meter value={93} label="Bandwidth" showValue thresholds={[{ at: 60, tone: 'warning' }, { at: 85, tone: 'danger' }]} />
+          <Meter value={42} label="Bandwidth" showValue thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]} />
+          <Meter value={72} label="Bandwidth" showValue thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]} />
+          <Meter value={93} label="Bandwidth" showValue thresholds={[{ at: 60, color: 'warning' }, { at: 85, color: 'danger' }]} />
         </div>
       </div>
 

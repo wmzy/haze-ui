@@ -1,5 +1,5 @@
 // tokens
-export { lightTheme, darkTheme } from './tokens/colors';
+export { lightTheme, darkTheme, autoTheme } from './tokens/colors';
 export { violetTheme, tealTheme, cyanTheme, orangeTheme, roseTheme } from './tokens/brands';
 export type { BrandTheme } from './tokens/brands';
 export { createBrandTheme, BRAND_FAMILIES, BRAND_SEEDS, buildBrandTheme } from './tokens/palette';
@@ -100,6 +100,8 @@ export { Icon } from './components/Icon';
 export type { IconProps } from './components/Icon';
 export { Image } from './components/Image';
 export type { ImageProps, ImagePreviewConfig } from './components/Image';
+export { ImagePreviewGroup } from './components/Image';
+export type { ImagePreviewGroupProps } from './components/Image';
 export { Flex } from './components/Flex';
 export type { FlexProps } from './components/Flex';
 export { Breadcrumb, BreadcrumbItem } from './components/Breadcrumb';
@@ -137,7 +139,7 @@ export type {
   TableCellProps,
 } from './components/Table';
 export { Carousel, CarouselSlide } from './components/Carousel';
-export type { CarouselProps, CarouselSlideProps } from './components/Carousel';
+export type { CarouselProps, CarouselSlideProps, CarouselHandle } from './components/Carousel';
 export { Datepicker, DatepickerCore } from './components/Datepicker';
 export type { DatepickerProps, DatepickerCoreProps, DatepickerPreset } from './components/Datepicker';
 export { DateField, DateFieldCore } from './components/DateField';
@@ -210,8 +212,14 @@ export { Segmented, SegmentedCore } from './components/Segmented';
 export type { SegmentedProps, SegmentedCoreProps } from './components/Segmented';
 export { Chip, chipVariants } from './components/Chip';
 export type { ChipProps } from './components/Chip';
-export { ScrollArea } from './components/ScrollArea';
-export type { ScrollAreaProps } from './components/ScrollArea';
+export { ScrollArea, Scrollbar, ScrollThumb, ScrollViewport } from './components/ScrollArea';
+export type {
+  ScrollAreaProps,
+  ScrollbarMode,
+  ScrollbarProps,
+  ScrollThumbProps,
+  ScrollViewportProps,
+} from './components/ScrollArea';
 export { TimePicker, TimePickerCore } from './components/TimePicker';
 export type { TimePickerProps, TimePickerCoreProps, TimeParts, TimePickerFormat } from './components/TimePicker';
 export { TimeField, TimeFieldCore } from './components/TimeField';
@@ -220,8 +228,12 @@ export { DateRangePicker, DateRangePickerCore } from './components/DateRangePick
 export type { DateRangePickerProps, DateRangePickerCoreProps, DateRangePickerPreset, DateRangePickerPresets } from './components/DateRangePicker';
 export { OTPInput, OTPInputCore } from './components/OTPInput';
 export type { OTPInputProps, OTPInputCoreProps } from './components/OTPInput';
+export { MaskedInput, MaskedInputCore, unmask } from './components/MaskedInput';
+export type { MaskedInputProps, MaskedInputCoreProps } from './components/MaskedInput';
 export { PasswordInput, PasswordInputCore } from './components/PasswordInput';
 export type { PasswordInputProps, PasswordInputCoreProps } from './components/PasswordInput';
+export { PhoneInput, isValidPhone } from './components/PhoneInput';
+export type { PhoneInputProps } from './components/PhoneInput';
 export { TagInput, TagInputCore, SortableTagInput, SortableTagInputCore } from './components/TagInput';
 export type { TagInputProps, TagInputCoreProps, SortableTagInputProps, SortableTagInputCoreProps } from './components/TagInput';
 export { Mentions, MentionsCore } from './components/Mentions';

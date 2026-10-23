@@ -1,0 +1,12 @@
+[
+  {
+    "path": "scripts/generate-llms.mjs",
+    "action": "replace",
+    "anchor": {
+      "old": "    'component prop-default overrides (Button size, Toast duration/placement, Tooltip delay, HoverCard open/close delay) read via `useConfigDefaults()`; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',",
+      "new": "    'per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',"
+    },
+    "content": [],
+    "note": "llms ConfigProvider description: the old text enumerated four hand-written sections; the mechanism is now a registration record covering every wired component (Input/Textarea/NumberInput/Datepicker/TimePicker/Menu/Pagination/Table added) plus the new density prop."
+  }
+]

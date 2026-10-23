@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -45,6 +46,12 @@ describe('Chip', () => {
     expect(screen.getByText('Outlined')).toBeInTheDocument();
   });
 
+  it('forwards the ref onto the root span', () => {
+    const ref = createRef<HTMLSpanElement>();
+    render(<Chip ref={ref}>Simple</Chip>);
+    expect(ref.current).toBe(screen.getByText('Simple'));
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(
@@ -72,6 +79,7 @@ describe('chipVariants exports', () => {
         'success',
         'warning',
         'danger',
+        'info',
       ]);
       for (const cls of Object.values(colorMap)) {
         expect(cls).toBeTruthy();
@@ -80,7 +88,7 @@ describe('chipVariants exports', () => {
   });
 
   it('is the exact class Chip wears', () => {
-    render(<Chip variant="outline" color="danger">Skin</Chip>);
-    expect(screen.getByText('Skin')).toHaveClass(chipVariants.outline.danger);
+    render(<Chip variant="outline" color="info">Skin</Chip>);
+    expect(screen.getByText('Skin')).toHaveClass(chipVariants.outline.info);
   });
 });

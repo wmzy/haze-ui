@@ -1,10 +1,16 @@
 import type { ComponentProps } from 'react';
 
+import type { CarouselHandle } from './Carousel';
+
+import { createRef } from 'react';
+
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import Carousel from './Carousel';
+
+
 import CarouselSlide from './CarouselSlide';
 
 // jsdom does not implement scrollIntoView; the stub is kept in a
@@ -536,6 +542,69 @@ describe('Carousel fade effect', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('Carousel imperative handle', () => {
+  it('steps with next/prev and wraps around', () => {
+    const ref = createRef<CarouselHandle>();
+    render(<ProbeCarousel ref={ref} />);
+    act(() => ref.current?.next());
+    expect(slideOf()).toHaveTextContent('1');
+    act(() => ref.current?.next());
+    expect(slideOf()).toHaveTextContent('2');
+    act(() => ref.current?.next());
+    expect(slideOf()).toHaveTextContent('0'); // 循环过尾
+    act(() => ref.current?.prev());
+    expect(slideOf()).toHaveTextContent('2'); // 循环回头
+  });
+
+  it('scrollTo drives the same value path as the dots and scrolls the slide into view', () => {
+    const ref = createRef<CarouselHandle>();
+    render(<ProbeCarousel ref={ref} />);
+    const track = trackOf();
+    const spy = vi.spyOn(track.children[2] as HTMLElement, 'scrollIntoView');
+    act(() => ref.current?.scrollTo(2));
+    expect(slideOf()).toHaveTextContent('2');
+    // 与箭头/圆点同一条 effect 路径：滚动由 value effect 执行
+    expect(spy).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    });
+  });
+
+  it('clamps scrollTo into the slide range and floors fractions', () => {
+    const ref = createRef<CarouselHandle>();
+    render(<ProbeCarousel ref={ref} />);
+    act(() => ref.current?.scrollTo(99));
+    expect(slideOf()).toHaveTextContent('2');
+    act(() => ref.current?.scrollTo(-3));
+    expect(slideOf()).toHaveTextContent('0');
+    act(() => ref.current?.scrollTo(1.9));
+    expect(slideOf()).toHaveTextContent('1');
+  });
+
+  it('switches fade slides without going through the scroll API', () => {
+    const ref = createRef<CarouselHandle>();
+    render(<ProbeCarousel ref={ref} effect="fade" />);
+    act(() => ref.current?.next());
+    expect(slideOf()).toHaveTextContent('1');
+    const slides = screen.getAllByRole('group', { hidden: true });
+    expect(slides[1]).toHaveAttribute('data-active');
+    expect(slides[0]).toHaveAttribute('inert');
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op on an empty carousel (no NaN slide index)', () => {
+    const ref = createRef<CarouselHandle>();
+    render(<Carousel ref={ref}>{null}</Carousel>);
+    act(() => {
+      ref.current?.next();
+      ref.current?.prev();
+      ref.current?.scrollTo(2);
+    });
+    expect(regionOf()).toBeInTheDocument();
   });
 });
 

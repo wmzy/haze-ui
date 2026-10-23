@@ -3,6 +3,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import type { VirtualListHandle } from '../VirtualList';
 
+import type { ComboboxOptionData } from './combobox-options';
+
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
@@ -18,6 +20,7 @@ import { VirtualList } from '../VirtualList';
 
 import ComboboxGroup from './ComboboxGroup';
 import ComboboxOption from './ComboboxOption';
+import { extractComboboxOptions } from './combobox-options';
 
 /** Metrics override for the `virtualized` option list of Combobox. */
 type ComboboxVirtualizedConfig = {
@@ -32,20 +35,6 @@ type ComboboxVirtualizedConfig = {
   /** Extra rows kept mounted above/below the visible window. Defaults
    * to VirtualList's 5. */
   overscan?: number;
-};
-
-/** One entry of the `options` prop. */
-type ComboboxOptionData<T extends string | number = string> = {
-  value: T;
-  label: string;
-  /**
-   * Optional group heading: consecutive options carrying the same
-   * `group` cluster into one `ComboboxGroup` section (sticky heading,
-   * `role="group"` — the cmdk shape); options without a `group` stay
-   * direct listbox children. A group whose every option was filtered
-   * out hides entirely.
-   */
-  group?: string;
 };
 
 /**
@@ -67,7 +56,20 @@ type ComboboxProps<T extends string | number = string> = {
    */
   value?: ControlOrValue<T | T[]>;
   open?: ControlOrValue<boolean>;
-  options: ComboboxOptionData<T>[];
+  /**
+   * Data-driven option entries (the Select `options` / Menu `items`
+   * precedent): `{value, label, disabled?, group?}` objects. Optional
+   * when compound children supply the rows — the two forms compose,
+   * with the data options rendering first and the children after.
+   */
+  options?: ComboboxOptionData<T>[];
+  /**
+   * Declarative compound children (the Select authoring form):
+   * `<ComboboxOption value>` rows, optionally inside
+   * `<ComboboxGroup label>` sections, flatten into the same option
+   * data the `options` prop takes — both forms behave identically.
+   */
+  children?: ReactNode;
   /**
    * Multiple-selection mode: selected values render as chips inside
    * the trigger, Enter toggles the highlighted option without closing
@@ -369,6 +371,7 @@ export default function Combobox<T extends string | number = string>({
   value: valueControl,
   open: openControl,
   options,
+  children,
   multiple = false,
   onValuesChange,
   creatable = false,
@@ -426,19 +429,27 @@ export default function Combobox<T extends string | number = string>({
   // compares against the string value directly.
   const selected = Array.isArray(value) ? value : [];
 
-  // Creatable appends live until unmount — `options` itself is never
-  // mutated (it is a controlled prop), and additions dedupe against it
-  // by value. Created values are the typed query (a string): for a
-  // non-string T the consumer receives it through `onCreate` and owns
-  // promoting it into `options`.
+  // The base option set: the data-driven `options` first, then the
+  // declarative compound children flattened into the same shape — one
+  // authoring pipeline, both forms composing (Select's contract).
+  const dataOptions = useMemo(
+    () => [...(options ?? []), ...extractComboboxOptions<T>(children)],
+    [options, children]
+  );
+
+  // Creatable appends live until unmount — the composed base is never
+  // mutated (it is controlled by the consumer), and additions dedupe
+  // against it by value. Created values are the typed query (a
+  // string): for a non-string T the consumer receives it through
+  // `onCreate` and owns promoting it into `options`.
   const effectiveOptions = useMemo(() => {
-    if (created.length === 0) return options;
-    const existing = new Set<unknown>(options.map((o) => o.value));
+    if (created.length === 0) return dataOptions;
+    const existing = new Set<unknown>(dataOptions.map((o) => o.value));
     const additions = created
       .filter((v) => !existing.has(v))
-      .map((v) => ({ value: v as T, label: v }));
-    return additions.length > 0 ? [...options, ...additions] : options;
-  }, [options, created]);
+      .map((v): ComboboxOptionData<T> => ({ value: v as T, label: v }));
+    return additions.length > 0 ? [...dataOptions, ...additions] : dataOptions;
+  }, [dataOptions, created]);
 
   // Remote mode (onSearch set) never filters locally — the visible
   // list is exactly the consumer's current options, refetched per
@@ -600,7 +611,9 @@ export default function Combobox<T extends string | number = string>({
   };
 
   // Click and Enter funnel through one path: the create row commits a
-  // creation; anything else selects/toggles the option.
+  // creation; a disabled option is inert (the same contract the click
+  // row's aria-disabled state promises); anything else
+  // selects/toggles the option.
   const handleSelect = (val: T) => {
     // The create row (when shown) leads the list and carries the raw
     // string query as its value.
@@ -608,6 +621,7 @@ export default function Combobox<T extends string | number = string>({
       commitCreate();
       return;
     }
+    if (effectiveOptions.find((o) => o.value === val)?.disabled) return;
     selectOption(val);
   };
 
@@ -654,6 +668,7 @@ export default function Combobox<T extends string | number = string>({
       key={o.value}
       ref={!virtual && i === highlightIndex ? activeRowRef : undefined}
       value={o.value}
+      disabled={o.disabled === true}
       id={optionId(i)}
       setSize={listItems.length}
       posInSet={i + 1}

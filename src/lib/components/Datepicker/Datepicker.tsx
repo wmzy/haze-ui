@@ -7,6 +7,8 @@ import type { DatepickerPreset } from './DatepickerCore';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import DatepickerCore from './DatepickerCore';
 
 type DatepickerProps = {
@@ -70,6 +72,11 @@ export default function Datepicker({
   const [value, setValue] = useControl(valueControl, '');
   const [open, setOpen] = useControl(openControl, false);
 
+  // Three tiers per wired prop: explicit prop → ConfigProvider
+  // `Datepicker` section → DatepickerCore's built-ins ('date',
+  // locale-derived week start). A missing provider stays byte-identical.
+  const config = useConfigDefaults('Datepicker');
+
   return (
     <DatepickerCore
       ref={ref}
@@ -77,7 +84,7 @@ export default function Datepicker({
       onChange={setValue}
       open={open}
       onOpenChange={setOpen}
-      picker={picker}
+      picker={picker ?? config.picker}
       min={min}
       max={max}
       disabledDate={disabledDate}
@@ -86,7 +93,7 @@ export default function Datepicker({
       format={format}
       parse={parse}
       locale={locale}
-      weekStartsOn={weekStartsOn}
+      weekStartsOn={weekStartsOn ?? config.weekStartsOn}
       cellRender={cellRender}
       placeholder={placeholder}
       className={className}

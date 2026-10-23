@@ -6,6 +6,7 @@ import type { HoverCardProps } from '../HoverCard/HoverCard';
 import { expect } from 'vitest';
 
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import { sizes as buttonSizes, squareSizes } from '../Button/styles';
@@ -13,12 +14,29 @@ import Button from '../Button/Button';
 // ButtonLink lives in the Button directory (exported through its barrel).
 import ButtonLink from '../Button/ButtonLink';
 import HoverCard from '../HoverCard/HoverCard';
+import Input from '../Input/Input';
+import { sizes as inputSizes } from '../Input/input-styles';
 import LocaleProvider from '../LocaleProvider/LocaleProvider';
+import Menu from '../Menu/Menu';
+import MenuItem from '../Menu/MenuItem';
+import NumberInput from '../NumberInput/NumberInput';
+import { inputSizes as numberInputSizes } from '../NumberInput/number-input-styles';
 import Pagination from '../Pagination/Pagination';
+import { sizes as paginationSizes } from '../Pagination/pagination-styles';
+import Table from '../Table/Table';
+import TableBody from '../Table/TableBody';
+import TableCell from '../Table/TableCell';
+import TableRow from '../Table/TableRow';
+import { borderedStyle, stripedStyle } from '../Table/table-styles';
+import Textarea from '../Textarea/Textarea';
+import { sizes as textareaSizes } from '../Textarea/textarea-styles';
 import ToastContainer, { toastPlacements } from '../Toast/ToastContainer';
 import useToast from '../Toast/useToast';
 import { toast } from '../Toast/toast-channel';
 import Tooltip from '../Tooltip/Tooltip';
+
+import { compact } from '../../tokens/density';
+import { spacing } from '../../tokens/spacing';
 
 import ConfigProvider from './ConfigProvider';
 
@@ -106,6 +124,19 @@ function withConfig(defaults: Parameters<typeof ConfigProvider>[0]['defaults']) 
     <ConfigProvider defaults={defaults}>
       <ToastContainer>{children}</ToastContainer>
     </ConfigProvider>
+  );
+}
+
+/** Minimal one-cell table — enough to reach the `<table>` element. */
+function TableFixture() {
+  return (
+    <Table>
+      <TableBody>
+        <TableRow>
+          <TableCell>Alice</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   );
 }
 
@@ -558,6 +589,223 @@ describe('ConfigProvider — nesting', () => {
   });
 });
 
+// ─── Adopter sections: field family, Menu, Table ────────────────────
+
+describe('ConfigProvider — Input / Textarea / NumberInput / Pagination size', () => {
+  it('applies each section to its own component', () => {
+    render(
+      <ConfigProvider
+        defaults={{
+          Input: { size: 'lg' },
+          Textarea: { size: 'sm' },
+          NumberInput: { size: 'lg' },
+          Pagination: { size: 'lg' },
+        }}
+      >
+        <Input aria-label='in' />
+        <Textarea aria-label='ta' />
+        <NumberInput aria-label='ni' />
+        <Pagination total={20} />
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('textbox', { name: 'in' })).toHaveClass(inputSizes.lg);
+    expect(screen.getByRole('textbox', { name: 'ta' })).toHaveClass(textareaSizes.sm);
+    // the number input's inner <input> carries the size class
+    expect(screen.getByRole('spinbutton', { name: 'ni' })).toHaveClass(
+      numberInputSizes.lg
+    );
+    expect(screen.getByRole('navigation')).toHaveClass(paginationSizes.lg);
+  });
+
+  it('lets explicit size props beat the config', () => {
+    render(
+      <ConfigProvider
+        defaults={{ Input: { size: 'lg' }, Pagination: { size: 'lg' } }}
+      >
+        <Input aria-label='in' size='sm' />
+        <Pagination total={20} size='sm' />
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('textbox', { name: 'in' })).toHaveClass(inputSizes.sm);
+    expect(screen.getByRole('textbox', { name: 'in' })).not.toHaveClass(
+      inputSizes.lg
+    );
+    expect(screen.getByRole('navigation')).toHaveClass(paginationSizes.sm);
+    expect(screen.getByRole('navigation')).not.toHaveClass(paginationSizes.lg);
+  });
+
+  it('keeps each component on md without a provider', () => {
+    render(
+      <>
+        <Input aria-label='in' />
+        <Textarea aria-label='ta' />
+        <NumberInput aria-label='ni' />
+        <Pagination total={20} />
+      </>
+    );
+    expect(screen.getByRole('textbox', { name: 'in' })).toHaveClass(inputSizes.md);
+    expect(screen.getByRole('textbox', { name: 'ta' })).toHaveClass(textareaSizes.md);
+    expect(screen.getByRole('spinbutton', { name: 'ni' })).toHaveClass(
+      numberInputSizes.md
+    );
+    // md is the built-in: neither step class is present
+    expect(screen.getByRole('navigation')).not.toHaveClass(paginationSizes.sm);
+    expect(screen.getByRole('navigation')).not.toHaveClass(paginationSizes.lg);
+  });
+});
+
+describe('ConfigProvider — NumberInput step', () => {
+  it('steps by the config value when the prop is omitted', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ NumberInput: { step: 5 } }}>
+        <NumberInput aria-label='ni' value={10} />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('button', { name: 'Increase' }));
+    expect(screen.getByRole('spinbutton', { name: 'ni' })).toHaveValue(15);
+  });
+
+  it('lets an explicit step prop beat the config', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConfigProvider defaults={{ NumberInput: { step: 5 } }}>
+        <NumberInput aria-label='ni' value={10} step={2} />
+      </ConfigProvider>
+    );
+    await user.click(screen.getByRole('button', { name: 'Increase' }));
+    expect(screen.getByRole('spinbutton', { name: 'ni' })).toHaveValue(12);
+  });
+});
+
+describe('ConfigProvider — Menu classNames', () => {
+  it('merges the section under the prop, per key', () => {
+    render(
+      <ConfigProvider
+        defaults={{
+          Menu: { classNames: { root: 'cfg-root', item: 'cfg-item' } },
+        }}
+      >
+        <Menu trigger={<button>Open</button>} classNames={{ item: 'prop-item' }}>
+          <MenuItem>Action</MenuItem>
+        </Menu>
+      </ConfigProvider>
+    );
+    // root slot comes from the provider only
+    expect(screen.getByRole('menu').parentElement).toHaveClass('cfg-root');
+    // item slot: the explicit prop key beats the provider's
+    const item = screen.getByRole('menuitem');
+    expect(item).toHaveClass('prop-item');
+    expect(item).not.toHaveClass('cfg-item');
+  });
+
+  it('applies the section alone when the prop is omitted', () => {
+    render(
+      <ConfigProvider defaults={{ Menu: { classNames: { item: 'cfg-item' } } }}>
+        <Menu trigger={<button>Open</button>}>
+          <MenuItem>Action</MenuItem>
+        </Menu>
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('menuitem')).toHaveClass('cfg-item');
+  });
+});
+
+describe('ConfigProvider — Table defaults and density', () => {
+  it('applies the config striped/bordered when the props are omitted', () => {
+    render(
+      <ConfigProvider defaults={{ Table: { striped: true, bordered: true } }}>
+        <TableFixture />
+      </ConfigProvider>
+    );
+    const table = screen.getByRole('table');
+    expect(table).toHaveClass(stripedStyle);
+    expect(table).toHaveClass(borderedStyle);
+  });
+
+  it('lets an explicit false prop beat a config true', () => {
+    render(
+      <ConfigProvider defaults={{ Table: { striped: true } }}>
+        <Table striped={false}>
+          <TableBody>
+            <TableRow>
+              <TableCell>Alice</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('table')).not.toHaveClass(stripedStyle);
+  });
+
+  it('re-declares the spacing scale for the table under density compact', () => {
+    render(
+      <ConfigProvider density='compact'>
+        <TableFixture />
+      </ConfigProvider>
+    );
+    // the compact island: spacing re-declares --haze-space-N at the
+    // table element and compact answers the density references
+    const table = screen.getByRole('table');
+    expect(table).toHaveClass(spacing);
+    expect(table).toHaveClass(compact);
+  });
+
+  it('adds no density classes under normal (the default)', () => {
+    render(
+      <ConfigProvider density='normal'>
+        <TableFixture />
+      </ConfigProvider>
+    );
+    const table = screen.getByRole('table');
+    expect(table).not.toHaveClass(spacing);
+    expect(table).not.toHaveClass(compact);
+  });
+
+  it('lets the innermost provider win the density knob', () => {
+    render(
+      <ConfigProvider density='compact'>
+        <TableFixture />
+        <ConfigProvider density='normal'>
+          <TableFixture />
+        </ConfigProvider>
+      </ConfigProvider>
+    );
+    const tables = screen.getAllByRole('table');
+    expect(tables[0]).toHaveClass(compact);
+    expect(tables[1]).not.toHaveClass(compact);
+  });
+
+  it('inherits the outer density through a provider that omits it', () => {
+    render(
+      <ConfigProvider density='compact'>
+        <ConfigProvider defaults={{ Button: { size: 'lg' } }}>
+          <TableFixture />
+        </ConfigProvider>
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('table')).toHaveClass(compact);
+  });
+});
+
+describe('ConfigProvider — nesting over the adopter sections', () => {
+  it('lets the inner provider override one section, keeping the rest', () => {
+    render(
+      <ConfigProvider defaults={{ Input: { size: 'lg' }, Pagination: { size: 'sm' } }}>
+        <Input aria-label='outer' />
+        <ConfigProvider defaults={{ Input: { size: 'sm' } }}>
+          <Input aria-label='inner' />
+        </ConfigProvider>
+        <Pagination total={20} />
+      </ConfigProvider>
+    );
+    expect(screen.getByRole('textbox', { name: 'outer' })).toHaveClass(inputSizes.lg);
+    expect(screen.getByRole('textbox', { name: 'inner' })).toHaveClass(inputSizes.sm);
+    // untouched by the inner provider → outer value stands
+    expect(screen.getByRole('navigation')).toHaveClass(paginationSizes.sm);
+  });
+});
+
 // ─── No provider: byte-identical regression guards ──────────────────
 
 describe('ConfigProvider — absent provider keeps built-in defaults', () => {
@@ -673,22 +921,27 @@ describe('ConfigProvider — a11y', () => {
     const { axe } = await import('jest-axe');
     render(
       <ConfigProvider
+        density='compact'
         defaults={{
           Button: { size: 'lg' },
           ButtonLink: { size: 'sm' },
+          Input: { size: 'lg' },
           Toast: { duration: 0, placement: 'top-left' },
           Tooltip: { delay: 300 },
           HoverCard: { openDelay: 300, closeDelay: 400 },
+          Table: { striped: true, bordered: true },
         }}
       >
         <Button>Save changes</Button>
         <ButtonLink href='/docs'>Docs</ButtonLink>
+        <Input aria-label='Name' />
         <Tooltip content='Helpful tip'>
           <button>Hover me</button>
         </Tooltip>
         <HoverCard content='Card preview' open>
           <button>Hover me too</button>
         </HoverCard>
+        <TableFixture />
         <ToastContainer>{null}</ToastContainer>
       </ConfigProvider>
     );

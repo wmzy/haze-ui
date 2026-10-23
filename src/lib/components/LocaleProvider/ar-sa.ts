@@ -174,6 +174,10 @@ const arSA: HazeStrings = {
     reset: 'إعادة تعيين',
     rotate: 'تدوير',
     close: 'إغلاق',
+    prevImage: 'الصورة السابقة',
+    nextImage: 'الصورة التالية',
+    counter: '{current} / {total}',
+    thumbnail: 'عرض الصورة {index} من {total}: {alt}',
   },
   inlineEdit: {
     placeholder: 'انقر للتحرير',
@@ -218,6 +222,11 @@ const arSA: HazeStrings = {
     label: 'كلمة المرور',
     show: 'إظهار كلمة المرور',
     hide: 'إخفاء كلمة المرور',
+  },
+  phoneInput: {
+    placeholder: 'رقم الهاتف',
+    countryLabel: 'البلد/المنطقة',
+    invalid: 'رقم هاتف غير صالح',
   },
   progress: {
     label: 'التقدم',

@@ -26,13 +26,14 @@ export default function BadgeDemo() {
       </p>
 
       <div className={section}>
-        <h2>Variants</h2>
+        <h2>Colors</h2>
         <div className={row}>
-          <Badge variant='default'>Default</Badge>
-          <Badge variant='success'>Success</Badge>
-          <Badge variant='warning'>Warning</Badge>
-          <Badge variant='danger'>Danger</Badge>
-          <Badge variant='info'>Info</Badge>
+          <Badge color='default'>Default</Badge>
+          <Badge color='primary'>Primary</Badge>
+          <Badge color='success'>Success</Badge>
+          <Badge color='warning'>Warning</Badge>
+          <Badge color='danger'>Danger</Badge>
+          <Badge color='info'>Info</Badge>
         </div>
       </div>
 
@@ -58,7 +59,7 @@ export default function BadgeDemo() {
           <code>Badge</code> wears — spread them onto any custom element
           (same shape and rationale as Button&apos;s{' '}
           <code>buttonVariants</code>). This span composes the{' '}
-          <code>info</code> variant with the <code>sm</code> size and one
+          <code>info</code> color with the <code>sm</code> size and one
           custom class on top.
         </p>
         <div className={row}>

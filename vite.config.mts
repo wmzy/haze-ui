@@ -24,13 +24,13 @@ const isDemoBuild = process.env.BUILD_DEMO === 'true';
 const isDocsApp = isDemoBuild || (!isLibBuild && !process.env.VITEST);
 
 // Lib entries: the root barrel plus every per-directory barrel that the
-// package's `exports` subpaths (./components/*, ./form, ./tokens) point
+// package's `exports` subpaths (./components/*, ./form, ./headless, ./locales, ./tokens) point
 // at. preserveModules tree-shakes re-export-only modules that are not
 // entries — without listing them, dist/components/*/index.js would not
 // exist and the subpaths would not resolve.
 const libEntries = [
   path.resolve(__dirname, 'src/lib/index.ts'),
-  ...['components', 'form', 'headless', 'tokens'].flatMap((group) =>
+  ...['components', 'form', 'headless', 'locales', 'tokens'].flatMap((group) =>
     readdirSync(path.resolve(__dirname, `src/lib/${group}`), {
       withFileTypes: true,
     })
@@ -164,6 +164,11 @@ const buildConfig = (() => {
           '@tiptap/extension-placeholder',
           '@tiptap/extension-link',
           '@tiptap/pm',
+          // regular dependency (PhoneInput's engine) — same rule:
+          // libphonenumber-js ships CJS, bundling it would leak a
+          // require() call into the pure-ESM dist (caught by the
+          // bare-node ESM contract test)
+          'libphonenumber-js',
         ],
         output: {
           preserveModules: true,

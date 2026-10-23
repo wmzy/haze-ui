@@ -281,6 +281,146 @@ describe('Presence', () => {
     expect(onExited).not.toHaveBeenCalled();
   });
 
+  it('keepMounted: stays mounted dormant (closed + hidden + inert) after the exit settles', async () => {
+    const onExited = vi.fn();
+    const {rerender} = render(
+      <Presence present keepMounted onExited={onExited}>
+        <div data-testid='child'>Content</div>
+      </Presence>
+    );
+    rerender(
+      <Presence present={false} keepMounted onExited={onExited}>
+        <div data-testid='child'>Content</div>
+      </Presence>
+    );
+    // Exit in flight: data-state flipped, but hidden must not apply yet —
+    // display:none would cut the exit animation short.
+    expect(screen.getByTestId('child')).toHaveAttribute('data-state', 'closed');
+    expect(screen.getByTestId('child')).not.toHaveAttribute('hidden');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('child')).toHaveAttribute('hidden')
+    );
+    const child = screen.getByTestId('child');
+    expect(child).toHaveAttribute('data-state', 'closed');
+    expect(child).toHaveAttribute('inert');
+    expect(onExited).toHaveBeenCalledOnce();
+  });
+
+  it('keepMounted: renders dormant from the first frame when never presented', () => {
+    const onExited = vi.fn();
+    render(
+      <Presence present={false} keepMounted onExited={onExited}>
+        <div data-testid='child'>Content</div>
+      </Presence>
+    );
+    // Never presented → nothing exited; dormant immediately, no flash of
+    // an un-hidden closed child and no spurious onExited.
+    const child = screen.getByTestId('child');
+    expect(child).toHaveAttribute('data-state', 'closed');
+    expect(child).toHaveAttribute('hidden');
+    expect(child).toHaveAttribute('inert');
+    expect(onExited).not.toHaveBeenCalled();
+  });
+
+  it('keepMounted: does not hide until the declared exit animation ends', async () => {
+    vi.useFakeTimers();
+    const child = <div data-testid='child'>Content</div>;
+    const {rerender} = render(
+      <Presence present keepMounted>
+        {child}
+      </Presence>
+    );
+    stubComputedFor(screen.getByTestId('child'), exitStyle());
+    rerender(
+      <Presence present={false} keepMounted>
+        {child}
+      </Presence>
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(32);
+    });
+    // Double frame passed, animation still running: mounted, un-hidden.
+    expect(screen.getByTestId('child')).toBeInTheDocument();
+    expect(screen.getByTestId('child')).not.toHaveAttribute('hidden');
+
+    act(() => {
+      screen.getByTestId('child').dispatchEvent(new Event('animationend'));
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('child')).toBeInTheDocument();
+    expect(screen.getByTestId('child')).toHaveAttribute('hidden');
+    expect(screen.getByTestId('child')).toHaveAttribute('inert');
+  });
+
+  it('keepMounted: re-presenting wakes the child and replays the enter state', async () => {
+    const onExited = vi.fn();
+    const child = <div data-testid='child'>Content</div>;
+    const {rerender} = render(
+      <Presence present keepMounted onExited={onExited}>
+        {child}
+      </Presence>
+    );
+    rerender(
+      <Presence present={false} keepMounted onExited={onExited}>
+        {child}
+      </Presence>
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('child')).toHaveAttribute('hidden')
+    );
+
+    rerender(
+      <Presence present keepMounted onExited={onExited}>
+        {child}
+      </Presence>
+    );
+    const woken = screen.getByTestId('child');
+    expect(woken).toHaveAttribute('data-state', 'open');
+    expect(woken).not.toHaveAttribute('hidden');
+    expect(woken).not.toHaveAttribute('inert');
+  });
+
+  it('keepMounted: dropping the flag while dormant unmounts the child', async () => {
+    const child = <div data-testid='child'>Content</div>;
+    const {rerender} = render(
+      <Presence present keepMounted>
+        {child}
+      </Presence>
+    );
+    rerender(
+      <Presence present={false} keepMounted>
+        {child}
+      </Presence>
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('child')).toHaveAttribute('hidden')
+    );
+
+    rerender(
+      <Presence present={false}>
+        {child}
+      </Presence>
+    );
+    expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+  });
+
+  it('has no axe violations while dormant', async () => {
+    const {axe} = await import('jest-axe');
+    render(
+      <Presence present={false} keepMounted>
+        <button>Save changes</button>
+      </Presence>
+    );
+    const results = await axe(document.body, {
+      rules: {region: {enabled: false}},
+    });
+    expect(results.violations).toEqual([]);
+  });
+
   it('preserves refs passed by the consumer', () => {
     const objectRef = createRef<HTMLDivElement>();
     const callbackRef = vi.fn();

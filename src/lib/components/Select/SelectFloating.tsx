@@ -884,12 +884,14 @@ export default function SelectFloating<T extends string | number = string>({
    * commits the value, closes the panel and returns focus to the
    * trigger. The tags create row routes to commitCreate instead of the
    * toggle semantics (re-creating an existing tag must not deselect
-   * it). */
+   * it). Option-level disabled rows are inert — the keyboard path
+   * lands here instead of the click's rowDisabled gate. */
   const choose = (optionValue: T) => {
     if (showCreateItem && optionValue === createValue) {
       commitCreate();
       return;
     }
+    if (allOptions.find((o) => o.value === optionValue)?.disabled) return;
     if (isMulti) {
       toggleOption(optionValue);
       // Tags keeps typing: the query that produced the pick is spent.
@@ -1029,9 +1031,13 @@ export default function SelectFloating<T extends string | number = string>({
       : option.value === selectedValue;
     // The create row is neither toggleable-disabled (it is suppressed
     // at the cap instead) nor checkbox-carrying — it is a commit
-    // affordance, not a set member.
+    // affordance, not a set member. Option-level disabled (from
+    // `<Option disabled>` or the `options` prop) joins the maxCount
+    // lock under the same inert-row contract.
     const isCreateRow = showCreateItem && i === 0;
-    const rowDisabled = isMulti && maxCountReached && !isSelected && !isCreateRow;
+    const rowDisabled =
+      option.disabled === true ||
+      (isMulti && maxCountReached && !isSelected && !isCreateRow);
     return (
       <div
         key={option.value}

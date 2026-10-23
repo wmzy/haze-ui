@@ -5,6 +5,8 @@ import type { TimeParts, TimePickerFormat } from './time';
 
 import { useControl } from 'react-use-control';
 
+import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+
 import TimePickerCore from './TimePickerCore';
 import TimePickerPanel from './TimePickerPanel';
 
@@ -56,11 +58,11 @@ export default function TimePicker({
   value: valueControl,
   open: openControl,
   onChange,
-  format = 'HH:mm',
+  format,
   hourStep = 1,
   minuteStep = 1,
   secondStep = 1,
-  use12Hours = false,
+  use12Hours,
   disabledTime,
   native = false,
   placeholder,
@@ -70,6 +72,13 @@ export default function TimePicker({
 }: TimePickerProps) {
   const [value, setValue] = useControl(valueControl, '');
   const [open, setOpen] = useControl(openControl, false);
+
+  // Three tiers per wired prop: explicit prop → ConfigProvider
+  // `TimePicker` section → built-ins ('HH:mm', 24-hour). A missing
+  // provider stays byte-identical.
+  const config = useConfigDefaults('TimePicker');
+  const resolvedFormat = format ?? config.format ?? 'HH:mm';
+  const resolvedUse12Hours = use12Hours ?? config.use12Hours ?? false;
 
   const commit = (next: string) => {
     setValue(next);
@@ -96,11 +105,11 @@ export default function TimePicker({
       onChange={commit}
       open={open}
       onOpenChange={setOpen}
-      format={format}
+      format={resolvedFormat}
       hourStep={hourStep}
       minuteStep={minuteStep}
       secondStep={secondStep}
-      use12Hours={use12Hours}
+      use12Hours={resolvedUse12Hours}
       disabledTime={disabledTime}
       placeholder={placeholder}
       className={className}

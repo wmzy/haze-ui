@@ -96,7 +96,7 @@ describe('RTL rendering smoke (dir=rtl)', () => {
   it('renders Alert with the alert role and close button intact', async () => {
     const { axe } = await import('jest-axe');
     renderRtl(
-      <Alert variant='warning' closable>
+      <Alert color='warning' closable>
         Storage almost full
       </Alert>
     );
@@ -109,7 +109,7 @@ describe('RTL rendering smoke (dir=rtl)', () => {
 
   it('renders Badge content', async () => {
     const { axe } = await import('jest-axe');
-    renderRtl(<Badge variant='success'>New</Badge>);
+    renderRtl(<Badge color='success'>New</Badge>);
     expect(screen.getByText('New')).toBeInTheDocument();
     expect(await axe(document.body, axeOptions)).toEqual(
       expect.objectContaining({ violations: [] })
@@ -119,7 +119,7 @@ describe('RTL rendering smoke (dir=rtl)', () => {
   it('renders closable Tag with the remove button intact', async () => {
     const { axe } = await import('jest-axe');
     renderRtl(
-      <Tag variant='primary' closable>
+      <Tag color='primary' closable>
         design
       </Tag>
     );

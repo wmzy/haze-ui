@@ -608,9 +608,9 @@ export default function AiWorkbenchBlock() {
             </div>
             <span style={{ flex: 1 }} />
             {generating ? (
-              <Badge variant='info'>Generating…</Badge>
+              <Badge color='info'>Generating…</Badge>
             ) : (
-              <Badge variant='success'>ready</Badge>
+              <Badge color='success'>ready</Badge>
             )}
           </header>
 

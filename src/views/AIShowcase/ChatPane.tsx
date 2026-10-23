@@ -92,12 +92,12 @@ const emptyState = css`
 
 const STATUS_META: Record<
   RunStatus,
-  { variant: 'default' | 'info' | 'warning' | 'success'; label: string }
+  { color: 'default' | 'info' | 'warning' | 'success'; label: string }
 > = {
-  idle: { variant: 'default', label: 'Ready' },
-  running: { variant: 'info', label: 'Generating…' },
-  'awaiting-approval': { variant: 'warning', label: 'Needs your approval' },
-  done: { variant: 'success', label: 'Complete' },
+  idle: { color: 'default', label: 'Ready' },
+  running: { color: 'info', label: 'Generating…' },
+  'awaiting-approval': { color: 'warning', label: 'Needs your approval' },
+  done: { color: 'success', label: 'Complete' },
 };
 
 export type ChatPaneProps = {
@@ -148,7 +148,7 @@ export default function ChatPane({
         <div className={modelPick}>
           <ModelPicker value={modelControl} options={MODELS} />
         </div>
-        <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
+        <Badge color={statusMeta.color}>{statusMeta.label}</Badge>
         <div className={headerSpacer} />
         <div className={tokenBox}>
           <TokenCounter used={tokens} max={model.contextTokens} label='Context' />

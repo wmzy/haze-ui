@@ -148,8 +148,6 @@ export const RSC_SAFE_MODULES = new Set([
   'components/NavigationBar/index.ts',
   'components/Result/Result.tsx',
   'components/Result/index.ts',
-  'components/ScrollArea/ScrollArea.tsx',
-  'components/ScrollArea/index.ts',
   'components/StatusBar/StatusBar.tsx',
   'components/StatusBar/index.ts',
   'components/TabBar/TabBar.tsx',
