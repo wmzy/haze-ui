@@ -11,8 +11,8 @@
 //   <div className={`${lightTheme} ${spacing} ${typography}`}>…</div>
 // (darkTheme is a drop-in swap).
 
-import { autoTheme, compact, cyanTheme, darkTheme, lightTheme, motion, motionPresets, orangeTheme, roseTheme, spacing, tealTheme, typography, violetTheme } from 'haze-ui';
+import { autoTheme, compact, cyanTheme, darkTheme, lightTheme, motion, motionPresets, orangeTheme, remScale, roseTheme, spacing, tealTheme, typography, violetTheme } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 
-export { autoTheme, compact, cyanTheme, darkTheme, lightTheme, motion, motionPresets, orangeTheme, roseTheme, spacing, tealTheme, typography, violetTheme };
+export { autoTheme, compact, cyanTheme, darkTheme, lightTheme, motion, motionPresets, orangeTheme, remScale, roseTheme, spacing, tealTheme, typography, violetTheme };

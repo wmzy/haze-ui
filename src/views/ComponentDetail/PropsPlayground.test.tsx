@@ -1,13 +1,19 @@
 import type { ReactNode } from 'react';
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+import sdk from '@stackblitz/sdk';
 
 import PropsPlayground from './PropsPlayground';
 
 /* Minimal props.json fragment: one component entry whose primary type
  * covers every control kind (boolean / literal union / number / string)
  * plus the read-only fallbacks (ReactNode, function, ControlOrValue). */
+vi.mock('@stackblitz/sdk', () => ({
+  default: { openProject: vi.fn(() => undefined) },
+}));
+
 vi.mock('@/generated/props.json', () => ({
   default: {
     components: {
@@ -69,6 +75,7 @@ async function openPanel(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   Target.mockClear();
+  vi.mocked(sdk.openProject).mockClear();
 });
 
 describe('PropsPlayground', () => {
@@ -211,6 +218,54 @@ describe('PropsPlayground', () => {
       screen.getByText(/copy the generated attributes instead/i)
     ).toBeInTheDocument();
     expect(Target).not.toHaveBeenCalled();
+  });
+
+  it('exports the current props state as a StackBlitz project', async () => {
+    const user = userEvent.setup();
+    mountPlayground();
+    await openPanel(user);
+
+    await user.click(screen.getByRole('switch', { name: 'square' }));
+    const label = screen.getByRole('textbox', { name: 'label' });
+    await user.clear(label);
+    await user.type(label, 'Go');
+
+    await user.click(
+      screen.getByRole('button', { name: /open in stackblitz/i })
+    );
+    await waitFor(() => expect(sdk.openProject).toHaveBeenCalledTimes(1));
+
+    const [project, openOptions] = vi.mocked(sdk.openProject).mock.calls[0]!;
+    const { title, files } = project as unknown as {
+      title: string;
+      files: Record<string, string>;
+    };
+    expect(title).toBe('haze-ui · Button playground');
+    expect(openOptions).toEqual({ newWindow: true });
+    const app = files['src/App.tsx']!;
+    expect(app).toContain("import { Button } from 'haze-ui';");
+    expect(app).toMatch(/\n\s+square\n/); // boolean 覆盖 → 裸属性
+    expect(app).toContain('label="Go"');
+    expect(app).toContain("import 'haze-ui/styles.css';");
+  });
+
+  it('toasts a failure notice when the SDK cannot open the project', async () => {
+    const user = userEvent.setup();
+    mountPlayground();
+    await openPanel(user);
+
+    // openProject 的类型签名返回 void —— 同步抛错（或 sdk chunk 加载
+    // 失败）是 try/catch 能接住的失败形态。
+    vi.mocked(sdk.openProject).mockImplementationOnce(() => {
+      throw new Error('blocked');
+    });
+    await user.click(
+      screen.getByRole('button', { name: /open in stackblitz/i })
+    );
+
+    expect(
+      await screen.findByText(/could not open stackblitz/i)
+    ).toBeInTheDocument();
   });
 
   it('has no axe violations', async () => {

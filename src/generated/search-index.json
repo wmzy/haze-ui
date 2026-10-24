@@ -27,6 +27,23 @@
   },
   {
     "type": "page",
+    "label": "AI Elements",
+    "sublabel": "Guide",
+    "route": "/recipes/ai-elements",
+    "keywords": [
+      "ai elements",
+      "chat patterns",
+      "response actions",
+      "thought chain",
+      "subagent trace",
+      "context attachments",
+      "sources",
+      "follow up suggestions",
+      "AI 元素"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Blocks",
     "sublabel": "Demo",
     "route": "/blocks",
@@ -94,6 +111,22 @@
       "screen reader",
       "contracts",
       "无障碍契约"
+    ]
+  },
+  {
+    "type": "page",
+    "label": "WCAG 2.2 conformance",
+    "sublabel": "Guide",
+    "route": "/guides/a11y-statement",
+    "keywords": [
+      "wcag",
+      "acr",
+      "conformance",
+      "vpat",
+      "accessibility statement",
+      "aa",
+      "procurement",
+      "WCAG 2.2 一致性报告"
     ]
   },
   {
@@ -1143,6 +1176,12 @@
   },
   {
     "type": "component",
+    "label": "FollowUpSuggestions",
+    "route": "/components/follow-up-suggestions",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "InlineCitation",
     "route": "/components/inline-citation",
     "keywords": []
@@ -1208,6 +1247,12 @@
     "type": "component",
     "label": "StreamingText",
     "route": "/components/streaming-text",
+    "keywords": []
+  },
+  {
+    "type": "component",
+    "label": "TaskList",
+    "route": "/components/task-list",
     "keywords": []
   },
   {
@@ -2306,6 +2351,13 @@
   },
   {
     "type": "api",
+    "label": "FollowUpSuggestions API",
+    "sublabel": "Reference",
+    "route": "/api/follow-up-suggestions",
+    "keywords": []
+  },
+  {
+    "type": "api",
     "label": "InlineCitation API",
     "sublabel": "Reference",
     "route": "/api/inline-citation",
@@ -2382,6 +2434,13 @@
     "label": "StreamingText API",
     "sublabel": "Reference",
     "route": "/api/streaming-text",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TaskList API",
+    "sublabel": "Reference",
+    "route": "/api/task-list",
     "keywords": []
   },
   {
@@ -3619,6 +3678,24 @@
   },
   {
     "type": "section",
+    "label": "Data-driven items",
+    "sublabel": "TaskList",
+    "route": "/components/task-list"
+  },
+  {
+    "type": "section",
+    "label": "TaskList Props",
+    "sublabel": "TaskList",
+    "route": "/components/task-list"
+  },
+  {
+    "type": "section",
+    "label": "TaskListItem Props",
+    "sublabel": "TaskList",
+    "route": "/components/task-list"
+  },
+  {
+    "type": "section",
     "label": "Statuses",
     "sublabel": "ToolCallCard",
     "route": "/components/tool-call-card"
@@ -4780,6 +4857,12 @@
     "label": "States",
     "sublabel": "FilePreview",
     "route": "/components/file-preview"
+  },
+  {
+    "type": "section",
+    "label": "FollowUpSuggestions Props",
+    "sublabel": "FollowUpSuggestions",
+    "route": "/components/follow-up-suggestions"
   },
   {
     "type": "section",

@@ -251,3 +251,26 @@ jobs:
           name: coverage-report
           path: coverage
           retention-days: 14
+
+  # Runtime performance benchmarks (vitest bench + tinybench, jsdom, the
+  # same vite config as the unit suite — `css: false`, no layout): pure
+  # JS-side costs of the heaviest components — 1000-row DataTable mount
+  # and sort-flip rerenders, 5000-item VirtualList windowing on scroll,
+  # Select panel open/close cycles. Informational only: absolute numbers
+  # swing with runner load, so this job never blocks a merge — the tables
+  # land in the job log (verbose reporter) for trend spotting, the size
+  # gates stay with size-limit in the build job.
+  bench:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm vitest bench --run --reporter=verbose

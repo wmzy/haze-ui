@@ -16,9 +16,9 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { lightTheme, darkTheme, autoTheme, violetTheme, tealTheme, cyanTheme, orangeTheme, roseTheme, spacing, compact, typography, motion, motionPresets } from 'haze-ui';
+import { lightTheme, darkTheme, autoTheme, violetTheme, tealTheme, cyanTheme, orangeTheme, roseTheme, spacing, compact, typography, motion, motionPresets, remScale } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 
-export { lightTheme, darkTheme, autoTheme, violetTheme, tealTheme, cyanTheme, orangeTheme, roseTheme, spacing, compact, typography, motion, motionPresets };
+export { lightTheme, darkTheme, autoTheme, violetTheme, tealTheme, cyanTheme, orangeTheme, roseTheme, spacing, compact, typography, motion, motionPresets, remScale };
 export type { BrandTheme, MotionPreset } from 'haze-ui';

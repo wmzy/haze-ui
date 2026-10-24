@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T22:05:30.653Z",
+  "generatedAt": "2026-10-24T18:37:18.065Z",
   "components": [
     {
       "component": "Accordion",
@@ -785,6 +785,21 @@
         "Escape"
       ],
       "testCount": 17
+    },
+    {
+      "component": "FollowUpSuggestions",
+      "roles": [
+        "button",
+        "list",
+        "listitem"
+      ],
+      "aria": [
+        "aria-hidden"
+      ],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 11
     },
     {
       "component": "Fullscreen",
@@ -1785,6 +1800,18 @@
         "Escape"
       ],
       "testCount": 29
+    },
+    {
+      "component": "TaskList",
+      "roles": [
+        "button",
+        "checkbox",
+        "list",
+        "listitem"
+      ],
+      "aria": [],
+      "keys": [],
+      "testCount": 17
     },
     {
       "component": "Textarea",

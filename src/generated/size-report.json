@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-23T22:15:24.150Z",
+  "generatedAt": "2026-10-24T18:37:18.106Z",
   "distAvailable": true,
   "families": [
     {
       "family": "tokens",
-      "cssBytes": 66666,
-      "cssGzipBytes": 4394
+      "cssBytes": 67315,
+      "cssGzipBytes": 4524
     },
     {
       "family": "accordion",
@@ -194,8 +194,8 @@
     },
     {
       "family": "copy-button",
-      "cssBytes": 958,
-      "cssGzipBytes": 414
+      "cssBytes": 978,
+      "cssGzipBytes": 420
     },
     {
       "family": "count-up",
@@ -301,6 +301,11 @@
       "family": "float-button",
       "cssBytes": 4355,
       "cssGzipBytes": 1071
+    },
+    {
+      "family": "follow-up-suggestions",
+      "cssBytes": 280,
+      "cssGzipBytes": 208
     },
     {
       "family": "form",
@@ -658,6 +663,11 @@
       "cssGzipBytes": 594
     },
     {
+      "family": "task-list",
+      "cssBytes": 1485,
+      "cssGzipBytes": 514
+    },
+    {
       "family": "textarea",
       "cssBytes": 1652,
       "cssGzipBytes": 546
@@ -770,7 +780,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 421435,
-    "cssGzipBytes": 44038
+    "cssBytes": 423707,
+    "cssGzipBytes": 44362
   }
 }

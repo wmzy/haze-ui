@@ -255,6 +255,8 @@ const COMPONENT_BLURBS = {
     'Selectable list of conversations for a chat-history sidebar.',
   DiffViewer:
     'Renders the line diff between old and new content for agent-proposed edits.',
+  FollowUpSuggestions:
+    'Clickable follow-up suggestion chips shown under AI chat answers.',
   FilePreview:
     'Attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.',
   InlineCitation:
@@ -275,6 +277,8 @@ const COMPONENT_BLURBS = {
     'Numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable expanded set, compact renders inline [1] [2] badges.',
   StepTimeline:
     'Vertical timeline of agent execution steps with per-step status, timing, collapsible detail panels and nested sub-steps.',
+  TaskList:
+    'Interactive agent task checklist: checkbox rows strike through and dim once done; compound children or data-driven items.',
   StreamingText:
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
   ThinkingIndicator:
@@ -326,6 +330,7 @@ export const en = {
     home: 'Home',
     gettingStarted: 'Getting Started',
     recipes: 'Recipes',
+    aiElements: 'AI Elements',
     blocks: 'Blocks',
     guides: 'Guides',
     tokens: 'Tokens',
@@ -342,6 +347,7 @@ export const en = {
     density: 'Density (compact)',
     a11y: 'Accessibility',
     a11yContracts: 'A11y Contracts',
+    a11yStatement: 'WCAG 2.2 conformance',
     migration: 'Migrating from AntD / shadcn',
     streamingA11y: 'Streaming a11y',
     motion: 'Motion presets',
@@ -358,6 +364,8 @@ export const en = {
     a11y: 'Keyboard, screen-reader and WCAG practices baked into every component.',
     a11yContracts:
       'Per-component keyboard and ARIA contracts, extracted from the test suites.',
+    a11yStatement:
+      'The accessibility conformance report: WCAG 2.2 A/AA by criterion, evidenced from the test matrix.',
     migration: 'Porting recipes from AntD or shadcn/ui to haze-ui.',
     streamingA11y:
       'Accessible streamed AI output: live regions, announcements and reduced motion.',

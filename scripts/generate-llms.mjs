@@ -113,6 +113,7 @@ const DESCRIPTIONS = {
   DateRangePicker:
     'picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
   FileInput: 'trigger element that opens a hidden native file input.',
+  FollowUpSuggestions: 'AI-chat follow-up suggestions: wrapping row of clickable prompt chips (role=list/listitem) with loading skeletons and disabled states.',
   Form:
     'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
   InlineEdit: 'click-to-edit text value in place.',
@@ -221,6 +222,7 @@ const DESCRIPTIONS = {
   Stat: 'metric display with title, value and trend indicator.',
   Table: 'styled semantic table (`striped`, `bordered`).',
   Timeline: 'vertical timeline container for `TimelineItem` children.',
+  TaskList: 'agent task checklist: TaskList/TaskListItem checkbox rows strike through and dim when done; compound children or items data.',
   Tree:
     'hierarchical tree with expand, select and check state, async `loadData` and `searchValue` filtering.',
   VirtualList:

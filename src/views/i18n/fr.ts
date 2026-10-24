@@ -34,6 +34,7 @@ export const fr: DeepPartial<SiteStrings> = {
     home: 'Accueil',
     gettingStarted: 'Premiers pas',
     recipes: 'Recettes',
+    aiElements: 'Éléments IA',
     blocks: 'Blocs',
     guides: 'Guides',
     tokens: 'Tokens',
@@ -50,6 +51,7 @@ export const fr: DeepPartial<SiteStrings> = {
     density: 'Densité (compact)',
     a11y: 'Accessibilité',
     a11yContracts: 'Contrats d’accessibilité',
+    a11yStatement: 'Conformité WCAG 2.2',
     migration: 'Migrer depuis AntD / shadcn',
     streamingA11y: 'Accessibilité du streaming',
     motion: 'Préréglages d’animation',
@@ -64,6 +66,8 @@ export const fr: DeepPartial<SiteStrings> = {
     a11y: 'Clavier, lecteur d’écran et pratiques WCAG intégrés dans chaque composant.',
     a11yContracts:
       'Contrats clavier et ARIA par composant, extraits des suites de tests.',
+    a11yStatement:
+      'Le rapport de conformité d’accessibilité : WCAG 2.2 A/AA critère par critère, preuves issues de la matrice de tests.',
     migration: 'Recettes de portage d’AntD ou shadcn/ui vers haze-ui.',
     streamingA11y:
       'Sorties IA en streaming accessibles : live regions, annonces et mouvement réduit.',
@@ -355,6 +359,7 @@ export const fr: DeepPartial<SiteStrings> = {
       'Liste sélectionnable de conversations pour une barre latérale d’historique de chat.',
     DiffViewer:
       'Rend le diff ligne à ligne entre ancien et nouveau contenu pour les éditions proposées par l’agent.',
+    FollowUpSuggestions: 'Chips de suggestions cliquables affichées sous les réponses IA.',
     FilePreview:
       'Carte de pièce jointe avec vignette d’image ou badge d’extension, progression d’envoi et actions retirer/réessayer.',
     InlineCitation: 'Marqueur de citation en exposant ; au clic, ouvre une carte source flottante avec titre, extrait et lien sortant optionnel.',
@@ -371,6 +376,7 @@ export const fr: DeepPartial<SiteStrings> = {
     Sources:
       'Liste de citations numérotées pour les réponses RAG ; les extraits se révèlent au survol/focus avec un ensemble expanded contrôlable, compact rend des badges [1] [2] en ligne.',
     StepTimeline: 'Chronologie verticale des étapes de l’agent : statut par étape (dont running), durée, détails repliables et sous-étapes imbriquées.',
+    TaskList: 'Liste de tâches interactive d’agent : lignes à case à cocher dont le titre se barre et s’atténue une fois terminé ; enfants composés ou items pilotés par les données.',
     StreamingText:
       'Effet machine à écrire dévoilant le texte en streaming caractère par caractère, curseur optionnel.',
     ThinkingIndicator:

@@ -76,13 +76,16 @@
     "lint": "eslint --fix src *.mjs",
     "deploy": "npm run build:demo && gh-pages -d dist",
     "test": "vitest run",
+    "bench": "vitest bench --run",
     "test:compiler": "HAZE_REACT_COMPILER=1 vitest run --maxWorkers=4",
     "test:e2e": "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1 playwright test --config e2e/playwright.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "serve": "vite preview",
-    "size": "size-limit"
+    "size": "size-limit",
+    "codemod": "node scripts/codemods/run.mjs",
+    "test:codemods": "node --test scripts/codemods/__tests__/"
   },
   "repository": {
     "type": "git",
@@ -176,6 +179,7 @@
     "gh-pages": "^6.3.0",
     "husky": "^9.1.7",
     "jest-axe": "^11.0.0",
+    "jscodeshift": "^17.4.0",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.5.1",
     "lucide-react": "^1.44.0",
@@ -227,11 +231,11 @@
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "31.8 KB"
+      "limit": "32.5 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "44 KB",
+      "limit": "44.7 KB",
       "gzip": true
     },
     {
@@ -412,6 +416,18 @@
       "name": "CSS family ratchet: queue",
       "path": "dist/css/queue.css",
       "limit": "850 B",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: follow-up-suggestions",
+      "path": "dist/css/follow-up-suggestions.css",
+      "limit": "200 B",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: task-list",
+      "path": "dist/css/task-list.css",
+      "limit": "500 B",
       "gzip": true
     },
     {

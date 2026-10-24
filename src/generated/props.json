@@ -4318,6 +4318,48 @@
       },
       "otherTypes": {}
     },
+    "FollowUpSuggestions": {
+      "routeKey": "follow-up-suggestions",
+      "cssFamily": "follow-up-suggestions",
+      "imports": [
+        "FollowUpSuggestions"
+      ],
+      "propsTypes": {
+        "FollowUpSuggestionsProps": [
+          {
+            "name": "suggestions",
+            "type": "string[]",
+            "required": true
+          },
+          {
+            "name": "onSelect",
+            "type": "(value: string) => void",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "loading",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Fullscreen": {
       "routeKey": "fullscreen",
       "cssFamily": "fullscreen",
@@ -9675,6 +9717,71 @@
           {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "TaskList": {
+      "routeKey": "task-list",
+      "cssFamily": "task-list",
+      "imports": [
+        "TaskList",
+        "TaskListItem"
+      ],
+      "propsTypes": {
+        "TaskListItemProps": [
+          {
+            "name": "checked",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "onCheckedChange",
+            "type": "(checked: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "indicator",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "actions",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "TaskListProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "items",
+            "type": "TaskData[]",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
             "required": false
           }
         ]

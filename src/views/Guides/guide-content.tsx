@@ -64,6 +64,7 @@ import { Rich, useSiteLocale } from '@/views/i18n';
 export type GuideId =
   | 'a11y'
   | 'a11yContracts'
+  | 'a11yStatement'
   | 'composition'
   | 'darkMode'
   | 'density'
@@ -559,6 +560,1167 @@ const a11yZh: GuideDoc = {
  * by the page (slot-free: the page owns the filter UI); only prose and
  * chrome strings live here.
  * ------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+ * A11y conformance report (ACR) — every count below is re-measured from
+ * the repo (2026-10 snapshot; the a11y guide above keeps its own 2026-09
+ * snapshot constants, so the two may differ):
+ *   ACR_AXE_COMPONENTS   grep -rl "axe(" src/lib/components --include='*.test.tsx' | wc -l
+ *   ACR_COMPONENT_TESTS  find src/lib/components -name '*.test.tsx' | wc -l
+ *   ACR_AXE_TOTAL        grep -rl "axe(" src/lib --include='*.test.tsx' | wc -l
+ *   ACR_E2E_SPECS        ls e2e/*.spec.ts | wc -l
+ *   ACR_BASELINES        find e2e/__snapshots__ -name '*.png' | wc -l
+ *   ACR_FORCED_COLORS    grep -rl "forced-colors" src/lib --include='*.tsx' --include='*.ts' | grep -v test | wc -l
+ *   ACR_FOCUS_RING       grep -rl focus-ring src/lib/components --include='*.tsx' | grep -v test | wc -l
+ *   (per-spec counts)    grep -c '^\s*test(' e2e/<name>.spec.ts
+ * Criterion names and levels follow https://www.w3.org/TR/WCAG22/
+ * (31 Level A + 24 Level AA success criteria; no 4.1.1 in 2.2).
+ * ------------------------------------------------------------------------- */
+
+const ACR_AXE_COMPONENTS = 166;
+const ACR_COMPONENT_TESTS = 167;
+const ACR_AXE_TOTAL = 171;
+const ACR_E2E_SPECS = 17;
+const ACR_BASELINES = 56;
+const ACR_FORCED_COLORS_FILES = 56;
+const ACR_FOCUS_RING_FILES = 71;
+const ACR_SR_TESTS = 3;
+const ACR_WCAG22_E2E = 2;
+const ACR_FORCED_COLORS_E2E = 12;
+const ACR_REDUCED_MOTION_E2E = 17;
+const ACR_KEYBOARD_E2E = 4;
+const ACR_COLLISION_E2E = 7;
+const ACR_MOBILE_E2E = 6;
+const ACR_ENGINE_SENSITIVE = 6;
+
+const a11yStatementEn: GuideDoc = {
+  title: 'Accessibility conformance (WCAG 2.2)',
+  intro: [
+    'This is the haze-ui accessibility conformance report (ACR): a criterion-by-criterion evaluation against WCAG 2.2 Level A and AA, written in the VPAT tradition for procurement and compliance reviews. It covers the two surfaces this repository ships — the component library with its default styles (light and dark themes, LTR and RTL) and this documentation site. Every count in the tables is measured from the repository (2026-10 snapshot; the re-measure commands live in the header comment of this file), and every claim points at the layer that enforces it.',
+  ],
+  sections: [
+    sec(
+      'scope-and-method',
+      'Scope and method',
+      p([
+        'The report evaluates haze-ui components as shipped — default tokens, no consumer overrides — plus the documentation site you are reading. Your application\'s content, copy, page structure and third-party embeds are outside this report: the library provides the machinery, you provide the content it renders.',
+      ]),
+      p([
+        'Judgments are derived from the repository\'s test matrix rather than manual inspection alone. Each row cites where the enforcement lives; in-site evidence links point at the ',
+        link('Accessibility', '/guides/a11y'),
+        ', ',
+        link('A11y Contracts', '/guides/a11y-contracts'),
+        ', ',
+        link('Streaming a11y', '/guides/streaming-a11y'),
+        ', ',
+        link('Density', '/guides/density'),
+        ' and ',
+        link('Motion', '/guides/motion'),
+        ' guides that document each layer in depth.',
+      ]),
+      table(
+        ['Judgment', 'Meaning'],
+        [
+          [
+            'Supported',
+            'Met by the shipped defaults; a test, spec or generated contract in this repository enforces it.',
+          ],
+          [
+            'Partially supported',
+            'Met with a documented condition or gap; the condition appears in the basis and again under Known limitations.',
+          ],
+          [
+            'Not applicable',
+            'The criterion governs content or mechanisms the library and docs site do not ship (audio/video, authentication, transactions); the consuming application owns them.',
+          ],
+        ]
+      ),
+      p([
+        'The evidence base, largest layer first: jest-axe scans run in ',
+        `${ACR_AXE_COMPONENTS} of ${ACR_COMPONENT_TESTS} component test files (`,
+        `${ACR_AXE_TOTAL} scanning files across the library including form, RTL and floating-primitive suites); `,
+        `${ACR_E2E_SPECS} Playwright spec files run on real engines — the `,
+        `${ACR_ENGINE_SENSITIVE} engine-sensitive specs on chromium, firefox and webkit alike — covering `,
+        `${ACR_WCAG22_E2E} targeted WCAG 2.2 audits (24px targets, focus indicators), `,
+        `${ACR_FORCED_COLORS_E2E} forced-colors tests, ${ACR_REDUCED_MOTION_E2E} reduced-motion tests, text zoom, RTL with axe rescans, and `,
+        `${ACR_BASELINES} pixel baselines; and two CI jobs drive real screen readers (below).`,
+      ]),
+      note([
+        strong('Measuring discipline.'),
+        ' All counts were re-measured for this report (2026-10). The ',
+        link('Accessibility guide', '/guides/a11y'),
+        ' states its own 2026-09 snapshot numbers; where the two differ, this report is the fresher measurement, and both list the exact commands to reproduce them.',
+      ])
+    ),
+    sec(
+      'wcag-2-2',
+      'WCAG 2.2 Level A and AA',
+      p([
+        'WCAG 2.2 defines ',
+        link('31 Level A and 24 Level AA success criteria', 'https://www.w3.org/TR/WCAG22/'),
+        '. Each row below states the judgment, a one-line basis, and the layer that enforces it, grouped by principle. Criterion names and levels follow the W3C Recommendation.',
+      ]),
+      h3('Principle 1 — Perceivable'),
+      table(
+        ['Criterion', 'Level', 'Judgment', 'Basis and evidence'],
+        [
+          [
+            '1.1.1 Non-text Content',
+            'A',
+            'Supported',
+            [
+              'Icon-only controls carry accessible names (aria-label / aria-labelledby); the button-name and link-name rules run inside the jest-axe scan every component test file ships. ',
+              link('A11y guide', '/guides/a11y'),
+            ],
+          ],
+          [
+            '1.2.1 Audio-only and Video-only (Prerecorded)',
+            'A',
+            'Not applicable',
+            'The library and docs site ship no audio- or video-only content; consumer media is out of scope.',
+          ],
+          [
+            '1.2.2 Captions (Prerecorded)',
+            'A',
+            'Not applicable',
+            'No video ships with the library or the docs site.',
+          ],
+          [
+            '1.2.3 Audio Description or Media Alternative (Prerecorded)',
+            'A',
+            'Not applicable',
+            'No video ships with the library or the docs site.',
+          ],
+          [
+            '1.2.4 Captions (Live)',
+            'AA',
+            'Not applicable',
+            'No live media ships.',
+          ],
+          [
+            '1.2.5 Audio Description (Prerecorded)',
+            'AA',
+            'Not applicable',
+            'No video ships with the library or the docs site.',
+          ],
+          [
+            '1.3.1 Info and Relationships',
+            'A',
+            'Supported',
+            [
+              'Native semantics first (details/summary, the dialog element, native inputs), ARIA only where the platform stops; per-component roles are published in the ',
+              link('A11y Contracts guide', '/guides/a11y-contracts'),
+              ` and asserted by ${ACR_AXE_TOTAL} scanning test files.`,
+            ],
+          ],
+          [
+            '1.3.2 Meaningful Sequence',
+            'A',
+            'Supported',
+            [
+              'DOM order carries the reading order; the keyboard-critical e2e spec (',
+              `${ACR_KEYBOARD_E2E} tests) pins real traversal on every engine.`,
+            ],
+          ],
+          [
+            '1.3.3 Sensory Characteristics',
+            'A',
+            'Not applicable',
+            'The library ships no instruction copy of its own; component docs reference controls by name, and consumer copy governs.',
+          ],
+          [
+            '1.3.4 Orientation',
+            'AA',
+            'Supported',
+            'Nothing in the library locks orientation — no orientation media queries, no aspect-gated layouts; the phone-viewport e2e project pins small-screen behavior.',
+          ],
+          [
+            '1.3.5 Identify Input Purpose',
+            'AA',
+            'Supported',
+            'Form controls are native inputs that forward the autocomplete attribute through rest props (wired in Combobox, Select, Mentions and Prompt Input).',
+          ],
+          [
+            '1.4.1 Use of Color',
+            'A',
+            'Supported',
+            'State never travels as color alone: FormItem pairs validation color with a text message, toasts carry title/description text, and the color-related WCAG rules run in every axe scan.',
+          ],
+          [
+            '1.4.2 Audio Control',
+            'A',
+            'Not applicable',
+            'No audio playback ships.',
+          ],
+          [
+            '1.4.3 Contrast (Minimum)',
+            'AA',
+            'Supported',
+            'The token palette is contrast-tested at generation time: body, inverse and link text at 4.5:1 or better and muted text at 3:1 or better, on light and dark themes (src/lib/tokens/contrast.test.ts).',
+          ],
+          [
+            '1.4.4 Resize Text',
+            'AA',
+            'Partially supported',
+            [
+              'Full-page browser zoom scales the px token scales; text-only 200% requires mounting the opt-in remScale preset, pinned by the text-zoom e2e spec — see the ',
+              link('Density guide', '/guides/density'),
+              ' text-zoom section.',
+            ],
+          ],
+          [
+            '1.4.5 Images of Text',
+            'AA',
+            'Not applicable',
+            'No images of text ship: the docs chrome is text and icons, and the library renders text as text.',
+          ],
+          [
+            '1.4.10 Reflow',
+            'AA',
+            'Partially supported',
+            [
+              `A phone-viewport e2e project (Pixel 7 emulation, ${ACR_MOBILE_E2E} tests) pins small-screen behavior; a dedicated 320px reflow pass is not yet in the matrix (limitation).`,
+            ],
+          ],
+          [
+            '1.4.11 Non-text Contrast',
+            'AA',
+            'Supported',
+            [
+              `Focus rings, borders and state fills resolve through palette tokens whose interaction formulas are unit-tested, and ${ACR_FORCED_COLORS_FILES} library files ship forced-colors repairs asserted by ${ACR_FORCED_COLORS_E2E} e2e tests.`,
+            ],
+          ],
+          [
+            '1.4.12 Text Spacing',
+            'AA',
+            'Partially supported',
+            'No automated spec pins user text-spacing overrides yet (limitation); spacing resolves through the token scales.',
+          ],
+          [
+            '1.4.13 Content on Hover or Focus',
+            'AA',
+            'Partially supported',
+            'Every floating panel is dismissible (Esc and outside pointer via the popover=auto layer) and persists while hover or focus holds; transient tooltip content is not itself hoverable (limitation).',
+          ],
+        ]
+      ),
+      h3('Principle 2 — Operable'),
+      table(
+        ['Criterion', 'Level', 'Judgment', 'Basis and evidence'],
+        [
+          [
+            '2.1.1 Keyboard',
+            'A',
+            'Supported',
+            [
+              'Every interactive component is keyboard-operable; per-component keymaps are extracted into the ',
+              link('A11y Contracts guide', '/guides/a11y-contracts'),
+              ' and the keyboard-critical spec runs on chromium, firefox and webkit.',
+            ],
+          ],
+          [
+            '2.1.2 No Keyboard Trap',
+            'A',
+            'Supported',
+            'Focus traps always release — Escape and Tab close panels and return focus to the trigger (useFocusScope), pinned by the dialog, popover and menu e2e specs on every engine.',
+          ],
+          [
+            '2.1.4 Character Key Shortcuts',
+            'A',
+            'Supported',
+            'The only single-character behavior is menu typeahead, active only while the menu holds focus — the criterion\'s explicit exception; no page-level shortcuts ship.',
+          ],
+          [
+            '2.2.1 Timing Adjustable',
+            'A',
+            'Supported',
+            'Toast exposes duration (0 or less keeps it until dismissed) and freezes its countdown on hover or focus — the source cites WCAG 2.2.1; Carousel autoPlay pauses on hover or focus and resumes with the remaining budget.',
+          ],
+          [
+            '2.2.2 Pause, Stop, Hide',
+            'A',
+            'Supported',
+            'Auto-advancing content is opt-in (Carousel autoPlay defaults to off) and pausable on hover or focus; toasts are dismissible and can be made persistent.',
+          ],
+          [
+            '2.3.1 Three Flashes or Below Threshold',
+            'A',
+            'Not applicable',
+            'The motion system ships duration/easing transitions only; no flashing or strobing animation exists.',
+          ],
+          [
+            '2.4.1 Bypass Blocks',
+            'A',
+            'Partially supported',
+            'The docs chrome ships no skip-to-content link; the SPA shell means route changes never re-serve the repeated sidebar, but the mechanism itself is absent (limitation).',
+          ],
+          [
+            '2.4.2 Page Titled',
+            'A',
+            'Partially supported',
+            'API pages set per-page document titles (useTitle); guide and component pages currently share the site-wide title (limitation).',
+          ],
+          [
+            '2.4.3 Focus Order',
+            'A',
+            'Supported',
+            'Focus follows DOM order; traps and roving tabindex are shared primitives (useFocusScope, useRovingTabindex) pinned by the keyboard e2e specs.',
+          ],
+          [
+            '2.4.4 Link Purpose (In Context)',
+            'A',
+            'Supported',
+            'Links carry descriptive text or accessible names — the link-name rules run inside every component\'s axe scan.',
+          ],
+          [
+            '2.5.1 Pointer Gestures',
+            'A',
+            'Supported',
+            'Drag is never the only path: Splitter and Resizable resize by arrow keys (their sources cite 2.5.1/2.5.7), and Carousel provides prev/next buttons.',
+          ],
+          [
+            '2.5.2 Pointer Cancellation',
+            'A',
+            'Supported',
+            'Activation happens on the up event (native buttons and links) and floating panels light-dismiss on outside pointerdown — aborting a gesture cancels it.',
+          ],
+          [
+            '2.5.3 Label in Name',
+            'A',
+            'Supported',
+            'Accessible names start with the visible text: panels are titled via aria-labelledby at their visible headings, and the label-content-name-mismatch rule runs in the WCAG-tagged axe scans.',
+          ],
+          [
+            '2.5.4 Motion Actuation',
+            'A',
+            'Supported',
+            'No functionality is operated by device motion; all shipped motion is presentational and collapses under prefers-reduced-motion.',
+          ],
+          [
+            '2.4.5 Multiple Ways',
+            'AA',
+            'Supported',
+            'The docs site offers sidebar navigation and the command palette over a generated search index.',
+          ],
+          [
+            '2.4.6 Headings and Labels',
+            'AA',
+            'Supported',
+            'Dialogs and panels are labeled from their visible titles (aria-labelledby); form fields ship visible labels via FormItem.',
+          ],
+          [
+            '2.4.7 Focus Visible',
+            'AA',
+            'Supported',
+            [
+              `${ACR_FOCUS_RING_FILES} component files style :focus-visible through the focus-ring token; the WCAG 2.2 e2e audit Tab-walks the page and requires every stop to paint an outline of at least 2px or a box-shadow ring.`,
+            ],
+          ],
+          [
+            '2.4.11 Focus Not Obscured (Minimum)',
+            'AA',
+            'Supported',
+            [
+              `Dialogs render in the top layer with focus trapped inside; anchored panels shift instead of covering their trigger (${ACR_COLLISION_E2E} collision e2e tests); the docs chrome uses no sticky overlay above content.`,
+            ],
+          ],
+          [
+            '2.5.7 Dragging Movements',
+            'AA',
+            'Supported',
+            'Every drag affordance has a pointer-free alternative — Splitter and Resizable arrow-key resize, Carousel control buttons.',
+          ],
+          [
+            '2.5.8 Target Size (Minimum)',
+            'AA',
+            'Supported',
+            [
+              'The WCAG 2.2 e2e audit walks every interactive element and requires a 24 by 24 CSS px or larger target box; its exemption list is empty by design.',
+            ],
+          ],
+        ]
+      ),
+      h3('Principle 3 — Understandable'),
+      table(
+        ['Criterion', 'Level', 'Judgment', 'Basis and evidence'],
+        [
+          [
+            '3.1.1 Language of Page',
+            'A',
+            'Supported',
+            'The site sets the html lang attribute per locale and re-syncs document.documentElement.lang on every locale switch.',
+          ],
+          [
+            '3.1.2 Language of Parts',
+            'AA',
+            'Not applicable',
+            'Each page renders in a single locale; code and API names are technical identifiers, not prose passages.',
+          ],
+          [
+            '3.2.1 On Focus',
+            'A',
+            'Supported',
+            'Receiving focus never changes context — floating panels deliberately do not open on mere focus (the keyboard-open path contract in the A11y guide).',
+          ],
+          [
+            '3.2.2 On Input',
+            'A',
+            'Supported',
+            'Entering data never relocates focus or navigates; Select and Combobox commit on explicit Enter.',
+          ],
+          [
+            '3.2.3 Consistent Navigation',
+            'AA',
+            'Supported',
+            'The docs chrome is one shared Layout — navigation renders in the same order and place on every page.',
+          ],
+          [
+            '3.2.4 Consistent Identification',
+            'AA',
+            'Supported',
+            'Same-function components identify identically — one pattern family per control, a shared icon set.',
+          ],
+          [
+            '3.2.6 Consistent Help',
+            'A',
+            'Supported',
+            'The help entry renders in the same sidebar position on every docs page (single shared Layout).',
+          ],
+          [
+            '3.3.1 Error Identification',
+            'A',
+            'Supported',
+            'FormItem surfaces validation errors as text associated with the field (react-f0rm wiring); the e2e axe suite scans FormItem with an active error.',
+          ],
+          [
+            '3.3.2 Labels or Instructions',
+            'A',
+            'Supported',
+            'Form controls ship labels and help text — FormItem labels, native label wrapping in Checkbox and Radio.',
+          ],
+          [
+            '3.3.3 Error Suggestion',
+            'AA',
+            'Supported',
+            'Validation messages render actionable text next to the field — react-f0rm\'s renderError carries the suggestion.',
+          ],
+          [
+            '3.3.4 Error Prevention (Legal, Financial, Data)',
+            'AA',
+            'Not applicable',
+            'The library ships no transactional flows; such flows belong to the consuming application.',
+          ],
+          [
+            '3.3.7 Redundant Entry',
+            'A',
+            'Not applicable',
+            'No multi-step processes ship with the library; consumers\' flows govern.',
+          ],
+          [
+            '3.3.8 Accessible Authentication (Minimum)',
+            'AA',
+            'Not applicable',
+            'No authentication mechanism ships in the library or the docs site.',
+          ],
+        ]
+      ),
+      h3('Principle 4 — Robust'),
+      table(
+        ['Criterion', 'Level', 'Judgment', 'Basis and evidence'],
+        [
+          [
+            '4.1.2 Name, Role, Value',
+            'A',
+            'Supported',
+            [
+              'Roles, names and states follow the WAI-ARIA APG pattern table in the ',
+              link('A11y guide', '/guides/a11y'),
+              `; every component test file runs axe, and both screen-reader CI jobs assert real announcements.`,
+            ],
+          ],
+          [
+            '4.1.3 Status Messages',
+            'AA',
+            'Supported',
+            [
+              'The toast family announces through role=status and role=alert live regions, and streaming output follows the documented live-region pattern — SR CI asserts the polite toast is spoken. ',
+              link('Streaming a11y guide', '/guides/streaming-a11y'),
+            ],
+          ],
+        ]
+      ),
+      caption([
+        'Judgment vocabulary and per-principle grouping follow common ACR practice; criterion names and levels are quoted from the W3C WCAG 2.2 Recommendation. Evidence links resolve inside this site: the ',
+        link('A11y guide', '/guides/a11y'),
+        ' (verification layers, ARIA patterns, reduced motion), the ',
+        link('A11y Contracts guide', '/guides/a11y-contracts'),
+        ' (generated per-component keyboard and ARIA contracts), the ',
+        link('Streaming a11y guide', '/guides/streaming-a11y'),
+        ' (live regions and announcements), the ',
+        link('Density guide', '/guides/density'),
+        ' (remScale text zoom) and the ',
+        link('Motion guide', '/guides/motion'),
+        ' (motion presets).',
+      ])
+    ),
+    sec(
+      'assistive-technology',
+      'Assistive technology support',
+      p([
+        'Both screen readers below are exercised in CI by real automation — the tests drive the screen reader\'s own command channel, so the assertions are about what is actually spoken, not what is merely present in the accessibility tree.',
+      ]),
+      table(
+        ['Assistive technology', 'Platform', 'CI verification', 'What is actually asserted'],
+        [
+          [
+            'VoiceOver',
+            'macOS',
+            [
+              code('screen-reader'),
+              ' CI job (macos-latest): guidepup prepares VoiceOver automation and drives headed Chromium through the macOS accessibility API.',
+            ],
+            [
+              `${ACR_SR_TESTS} announcement contracts: the dialog's accessible name, the focused menu item, and the polite toast are spoken by VoiceOver itself.`,
+            ],
+          ],
+          [
+            'NVDA',
+            'Windows',
+            [
+              code('screen-reader-nvda'),
+              ' CI job (windows-latest): the same guidepup approach through the Windows UI Automation API, headed Chromium.',
+            ],
+            [
+              `The same ${ACR_SR_TESTS} contracts, announced by NVDA — the Windows half of the matrix.`,
+            ],
+          ],
+        ]
+      ),
+      note([
+        'The matrix is deliberately narrow and deep: JAWS, TalkBack and mobile VoiceOver are not in CI. The shared ARIA pattern discipline (',
+        link('A11y Contracts guide', '/guides/a11y-contracts'),
+        ') is the hedge for untested assistive tech — see Known limitations.',
+      ])
+    ),
+    sec(
+      'limitations',
+      'Known limitations',
+      p([
+        'An ACR is only worth trusting if it is honest about the gaps. Everything below is a real, current limitation of the library or the docs site — each links back to the criterion row it qualifies.',
+      ]),
+      list(
+        [
+          strong('Text-only zoom (1.4.4).'),
+          ' The default token scales are px: full-page browser zoom scales everything, but text-only 200% requires mounting the opt-in ',
+          code('remScale'),
+          ' preset next to the spacing/typography classes (pinned by the text-zoom e2e spec). Details and the exact mount recipe are in the ',
+          link('Density guide', '/guides/density'),
+          ' text-zoom section.',
+          ],
+          [
+            strong('Third-party engines and user content.'),
+            ' RichTextEditor documents run on Tiptap, demo projects embed StackBlitz, and everything the consuming application renders through haze-ui is user content — none of it is covered by this report.',
+          ],
+          [
+            strong('Method boundaries.'),
+            ' jsdom cannot vouch for real focus navigation, the top layer or layout — which is why the engine-sensitive specs run on chromium, firefox and webkit and the SR jobs run real screen readers; but the pixel baselines are chromium-only.',
+          ],
+          [
+            strong('Text spacing (1.4.12).'),
+            ' No automated spec pins user text-spacing overrides yet; judgment relies on token-based spacing and has no regression net.',
+          ],
+          [
+            strong('Reflow (1.4.10).'),
+            ' Small-screen behavior is pinned at phone width; a dedicated 320px single-column reflow assertion is not in the matrix.',
+          ],
+          [
+            strong('Hover/focus content (1.4.13).'),
+            ' Transient tooltip content is not itself hoverable — moving the pointer onto a tooltip dismisses it (tooltips carry no interactive content; Esc and outside-pointer dismissal are guaranteed).',
+          ],
+          [
+            strong('Docs chrome (2.4.1, 2.4.2).'),
+            ' No skip-to-content link ships with the docs layout, and per-route document titles exist only on API pages today.',
+          ],
+          [
+            strong('Assistive tech matrix.'),
+            ' VoiceOver (macOS) and NVDA (Windows) are the only screen readers exercised in CI; JAWS, TalkBack and mobile VoiceOver are not covered.',
+          ],
+          [
+            strong('Level AAA.'),
+            ' This report claims Level A and AA only. Some shipped behavior exceeds AA (for example the focus-indicator audit enforces an at-least-2px indicator), but no AAA claim is made.',
+          ]
+      ),
+      note([
+        'Filing a gap you found: the conformance tables and the limitations above are generated from the same repository as the library — an issue with reproduction steps is the fastest way to move a Partially supported row to Supported.',
+      ])
+    ),
+  ],
+};
+
+const a11yStatementZh: GuideDoc = {
+  title: '无障碍一致性报告（WCAG 2.2）',
+  intro: [
+    '这是 haze-ui 的无障碍一致性报告（ACR）：按 WCAG 2.2 的 A 与 AA 级别逐条对照，采用 VPAT 式的申报格式，面向采购与合规评审。覆盖范围是本仓库交付的两个面——使用默认样式的组件库（明暗双主题、LTR 与 RTL）与你正在阅读的文档站。表中所有计数均实测自本仓库（2026-10 快照；复测命令写在本文件头部注释里），每条判定都指向强制执行它的那一层。',
+  ],
+  sections: [
+    sec(
+      'scope-and-method',
+      '范围与方法',
+      p([
+        '本报告评估的是按出厂默认交付的 haze-ui 组件（默认 token、不含使用方覆写）加上本文档站。你的应用内容、文案、页面结构与第三方嵌入不在报告范围内：库提供机制，内容由你提供。',
+      ]),
+      p([
+        '判定来自本仓库的测试矩阵，而非仅靠人工走查。每行都注明强制层在哪里；站内证据链接指向逐层展开的 ',
+        link('无障碍指南', '/guides/a11y'),
+        '、',
+        link('无障碍契约指南', '/guides/a11y-contracts'),
+        '、',
+        link('流式无障碍指南', '/guides/streaming-a11y'),
+        '、',
+        link('密度指南', '/guides/density'),
+        ' 与 ',
+        link('动效指南', '/guides/motion'),
+        '。',
+      ]),
+      table(
+        ['判定', '含义'],
+        [
+          [
+            '支持',
+            '出厂默认即满足；本仓库中有测试、用例或生成契约强制执行。',
+          ],
+          [
+            '部分支持',
+            '附带已记录的条件或缺口满足；条件在依据列与「已知限制」中各出现一次。',
+          ],
+          [
+            '不适用',
+            '该条款约束的是库与文档站不交付的内容或机制（音视频、认证、交易）；由使用方应用负责。',
+          ],
+        ]
+      ),
+      p([
+        '证据基础，按层从大到小：',
+        `${ACR_AXE_COMPONENTS} / ${ACR_COMPONENT_TESTS} 个组件测试文件内置 jest-axe 扫描（含表单、RTL、浮层原语套件后全库共 `,
+        `${ACR_AXE_TOTAL} 个扫描文件）；`,
+        `${ACR_E2E_SPECS} 个 Playwright spec 文件跑在真实引擎上——其中 `,
+        `${ACR_ENGINE_SENSITIVE} 个引擎敏感 spec 在 chromium、firefox、webkit 三引擎同样执行——覆盖 `,
+        `${ACR_WCAG22_E2E} 项定向 WCAG 2.2 审计（24px 目标、焦点指示）、`,
+        `${ACR_FORCED_COLORS_E2E} 项 forced-colors、${ACR_REDUCED_MOTION_E2E} 项减少动效、文本缩放、带 axe 复扫的 RTL，以及 `,
+        `${ACR_BASELINES} 张像素基线；另有两条 CI job 驱动真实读屏软件（见下节）。`,
+      ]),
+      note([
+        strong('度量纪律。'),
+        ' 本报告所有计数按 2026-10 重新实测。',
+        link('无障碍指南', '/guides/a11y'),
+        ' 标注的是它自己的 2026-09 快照；两处数字不一致时以本报告为准，且各自都附了可复现的精确命令。',
+      ])
+    ),
+    sec(
+      'wcag-2-2',
+      'WCAG 2.2 的 A 与 AA 级',
+      p([
+        'WCAG 2.2 定义了 ',
+        link('31 条 A 级与 24 条 AA 级成功标准', 'https://www.w3.org/TR/WCAG22/'),
+        '。下表按原则分组，每行给出判定、一句依据与强制层。条款名称与级别引自 W3C 正式建议标准。',
+      ]),
+      h3('原则一：可感知'),
+      table(
+        ['条款', '级别', '判定', '依据与证据'],
+        [
+          [
+            '1.1.1 非文本内容',
+            'A',
+            '支持',
+            [
+              '仅图标控件都带可访问名称（aria-label / aria-labelledby）；button-name、link-name 等名称规则随每个组件测试文件内置的 jest-axe 扫描执行。',
+              link('无障碍指南', '/guides/a11y'),
+            ],
+          ],
+          [
+            '1.2.1 纯音频和纯视频（预录制）',
+            'A',
+            '不适用',
+            '库与文档站不交付纯音频/纯视频内容；使用方媒体不在范围内。',
+          ],
+          [
+            '1.2.2 字幕（预录制）',
+            'A',
+            '不适用',
+            '库与文档站不附带视频。',
+          ],
+          [
+            '1.2.3 音频描述或媒体替代（预录制）',
+            'A',
+            '不适用',
+            '库与文档站不附带视频。',
+          ],
+          [
+            '1.2.4 字幕（直播）',
+            'AA',
+            '不适用',
+            '不交付直播媒体。',
+          ],
+          [
+            '1.2.5 音频描述（预录制）',
+            'AA',
+            '不适用',
+            '库与文档站不附带视频。',
+          ],
+          [
+            '1.3.1 信息和关系',
+            'A',
+            '支持',
+            [
+              '原生语义优先（details/summary、dialog 元素、原生 input），仅在平台语义止步处补 ARIA；每组件的角色收录于 ',
+              link('无障碍契约指南', '/guides/a11y-contracts'),
+              `，由 ${ACR_AXE_TOTAL} 个扫描测试文件断言。`,
+            ],
+          ],
+          [
+            '1.3.2 有意义的顺序',
+            'A',
+            '支持',
+            [
+              'DOM 顺序即阅读顺序；keyboard-critical e2e spec（',
+              `${ACR_KEYBOARD_E2E} 条用例）在每个引擎上钉住真实遍历。`,
+            ],
+          ],
+          [
+            '1.3.3 感官特征',
+            'A',
+            '不适用',
+            '库自身不附带说明文案；组件文档按名称引用控件，使用方文案自行负责。',
+          ],
+          [
+            '1.3.4 方向',
+            'AA',
+            '支持',
+            '库中没有任何方向锁定——无 orientation 媒体查询、无按宽高比门控的布局；手机视口 e2e 工程钉住小屏行为。',
+          ],
+          [
+            '1.3.5 输入目的识别',
+            'AA',
+            '支持',
+            '表单控件是原生输入，autocomplete 属性经 rest props 透传（Combobox、Select、Mentions、Prompt Input 已接线）。',
+          ],
+          [
+            '1.4.1 颜色的使用',
+            'A',
+            '支持',
+            '状态从不单靠颜色表达：FormItem 在校验色之外渲染文本消息，Toast 带标题/描述文本，颜色相关 WCAG 规则随每次 axe 扫描执行。',
+          ],
+          [
+            '1.4.2 音频控制',
+            'A',
+            '不适用',
+            '不交付音频播放。',
+          ],
+          [
+            '1.4.3 对比度（最低）',
+            'AA',
+            '支持',
+            'token 色板在生成时做对比度测试：正文、反色与链接文本 ≥4.5:1，弱化文本 ≥3:1，明暗两套主题皆然（src/lib/tokens/contrast.test.ts）。',
+          ],
+          [
+            '1.4.4 文本缩放',
+            'AA',
+            '部分支持',
+            [
+              '整页浏览器缩放可放大全部 px token；纯文本 200% 需要挂载选配的 remScale 预设，由 text-zoom e2e spec 钉住——见 ',
+              link('密度指南', '/guides/density'),
+              ' 的 text-zoom 小节。',
+            ],
+          ],
+          [
+            '1.4.5 文本的图像',
+            'AA',
+            '不适用',
+            '不交付文本图像：文档站界面全部是文本与图标，库中的文本就是文本。',
+          ],
+          [
+            '1.4.10 重排（Reflow）',
+            'AA',
+            '部分支持',
+            [
+              `手机视口 e2e 工程（Pixel 7 模拟，${ACR_MOBILE_E2E} 条用例）钉住小屏行为；专门的 320px 单列重排断言尚未入矩阵（限制）。`,
+            ],
+          ],
+          [
+            '1.4.11 非文本对比度',
+            'AA',
+            '支持',
+            [
+              `焦点环、边框与状态填充经由调色板 token 解析，其交互态公式有单测；${ACR_FORCED_COLORS_FILES} 个库文件交付 forced-colors 修复，由 ${ACR_FORCED_COLORS_E2E} 条 e2e 断言。`,
+            ],
+          ],
+          [
+            '1.4.12 文本间距',
+            'AA',
+            '部分支持',
+            '尚无自动化 spec 钉住用户文本间距覆写（限制）；间距经由 token 体系解析。',
+          ],
+          [
+            '1.4.13 悬停或聚焦时的内容',
+            'AA',
+            '部分支持',
+            '所有浮层可关闭（popover=auto 层提供 Esc 与外部指针关闭）且悬停/聚焦期间保持；瞬态 tooltip 内容本身不可悬停（限制）。',
+          ],
+        ]
+      ),
+      h3('原则二：可操作'),
+      table(
+        ['条款', '级别', '判定', '依据与证据'],
+        [
+          [
+            '2.1.1 键盘',
+            'A',
+            '支持',
+            [
+              '所有交互组件可纯键盘操作；每组件键位收录于 ',
+              link('无障碍契约指南', '/guides/a11y-contracts'),
+              '，keyboard-critical spec 在 chromium、firefox、webkit 上执行。',
+            ],
+          ],
+          [
+            '2.1.2 无键盘陷阱',
+            'A',
+            '支持',
+            '焦点困住必有出口——Escape 与 Tab 关闭面板并把焦点还给触发器（useFocusScope），由各引擎上的 dialog、popover、menu e2e 钉住。',
+          ],
+          [
+            '2.1.4 字符键快捷键',
+            'A',
+            '支持',
+            '唯一的单字符行为是菜单 typeahead，仅在菜单持有焦点时生效——正是条款的显式豁免；不交付页面级快捷键。',
+          ],
+          [
+            '2.2.1 可调整时限',
+            'A',
+            '支持',
+            'Toast 暴露 duration（≤0 表示常驻直至关闭）并在悬停或聚焦时冻结倒计时（源码注明 WCAG 2.2.1）；Carousel autoPlay 悬停/聚焦暂停并按剩余预算恢复。',
+          ],
+          [
+            '2.2.2 暂停、停止、隐藏',
+            'A',
+            '支持',
+            '自动轮播是选配的（Carousel autoPlay 默认关闭）且悬停/聚焦可暂停；Toast 可关闭也可常驻。',
+          ],
+          [
+            '2.3.1 三次闪烁或低于阈值',
+            'A',
+            '不适用',
+            '动效系统只交付时长/缓动过渡；不存在闪烁或频闪动画。',
+          ],
+          [
+            '2.4.1 跳过块',
+            'A',
+            '部分支持',
+            '文档站框架未提供 skip-to-content 链接；SPA 外壳意味着路由切换不会重复供给侧边栏，但机制本身缺失（限制）。',
+          ],
+          [
+            '2.4.2 页面标题',
+            'A',
+            '部分支持',
+            'API 页按页设置 document.title（useTitle）；指南页与组件页目前共用站点级标题（限制）。',
+          ],
+          [
+            '2.4.3 焦点顺序',
+            'A',
+            '支持',
+            '焦点跟随 DOM 顺序；困焦与 roving tabindex 是共享原语（useFocusScope、useRovingTabindex），由键盘 e2e 钉住。',
+          ],
+          [
+            '2.4.4 链接目的（在上下文中）',
+            'A',
+            '支持',
+            '链接带描述性文本或可访问名称——link-name 规则随每个组件的 axe 扫描执行。',
+          ],
+          [
+            '2.5.1 指针手势',
+            'A',
+            '支持',
+            '拖拽从不是唯一路径：Splitter 与 Resizable 支持方向键调整（源码注明 2.5.1/2.5.7），Carousel 提供上一页/下一页按钮。',
+          ],
+          [
+            '2.5.2 指针取消',
+            'A',
+            '支持',
+            '激活发生在按键抬起时（原生 button/link），浮层在外部 pointerdown 即轻关闭——中断手势即取消。',
+          ],
+          [
+            '2.5.3 标签在名称中',
+            'A',
+            '支持',
+            '可访问名称以可见文本开头：面板经 aria-labelledby 指向可见标题取名，label-content-name-mismatch 规则随 WCAG 标签的 axe 扫描执行。',
+          ],
+          [
+            '2.5.4 动作致动',
+            'A',
+            '支持',
+            '没有任何功能由设备运动触发；全部动效是表现性的，并在 prefers-reduced-motion 下归零。',
+          ],
+          [
+            '2.4.5 多种方式',
+            'AA',
+            '支持',
+            '文档站提供侧边栏导航与基于生成搜索索引的命令面板。',
+          ],
+          [
+            '2.4.6 标题和标签',
+            'AA',
+            '支持',
+            '对话框与面板经 aria-labelledby 从可见标题取名；表单字段经 FormItem 提供可见标签。',
+          ],
+          [
+            '2.4.7 焦点可见',
+            'AA',
+            '支持',
+            [
+              `${ACR_FOCUS_RING_FILES} 个组件文件经 focus-ring token 样式化 :focus-visible；WCAG 2.2 e2e 审计逐个 Tab 停点要求绘制 ≥2px 轮廓或 box-shadow 光环。`,
+            ],
+          ],
+          [
+            '2.4.11 焦点未遮挡（最低）',
+            'AA',
+            '支持',
+            [
+              `对话框渲染在 top layer 且焦点困于其内；锚定面板经碰撞让位而不覆盖触发器（${ACR_COLLISION_E2E} 条碰撞 e2e）；文档站框架没有压在内容之上的 sticky 覆盖层。`,
+            ],
+          ],
+          [
+            '2.5.7 拖拽动作',
+            'AA',
+            '支持',
+            '每个拖拽交互都有免指针替代——Splitter/Resizable 方向键调整尺寸，Carousel 控制按钮。',
+          ],
+          [
+            '2.5.8 目标尺寸（最低）',
+            'AA',
+            '支持',
+            [
+              'WCAG 2.2 e2e 审计遍历每个交互元素并要求 ≥24×24 CSS px 的目标盒；豁免清单设计上为空。',
+            ],
+          ],
+        ]
+      ),
+      h3('原则三：可理解'),
+      table(
+        ['条款', '级别', '判定', '依据与证据'],
+        [
+          [
+            '3.1.1 页面语言',
+            'A',
+            '支持',
+            '站点按 locale 设置 html lang，并在每次语言切换时重同步 document.documentElement.lang。',
+          ],
+          [
+            '3.1.2 局部语言',
+            'AA',
+            '不适用',
+            '每个页面以单一 locale 渲染；代码与 API 名是技术标识符，不是外语段落。',
+          ],
+          [
+            '3.2.1 聚焦时',
+            'A',
+            '支持',
+            '获得焦点绝不改变上下文——浮层刻意不在纯聚焦时打开（无障碍指南的「键盘打开路径」契约）。',
+          ],
+          [
+            '3.2.2 输入时',
+            'A',
+            '支持',
+            '输入数据不会移动焦点或触发导航；Select 与 Combobox 在显式 Enter 时提交。',
+          ],
+          [
+            '3.2.3 一致导航',
+            'AA',
+            '支持',
+            '文档站框架是单一共享 Layout——导航在每一页以相同顺序、相同位置渲染。',
+          ],
+          [
+            '3.2.4 一致识别',
+            'AA',
+            '支持',
+            '同功能组件的识别方式一致——每种控件一个模式家族、一套共享图标。',
+          ],
+          [
+            '3.2.6 一致帮助',
+            'A',
+            '支持',
+            '帮助入口在每一页文档页的同一侧边栏位置渲染（单一共享 Layout）。',
+          ],
+          [
+            '3.3.1 错误识别',
+            'A',
+            '支持',
+            'FormItem 以与字段关联的文本呈现校验错误（react-f0rm 接线）；e2e axe 套件扫描带激活错误的 FormItem。',
+          ],
+          [
+            '3.3.2 标签或说明',
+            'A',
+            '支持',
+            '表单控件自带标签与说明——FormItem 标签、Checkbox/Radio 的原生 label 包裹。',
+          ],
+          [
+            '3.3.3 错误建议',
+            'AA',
+            '支持',
+            '校验消息在字段旁渲染可执行的文本——react-f0rm 的 renderError 携带建议。',
+          ],
+          [
+            '3.3.4 错误预防（法律、财务、数据）',
+            'AA',
+            '不适用',
+            '库不交付交易类流程；此类流程由使用方应用负责。',
+          ],
+          [
+            '3.3.7 冗余输入',
+            'A',
+            '不适用',
+            '库不附带多步流程；由使用方流程决定。',
+          ],
+          [
+            '3.3.8 可访问认证（最低）',
+            'AA',
+            '不适用',
+            '库与文档站都不附带认证机制。',
+          ],
+        ]
+      ),
+      h3('原则四：健壮'),
+      table(
+        ['条款', '级别', '判定', '依据与证据'],
+        [
+          [
+            '4.1.2 名称、角色、值',
+            'A',
+            '支持',
+            [
+              '角色、名称与状态遵循 ',
+              link('无障碍指南', '/guides/a11y'),
+              ' 中的 WAI-ARIA APG 模式表；每个组件测试文件跑 axe，两条读屏 CI job 断言真实播报。',
+            ],
+          ],
+          [
+            '4.1.3 状态消息',
+            'AA',
+            '支持',
+            [
+              'Toast 家族经 role=status 与 role=alert live region 播报，流式输出遵循文档化的 live-region 模式——SR CI 断言 polite toast 被读出。',
+              link('流式无障碍指南', '/guides/streaming-a11y'),
+            ],
+          ],
+        ]
+      ),
+      caption([
+        '判定词汇与按原则分组沿用通行 ACR 实践；条款名称与级别引自 W3C WCAG 2.2 正式建议标准。证据链接在本站内解析：',
+        link('无障碍指南', '/guides/a11y'),
+        '（验证层级、ARIA 模式、减少动效）、',
+        link('无障碍契约指南', '/guides/a11y-contracts'),
+        '（生成的每组件键盘与 ARIA 契约）、',
+        link('流式无障碍指南', '/guides/streaming-a11y'),
+        '（live region 与播报）、',
+        link('密度指南', '/guides/density'),
+        '（remScale 文本缩放）与 ',
+        link('动效指南', '/guides/motion'),
+        '（动效预设）。',
+      ])
+    ),
+    sec(
+      'assistive-technology',
+      '辅助技术支持',
+      p([
+        '下表两款读屏软件均在 CI 中由真实自动化驱动——测试走读屏软件自己的命令通道，断言的是「真的播报了什么」，而不是「无障碍树里有什么」。',
+      ]),
+      table(
+        ['辅助技术', '平台', 'CI 验证', '实际断言的内容'],
+        [
+          [
+            'VoiceOver',
+            'macOS',
+            [
+              code('screen-reader'),
+              ' CI job（macos-latest）：guidepup 准备 VoiceOver 自动化，经 macOS 辅助功能 API 驱动有头 Chromium。',
+            ],
+            [
+              `${ACR_SR_TESTS} 条播报契约：对话框的可访问名称、聚焦的菜单项与 polite toast 都由 VoiceOver 本身读出。`,
+            ],
+          ],
+          [
+            'NVDA',
+            'Windows',
+            [
+              code('screen-reader-nvda'),
+              ' CI job（windows-latest）：同一套 guidepup 方案，经 Windows UI Automation API 驱动有头 Chromium。',
+            ],
+            [
+              `同样的 ${ACR_SR_TESTS} 条契约由 NVDA 播报——矩阵的 Windows 半边。`,
+            ],
+          ],
+        ]
+      ),
+      note([
+        '矩阵刻意窄而深：JAWS、TalkBack 与移动端 VoiceOver 不在 CI 中。共享的 ARIA 模式纪律（',
+        link('无障碍契约指南', '/guides/a11y-contracts'),
+        '）是对未测读屏的对冲——见「已知限制」。',
+      ])
+    ),
+    sec(
+      'limitations',
+      '已知限制',
+      p([
+        '一致性报告只有诚实交代缺口才值得信任。以下均为库或文档站当前真实的限制——每条都回指它所限定的条款行。',
+      ]),
+      list(
+        [
+          strong('纯文本缩放（1.4.4）。'),
+          ' 默认 token 体系是 px：整页浏览器缩放可放大一切，但纯文本 200% 需要在 spacing/typography 类旁挂载选配的 ',
+          code('remScale'),
+          ' 预设（由 text-zoom e2e spec 钉住）。细节与确切挂载方式见 ',
+          link('密度指南', '/guides/density'),
+          ' 的 text-zoom 小节。',
+          ],
+          [
+            strong('第三方引擎与用户内容。'),
+            ' RichTextEditor 文档运行在 Tiptap 上、演示项目嵌入 StackBlitz、使用方应用经 haze-ui 渲染的一切都是用户内容——均不在本报告范围内。',
+          ],
+          [
+            strong('方法边界。'),
+            ' jsdom 无法为真实焦点导航、top layer 或布局作证——这正是引擎敏感 spec 在 chromium、firefox、webkit 三引擎执行、SR job 跑真实读屏的原因；但像素基线仅 chromium。',
+          ],
+          [
+            strong('文本间距（1.4.12）。'),
+            ' 尚无自动化 spec 钉住用户文本间距覆写；判定依赖 token 化间距，没有回归网。',
+          ],
+          [
+            strong('重排（1.4.10）。'),
+            ' 小屏行为在手机宽度钉住；专门的 320px 单列重排断言不在矩阵中。',
+          ],
+          [
+            strong('悬停/聚焦内容（1.4.13）。'),
+            ' 瞬态 tooltip 内容本身不可悬停——指针移上 tooltip 即消失（tooltip 不含交互内容；Esc 与外部指针关闭有保证）。',
+          ],
+          [
+            strong('文档站框架（2.4.1、2.4.2）。'),
+            ' 文档布局不附带 skip-to-content 链接；按路由的 document.title 目前只在 API 页存在。',
+          ],
+          [
+            strong('读屏矩阵。'),
+            ' VoiceOver（macOS）与 NVDA（Windows）是 CI 中仅有的两款读屏；JAWS、TalkBack 与移动端 VoiceOver 未覆盖。',
+          ],
+          [
+            strong('AAA 级。'),
+            ' 本报告只主张 A 与 AA。个别出厂行为超出 AA（如焦点指示审计强制 ≥2px 指示器），但不作任何 AAA 主张。',
+          ]
+      ),
+      note([
+        '发现缺口时：一致性表与上述限制生成自与库同一个仓库——带复现步骤的 issue 是把「部分支持」行推进到「支持」的最快路径。',
+      ])
+    ),
+  ],
+};
+
 
 const a11yContractsEn: GuideDoc = {
   title: 'Keyboard & ARIA contracts',
@@ -1459,6 +2621,60 @@ const densityEn: GuideDoc = {
         ' reference inside (button padding, table cells, list rhythm, the island\'s own gap) re-resolves to 75%.',
       ])
     ),
+    sec(
+      'text-zoom',
+      'Text zoom (WCAG 1.4.4)',
+      p([
+        'Full-page browser zoom scales px layouts fine, but WCAG 1.4.4 also covers text-only zoom — browser text-zoom modes and OS font-size settings that surface as ',
+        code('rem'),
+        '. Those scale ',
+        code('rem'),
+        '/',
+        code('em'),
+        ' only, and the default token scales are px: at 200% the glyphs grow while paddings, gaps and radii stay put and containers stop tracking their content. ',
+        code('remScale'),
+        ' is the opt-in fix — it re-declares the spacing, text-size and radius scales at an exact 16px = 1rem base, so the whole metric system follows the root font size. At the default 16px root font size nothing changes visually.',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { lightTheme, remScale, spacing, typography } from 'haze-ui';
+
+// app root — remScale sits next to the token classes
+<div className={\`\${lightTheme} \${remScale} \${spacing} \${typography}\`}>
+  <App />
+</div>
+
+// a zoomable island inside a default page: re-declare the scales on
+// the subtree so they re-resolve there
+<section className={\`\${spacing} \${typography} \${remScale}\`}>
+  <SettingsForm … />
+</section>`
+      ),
+      note([
+        strong('Same element as the token classes.'),
+        ' Chromium substitutes ',
+        code('var()'),
+        ' inside unregistered custom properties eagerly, on the element where the property is declared — a ',
+        code('remScale'),
+        ' on a descendant cannot retroactively re-resolve the px values the theme root already baked. Mount it on (or re-declare ',
+        code('spacing'),
+        ' and ',
+        code('typography'),
+        ' at) the element you want zoomable.',
+      ]),
+      note([
+        strong('Limits.'),
+        ' Shadow tokens stay px on purpose — cosmetic depth should not inflate with text zoom — and ',
+        code('--haze-leading-*'),
+        ' is unitless, scaling with the font size it multiplies. remScale re-declares tokens, so it cannot reach anything outside the system: third-party embeds and inline px styles keep their own metrics, and per-component overrides you set yourself (e.g. ',
+        code('--haze-button-height-md: 36px'),
+        ') still win the cascade — write those in rem too. Do not combine ',
+        code('remScale'),
+        ' with ',
+        code('compact'),
+        ' on the same subtree: both answer the density indirection, so their winner would be emission-order-dependent.',
+      ])
+    ),
   ],
   ui: {
     scaleHeaderToken: 'token',
@@ -1570,6 +2786,60 @@ const densityZh: GuideDoc = {
         '。内部每个 ',
         code('--haze-space-*'),
         ' 引用（按钮内边距、表格单元格、列表节奏、孤岛自身的 gap）都重新解析为 75%。',
+      ])
+    ),
+    sec(
+      'text-zoom',
+      '文本缩放（WCAG 1.4.4）',
+      p([
+        '整页浏览器缩放能等比放大 px 布局，但 WCAG 1.4.4 还覆盖纯文本缩放——浏览器的文本缩放模式、以及以 ',
+        code('rem'),
+        ' 形式生效的系统字号设置。它们只缩放 ',
+        code('rem'),
+        '/',
+        code('em'),
+        '，而默认 token 标度是 px：放到 200% 时字形变大，内边距、间距与圆角却原地不动，容器不再跟随内容。',
+        code('remScale'),
+        ' 是可选的修复——它以精确的 16px = 1rem 基准重新声明间距、字号与圆角标度，让整套度量体系跟随根字号。默认 16px 根字号下视觉完全不变。',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { lightTheme, remScale, spacing, typography } from 'haze-ui';
+
+// app root — remScale sits next to the token classes
+<div className={\`\${lightTheme} \${remScale} \${spacing} \${typography}\`}>
+  <App />
+</div>
+
+// a zoomable island inside a default page: re-declare the scales on
+// the subtree so they re-resolve there
+<section className={\`\${spacing} \${typography} \${remScale}\`}>
+  <SettingsForm … />
+</section>`
+      ),
+      note([
+        strong('与 token 类挂同一元素。'),
+        ' Chromium 对未注册自定义属性中的 ',
+        code('var()'),
+        ' 在声明该属性的元素上急切求值——挂在后代上的 ',
+        code('remScale'),
+        ' 无法追溯地重新解析主题根部已经烤入的 px 值。把它挂在（或在其上重新声明 ',
+        code('spacing'),
+        ' 与 ',
+        code('typography'),
+        '）你要可缩放的元素上。',
+      ]),
+      note([
+        strong('局限。'),
+        ' 阴影 token 刻意保持 px——装饰性投影不应随文本缩放膨胀；',
+        code('--haze-leading-*'),
+        ' 是无单位乘数，天然跟随它所乘的字号。remScale 只是重新声明 token，管不到体系之外：第三方嵌入与内联 px 样式保留各自的度量，你自己设置的逐组件覆盖（如 ',
+        code('--haze-button-height-md: 36px'),
+        '）仍在层叠中获胜——这些也要写成 rem。不要把 ',
+        code('remScale'),
+        ' 与 ',
+        code('compact'),
+        ' 挂在同一子树：两者都回应密度间接寻址，叠用的胜负取决于样式发射顺序。',
       ])
     ),
   ],
@@ -5832,6 +7102,7 @@ const brand = createBrandTheme({
 export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   a11y: { en: a11yEn, zh: a11yZh },
   a11yContracts: { en: a11yContractsEn, zh: a11yContractsZh },
+  a11yStatement: { en: a11yStatementEn, zh: a11yStatementZh },
   composition: { en: compositionEn, zh: compositionZh },
   darkMode: { en: darkModeEn, zh: darkModeZh },
   density: { en: densityEn, zh: densityZh },

@@ -107,6 +107,14 @@ with no polyfills or fallbacks — the same four engines are the hard CSS floor.
 - **React Compiler verified** — the whole suite runs green with
   babel-plugin-react-compiler enabled (`pnpm test:compiler`): auto-memoization
   is part of the release gate, not a hope.
+- **Runtime benchmarks** — `pnpm bench` (vitest bench, jsdom) measures pure
+  JS-side costs of the heaviest components — 1000-row DataTable render and
+  sort flips, a 5000-item VirtualList scroll window, and Select panel
+  open/close cycles. Informational numbers for trend spotting; CI runs the
+  job non-blocking.
+- **Codemod upgrade toolchain** — `pnpm codemod <transform> <path>` runs the
+  jscodeshift-powered migrations in [scripts/codemods](./scripts/codemods);
+  every future major ships a codemod for its breaking changes.
 - **Native-form ready** — value-holding components (Select, Switch, Rating,
   Slider, TagInput, OTPInput, Segmented, ColorPicker, RichTextEditor) accept
   a `name` and submit into `FormData`, so `<form action={serverAction}>`

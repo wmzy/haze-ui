@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 159 Haze UI components in one
-> file (293 type tables), generated from the library source. Do not
+> Complete props reference for all 161 Haze UI components in one
+> file (296 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -1651,6 +1651,23 @@ import { FloatButton, FloatButtonGroup } from 'haze-ui';
 | `shape` | `'circle' \| 'square'` | — |  |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `href` | `string` | — |  |
+
+## FollowUpSuggestions
+
+```jsx
+import { FollowUpSuggestions } from 'haze-ui';
+```
+
+### FollowUpSuggestionsProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `suggestions` | `string[]` | — |  |
+| `onSelect` | `(value: string) => void` | — |  |
+| `disabled` | `boolean` | — |  |
+| `loading` | `boolean` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLDivElement>` | — |  |
 
 ## Fullscreen
 
@@ -3691,6 +3708,32 @@ import { TagInput, TagInputCore, SortableTagInput, SortableTagInputCore } from '
 | `aria-invalid` | `boolean` | — |  |
 | `aria-describedby` | `string` | — |  |
 | `ref` | `Ref<HTMLInputElement>` | — |  |
+
+## TaskList
+
+```jsx
+import { TaskList, TaskListItem } from 'haze-ui';
+```
+
+### TaskListItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `checked` | `ControlOrValue<boolean>` | — |  |
+| `onCheckedChange` | `(checked: boolean) => void` | — |  |
+| `title` | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `indicator` | `ReactNode` | — |  |
+| `actions` | `ReactNode` | — |  |
+| `className` | `string` | — |  |
+
+### TaskListProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — |  |
+| `items` | `TaskData[]` | — |  |
+| `className` | `string` | — |  |
 
 ## Textarea
 

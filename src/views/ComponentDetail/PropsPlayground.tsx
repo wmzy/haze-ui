@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { Fragment, cloneElement, isValidElement, useEffect, useRef, useState } from 'react';
 
 import { css } from '@linaria/core';
-import { Check, Copy, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { Check, Copy, ExternalLink, RotateCcw, SlidersHorizontal } from 'lucide-react';
 
 import {
   Button,
@@ -15,10 +15,15 @@ import {
   NumberInput,
   Segmented,
   Switch,
+  ToastContainer,
+  toast,
 } from '@/lib';
+
 
 import generatedProps from '@/generated/props.json';
 import propsDocs from '@/generated/props-docs.json';
+
+import { buildStackblitzProject } from './stackblitz';
 
 /*
  * Interactive props debugger for the demo sandbox (Storybook-controls
@@ -101,6 +106,15 @@ function resolvePrimaryType(entry: ComponentEntry): string | undefined {
   const primary = `${entry.imports[0] ?? ''}Props`;
   if (keys.includes(primary)) return primary;
   return keys.length === 1 ? keys[0] : undefined;
+}
+
+/* The export the playground drives (the StackBlitz export renders it):
+ * the primary props type's owner when the naming heuristic lands, else
+ * imports[0]. */
+function primaryComponentOf(entry: ComponentEntry): string | undefined {
+  const typeName = resolvePrimaryType(entry);
+  const owner = typeName?.replace(/Props$/, '');
+  return owner && entry.imports.includes(owner) ? owner : entry.imports[0];
 }
 
 /* String-literal unions ('a' | 'b', single member allowed) become
@@ -232,6 +246,12 @@ const countTag = css`
   font-size: var(--haze-text-xs);
   line-height: 1.5;
   text-align: center;
+`;
+
+const headerActions = css`
+  display: flex;
+  align-items: center;
+  gap: var(--haze-space-1);
 `;
 
 const panelBody = css`
@@ -390,8 +410,34 @@ export default function PropsPlayground({
 
   if (!rows) return <>{children(demo)}</>;
 
+  const entry = componentsByRoute.get(name ?? '');
+  const componentName = entry ? primaryComponentOf(entry) : undefined;
+
   const setOverride = (prop: string, next: unknown) =>
     setOverrides((prev) => ({ ...prev, [prop]: next }));
+
+  /* Export the driven component + current overrides as a runnable
+   * StackBlitz project in a new tab; the SDK loads as a lazy chunk so
+   * pages that never export stay SDK-free. Failures (chunk load, popup
+   * blocked) surface through the module-level toast — the panel below
+   * carries its own ToastContainer, so the notice is always rendered. */
+  const openInStackBlitz = async () => {
+    if (!componentName) return;
+    const project = buildStackblitzProject({
+      componentName,
+      importStatement: `import { ${componentName} } from 'haze-ui';`,
+      propsState: overrides,
+    });
+    try {
+      const { default: sdk } = await import('@stackblitz/sdk');
+      sdk.openProject(project, { newWindow: true });
+    } catch {
+      toast(
+        'Could not open StackBlitz — the SDK failed to load or the popup was blocked.',
+        { variant: 'danger' }
+      );
+    }
+  };
 
   /* Live injection: a single clonable root (anything but a fragment)
    * receives the current overrides; fragment-rooted demo pages fall
@@ -415,79 +461,96 @@ export default function PropsPlayground({
 
   return (
     <>
-      <section className={panel} data-slot='props-playground'>
-        <Collapsible>
-          <div className={panelHeader}>
-            <CollapsibleTrigger className={trigger}>
-              <Icon icon={SlidersHorizontal} size='sm' />
-              <span>Props playground</span>
-              {overrideEntries.length > 0 && (
-                <span className={countTag} data-slot='playground-count'>
-                  {overrideEntries.length}
-                </span>
-              )}
-            </CollapsibleTrigger>
-            {overrideEntries.length > 0 && (
-              <Button size='sm' variant='ghost' onClick={() => setOverrides({})}>
-                <Icon icon={RotateCcw} size='sm' />
-                Reset
-              </Button>
-            )}
-          </div>
-          <CollapsibleContent>
-            <div className={panelBody}>
-              <div className={controlsGrid}>
-                {rows.map((row) => (
-                  <div
-                    key={row.name}
-                    className={controlRow}
-                    data-slot='prop-row'
-                    data-prop={row.name}
+      {/* ToastContainer 让失败提示有处可落（空栈不可见；demo 预览保持在
+          容器外，嵌套容器的 demo 仍由最近的容器接管自己的 toast）。 */}
+      <ToastContainer>
+        <section className={panel} data-slot='props-playground'>
+          <Collapsible>
+            <div className={panelHeader}>
+              <CollapsibleTrigger className={trigger}>
+                <Icon icon={SlidersHorizontal} size='sm' />
+                <span>Props playground</span>
+                {overrideEntries.length > 0 && (
+                  <span className={countTag} data-slot='playground-count'>
+                    {overrideEntries.length}
+                  </span>
+                )}
+              </CollapsibleTrigger>
+              <div className={headerActions}>
+                {componentName && (
+                  <Button
+                    size='sm'
+                    variant='ghost'
+                    data-slot='open-stackblitz'
+                    onClick={() => void openInStackBlitz()}
                   >
-                    <div>
-                      <code className={propName} title={row.description ?? undefined}>
-                        {row.name}
-                        {row.required ? ' *' : ''}
-                      </code>
-                      <code className={propType}>{row.type}</code>
-                    </div>
-                    <div className={controlCol}>
-                      <PropControl
-                        row={row}
-                        value={overrides[row.name]}
-                        onChange={(next) => setOverride(row.name, next)}
-                      />
-                    </div>
-                  </div>
-                ))}
+                    <Icon icon={ExternalLink} size='sm' />
+                    Open in StackBlitz
+                  </Button>
+                )}
+                {overrideEntries.length > 0 && (
+                  <Button size='sm' variant='ghost' onClick={() => setOverrides({})}>
+                    <Icon icon={RotateCcw} size='sm' />
+                    Reset
+                  </Button>
+                )}
               </div>
-              <div className={codeFooter}>
-                <pre className={codePre} data-slot='playground-code'>
-                  {codeText}
-                </pre>
-                <Button
-                  size='sm'
-                  variant='outline'
-                  onClick={() => {
-                    void navigator.clipboard.writeText(codeText);
-                    setCopied(true);
-                    if (timer.current) clearTimeout(timer.current);
-                    timer.current = setTimeout(() => setCopied(false), 2000);
-                  }}
-                >
-                  <Icon icon={copied ? Check : Copy} size='sm' />
-                  {copied ? 'Copied' : 'Copy props'}
-                </Button>
-              </div>
-              <p className={hint}>
-                {demoElement
-                  ? 'Overrides are injected live into the demo root below as props.'
-                  : 'Fragment-rooted demo pages cannot receive live props — copy the generated attributes instead.'}
-              </p>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </section>
+            <CollapsibleContent>
+              <div className={panelBody}>
+                <div className={controlsGrid}>
+                  {rows.map((row) => (
+                    <div
+                      key={row.name}
+                      className={controlRow}
+                      data-slot='prop-row'
+                      data-prop={row.name}
+                    >
+                      <div>
+                        <code className={propName} title={row.description ?? undefined}>
+                          {row.name}
+                          {row.required ? ' *' : ''}
+                        </code>
+                        <code className={propType}>{row.type}</code>
+                      </div>
+                      <div className={controlCol}>
+                        <PropControl
+                          row={row}
+                          value={overrides[row.name]}
+                          onChange={(next) => setOverride(row.name, next)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className={codeFooter}>
+                  <pre className={codePre} data-slot='playground-code'>
+                    {codeText}
+                  </pre>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={() => {
+                      void navigator.clipboard.writeText(codeText);
+                      setCopied(true);
+                      if (timer.current) clearTimeout(timer.current);
+                      timer.current = setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    <Icon icon={copied ? Check : Copy} size='sm' />
+                    {copied ? 'Copied' : 'Copy props'}
+                  </Button>
+                </div>
+                <p className={hint}>
+                  {demoElement
+                    ? 'Overrides are injected live into the demo root below as props.'
+                    : 'Fragment-rooted demo pages cannot receive live props — copy the generated attributes instead.'}
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </section>
+      </ToastContainer>
       {children(injected)}
     </>
   );

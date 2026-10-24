@@ -34,6 +34,7 @@ export const de: DeepPartial<SiteStrings> = {
     home: 'Start',
     gettingStarted: 'Erste Schritte',
     recipes: 'Rezepte',
+    aiElements: 'KI-Elemente',
     blocks: 'Blöcke',
     guides: 'Anleitungen',
     tokens: 'Tokens',
@@ -50,6 +51,7 @@ export const de: DeepPartial<SiteStrings> = {
     density: 'Dichte (kompakt)',
     a11y: 'Barrierefreiheit',
     a11yContracts: 'A11y-Verträge',
+    a11yStatement: 'WCAG 2.2-Konformität',
     migration: 'Migration von AntD / shadcn',
     streamingA11y: 'Barrierefreiheit beim Streaming',
     motion: 'Motion-Presets',
@@ -64,6 +66,8 @@ export const de: DeepPartial<SiteStrings> = {
     a11y: 'Tastatur, Screenreader und WCAG-Praktiken fest in jeder Komponente verankert.',
     a11yContracts:
       'Tastatur- und ARIA-Verträge je Komponente, direkt aus den Test-Suiten extrahiert.',
+    a11yStatement:
+      'Der Barrierefreiheits-Konformitätsbericht: WCAG 2.2 A/AA je Kriterium, belegt durch die Test-Matrix.',
     migration: 'Rezepte für die Portierung von AntD oder shadcn/ui zu haze-ui.',
     streamingA11y:
       'Barrierefreie KI-Ausgaben: Live-Regions, Ansagen und reduzierte Bewegung.',
@@ -355,6 +359,7 @@ export const de: DeepPartial<SiteStrings> = {
       'Wählbare Liste von Konversationen für eine Chat-Verlaufs-Sidebar.',
     DiffViewer:
       'Rendert den Zeilen-Diff zwischen altem und neuem Inhalt für agenten-vorgeschlagene Änderungen.',
+    FollowUpSuggestions: 'Klickbare Vorschlags-Chips für Folgefragen unter KI-Antworten.',
     FilePreview:
       'Anhangskarte mit Bild-Thumbnail oder Erweiterungs-Badge, Upload-Fortschritt sowie Entfernen/Erneut-versuchen.',
     InlineCitation: 'Inline-Hochzitationsmarker; öffnet beim Klick eine schwebende Quellenkarte mit Titel, Auszug und optionalem externen Link.',
@@ -371,6 +376,7 @@ export const de: DeepPartial<SiteStrings> = {
     Sources:
       'Nummerierte Zitatsliste für RAG-Antworten; Auszüge erscheinen bei Hover/Fokus mit steuerbarer expanded-Menge, compact rendert inline [1] [2]-Badges.',
     StepTimeline: 'Vertikale Zeitleiste der Agentenschritte: Status pro Schritt (inkl. running), Dauer, einklappbare Details und verschachtelte Teilschritte.',
+    TaskList: 'Aufgabenliste für Agenten-Workflows: Checkbox-Zeilen mit Durchstreichen und Abdunkeln nach Abschluss; Compound-Kinder oder datengetriebene items.',
     StreamingText:
       'Schreibmaschinen-Effekt, der Streaming-Text Zeichen für Zeichen enthüllt, mit optionalem Cursor.',
     ThinkingIndicator:

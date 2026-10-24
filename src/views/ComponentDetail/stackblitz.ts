@@ -76,6 +76,20 @@ const indexHtml = `<!doctype html>
 </html>
 `;
 
+/* props playground 工程的入口：App.tsx 自带主题类与整包样式（GettingStarted
+ * 推荐用法），main.tsx 只负责挂载，不重复挂 token 类。 */
+const playgroundMain = `import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+
+import App from './App';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+`;
+
 const viteConfig = `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -110,10 +124,37 @@ export type StackblitzProjectOptions = {
   openFile?: string;
 };
 
-export function buildStackblitzProject(
+/* 两个入口共用的 package.json：依赖版本以本仓 package.json 为准
+ * （react/react-dom 取 peer ^19 行内实际开发版本，haze-ui 取已发布行）；
+ * WebContainer（StackBlitz 的 node 运行时）跑不了 vite 8 的 rolldown
+ * 原生绑定（dev server 起监听后即崩，见 webcontainer-core#2141），
+ * 生成工程钉在 vite 7（esbuild 路线）保证页内/新标签都能跑起来。 */
+function buildPackageJson(extraDeps: Record<string, string>): string {
+  const pkg = {
+    name: 'haze-ui-demo',
+    private: true,
+    version: '0.0.0',
+    type: 'module',
+    scripts: { dev: 'vite' },
+    dependencies: {
+      react: REACT_VERSION,
+      'react-dom': REACT_VERSION,
+      'haze-ui': HAZE_UI_VERSION,
+      ...extraDeps,
+    },
+    devDependencies: {
+      vite: '^7.3.7',
+      '@vitejs/plugin-react': '^5.2.0',
+      typescript: '^6.0.3',
+    },
+  };
+  return `${JSON.stringify(pkg, null, 2)}\n`;
+}
+
+function buildDemoProject(
   name: string,
   source: string,
-  options: StackblitzProjectOptions = {}
+  options: StackblitzProjectOptions
 ): StackblitzProject {
   const extraFiles = options.files ?? {};
   const routeFamily = cssFamilyFor(name);
@@ -143,33 +184,13 @@ createRoot(document.getElementById('root')!).render(
 );
 `;
 
-  const pkg = {
-    name: 'haze-ui-demo',
-    private: true,
-    version: '0.0.0',
-    type: 'module',
-    scripts: { dev: 'vite' },
-    dependencies: {
-      react: REACT_VERSION,
-      'react-dom': REACT_VERSION,
-      'haze-ui': HAZE_UI_VERSION,
-      ...inferDependencies([source, ...Object.values(extraFiles)].join('\n')),
-    },
-    devDependencies: {
-      // WebContainer（StackBlitz 的 node 运行时）跑不了 vite 8 的 rolldown
-      // 原生绑定（dev server 起监听后即崩，见 webcontainer-core#2141），
-      // 生成工程钉在 vite 7（esbuild 路线）保证页内/新标签都能跑起来。
-      vite: '^7.3.7',
-      '@vitejs/plugin-react': '^5.2.0',
-      typescript: '^6.0.3',
-    },
-  };
-
   return {
     title: `haze-ui · ${name} demo`,
     template: 'node',
     files: {
-      'package.json': `${JSON.stringify(pkg, null, 2)}\n`,
+      'package.json': buildPackageJson(
+        inferDependencies([source, ...Object.values(extraFiles)].join('\n'))
+      ),
       'vite.config.ts': viteConfig,
       'index.html': indexHtml,
       'src/main.tsx': main,
@@ -178,4 +199,118 @@ createRoot(document.getElementById('root')!).render(
     },
     openFile: options.openFile ?? 'src/App.tsx',
   };
+}
+
+// ─── props playground 形态 ──────────────────────────────────────
+
+/** props playground 导出输入：驱动中的组件名、其 import 语句与当前覆盖项。 */
+export type PropsPlaygroundProjectInput = {
+  componentName: string;
+  importStatement: string;
+  propsState: Record<string, unknown>;
+};
+
+/** playground 工程比通用形态多一个 `skipped`：无法序列化为 JSX 的 prop 名。 */
+export type PropsPlaygroundProject = StackblitzProject & {
+  skipped: string[];
+};
+
+/* 一个覆盖项 → JSX 属性源码：true → 裸属性；false/number → 花括号表达式；
+ * string → 双引号字面量（JSX 属性字符串不支持反斜杠转义，值里含 `"` 或
+ * 换行时改走 {JSON.stringify} 花括号，仍是合法 JSX）。其余类型
+ * （undefined/null/对象/函数等）无法静态序列化 → undefined（记入 skipped）。 */
+function serializeJsxProp(name: string, value: unknown): string | undefined {
+  if (value === true) return name;
+  if (value === false) return `${name}={false}`;
+  if (typeof value === 'number') return `${name}={${value}}`;
+  if (typeof value === 'string') {
+    return /["\n\r]/.test(value)
+      ? `${name}={${JSON.stringify(value)}}`
+      : `${name}="${value}"`;
+  }
+  return undefined;
+}
+
+function buildPlaygroundProject(
+  input: PropsPlaygroundProjectInput
+): PropsPlaygroundProject {
+  const { componentName, importStatement, propsState } = input;
+  const attributes: string[] = [];
+  const skipped: string[] = [];
+  for (const [prop, value] of Object.entries(propsState)) {
+    const attribute = serializeJsxProp(prop, value);
+    if (attribute === undefined) skipped.push(prop);
+    else attributes.push(attribute);
+  }
+
+  /* 元素源码：无覆盖 → 自闭合；有覆盖 → 属性逐行（6 空格标签、8 空格属性，
+   * 与外层 <div> 缩进对齐）。 */
+  const pad = '      ';
+  const element =
+    attributes.length === 0
+      ? `${pad}<${componentName} />`
+      : `${pad}<${componentName}\n${attributes
+          .map((attribute) => `        ${attribute}`)
+          .join('\n')}\n${pad}/>`;
+
+  /* App.tsx 照 GettingStarted 推荐用法自包含：整包 styles.css + 根元素挂
+   * lightTheme/spacing/typography/motion token 类（playground 组件可能组合
+   * 主 css family 之外的子组件，整包样式免去闭包推算）。 */
+  const app = `${importStatement}
+import { lightTheme, spacing, typography, motion } from 'haze-ui';
+
+import 'haze-ui/styles.css';
+
+export default function App() {
+  return (
+    <div className={\`\${lightTheme} \${spacing} \${typography} \${motion}\`}>
+${element}
+    </div>
+  );
+}
+`;
+
+  return {
+    title: `haze-ui · ${componentName} playground`,
+    template: 'node',
+    files: {
+      'package.json': buildPackageJson({}),
+      'vite.config.ts': viteConfig,
+      'index.html': indexHtml,
+      'src/main.tsx': playgroundMain,
+      'src/App.tsx': app,
+    },
+    openFile: 'src/App.tsx',
+    skipped,
+  };
+}
+
+/**
+ * demo 源码形态：App.tsx 为 demo 源码原文；'@/lib' 由 vite alias
+ * 解析到 haze-ui 包；main.tsx 引入 tokens.css 与该组件的 css family
+ * （routeKey 查不到时回退 tokens-only）并把主题 token 类挂到 <html> 上。
+ * `options` 详见 StackblitzProjectOptions。
+ */
+export function buildStackblitzProject(
+  name: string,
+  source: string,
+  options?: StackblitzProjectOptions
+): StackblitzProject;
+/**
+ * props playground 形态：把驱动中的组件与当前 props 覆盖项序列化为
+ * 自包含的 App.tsx（GettingStarted 推荐用法：整包 styles.css + 根元素
+ * token 类）；无法序列化为 JSX 的值跳过并记入返回值的 `skipped`。
+ */
+export function buildStackblitzProject(
+  input: PropsPlaygroundProjectInput
+): PropsPlaygroundProject;
+export function buildStackblitzProject(
+  nameOrInput: string | PropsPlaygroundProjectInput,
+  source?: string,
+  options?: StackblitzProjectOptions
+): StackblitzProject | PropsPlaygroundProject {
+  if (typeof nameOrInput === 'string') {
+    return buildDemoProject(nameOrInput, source ?? '', options ?? {});
+  }
+  return buildPlaygroundProject(nameOrInput);
 }

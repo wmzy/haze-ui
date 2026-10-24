@@ -53,6 +53,7 @@ export default defineConfig({
       input: [
         path.resolve(repoRoot, 'e2e/app/index.html'),
         path.resolve(repoRoot, 'e2e/app/collision.html'),
+        path.resolve(repoRoot, 'e2e/app/zoom.html'),
         path.resolve(repoRoot, 'e2e/app/reduced-motion.html'),
         path.resolve(repoRoot, 'e2e/app/forced-colors.html'),
         path.resolve(repoRoot, 'e2e/app/snapshots.html'),

@@ -348,6 +348,11 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
         </Link>
       </ListItem>
       <ListItem>
+        <Link className={navLink} to='/recipes/ai-elements' onClick={onNavigate}>
+          {t.nav.aiElements}
+        </Link>
+      </ListItem>
+      <ListItem>
         <Link className={navLink} to='/blocks' onClick={onNavigate}>
           {t.nav.blocks}
         </Link>
@@ -394,6 +399,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
                 {t.guides.a11yContracts}
               </Link>
               {guideSummary(t.guideSummaries.a11yContracts)}
+            </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
+                to='/guides/a11y-statement'
+                onClick={onNavigate}
+              >
+                {t.guides.a11yStatement}
+              </Link>
+              {guideSummary(t.guideSummaries.a11yStatement)}
             </ListItem>
             <ListItem>
               <Link

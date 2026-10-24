@@ -27,6 +27,10 @@ export default function App() {
             component: () => import('./Recipes'),
           },
           {
+            path: '/recipes/ai-elements',
+            component: () => import('./Recipes/ai-elements'),
+          },
+          {
             path: '/blocks',
             component: () => import('./Blocks'),
           },
@@ -45,6 +49,10 @@ export default function App() {
           {
             path: '/guides/a11y-contracts',
             component: () => import('./Guides/A11yContracts'),
+          },
+          {
+            path: '/guides/a11y-statement',
+            component: () => import('./Guides/A11yStatement'),
           },
           {
             path: '/guides/migration',

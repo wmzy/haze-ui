@@ -81,3 +81,89 @@ export default function Demo() {
     expect(Object.keys(project.files)).toContain('src/App.tsx');
   });
 });
+
+describe('buildStackblitzProject (props playground input)', () => {
+  const input = {
+    componentName: 'Button',
+    importStatement: "import { Button } from 'haze-ui';",
+    propsState: {
+      variant: 'solid',
+      note: 'plain text',
+      label: 'Press "me"',
+      square: true,
+      disabled: false,
+      count: 7,
+      icon: { ref: 1 },
+      onSelect: () => undefined,
+    } as Record<string, unknown>,
+  };
+
+  it('emits a complete vite project tree with repo-pinned versions', () => {
+    const project = buildStackblitzProject(input);
+    expect(project.title).toBe('haze-ui · Button playground');
+    expect(project.openFile).toBe('src/App.tsx');
+    const pkg = parsePkg(project.files['package.json']!);
+    expect(pkg.dependencies['haze-ui']).toBeDefined();
+    expect(pkg.dependencies.react).toMatch(/^\^19\./);
+    expect(pkg.dependencies['react-dom']).toMatch(/^\^19\./);
+    expect(pkg.devDependencies.vite).toBeDefined();
+    expect(Object.keys(project.files)).toEqual(
+      expect.arrayContaining([
+        'package.json',
+        'index.html',
+        'vite.config.ts',
+        'src/main.tsx',
+        'src/App.tsx',
+      ])
+    );
+  });
+
+  it('serializes the props state into App.tsx as JSX attributes', () => {
+    const app = buildStackblitzProject(input).files['src/App.tsx']!;
+    expect(app).toContain("import { Button } from 'haze-ui';");
+    // 字符串（含枚举值）→ 双引号字面量
+    expect(app).toContain('variant="solid"');
+    expect(app).toContain('note="plain text"');
+    // 含双引号的字符串走花括号 + JSON 转义（JSX 属性字面量没有 \ 转义）
+    expect(app).toContain('label={"Press \\"me\\""');
+    // boolean true → 裸属性；false / number → 花括号表达式
+    expect(app).toMatch(/\n\s+square\n/);
+    expect(app).toContain('disabled={false}');
+    expect(app).toContain('count={7}');
+    expect(app).toContain('<Button');
+  });
+
+  it('skips values it cannot serialize and reports them by prop name', () => {
+    const project = buildStackblitzProject(input);
+    expect(project.skipped).toEqual(['icon', 'onSelect']);
+    expect(project.files['src/App.tsx']).not.toContain('icon');
+    expect(project.files['src/App.tsx']).not.toContain('onSelect');
+  });
+
+  it('mounts lightTheme and tokens per the getting-started recipe', () => {
+    const app = buildStackblitzProject(input).files['src/App.tsx']!;
+    expect(app).toContain("import 'haze-ui/styles.css';");
+    expect(app).toContain(
+      '`${lightTheme} ${spacing} ${typography} ${motion}`'
+    );
+  });
+
+  it('renders a bare self-closing component when nothing is overridden', () => {
+    const app = buildStackblitzProject({
+      componentName: 'Switch',
+      importStatement: "import { Switch } from 'haze-ui';",
+      propsState: {},
+    }).files['src/App.tsx']!;
+    expect(app).toContain('<Switch />');
+  });
+
+  it('is pure — equal inputs produce equal projects', () => {
+    const first = buildStackblitzProject(input);
+    const second = buildStackblitzProject({
+      componentName: 'Button',
+      importStatement: "import { Button } from 'haze-ui';",
+      propsState: { ...input.propsState },
+    });
+    expect(second).toEqual(first);
+  });
+});

@@ -7,9 +7,9 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-160 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+162 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 89 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 90 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -211,6 +211,7 @@ re-deriving file names.
 - **ConversationList** — selectable list of conversations for a chat-history sidebar.
 - **DiffViewer** — renders the line diff between old and new content for agent-proposed edits.
 - **FilePreview** — attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.
+- **FollowUpSuggestions** — AI-chat follow-up suggestions: wrapping row of clickable prompt chips (role=list/listitem) with loading skeletons and disabled states.
 - **InlineCitation** — inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.
 - **InlineCompletion** — ghost-text completion overlay for input/textarea; Tab accepts the suggestion, Escape dismisses it.
 - **LogViewer** — scrollable log stream with severity-level filtering.
@@ -222,6 +223,7 @@ re-deriving file names.
 - **Sources** — numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` renders inline `[1] [2]` badges.
 - **StepTimeline** — vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.
 - **StreamingText** — typewriter effect that reveals streaming text character by character, with an optional cursor.
+- **TaskList** — agent task checklist: TaskList/TaskListItem checkbox rows strike through and dim when done; compound children or items data.
 - **ThinkingIndicator** — animated bouncing-dots indicator that the agent is processing.
 - **TokenCounter** — context-window token usage counter with budget progress.
 - **ToolCallCard** — card presenting an agent tool call — name, input, output and running state.

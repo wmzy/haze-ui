@@ -155,6 +155,7 @@ import ChatContainerDemo from './demos/ChatContainerDemo';
 import ChatInputDemo from './demos/ChatInputDemo';
 
 import StreamingTextDemo from './demos/StreamingTextDemo';
+import TaskListDemo from './demos/TaskListDemo';
 
 import MarkdownRendererDemo from './demos/MarkdownRendererDemo';
 
@@ -278,6 +279,7 @@ import JsonViewDemo from './demos/JsonViewDemo';
 import SourcesDemo from './demos/SourcesDemo';
 
 import FilePreviewDemo from './demos/FilePreviewDemo';
+import FollowUpSuggestionsDemo from './demos/FollowUpSuggestionsDemo';
 
 import InlineCompletionDemo from './demos/InlineCompletionDemo';
 
@@ -351,6 +353,7 @@ const demos: Record<string, () => ReactNode> = {
   'chat-container': ChatContainerDemo,
   'chat-input': ChatInputDemo,
   'streaming-text': StreamingTextDemo,
+  'task-list': TaskListDemo,
   'markdown-renderer': MarkdownRendererDemo,
   'tool-call-card': ToolCallCardDemo,
   'thinking-indicator': ThinkingIndicatorDemo,
@@ -423,6 +426,7 @@ const demos: Record<string, () => ReactNode> = {
   schedule: ScheduleDemo,
   sources: SourcesDemo,
   'file-preview': FilePreviewDemo,
+  'follow-up-suggestions': FollowUpSuggestionsDemo,
   'inline-completion': InlineCompletionDemo,
   'float-button': FloatButtonDemo,
   masonry: MasonryDemo,

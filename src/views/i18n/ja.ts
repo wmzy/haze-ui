@@ -33,6 +33,7 @@ export const ja: DeepPartial<SiteStrings> = {
     home: 'ホーム',
     gettingStarted: 'はじめに',
     recipes: 'レシピ',
+    aiElements: 'AI 要素',
     blocks: 'ブロック',
     guides: 'ガイド',
     tokens: 'デザインイントークン',
@@ -49,6 +50,7 @@ export const ja: DeepPartial<SiteStrings> = {
     density: '密度（コンパクト）',
     a11y: 'アクセシビリティ',
     a11yContracts: 'アクセシビリティ契約',
+    a11yStatement: 'WCAG 2.2 適合性',
     migration: 'AntD / shadcn からの移行',
     streamingA11y: 'ストリーミングのアクセシビリティ',
     motion: 'モーションプリセット',
@@ -61,6 +63,7 @@ export const ja: DeepPartial<SiteStrings> = {
     density: '密度トークンによるコンパクト/ゆとりある余白の切り替え。',
     a11y: 'キーボード、スクリーンリーダー、WCAG の実践を全コンポーネントに内蔵。',
     a11yContracts: 'テストスイートから抽出したコンポーネント別のキーボード・ARIA 契約。',
+    a11yStatement: 'アクセシビリティ適合性レポート：WCAG 2.2 A/AA を条項ごとに、テストマトリクスを根拠に判定。',
     migration: 'AntD や shadcn/ui から haze-ui への移行手順。',
     streamingA11y:
       'ストリーミング AI 出力のアクセシビリティ：ライブリージョン、アナウンス、モーションの抑制。',
@@ -338,6 +341,7 @@ export const ja: DeepPartial<SiteStrings> = {
     ConversationList: '会話リスト：チャット履歴サイドバー用の選択可能なリスト。',
     DiffViewer:
       'エージェントが提案する編集に向け、新旧コンテンツの行差分を描画。',
+    FollowUpSuggestions: 'AI チャットの回答の下に表示される、クリック可能なフォローアップ候補チップ。',
     FilePreview:
       '添付カード：画像サムネイルまたは拡張子バッジ、アップロード進捗、削除/再試行。',
     InlineCitation: '行内上付き引用マーカー：クリックでタイトル・抜粋・外部リンク付きのフローティング出典カードを開く。',
@@ -353,6 +357,7 @@ export const ja: DeepPartial<SiteStrings> = {
     Sources:
       'RAG 回答の番号付き引用リスト：hover/focus で抜粋を展開（expanded 集合は制御可能）、compact はインライン [1] [2] バッジを描画。',
     StepTimeline: 'エージェント実行ステップの縦タイムライン：ステップ状態（running 含む）、所要時間、折りたたみ可能な詳細とネストされたサブステップ。',
+    TaskList: 'エージェントのタスクチェックリスト：チェックボックス行は完了するとタイトルに取り消し線とグレーアウト。複合子要素か items データ駆動の両形式。',
     StreamingText:
       'タイプライター効果：ストリーミングテキストを一文字ずつ明かす。任意のカーソル付き。',
     ThinkingIndicator:

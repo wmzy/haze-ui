@@ -507,6 +507,7 @@ const descriptions = {
   stepper: 'Step indicator driven by `activeStep` (`Step` children).',
   'streaming-text':
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
+  'task-list': 'Agent task checklist (`TaskList` + `TaskListItem`): checkbox rows strike through and dim when done; compound children or `items` data-driven.',
   'swipe-action': 'Swipe-to-reveal row actions on left/right edges with a commit threshold.',
   'pull-to-refresh': 'Mobile pull-to-refresh gesture wrapper: pointer/touch state machine (idle → pulling → ready → refreshing) with damped pull, scroll-edge canRefresh gate and a promise-gated spinner head.',
   'visually-hidden':
@@ -556,6 +557,7 @@ const descriptions = {
     'Numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` footnote form included.',
   'file-preview':
     'Attachment card with image thumbnail or extension badge, size formatting, upload progress and remove/retry actions.',
+  'follow-up-suggestions': 'Wrapping row of clickable AI-chat follow-up suggestion chips with loading skeleton and disabled states.',
   'inline-completion':
     'Ghost-text completion overlay for input/textarea: Tab accepts the suggestion, Escape dismisses it.',
   'inline-citation':
@@ -629,10 +631,12 @@ const CATEGORY_GROUPS = {
   ],
   agent: [
     'approval-card', 'chat-container', 'chat-input', 'chat-message',
-    'conversation-list', 'diff-viewer', 'file-preview', 'inline-citation',
+    'conversation-list', 'diff-viewer', 'file-preview',
+    'follow-up-suggestions', 'inline-citation',
     'inline-completion', 'log-viewer', 'markdown-renderer', 'model-picker',
     'plan', 'prompt-input', 'queue', 'sources', 'step-timeline',
-    'streaming-text', 'thinking-indicator', 'token-counter', 'tool-call-card',
+    'streaming-text', 'task-list', 'thinking-indicator', 'token-counter',
+    'tool-call-card',
     'trace',
   ],
   utilities: ['collapsible', 'disclosure', 'pull-to-refresh', 'swipe-action', 'visually-hidden'],
