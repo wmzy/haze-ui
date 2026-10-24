@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.34.0](https://github.com/wmzy/haze-ui/compare/v1.33.0...v1.34.0) (2026-10-24)
+
+
+### Features
+
+* add masked/phone inputs, rebuild ScrollArea, unify color prop ([1c4e323](https://github.com/wmzy/haze-ui/commit/1c4e32358552e1de8b34dc564932280dd6f4134f))
+* add seven components and vendor full-page registry blocks ([21eac5e](https://github.com/wmzy/haze-ui/commit/21eac5ed4be6bc7d1ee76c31732f6e11a6e6c636))
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
