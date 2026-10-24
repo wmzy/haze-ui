@@ -3231,10 +3231,19 @@ describe('DataTable column reorder', () => {
         ?.closest('[data-slot="sortable-item"]')
     ).toBeNull();
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
-
+    // Poll instead of sleeping a fixed slice: the chunk's first load
+    // pays the transform cost of the whole @dnd-kit chain, which varies
+    // with worker load (the React Compiler pipeline transforms every
+    // module in the chain too — under it, 50ms was not always enough).
+    await waitFor(
+      () => {
+        const armed = screen
+          .getByRole('button', { name: 'Reorder Name' })
+          .closest('[data-slot="sortable-item"]');
+        expect(armed).not.toBeNull();
+      },
+      { timeout: 5000 }
+    );
     const grip = screen.getByRole('button', { name: 'Reorder Name' });
     expect(grip.closest('[data-slot="sortable-item"]')).not.toBeNull();
 
@@ -3281,9 +3290,17 @@ describe('DataTable column reorder', () => {
       />
     );
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
+    // Same poll as the arming test: the chunk's first load can outlast
+    // any fixed sleep under the compiler pipeline's transform cost.
+    await waitFor(
+      () => {
+        const armed = screen
+          .getByRole('button', { name: 'Reorder Name' })
+          .closest('[data-slot="sortable-item"]');
+        expect(armed).not.toBeNull();
+      },
+      { timeout: 5000 }
+    );
     const grip = screen.getByRole('button', { name: 'Reorder Name' });
     const pointerInit = {
       pointerType: 'mouse',

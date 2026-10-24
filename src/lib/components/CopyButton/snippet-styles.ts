@@ -24,7 +24,13 @@ export const snippet = css`
 
 export const content = css`
   /* One line, ellipsized: a snippet is an inline value to copy, not a
-   * code listing (CodeBlock is the multiline reader). */
+   * code listing (CodeBlock is the multiline reader). font-family is
+   * declared because the UA sheet gives every code element a real
+   * monospace font-family declaration, which beats the chip's
+   * inherited mono stack and would silently fall back to the host's
+   * default mono (breaking any consumer override of --haze-font-mono,
+   * and the e2e harness's pinned webfont). */
+  font-family: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

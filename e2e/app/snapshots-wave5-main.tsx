@@ -70,6 +70,17 @@ const meterWidth = css`
   width: 280px;
 `;
 
+/* ButtonGroup chips are text-sized (shrink-to-fit), so the section's
+ * own width would track the host sans' accumulated glyph advances —
+ * a 1px drift between the recording host and CI fails the capture on
+ * image size before any pixel tolerance applies. A fixed width pins
+ * the geometry (same rationale as every width class on the static
+ * snapshots page); 560px clears the widest row (~494px) so nothing
+ * wraps. */
+const buttonGroupWidth = css`
+  width: 560px;
+`;
+
 const accordionWidth = css`
   width: 360px;
 `;
@@ -195,7 +206,7 @@ const ACCORDION_ITEMS = (
 
 mountPage(
   <>
-    <section data-snap="buttongroup" className={section}>
+    <section data-snap="buttongroup" className={`${section} ${buttonGroupWidth}`}>
       <div className={row}>
         <ButtonGroup aria-label="View scope" size="sm" variant="outline">
           <Button>Day</Button>
