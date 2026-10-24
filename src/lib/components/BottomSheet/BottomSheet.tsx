@@ -77,7 +77,7 @@ const overlay = css`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  z-index: 100;
+  z-index: var(--haze-z-overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;

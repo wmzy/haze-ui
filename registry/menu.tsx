@@ -20,6 +20,7 @@ import { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGr
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/menu.css';
+import 'haze-ui/css/virtual-list.css';
 
 export { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGroup, MenuDivider, MenuSub, MenuSubTrigger, MenuSubContent };
 export type { MenuProps, MenuClassNames, MenuDataItem, MenuItemProps, MenuCheckboxItemProps, MenuRadioGroupProps, MenuRadioItemProps, MenuGroupProps, MenuSubProps, MenuSubTriggerProps, MenuSubContentProps } from 'haze-ui';

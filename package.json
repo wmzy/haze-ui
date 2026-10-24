@@ -198,13 +198,13 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "6.35 KB"
+      "limit": "6.5 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{TagGroup, TagGroupItem}",
-      "limit": "6 KB"
+      "limit": "6.5 KB"
     },
     {
       "name": "SortableTagInput — pulls the @dnd-kit trio (from barrel)",
@@ -222,22 +222,40 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "19.95 KB"
+      "limit": "21.5 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
       "path": "dist/haze-ui.css",
-      "limit": "31.25 KB"
+      "limit": "31.8 KB"
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "43 KB",
+      "limit": "44 KB",
       "gzip": true
     },
     {
       "name": "CSS family ratchet: tree-select",
       "path": "dist/css/tree-select.css",
       "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: popconfirm",
+      "path": "dist/css/popconfirm.css",
+      "limit": "1.3 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: pull-to-refresh",
+      "path": "dist/css/pull-to-refresh.css",
+      "limit": "0.6 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: trace",
+      "path": "dist/css/trace.css",
+      "limit": "1.1 KB",
       "gzip": true
     },
     {

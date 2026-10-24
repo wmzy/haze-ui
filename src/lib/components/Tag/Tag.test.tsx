@@ -1,5 +1,8 @@
-import { expect } from 'vitest';
+import type { ReactNode } from 'react';
+
 import { createRef } from 'react';
+
+import { expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -57,6 +60,70 @@ describe('Tag', () => {
       <>
         <Tag>Static</Tag>
         <Tag closable onClose={() => undefined}>Removable</Tag>
+      </>,
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+describe('as polymorphism', () => {
+  it("as='a' renders a tag link: href lands on <a>, skin and data-slot intact", () => {
+    render(<Tag as='a' href='/filter/react'>React</Tag>);
+    const link = screen.getByRole('link', { name: 'React' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/filter/react');
+    expect(link).toHaveAttribute('data-slot', 'tag');
+    expect(link).toHaveClass(tagVariants.default);
+    expect(link).toHaveClass(tagSizes.md);
+  });
+
+  it("as='a' forwards native anchor attrs and the rest", () => {
+    render(
+      <Tag as='a' href='/x' target='_blank' data-testid='tag-link'>
+        Linked
+      </Tag>
+    );
+    expect(screen.getByTestId('tag-link')).toHaveAttribute('target', '_blank');
+  });
+
+  it("as='a' merges className with the tag skin", () => {
+    render(
+      <Tag as='a' href='/x' color='primary' className='custom'>
+        Linked
+      </Tag>
+    );
+    const link = screen.getByRole('link');
+    expect(link).toHaveClass('custom');
+    expect(link).toHaveClass(tagVariants.primary);
+  });
+
+  it('as with a component: skin + data-slot reach the inner element', () => {
+    function RouterLink({
+      to,
+      children,
+      ...rest
+    }: { to: string; children: ReactNode } & Record<string, unknown>) {
+      return <a href={to} {...rest}>{children}</a>;
+    }
+    render(
+      <Tag as={RouterLink} to='/routed'>
+        Routed
+      </Tag>
+    );
+    const link = screen.getByRole('link', { name: 'Routed' });
+    expect(link).toHaveAttribute('href', '/routed');
+    expect(link).toHaveAttribute('data-slot', 'tag');
+  });
+
+  it('tag links have no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <>
+        <Tag as='a' href='/a'>Alpha</Tag>
+        <Tag as='a' href='/b' color='success'>Beta</Tag>
       </>,
     );
     const results = await axe(document.body, {

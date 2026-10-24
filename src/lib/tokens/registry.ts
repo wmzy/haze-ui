@@ -1,9 +1,10 @@
 import {formatOklch} from './oklch';
 import {SEMANTIC_COLOR_TOKENS} from './palette';
+import {Z_INDEX_TOKENS} from './z-index';
 
 type TokenDef = {
   name: string;
-  category: 'color' | 'typography' | 'spacing' | 'radius' | 'shadow';
+  category: 'color' | 'typography' | 'spacing' | 'radius' | 'shadow' | 'z-index';
   label: string;
   type: 'color' | 'size' | 'font' | 'number' | 'shadow';
   light: string;
@@ -18,6 +19,16 @@ const COLOR_TOKENS: TokenDef[] = SEMANTIC_COLOR_TOKENS.map((token) => ({
   type: 'color',
   light: formatOklch(token.resolved.light),
   dark: formatOklch(token.resolved.dark),
+}));
+
+/** Z-index entries are generated from the stacking ladder (./z-index) — theme-invariant integers. */
+const Z_INDEX_TOKEN_DEFS: TokenDef[] = Z_INDEX_TOKENS.map((token) => ({
+  name: token.name,
+  category: 'z-index',
+  label: token.label,
+  type: 'number',
+  light: token.value,
+  dark: token.value,
 }));
 
 const TOKEN_REGISTRY: TokenDef[] = [
@@ -69,6 +80,9 @@ const TOKEN_REGISTRY: TokenDef[] = [
   {name: '--haze-shadow-md', category: 'shadow', label: 'Shadow MD', type: 'shadow', light: '0 4px 6px rgba(0, 0, 0, 0.07)', dark: '0 4px 6px rgba(0, 0, 0, 0.07)'},
   {name: '--haze-shadow-lg', category: 'shadow', label: 'Shadow LG', type: 'shadow', light: '0 10px 15px rgba(0, 0, 0, 0.1)', dark: '0 10px 15px rgba(0, 0, 0, 0.1)'},
   {name: '--haze-shadow-xl', category: 'shadow', label: 'Shadow XL', type: 'shadow', light: '0 20px 25px rgba(0, 0, 0, 0.1)', dark: '0 20px 25px rgba(0, 0, 0, 0.1)'},
+
+  // --- Z-index tokens (stacking ladder; see ./z-index) ---
+  ...Z_INDEX_TOKEN_DEFS,
 ];
 
 const COMPONENT_TOKENS: Record<string, string[]> = {
@@ -110,7 +124,8 @@ const COMPONENT_TOKENS: Record<string, string[]> = {
   tabs: ['--haze-color-border', '--haze-color-text', '--haze-color-text-muted', '--haze-color-primary', '--haze-color-focus-ring', '--haze-font-sans', '--haze-space-2', '--haze-space-4', '--haze-text-sm', '--haze-weight-medium'],
   tag: ['--haze-color-bg-muted', '--haze-color-text-secondary', '--haze-color-primary', '--haze-color-primary-subtle', '--haze-color-success', '--haze-color-success-subtle', '--haze-color-warning', '--haze-color-warning-subtle', '--haze-color-danger', '--haze-color-danger-subtle', '--haze-color-focus-ring', '--haze-font-sans', '--haze-radius-md', '--haze-radius-sm', '--haze-space-0', '--haze-space-1', '--haze-space-2', '--haze-space-3', '--haze-text-xs', '--haze-text-sm', '--haze-weight-medium', '--haze-leading-tight'],
   textarea: ['--haze-color-bg', '--haze-color-border', '--haze-color-text', '--haze-color-text-muted', '--haze-color-border-hover', '--haze-color-primary', '--haze-color-focus-ring', '--haze-font-sans', '--haze-leading-normal', '--haze-radius-md', '--haze-space-1', '--haze-space-2', '--haze-space-3', '--haze-space-4', '--haze-text-sm', '--haze-text-base'],
-  toast: ['--haze-color-bg', '--haze-color-border', '--haze-color-danger', '--haze-color-danger-subtle', '--haze-color-focus-ring', '--haze-color-primary', '--haze-color-primary-active', '--haze-color-primary-hover', '--haze-color-success', '--haze-color-success-subtle', '--haze-color-text', '--haze-color-text-secondary', '--haze-color-warning', '--haze-color-warning-subtle', '--haze-font-sans', '--haze-leading-normal', '--haze-radius-md', '--haze-shadow-lg', '--haze-space-1', '--haze-space-2', '--haze-space-3', '--haze-space-4', '--haze-text-base', '--haze-text-lg', '--haze-text-sm', '--haze-weight-medium'],
+  trace: ['--haze-color-bg', '--haze-color-bg-subtle', '--haze-color-border', '--haze-color-danger', '--haze-color-focus-ring', '--haze-color-primary', '--haze-color-success', '--haze-color-text', '--haze-color-text-inverse', '--haze-color-text-muted', '--haze-color-text-secondary', '--haze-duration-fast', '--haze-ease', '--haze-font-mono', '--haze-font-sans', '--haze-radius-full', '--haze-radius-md', '--haze-space-1', '--haze-space-2', '--haze-space-3', '--haze-text-sm', '--haze-text-xs', '--haze-weight-medium'],
+  toast: ['--haze-color-bg', '--haze-color-border', '--haze-color-danger', '--haze-color-danger-subtle', '--haze-color-focus-ring', '--haze-color-primary', '--haze-color-primary-active', '--haze-color-primary-hover', '--haze-color-success', '--haze-color-success-subtle', '--haze-color-text', '--haze-color-text-secondary', '--haze-color-warning', '--haze-color-warning-subtle', '--haze-font-sans', '--haze-leading-normal', '--haze-radius-md', '--haze-shadow-lg', '--haze-space-1', '--haze-space-2', '--haze-space-3', '--haze-space-4', '--haze-text-base', '--haze-text-lg', '--haze-text-sm', '--haze-weight-medium', '--haze-z-toast'],
   tooltip: ['--haze-color-text', '--haze-color-text-inverse', '--haze-font-sans', '--haze-radius-md', '--haze-space-1', '--haze-space-2', '--haze-leading-normal', '--haze-text-xs'],
 };
 

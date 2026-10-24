@@ -234,6 +234,7 @@ const CATEGORY_ORDER: TokenDef['category'][] = [
   'spacing',
   'radius',
   'shadow',
+  'z-index',
 ];
 
 /* registry 未来出现新 category（如 motion）时自动落入队尾，而不是被静默丢掉。 */
@@ -252,6 +253,7 @@ const CATEGORY_TITLE: Record<string, string> = {
   spacing: 'Spacing',
   radius: 'Radius',
   shadow: 'Shadow',
+  'z-index': 'Z-Index',
 };
 
 const CATEGORY_BLURB: Record<string, string> = {
@@ -260,6 +262,7 @@ const CATEGORY_BLURB: Record<string, string> = {
   spacing: 'The 4px-base spacing scale used for padding, gap and margin.',
   radius: 'Corner rounding scale.',
   shadow: 'Elevation shadows.',
+  'z-index': 'Stacking ladder for layered surfaces — reference these tiers to interleave custom layers with the library\'s overlays.',
 };
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -313,6 +316,15 @@ const COLOR_USAGE: Record<string, string> = {
   ...STATUS_USAGE_ENTRIES,
 };
 
+const Z_INDEX_USAGE: Record<string, string> = {
+  '--haze-z-local-1': 'Component-local paint lift — focused row seams, drag ghosts, pinned headings.',
+  '--haze-z-local-2': 'Second local step — sticky header/footer rows above pinned cells.',
+  '--haze-z-local-3': 'Third local step — the scroll-corner cell, now-indicators.',
+  '--haze-z-overlay': 'Fixed overlay tier — modal scrims, sheets, affix bars, tour cards.',
+  '--haze-z-overlay-fallback': 'Floating-panel JS fallback tier (engines without the popover API).',
+  '--haze-z-toast': 'The toast viewport — above everything by design.',
+};
+
 function describeToken(token: TokenDef): string {
   if (token.category === 'color') return COLOR_USAGE[token.name] ?? token.label;
   if (token.name.startsWith('--haze-font-')) {
@@ -331,6 +343,7 @@ function describeToken(token: TokenDef): string {
   if (token.name === '--haze-radius-full') return 'Fully rounded — pills, circles.';
   if (token.name === '--haze-radius-none') return 'Square corners.';
   if (token.category === 'radius') return 'Corner rounding step.';
+  if (token.category === 'z-index') return Z_INDEX_USAGE[token.name] ?? token.label;
   return 'Elevation shadow.';
 }
 
@@ -455,7 +468,7 @@ export default function Tokens() {
       <h1>Tokens</h1>
       <p className={intro}>
         Every visual decision in Haze UI — color, typography, spacing, radius,
-        shadow — resolves to a <code>--haze-*</code> design token. This page
+        shadow, stacking — resolves to a <code>--haze-*</code> design token. This page
         renders the library&rsquo;s <code>TOKEN_REGISTRY</code> and{' '}
         <code>COMPONENT_TOKENS</code> directly: the same source that feeds the
         W3C design-token JSON (<code>haze-ui/design-tokens/*.json</code>) and

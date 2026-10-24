@@ -21,6 +21,7 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariant
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tabs.css';
 import 'haze-ui/css/menu.css';
+import 'haze-ui/css/virtual-list.css';
 
 export { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariants };
 export type { TabsProps, TabsClassNames, TabListProps, TabProps, TabPanelProps, TabStatus, SortableTabListProps } from 'haze-ui';

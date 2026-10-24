@@ -67,6 +67,10 @@ export default function App() {
             component: () => import('./Guides/ServerActions'),
           },
           {
+            path: '/guides/composition',
+            component: () => import('./Guides/Composition'),
+          },
+          {
             path: '/tokens',
             component: () => import('./Tokens'),
           },
@@ -77,6 +81,10 @@ export default function App() {
           {
             path: '/components/:name',
             component: () => import('./ComponentDetail'),
+          },
+          {
+            path: '/api/:componentId',
+            component: () => import('./ApiReference'),
           },
           {
             path: '/ai-showcase',

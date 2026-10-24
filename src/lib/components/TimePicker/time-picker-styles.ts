@@ -94,7 +94,7 @@ export const columnWrap = css`
  */
 export const columnList = css`
   position: relative;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;

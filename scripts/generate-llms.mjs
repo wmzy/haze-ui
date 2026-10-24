@@ -174,6 +174,7 @@ const DESCRIPTIONS = {
     'non-modal floating preview (avatar card, link summary) anchored to its trigger.',
   Menu:
     'lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).',
+  Popconfirm: 'anchored confirmation bubble with confirm/cancel actions and async busy support.',
   Popover: 'floating popover anchored to a trigger element.',
   Tooltip: 'hover/focus hint bubble.',
 
@@ -312,6 +313,8 @@ const DESCRIPTIONS = {
   TokenCounter: 'context-window token usage counter with budget progress.',
   ToolCallCard:
     'card presenting an agent tool call — name, input, output and running state.',
+  Trace:
+    'line-by-line agent reasoning trace — `Trace` + `TraceItem` steps with `pending`/`running`/`done`/`error` status, custom icons, collapsible `details` and sr-only status-change announcements.',
 
   // Utilities
   Collapsible:
@@ -326,6 +329,8 @@ const DESCRIPTIONS = {
     'per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',
   SwipeAction:
     'swipe-to-reveal row actions on left/right edges with a commit threshold.',
+  PullToRefresh:
+    'mobile pull-to-refresh gesture over scrolling children: hand-written pointer/touch state machine (idle → pulling → ready → refreshing) with damped finger-follow, scroll-edge canRefresh gate, promise-gated spinner head and a render-prop indicator.',
 };
 
 /**

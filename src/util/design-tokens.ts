@@ -28,6 +28,7 @@ const CATEGORY_GROUPS: Record<TokenDef['category'], string> = {
   spacing: 'spacing',
   radius: 'dimension',
   shadow: 'shadow',
+  'z-index': 'z-index',
 };
 
 /** TokenDef.type → W3C `$type`. */

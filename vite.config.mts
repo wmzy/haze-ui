@@ -46,19 +46,53 @@ const libEntries = [
   ),
 ].filter((entry) => existsSync(entry));
 
+// babel-plugin-react-compiler gate, shared by two modes:
+// ① HAZE_REACT_COMPILER=1 — the verification mode (`pnpm test:compiler`):
+//   the suite must stay green with auto-memoization enabled;
+// ② lib builds (BUILD_LIB=true) — the published dist is compiled (parity
+//   with antd 6), emitting `import { c as _c } from "react/compiler-runtime"`
+//   (the React ≥19 subpath, kept external like react itself).
+// Dev server and everyday vitest runs stay uncompiled.
+// NOTE: this rides the jsx-plus @babel/core pass on purpose — plugin-react
+// v6 is oxc-based and dropped its `babel` option entirely (passing
+// babel.plugins to react() is silently ignored), and its native
+// `compiler: true` path needs the oxc-transform-react optional peer.
+const enableReactCompiler =
+  process.env.HAZE_REACT_COMPILER === '1' || isLibBuild;
+
 function jsxPlusPlugin(): Plugin {
   return {
     name: 'jsx-plus',
     enforce: 'pre',
     async transform(code, id) {
-      if (!/\.[jt]sx$/.test(id) || id.includes('node_modules')) return;
-      if (!code.includes('x-class') && !code.includes('x-if')) return;
+      if (
+        !/\.[jt]sx?$/.test(id.split('?')[0]) ||
+        id.includes('node_modules')
+      ) {
+        return;
+      }
+      const hasJsxPlus =
+        code.includes('x-class') || code.includes('x-if');
+      // RSC-safe modules (scripts/rsc-safe.mjs) are exempt: compiler
+      // output allocates cache slots via useMemoCache — a client hook —
+      // which would break direct Server Component imports of those
+      // modules and the hook-freeness their banner exemption certifies.
+      const compile =
+        enableReactCompiler && !isRscSafeModule(id);
+      if (!hasJsxPlus && !compile) return;
+      const plugins: string[] = [];
+      if (hasJsxPlus) {
+        plugins.push('transform-jsx-condition', 'transform-jsx-class');
+      }
+      if (compile) {
+        plugins.push('babel-plugin-react-compiler');
+      }
       const result = await transformAsync(code, {
         filename: id,
         babelrc: false,
         configFile: false,
         parserOpts: { plugins: ['jsx', 'typescript'] },
-        plugins: ['transform-jsx-condition', 'transform-jsx-class'],
+        plugins,
       });
       if (!result?.code) return;
       return { code: result.code, map: result.map };
@@ -131,6 +165,10 @@ const buildConfig = (() => {
           'react-dom',
           'react-dom/client',
           'react/jsx-runtime',
+          // React Compiler cache-slot runtime imported by the compiled
+          // dist (React ≥19 subpath) — external so its CJS never leaks a
+          // require() into the pure-ESM dist, same rule as react itself
+          'react/compiler-runtime',
           '@linaria/core',
           'react-use-control',
           // regular dependency (haze-ui's form engine, same-author library)
@@ -209,8 +247,15 @@ const buildConfig = (() => {
   return undefined;
 })();
 
+// Docs-site base path. The stable channel (release builds) serves the site
+// from the repo root '/haze-ui/'; the dev channel overrides this with
+// '/haze-ui/dev/' (deploy.yml) so both asset URLs and the HistoryRouter
+// baseUrl (import.meta.env.BASE_URL) bake in the right prefix. Env override
+// only affects the docs app — lib builds always use '/'.
+const demoBase = process.env.HAZE_DEMO_BASE ?? '/haze-ui/';
+
 export default defineConfig({
-  base: isDemoBuild ? '/haze-ui/' : '/',
+  base: isDemoBuild ? demoBase : '/',
   resolve: {
     alias: [
       {
@@ -239,18 +284,11 @@ export default defineConfig({
     ...(isDocsApp ? [propsDocgenPlugin()] : []),
     react({
       exclude: ['node_modules/**'],
-      // HAZE_REACT_COMPILER=1 pipes src through babel-plugin-react-compiler:
-      // the React Compiler verification mode (`pnpm test:compiler`) — the
-      // suite must stay green with auto-memoization enabled. The plugin is
-      // referenced by name so the config (and every normal run) loads fine
-      // without the package installed; babel resolves it only when the
-      // env var opts in.
-      babel: {
-        plugins:
-          process.env.HAZE_REACT_COMPILER === '1'
-            ? ['babel-plugin-react-compiler']
-            : [],
-      },
+      // JSX/TS transform and fast refresh are oxc-native here. The React
+      // Compiler rides the jsx-plus babel pass above (see
+      // enableReactCompiler) — v6 of this plugin dropped its `babel`
+      // option, and `compiler: true` needs the oxc-transform-react
+      // optional peer, which is not installed.
     }),
     wyw({
       evaluate: false,

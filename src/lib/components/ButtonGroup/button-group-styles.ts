@@ -37,7 +37,7 @@ export const group = css`
    * its seam edge, so a focused button lifts above the row (z-index
    * works on flex items even when statically positioned). */
   & > *:focus-visible {
-    z-index: 1;
+    z-index: var(--haze-z-local-1);
   }
 
   /* Horizontal bar: the seam runs on the inline axis. */

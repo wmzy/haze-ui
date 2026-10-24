@@ -274,7 +274,7 @@ const hiddenFileInput = css`
   display: none;
 `;
 
-const CATEGORIES: TokenDef['category'][] = ['color', 'typography', 'spacing', 'radius', 'shadow'];
+const CATEGORIES: TokenDef['category'][] = ['color', 'typography', 'spacing', 'radius', 'shadow', 'z-index'];
 
 type ChannelKey = 'l' | 'c' | 'h';
 

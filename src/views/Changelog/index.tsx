@@ -12,7 +12,12 @@ import {
   Skeleton,
 } from '@/lib';
 import { page, intro } from '@/views/ComponentDetail/styles';
-import { sourceUrl, shortCommit, versionInfo } from '@/views/version-info';
+import {
+  sourceUrl,
+  shortCommit,
+  stableDocsUrl,
+  versionInfo,
+} from '@/views/version-info';
 
 const REPO = 'wmzy/haze-ui';
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
@@ -164,7 +169,7 @@ export default function Changelog() {
         {versionInfo.gitTag && (
           <>
             {' — '}
-            <a href={`${import.meta.env.BASE_URL}v/${versionInfo.version}/`}>
+            <a href={`${stableDocsUrl}v/${versionInfo.version}/`}>
               snapshot of this version
             </a>
           </>

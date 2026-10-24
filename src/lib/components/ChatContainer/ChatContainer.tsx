@@ -43,7 +43,7 @@ const jumpPill = css`
   /* Off the content flow's end: pins to the scrollport bottom edge while
      the reader is above it, lands in flow once they reach the end. */
   bottom: var(--haze-space-2);
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   align-self: center;
   display: inline-flex;
   align-items: center;

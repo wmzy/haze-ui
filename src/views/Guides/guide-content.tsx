@@ -64,6 +64,7 @@ import { Rich, useSiteLocale } from '@/views/i18n';
 export type GuideId =
   | 'a11y'
   | 'a11yContracts'
+  | 'composition'
   | 'darkMode'
   | 'density'
   | 'migration'
@@ -4738,10 +4739,1100 @@ export function TagEditor({ initial }: { initial: string[] }) {
   },
 };
 
+/* ---------------------------------------------------------------------------
+ * Composition & customization (评审 P2): the five escape hatches,
+ * inventoried from src/lib — Core count, classNames adopters, headless
+ * exports and token families below are measured from this repository.
+ * ------------------------------------------------------------------------- */
+
+const compositionEn: GuideDoc = {
+  title: 'Composition & customization',
+  intro: [
+    'A haze-ui component is the top layer of a stack where every layer below it is public API. When the styled component will not bend, drop down one layer instead of forking it — this page maps the five escape hatches, what each hands you, and when it is the right tool. They are ordered by how much you take over: from ',
+    code('*Core'),
+    ' variants (you own the state channel) down to design tokens (you own the look itself).',
+  ],
+  sections: [
+    sec(
+      'hatch-map',
+      'The five escape hatches',
+      table(
+        ['Escape hatch', 'You take over', 'Reach for it when'],
+        [
+          [
+            [code('*Core'), ' variants'],
+            'the field’s state channel',
+            'you own the state source — a form library, a store, debounced network state — or you wrap fields in your own component',
+          ],
+          [
+            [code('as'), ' polymorphism'],
+            'the rendered element',
+            'semantics matter: a link-shaped Button, a router Link wearing the Tag skin, a Card rooted on your own element',
+          ],
+          [
+            [code('haze-ui/headless'), ' entry'],
+            'all the markup',
+            'you need a component the library does not ship, on the same engines (floating, focus, keyboard) the shipped ones use',
+          ],
+          [
+            [code('classNames'), ' + ', code('data-slot')],
+            'per-instance classes',
+            'one-off placement or skin tweaks inside one subtree',
+          ],
+          [
+            'design tokens',
+            'the theme values',
+            'brand or white-label looks, per-component retheming, stacking coordination',
+          ],
+        ]
+      ),
+      note([
+        'The hatches stack rather than compete: a white-label app reaches for tokens, a design-system team wraps ',
+        code('InputCore'),
+        ' in its own field, and a single dense toolbar just adds a ',
+        code('classNames'),
+        ' entry.',
+      ])
+    ),
+    sec(
+      'core-variants',
+      'Core variants: fields without the state layer',
+      p([
+        'Every field family ships a Core sibling — twenty-five today, all exported from the main barrel next to their styled counterparts. Core is the same rendering layer (same skin, same roles and aria, same forced-colors handling) with the decisions removed: a plain ',
+        code('value'),
+        '/',
+        code('onChange'),
+        ' channel instead of ',
+        code('ControlOrValue'),
+        ', and no ',
+        code('ConfigProvider'),
+        ' default lookups. The styled wrapper adds exactly those two things and nothing else.',
+      ]),
+      p([
+        'The library composes itself this way: ',
+        code('PasswordInput'),
+        ' is ',
+        code('useControl'),
+        ' plus ',
+        code('PasswordInputCore'),
+        ', and ',
+        code('FormItem'),
+        ' binds ',
+        code('InputCore'),
+        ' directly (see the Server Actions guide).',
+      ]),
+      table(
+        ['Styled', 'Core', 'State channel'],
+        [
+          [[code('Input')], [code('InputCore')], [code('value: string')]],
+          [[code('Textarea')], [code('TextareaCore')], [code('value: string')]],
+          [[code('PasswordInput')], [code('PasswordInputCore')], [code('value: string')]],
+          [[code('MaskedInput')], [code('MaskedInputCore')], [code('value: string')]],
+          [[code('OTPInput')], [code('OTPInputCore')], [code('value: string')]],
+          [[code('Mentions')], [code('MentionsCore')], [code('value: string')]],
+          [[code('NumberInput')], [code('NumberInputCore')], [code('value: number')]],
+          [[code('ColorPicker')], [code('ColorPickerCore')], [code('value: string')]],
+          [[code('DateField')], [code('DateFieldCore')], [code('value: string')]],
+          [[code('Datepicker')], [code('DatepickerCore')], [code('value: string')]],
+          [[code('TimeField')], [code('TimeFieldCore')], [code('value: string')]],
+          [[code('TimePicker')], [code('TimePickerCore')], [code('value: string')]],
+          [
+            [code('DateRangePicker')],
+            [code('DateRangePickerCore')],
+            [code('startDate'), ' + ', code('endDate'), ': string'],
+          ],
+          [[code('Select')], [code('SelectCore<T>')], [code('value: T | T[]')]],
+          [[code('Checkbox')], [code('CheckboxCore')], [code('checked: boolean')]],
+          [[code('Switch')], [code('SwitchCore')], [code('checked: boolean')]],
+          [[code('Toggle')], [code('ToggleCore')], [code('pressed: boolean')]],
+          [[code('RadioGroup')], [code('RadioGroupCore')], [code('value: string')]],
+          [
+            [code('Slider')],
+            [code('SliderCore')],
+            [code('value: number | [number, number]')],
+          ],
+          [[code('Rating')], [code('RatingCore')], [code('value: number')]],
+          [[code('Segmented')], [code('SegmentedCore')], [code('value: string')]],
+          [[code('TagInput')], [code('TagInputCore')], [code('value: string[]')]],
+          [
+            [code('SortableTagInput')],
+            [code('SortableTagInputCore')],
+            [code('value: string[]')],
+          ],
+          [[code('Transfer')], [code('TransferCore')], [code('value: string[]'), ' (target keys)']],
+          [[code('Upload')], [code('UploadCore')], [code('value: UploadValueItem[]')]],
+        ]
+      ),
+      p([
+        'A custom field is then just your state channel in front of a Core — the skin, roles and focus behavior stay the library’s:',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { useEffect } from 'react';
+import { useControl } from 'react-use-control';
+import { InputCore, type InputCoreProps } from 'haze-ui';
+
+function DebouncedField({
+  onCommit,
+  ...rest
+}: Omit<InputCoreProps, 'value' | 'onChange'> & {
+  onCommit: (value: string) => void;
+}) {
+  const [value, setValue] = useControl(undefined, '');
+
+  useEffect(() => {
+    const timer = setTimeout(() => onCommit(value), 300);
+    return () => clearTimeout(timer);
+  }, [value, onCommit]);
+
+  return <InputCore value={value} onChange={setValue} {...rest} />;
+}`
+      ),
+      note([
+        strong('Core is stateless, not unstyled.'),
+        ' Core shares the field skin deliberately, so a custom Core wrapper in a row of styled fields looks coherent. If you want no haze skin at all, that is the ',
+        code('headless'),
+        ' entry below.',
+      ]),
+      list(
+        [
+          'Your field state lives outside React component state — a form store, a fetch cache, a controller.',
+          'You wrap a field in your own component and want your own defaults instead of the ConfigProvider chain.',
+          'You bind fields to a form library that wants plain value/onChange pairs (FormItem does exactly this with react-f0rm).',
+        ]
+      )
+    ),
+    sec(
+      'as-polymorphism',
+      'The as prop: another element in the same skin',
+      p([
+        code('Button'),
+        ', ',
+        code('MenuItem'),
+        ', ',
+        code('Tag'),
+        ', ',
+        code('Card'),
+        ' and ',
+        code('BreadcrumbItem'),
+        ' render as another element through a shared MUI-style generic. Own props come first, then the target element’s props minus the colliding keys — so ',
+        code('Button'),
+        ' with ',
+        code("as='a'"),
+        ' type-checks ',
+        code('href'),
+        ' and drops ',
+        code('type'),
+        ':',
+      ]),
+      codeBlock(
+        'ts',
+        `type ButtonProps<T extends ElementType = 'button'> = ButtonOwnProps & {
+  /** Render element: 'button' (default), 'a', or any component that
+   * forwards props and ref to a DOM element. */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof ButtonOwnProps | 'as' | 'type'>;`
+      ),
+      p([
+        'The wiring wins: classes, ',
+        code('data-slot'),
+        ', aria attributes and gated element defaults always land on the rendered element. ',
+        code("type='button'"),
+        ' is only set on the native-button shape, so anchors never carry it; anchors and custom components report busy/disabled through ',
+        code('aria-disabled'),
+        ' instead of the native attribute. Any component works as long as it forwards props and ref to a DOM element — a router Link is the canonical case.',
+      ]),
+      slot('as-playground'),
+      caption([
+        'Same Button call site, three renderings. The status line reads the live DOM: the anchor keeps href semantics and swaps ',
+        code('data-slot'),
+        ' to ',
+        code("'button-link'"),
+        ' — the styling hook follows the wiring, not the component.',
+      ]),
+      note([
+        code('FormItem'),
+        '’s ',
+        code('as'),
+        ' is a different flavor of polymorphism: it binds a control component (',
+        code('as'),
+        '/',
+        code('asProps'),
+        '/',
+        code('eventToValue'),
+        ', or the ',
+        code('input'),
+        ' prop) for form wiring — value, aria and blur scheduling — rather than swapping the rendered element:',
+      ]),
+      codeBlock(
+        'tsx',
+        `// FormItem wires value/onBlur/aria; InputCore renders. Haze cores
+// emit the next plain value from onChange — no adapter needed.
+<FormItem name="email" input={InputCore} label="Email" />
+
+// checkbox-style controls pair with valueToProps:
+<FormItem
+  name="newsletter"
+  input={CheckboxCore}
+  valueToProps={(checked) => ({ checked })}
+/>`
+      )
+    ),
+    sec(
+      'headless',
+      'The headless entry: behaviors without components',
+      p([
+        'The ',
+        code('haze-ui/headless'),
+        ' subpath exports the behavior layer the shipped components are built from — import the engines directly and keep all of your own markup. Engine tier detection ships too, so your component gets the same modern-native / JS-fallback split the library’s get:',
+      ]),
+      table(
+        ['Area', 'Exports', 'What it gives you'],
+        [
+          [
+            'Floating layer',
+            [
+              code('useFloating'),
+              ', ',
+              code('FloatingPanel'),
+              ', ',
+              code('floatingPlacementClasses'),
+              ', ',
+              code('placeFloatingPanel'),
+              ', ',
+              code('useFloatingPosition'),
+            ],
+            'trigger/panel pairing over the native popover API with anchor positioning, JS fallback, light dismiss and toggle-echo reconciliation',
+          ],
+          [
+            'Collision math',
+            [
+              code('computeFloatingPosition'),
+              ', ',
+              code('resolvePadding'),
+              ', ',
+              code('CollisionStrategy'),
+            ],
+            'pure flip/shift geometry over literal rects — no DOM, RSC-safe',
+          ],
+          [
+            'Presence & exit',
+            [code('Presence'), ', ', code('whenExitSettles')],
+            'keep a child mounted while its exit animation settles',
+          ],
+          [
+            'Focus',
+            [
+              code('useFocusScope'),
+              ', ',
+              code('isTabbable'),
+              ', ',
+              code('getTabbables'),
+              ', ',
+              code('focusFirst'),
+            ],
+            'trapped scopes, tab-order queries, restore-on-close for overlays',
+          ],
+          [
+            'Menu keyboard',
+            [
+              code('useMenuKeyboard'),
+              ', ',
+              code('useRovingTabindex'),
+              ', ',
+              code('getEnabledMenuItems'),
+            ],
+            'WAI-ARIA menu keys and roving tabindex for item containers',
+          ],
+          [
+            'Submenus',
+            [code('useSubmenu'), ', ', code('SubmenuProvider')],
+            'the open/close/rest-intent mechanism behind MenuSub / DropdownMenuSub',
+          ],
+          [
+            'Document hooks',
+            [
+              code('useClickOutside'),
+              ', ',
+              code('useHotkeys'),
+              ', ',
+              code('hotkey'),
+              ', ',
+              code('useInView'),
+              ', ',
+              code('useMediaQuery'),
+              ', ',
+              code('useBusyPressable'),
+            ],
+            'pointerdown-outside, declarative shortcuts, viewport and media state, busy pressables',
+          ],
+          [
+            'Misc',
+            [
+              code('mergeRefs'),
+              ', ',
+              code('useDirection'),
+              ', ',
+              code('useViewTransitionFlip'),
+              ', ',
+              code('supportsNativePopover'),
+              ', ',
+              code('supportsAnchorPositioning'),
+            ],
+            'ref composition, RTL resolution, view transitions, engine tier detection',
+          ],
+        ]
+      ),
+      p([
+        'A minimal popover from the same engine ',
+        code('Popover'),
+        ' itself uses — anchor-positioned top layer on modern engines, JS fallback with collision flip elsewhere:',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { useRef, useState } from 'react';
+import { FloatingPanel, useFloating } from 'haze-ui/headless';
+
+function MiniPopover({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef,
+    panelRef,
+    animated: true,
+  });
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        aria-haspopup="true"
+        aria-expanded={open}
+        style={floating.triggerStyle}
+        onPointerDown={floating.onTriggerPointerDown}
+        onClick={floating.onTriggerClick}
+      >
+        {label}
+      </button>
+      <FloatingPanel ref={panelRef} behavior={floating} placement="bottom-span">
+        {children}
+      </FloatingPanel>
+    </>
+  );
+}`
+      ),
+      list(
+        [
+          'You need a component the library does not ship — a custom command bar, an unusual overlay — but want the same engine behavior, not a reimplementation.',
+          'You are wiring your own markup to the library’s contracts: focus trapping in a custom modal, menu keys over your own list.',
+          'You need the pure utilities (collision math, tab-order queries) in non-React contexts or RSC files.',
+        ]
+      )
+    ),
+    sec(
+      'class-slots',
+      'classNames slots and data-slot',
+      p([
+        'Twenty-eight compound components accept ',
+        code('classNames'),
+        ' — an AntD v6-shaped record keyed by semantic part. Each entry lands after the library’s own classes on that part’s node, so it composes with ',
+        code('className'),
+        ' instead of fighting it; omitted keys change nothing.',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { Select } from 'haze-ui';
+import { dashed } from './fields.css';
+
+<Select
+  classNames={{
+    trigger: dashed,      // the trigger box (data-slot='trigger')
+    content: 'panel-ink', // the floating panel (data-slot='content')
+  }}
+  // …
+/>`
+      ),
+      p([
+        'Every structural part also carries a ',
+        code('data-slot'),
+        ' attribute — a repo-wide convention under a coverage contract — so parts stay targetable in CSS without any prop:',
+      ]),
+      codeBlock(
+        'css',
+        `/* scope to one Select, then aim at parts by semantic slot */
+.field :is([data-slot='trigger']) {
+  border-style: dashed;
+}
+.field [data-slot='item'] {
+  /* a selected chip in multiple mode */
+  font-weight: var(--haze-weight-medium);
+}`
+      ),
+      note([
+        code('classNames'),
+        ' is a per-instance tool. Theming many instances at once is the token layer’s job — the next section.',
+      ])
+    ),
+    sec(
+      'tokens',
+      'Design tokens: retheme from the outside',
+      p([
+        'Token overrides work at three altitudes. The ',
+        strong('global scale'),
+        ' lives on the theme classes (',
+        code('lightTheme'),
+        '/',
+        code('darkTheme'),
+        '/',
+        code('autoTheme'),
+        ', plus ',
+        code('compact'),
+        ' — see the Dark mode and Density guides). ',
+        strong('Brand themes'),
+        ' derive a whole 12-step scale from one seed, both modes, via ',
+        code('createBrandTheme'),
+        ' — with ready-made presets (',
+        code('violetTheme'),
+        ', ',
+        code('tealTheme'),
+        ', ',
+        code('cyanTheme'),
+        ', ',
+        code('orangeTheme'),
+        ', ',
+        code('roseTheme'),
+        ') in ',
+        code('haze-ui/tokens'),
+        '.',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { createBrandTheme } from 'haze-ui';
+
+const brand = createBrandTheme({
+  name: 'acme',        // → --haze-acme-1…12 (lowercase kebab)
+  light: '#0066ff',    // light-mode primary seed
+  // dark: '#0a3d99',  // optional — derived (oklch l +0.2) if omitted
+});
+// brand.light / brand.dark: class bodies declaring the 12-step scale`
+      ),
+      p([
+        strong('Component tokens'),
+        ' are the third altitude: ',
+        code('--haze-<component>-*'),
+        ' custom properties the library never defines — stylesheets only carry fallback chains, so unset variables keep the shipped look and any ancestor can retheme one family. Families today: Button sizes, Command, Dialog, Drawer, FloatButton, Heatmap, Indicator, Sidebar/AppShell widths, Slider track, Spoiler, Workbench — the ',
+        link('tokens page', '/tokens'),
+        ' lists them per component.',
+      ]),
+      h3('The stacking ladder'),
+      p([
+        'Layered surfaces resolve through a six-tier ',
+        code('--haze-z-*'),
+        ' ladder. Native top-layer rendering (popover, modal ',
+        code('<dialog>'),
+        ' on modern engines) paints outside the normal stacking order and needs no z-index at all — the ladder exists for surfaces that stack the ordinary way:',
+      ]),
+      table(
+        ['Token', 'Value', 'Painted by'],
+        [
+          [
+            [code('--haze-z-local-1/2/3')],
+            '1 / 2 / 3',
+            'component-local paint order only — a drag ghost, a pinned header, DataTable’s sticky cells; never leaves the component',
+          ],
+          [
+            [code('--haze-z-overlay')],
+            '100',
+            'fixed overlays above page content that still stack normally — BottomSheet / ConfirmDialog scrims, Affix, the Tour card, Workbench’s slide-out regions',
+          ],
+          [
+            [code('--haze-z-overlay-fallback')],
+            '1000',
+            'the JS floating fallback tier on engines without the popover API — panels must clear whatever fixed overlays the app mounts',
+          ],
+          [
+            [code('--haze-z-toast')],
+            '9999',
+            'the toast viewport, above everything by design',
+          ],
+        ]
+      ),
+      p([
+        'Coordinate your own layers with these tiers by referencing the same custom properties — and re-declare a tier on a subtree to re-tier just that subtree:',
+      ]),
+      codeBlock(
+        'css',
+        `/* retheme one component family: set the tokens on any ancestor —
+   unset variables keep the shipped look */
+:root {
+  --haze-dialog-width: 640px;  /* fallback 480px */
+  --haze-dialog-radius: 4px;   /* fallback --haze-radius-xl */
+}
+
+/* re-tier the ladder for a subtree: app-owned chrome inside the canvas
+   stays coordinated without touching anything outside it */
+.drawing-canvas {
+  --haze-z-overlay: 200;
+}`
+      ),
+      list(
+        [
+          'White-label or brand reskins — one seed, twelve steps, both modes.',
+          'Per-component adjustments that outgrow classNames (dialog widths, drawer sizes, button metrics).',
+          'Apps with their own layered chrome that must interleave predictably with library overlays.',
+        ]
+      )
+    ),
+  ],
+  ui: {
+    playgroundIdle:
+      'Click any of the three — the line below reports the element that actually rendered, straight from the DOM.',
+  },
+};
+
+const compositionZh: GuideDoc = {
+  title: '组合与定制',
+  intro: [
+    'haze-ui 的每个组件都是一个栈的顶层，而栈的每一层都是公开 API。当带样式的组件掰不动时，向下退一层，而不是 fork 它——本页把五个组合逃生舱系统地图化：每个舱给你什么、何时选它。按你接管多少排序：从 ',
+    code('*Core'),
+    ' 变体（你接管状态通道）到设计 token（你接管观感本身）。',
+  ],
+  sections: [
+    sec(
+      'hatch-map',
+      '五个逃生舱',
+      table(
+        ['逃生舱', '你接管', '何时选用'],
+        [
+          [
+            [code('*Core'), ' 变体'],
+            '字段的状态通道',
+            '状态源头在你手里——表单库、store、防抖的网络状态——或你要在自己的组件里包一层字段',
+          ],
+          [
+            [code('as'), ' 多态'],
+            '渲染的元素',
+            '语义要紧：链接形态的 Button、穿 Tag 皮肤的路由 Link、根元素自定的 Card',
+          ],
+          [
+            [code('haze-ui/headless'), ' 入口'],
+            '全部标记',
+            '你需要库没提供的组件，但要跑在与自带组件相同的引擎上（浮层、焦点、键盘）',
+          ],
+          [
+            [code('classNames'), ' + ', code('data-slot')],
+            '逐实例的类',
+            '某个子树内一次性的位置或皮肤微调',
+          ],
+          [
+            '设计 token',
+            '主题取值',
+            '品牌/白标观感、按组件族重定制、层叠协调',
+          ],
+        ]
+      ),
+      note([
+        '这些舱是叠加关系而非竞争：白标应用走 token，设计系统团队用 ',
+        code('InputCore'),
+        ' 包自己的字段，一根密集工具栏只补一条 ',
+        code('classNames'),
+        '。',
+      ])
+    ),
+    sec(
+      'core-variants',
+      'Core 变体：去掉状态层的表单域',
+      p([
+        '每个字段家族都有一个 Core 兄弟——今天共二十五个，全部随带样式版本从主 barrel 导出。Core 是同一渲染层（同样的皮肤、同样的 role 与 aria、同样的 forced-colors 处理），只是抽掉了决策：用普通的 ',
+        code('value'),
+        '/',
+        code('onChange'),
+        ' 通道取代 ',
+        code('ControlOrValue'),
+        '，也不做 ',
+        code('ConfigProvider'),
+        ' 默认值查找。带样式的包装层恰好只多这两件事，别无其他。',
+      ]),
+      p([
+        '库自己就是这么组合的：',
+        code('PasswordInput'),
+        ' 就是 ',
+        code('useControl'),
+        ' 加 ',
+        code('PasswordInputCore'),
+        '；',
+        code('FormItem'),
+        ' 直接绑定 ',
+        code('InputCore'),
+        '（见 Server Actions 指南）。',
+      ]),
+      table(
+        ['带样式', 'Core', '状态通道'],
+        [
+          [[code('Input')], [code('InputCore')], [code('value: string')]],
+          [[code('Textarea')], [code('TextareaCore')], [code('value: string')]],
+          [[code('PasswordInput')], [code('PasswordInputCore')], [code('value: string')]],
+          [[code('MaskedInput')], [code('MaskedInputCore')], [code('value: string')]],
+          [[code('OTPInput')], [code('OTPInputCore')], [code('value: string')]],
+          [[code('Mentions')], [code('MentionsCore')], [code('value: string')]],
+          [[code('NumberInput')], [code('NumberInputCore')], [code('value: number')]],
+          [[code('ColorPicker')], [code('ColorPickerCore')], [code('value: string')]],
+          [[code('DateField')], [code('DateFieldCore')], [code('value: string')]],
+          [[code('Datepicker')], [code('DatepickerCore')], [code('value: string')]],
+          [[code('TimeField')], [code('TimeFieldCore')], [code('value: string')]],
+          [[code('TimePicker')], [code('TimePickerCore')], [code('value: string')]],
+          [
+            [code('DateRangePicker')],
+            [code('DateRangePickerCore')],
+            [code('startDate'), ' + ', code('endDate'), ': string'],
+          ],
+          [[code('Select')], [code('SelectCore<T>')], [code('value: T | T[]')]],
+          [[code('Checkbox')], [code('CheckboxCore')], [code('checked: boolean')]],
+          [[code('Switch')], [code('SwitchCore')], [code('checked: boolean')]],
+          [[code('Toggle')], [code('ToggleCore')], [code('pressed: boolean')]],
+          [[code('RadioGroup')], [code('RadioGroupCore')], [code('value: string')]],
+          [
+            [code('Slider')],
+            [code('SliderCore')],
+            [code('value: number | [number, number]')],
+          ],
+          [[code('Rating')], [code('RatingCore')], [code('value: number')]],
+          [[code('Segmented')], [code('SegmentedCore')], [code('value: string')]],
+          [[code('TagInput')], [code('TagInputCore')], [code('value: string[]')]],
+          [
+            [code('SortableTagInput')],
+            [code('SortableTagInputCore')],
+            [code('value: string[]')],
+          ],
+          [[code('Transfer')], [code('TransferCore')], [code('value: string[]'), '（目标键）']],
+          [[code('Upload')], [code('UploadCore')], [code('value: UploadValueItem[]')]],
+        ]
+      ),
+      p(['自定义字段因此只是「你的状态通道 + 一个 Core」——皮肤、role 和焦点行为仍是库的：']),
+      codeBlock(
+        'tsx',
+        `import { useEffect } from 'react';
+import { useControl } from 'react-use-control';
+import { InputCore, type InputCoreProps } from 'haze-ui';
+
+function DebouncedField({
+  onCommit,
+  ...rest
+}: Omit<InputCoreProps, 'value' | 'onChange'> & {
+  onCommit: (value: string) => void;
+}) {
+  const [value, setValue] = useControl(undefined, '');
+
+  useEffect(() => {
+    const timer = setTimeout(() => onCommit(value), 300);
+    return () => clearTimeout(timer);
+  }, [value, onCommit]);
+
+  return <InputCore value={value} onChange={setValue} {...rest} />;
+}`
+      ),
+      note([
+        strong('Core 是无状态，不是无样式。'),
+        'Core 刻意共享字段皮肤，让自定义 Core 包装器在一排带样式字段中间保持协调。如果你要的是完全去掉 haze 皮肤，那是下面 ',
+        code('headless'),
+        ' 入口的事。',
+      ]),
+      list(
+        [
+          '字段状态在 React 组件状态之外——表单 store、fetch 缓存、控制器。',
+          '你要在自己的组件里包一层字段，用自己的默认值取代 ConfigProvider 链。',
+          '你把字段绑到只吃普通 value/onChange 的表单库（FormItem 对 react-f0rm 正是这么做的）。',
+        ]
+      )
+    ),
+    sec(
+      'as-polymorphism',
+      'as 属性：同一副皮肤，换一个元素',
+      p([
+        code('Button'),
+        '、',
+        code('MenuItem'),
+        '、',
+        code('Tag'),
+        '、',
+        code('Card'),
+        ' 和 ',
+        code('BreadcrumbItem'),
+        ' 通过共享的 MUI 风格泛型支持换元素渲染。自有 props 在前，目标元素的 props 去掉冲突键在后——所以 ',
+        code('Button'),
+        ' 配 ',
+        code("as='a'"),
+        ' 时 ',
+        code('href'),
+        ' 有类型、',
+        code('type'),
+        ' 被剔除：',
+      ]),
+      codeBlock(
+        'ts',
+        `type ButtonProps<T extends ElementType = 'button'> = ButtonOwnProps & {
+  /** Render element: 'button' (default), 'a', or any component that
+   * forwards props and ref to a DOM element. */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof ButtonOwnProps | 'as' | 'type'>;`
+      ),
+      p([
+        '接线永远获胜：类名、',
+        code('data-slot'),
+        '、aria 属性和按元素门控的默认值总是落在实际渲染的元素上。',
+        code("type='button'"),
+        ' 只在原生 button 形态上设置，锚点永不携带；锚点与自定义组件用 ',
+        code('aria-disabled'),
+        ' 报告忙碌/禁用而非原生属性。任何组件只要把 props 和 ref 转发到 DOM 元素即可——路由 Link 是典型场景。',
+      ]),
+      slot('as-playground'),
+      caption([
+        '同一个 Button 调用点，三种渲染。状态行读取真实 DOM：锚点保住 href 语义，',
+        code('data-slot'),
+        ' 换成 ',
+        code("'button-link'"),
+        '——样式钩子跟着接线走，不跟组件走。',
+      ]),
+      note([
+        code('FormItem'),
+        ' 的 ',
+        code('as'),
+        ' 是另一种多态：绑定的是控件组件（',
+        code('as'),
+        '/',
+        code('asProps'),
+        '/',
+        code('eventToValue'),
+        '，或 ',
+        code('input'),
+        ' prop）做表单接线——value、aria、blur 调度——而不是换渲染元素：',
+      ]),
+      codeBlock(
+        'tsx',
+        `// FormItem wires value/onBlur/aria; InputCore renders. Haze cores
+// emit the next plain value from onChange — no adapter needed.
+<FormItem name="email" input={InputCore} label="Email" />
+
+// checkbox-style controls pair with valueToProps:
+<FormItem
+  name="newsletter"
+  input={CheckboxCore}
+  valueToProps={(checked) => ({ checked })}
+/>`
+      )
+    ),
+    sec(
+      'headless',
+      'headless 入口：只要行为，不要组件',
+      p([
+        code('haze-ui/headless'),
+        ' 子路径导出自带组件所构建的那一层行为——直接引入引擎，标记全归你。引擎分层探测也在导出之列，你的组件因此获得与库相同的「现代原生 / JS 兜底」分裂：',
+      ]),
+      table(
+        ['领域', '导出', '给你什么'],
+        [
+          [
+            '浮层',
+            [
+              code('useFloating'),
+              '、',
+              code('FloatingPanel'),
+              '、',
+              code('floatingPlacementClasses'),
+              '、',
+              code('placeFloatingPanel'),
+              '、',
+              code('useFloatingPosition'),
+            ],
+            '基于原生 popover API 与 anchor positioning 的触发器/面板配对，含 JS 兜底、轻量关闭与 toggle 回声和解',
+          ],
+          [
+            '碰撞几何',
+            [code('computeFloatingPosition'), '、', code('resolvePadding'), '、', code('CollisionStrategy')],
+            '纯函数 flip/shift 几何，只吃字面 rect——无 DOM，RSC 安全',
+          ],
+          [
+            '驻留与退场',
+            [code('Presence'), '、', code('whenExitSettles')],
+            '退场动画播完前保持子元素挂载',
+          ],
+          [
+            '焦点',
+            [
+              code('useFocusScope'),
+              '、',
+              code('isTabbable'),
+              '、',
+              code('getTabbables'),
+              '、',
+              code('focusFirst'),
+            ],
+            '困焦作用域、Tab 序查询、浮层关闭时的焦点恢复',
+          ],
+          [
+            '菜单键盘',
+            [code('useMenuKeyboard'), '、', code('useRovingTabindex'), '、', code('getEnabledMenuItems')],
+            '条目容器的 WAI-ARIA 菜单键与漫游 tabindex',
+          ],
+          [
+            '子菜单',
+            [code('useSubmenu'), '、', code('SubmenuProvider')],
+            'MenuSub / DropdownMenuSub 背后的开关与停留意图机制',
+          ],
+          [
+            '文档级 hooks',
+            [
+              code('useClickOutside'),
+              '、',
+              code('useHotkeys'),
+              '、',
+              code('hotkey'),
+              '、',
+              code('useInView'),
+              '、',
+              code('useMediaQuery'),
+              '、',
+              code('useBusyPressable'),
+            ],
+            '外部 pointerdown、声明式快捷键、视口与媒体状态、忙碌可按压件',
+          ],
+          [
+            '杂项',
+            [
+              code('mergeRefs'),
+              '、',
+              code('useDirection'),
+              '、',
+              code('useViewTransitionFlip'),
+              '、',
+              code('supportsNativePopover'),
+              '、',
+              code('supportsAnchorPositioning'),
+            ],
+            'ref 组合、RTL 解析、View Transition、引擎分层探测',
+          ],
+        ]
+      ),
+      p([
+        '一个用 ',
+        code('Popover'),
+        ' 同款引擎搭的最小浮层——现代引擎上走 anchor 定位的 top layer，旧引擎上走带碰撞翻转的 JS 兜底：',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { useRef, useState } from 'react';
+import { FloatingPanel, useFloating } from 'haze-ui/headless';
+
+function MiniPopover({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const floating = useFloating({
+    open,
+    setOpen,
+    triggerRef,
+    panelRef,
+    animated: true,
+  });
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        aria-haspopup="true"
+        aria-expanded={open}
+        style={floating.triggerStyle}
+        onPointerDown={floating.onTriggerPointerDown}
+        onClick={floating.onTriggerClick}
+      >
+        {label}
+      </button>
+      <FloatingPanel ref={panelRef} behavior={floating} placement="bottom-span">
+        {children}
+      </FloatingPanel>
+    </>
+  );
+}`
+      ),
+      list(
+        [
+          '你需要库没提供的组件——自定义命令条、异形浮层——但想要同款引擎行为，而不是重新实现一遍。',
+          '你在给自己的标记接库的契约：自定义 modal 里的困焦、自己列表上的菜单键。',
+          '你要在非 React 上下文或 RSC 文件里用纯工具（碰撞几何、Tab 序查询）。',
+        ]
+      )
+    ),
+    sec(
+      'class-slots',
+      'classNames 槽位与 data-slot',
+      p([
+        '二十八个复合组件接受 ',
+        code('classNames'),
+        '——AntD v6 形态、按语义部位键控的记录。每项落在该部位节点上库类名的后面，与 ',
+        code('className'),
+        ' 组合而非互斥；省略的键不改变任何输出。',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { Select } from 'haze-ui';
+import { dashed } from './fields.css';
+
+<Select
+  classNames={{
+    trigger: dashed,      // the trigger box (data-slot='trigger')
+    content: 'panel-ink', // the floating panel (data-slot='content')
+  }}
+  // …
+/>`
+      ),
+      p([
+        '每个结构部位还携带 ',
+        code('data-slot'),
+        ' 属性——这是全库约定，有覆盖率契约兜底——于是不用任何 prop 也能在 CSS 里瞄准部位：',
+      ]),
+      codeBlock(
+        'css',
+        `/* scope to one Select, then aim at parts by semantic slot */
+.field :is([data-slot='trigger']) {
+  border-style: dashed;
+}
+.field [data-slot='item'] {
+  /* a selected chip in multiple mode */
+  font-weight: var(--haze-weight-medium);
+}`
+      ),
+      note([
+        code('classNames'),
+        ' 是逐实例工具。一次主题化大量实例是 token 层的活——见下一节。',
+      ])
+    ),
+    sec(
+      'tokens',
+      '设计 token：从外部重定制',
+      p([
+        'token 覆写有三个高度。',
+        strong('全局标度'),
+        '在主题类上（',
+        code('lightTheme'),
+        '/',
+        code('darkTheme'),
+        '/',
+        code('autoTheme'),
+        '，加 ',
+        code('compact'),
+        '——见深色模式与密度指南）。',
+        strong('品牌主题'),
+        '用 ',
+        code('createBrandTheme'),
+        ' 从一粒种子推导整套 12 档色阶、两种模式，',
+        code('haze-ui/tokens'),
+        ' 里还有现成预设（',
+        code('violetTheme'),
+        '、',
+        code('tealTheme'),
+        '、',
+        code('cyanTheme'),
+        '、',
+        code('orangeTheme'),
+        '、',
+        code('roseTheme'),
+        '）。',
+      ]),
+      codeBlock(
+        'tsx',
+        `import { createBrandTheme } from 'haze-ui';
+
+const brand = createBrandTheme({
+  name: 'acme',        // → --haze-acme-1…12 (lowercase kebab)
+  light: '#0066ff',    // light-mode primary seed
+  // dark: '#0a3d99',  // optional — derived (oklch l +0.2) if omitted
+});
+// brand.light / brand.dark: class bodies declaring the 12-step scale`
+      ),
+      p([
+        strong('组件 token'),
+        '是第三个高度：',
+        code('--haze-<component>-*'),
+        ' 自定义属性库从不定义——样式表只携带回退链，未设置的变量保持出厂观感，任何祖先元素都能重定制一个组件族。现有家族：Button 尺寸、Command、Dialog、Drawer、FloatButton、Heatmap、Indicator、Sidebar/AppShell 宽度、Slider 轨道、Spoiler、Workbench——',
+        link('tokens 页', '/tokens'),
+        ' 按组件列出了它们。',
+      ]),
+      h3('层叠阶梯'),
+      p([
+        '分层表面统一经由六档 ',
+        code('--haze-z-*'),
+        ' 阶梯解析。原生 top layer 渲染（现代引擎的 popover、modal ',
+        code('<dialog>'),
+        '）画在常规层叠顺序之外，根本不需要 z-index——阶梯是为常规方式层叠的表面准备的：',
+      ]),
+      table(
+        ['token', '值', '谁在用'],
+        [
+          [
+            [code('--haze-z-local-1/2/3')],
+            '1 / 2 / 3',
+            '仅组件内部绘制顺序——拖拽幽灵、置顶表头、DataTable 的粘性单元格；绝不逃出组件',
+          ],
+          [
+            [code('--haze-z-overlay')],
+            '100',
+            '页面上方仍常规层叠的固定浮层——BottomSheet / ConfirmDialog 遮罩、Affix、Tour 卡片、Workbench 滑出区域',
+          ],
+          [
+            [code('--haze-z-overlay-fallback')],
+            '1000',
+            '无 popover API 引擎上的 JS 浮层兜底层——面板必须让过应用挂载的任何固定浮层',
+          ],
+          [
+            [code('--haze-z-toast')],
+            '9999',
+            'toast 视口，设计上高于一切',
+          ],
+        ]
+      ),
+      p([
+        '让你自己的层与这些档位协调，方式就是引用同一批自定义属性——在子树上重声明某档，则只重排该子树：',
+      ]),
+      codeBlock(
+        'css',
+        `/* retheme one component family: set the tokens on any ancestor —
+   unset variables keep the shipped look */
+:root {
+  --haze-dialog-width: 640px;  /* fallback 480px */
+  --haze-dialog-radius: 4px;   /* fallback --haze-radius-xl */
+}
+
+/* re-tier the ladder for a subtree: app-owned chrome inside the canvas
+   stays coordinated without touching anything outside it */
+.drawing-canvas {
+  --haze-z-overlay: 200;
+}`
+      ),
+      list(
+        [
+          '白标/品牌换肤——一粒种子、十二档、两种模式。',
+          '长出 classNames 能力范围的按组件调整（对话框宽度、抽屉尺寸、按钮度量）。',
+          '应用自带分层 chrome，需要与库浮层可预期地交错。',
+        ]
+      )
+    ),
+  ],
+  ui: {
+    playgroundIdle:
+      '点击任意一个——下方一行直接来自 DOM，报告实际渲染出的元素。',
+  },
+};
+
 /** All migrated guide bodies, keyed by guide id then locale. */
 export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   a11y: { en: a11yEn, zh: a11yZh },
   a11yContracts: { en: a11yContractsEn, zh: a11yContractsZh },
+  composition: { en: compositionEn, zh: compositionZh },
   darkMode: { en: darkModeEn, zh: darkModeZh },
   density: { en: densityEn, zh: densityZh },
   migration: { en: migrationEn, zh: migrationZh },

@@ -13,6 +13,7 @@ import { css } from '@linaria/core';
 import { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'react';
 
 import { useStrings } from '../LocaleProvider';
+import { formatFileSize } from '../FilePreview/file-preview-format';
 
 import UploadList from './UploadList';
 import { createXhrRequest } from './xhr-upload';
@@ -38,6 +39,13 @@ type UploadCoreProps = {
    * the dashed drop area with a drag-over highlight and accepts dropped
    * files; `false` renders a plain click-only picker area. */
   droppable?: boolean;
+  /** Paste-to-upload: the zone (focusable — `role="button"`,
+   * `tabIndex={0}`) listens for paste events and runs clipboard files
+   * through the exact drop pipeline — `accept` grammar,
+   * `beforeUpload`, `maxSize`, `maxCount` — reporting new files the
+   * same way drops do. Clipboard content without files passes through
+   * untouched. Works in droppable and click-only modes alike. */
+  paste?: boolean;
   /** Gatekeeper applied to every file — click picks and drops alike —
    * before it enters the value: return `false` (or a promise resolving
    * to `false`) to drop the file. Verdicts for one pick are awaited
@@ -45,6 +53,17 @@ type UploadCoreProps = {
    * every verdict resolved; the UI is not blocked while waiting.
    * A refused file never enters the list, so it never uploads. */
   beforeUpload?: (file: File) => boolean | Promise<boolean>;
+  /** Per-file size cap in bytes, applied after the `beforeUpload`
+   * verdicts and before `maxCount`. An over-limit file still enters
+   * the value — as an error row carrying a size message — but never
+   * uploads: auto mode, `retry` and the `UploadHandle` all refuse it,
+   * leaving remove as the only action. `maxCount` caps the whole
+   * committed list, rejected rows included (pipeline order:
+   * `accept → beforeUpload → maxSize → maxCount`). The cap gates the
+   * intake paths only — a `File` arriving through `value` is the
+   * consumer's call and uploads normally. A non-positive or
+   * non-finite value disables the cap. */
+  maxSize?: number;
   /** Cap for the committed list. Applied last: existing entries win,
    * then the freshly picked survivors; anything beyond the first
    * `maxCount` entries is discarded silently. */
@@ -164,6 +183,7 @@ type UploadCoreProps = {
   | 'onDragEnter'
   | 'onDragLeave'
   | 'onKeyDown'
+  | 'onPaste'
   | 'role'
   | 'tabIndex'
 >;
@@ -244,6 +264,23 @@ function clampPercent(percent: number): number {
   return Math.max(0, Math.min(100, Math.round(percent)));
 }
 
+/** `maxSize` sanitation, mirroring `resolveConcurrency`: only positive
+ * finite numbers cap anything; `0`, negatives, `Infinity` and `NaN`
+ * mean "no cap". The prop's default (`undefined`) lands here as null.
+ */
+function resolveMaxSize(maxSize: number | undefined): number | null {
+  return maxSize != null && Number.isFinite(maxSize) && maxSize > 0
+    ? maxSize
+    : null;
+}
+
+/** The intake-rejection message for an over-limit file — both sizes in
+ * `FilePreview`'s human units (`2.50 MB exceeds the 1.00 MB limit`).
+ * Rows carry it instead of the retryable "upload failed" convention. */
+function sizeErrorMessage(file: File, maxSize: number): string {
+  return `${formatFileSize(file.size)} exceeds the ${formatFileSize(maxSize)} limit`;
+}
+
 /** Queue depth cap for `concurrency`: positive finite numbers are
  * honored (fractional floors to whole slots); anything else —
  * `Infinity`, `NaN`, non-positive — means unlimited, the pre-queue
@@ -275,8 +312,10 @@ export default function UploadCore({
   onChange,
   accept,
   droppable = true,
+  paste = false,
   beforeUpload,
   maxCount,
+  maxSize,
   multiple = false,
   request,
   action,
@@ -355,6 +394,13 @@ export default function UploadCore({
     latestConcurrency.current = resolveConcurrency(concurrency);
   });
 
+  // Files refused at intake for exceeding `maxSize` → their rejection
+  // message. Every intake re-evaluates the whole batch (entries set or
+  // deleted in `commit`), so the map is always the freshest verdict;
+  // the entries sync renders these files as error rows and every
+  // upload entry point refuses them.
+  const sizeRejected = useRef(new Map<File, string>());
+
   // One AbortController per in-flight upload — also the synchronous
   // "already running" guard (state updates may not have flushed when
   // two triggers race in the same tick).
@@ -386,6 +432,10 @@ export default function UploadCore({
   // `drain` starts it as a slot frees up (success, failure, cancel).
   const runUpload = useCallback((file: File) => {
     if (!latestExecutor.current || !mountedRef.current) return;
+    // Intake-rejected files (over `maxSize`) never upload through any
+    // path: autostart sees no idle entry, and retry, `upload(file)` and
+    // `uploadAll()` all stop here.
+    if (sizeRejected.current.has(file)) return;
     const entry = entriesRef.current.find((e) => e.file === file);
     if (!entry || controllers.current.has(entry.uid)) return;
     if (pendingUids.current.has(entry.uid)) return;
@@ -492,9 +542,13 @@ export default function UploadCore({
     }
     // A file that left the value forgets its attempt mark — if it is
     // ever re-added (same File object), autostart picks it up again.
+    // Size rejections follow the same lifecycle.
     const liveUids = new Set(value.map((item) => uidFor(item)));
     attemptedUids.current.forEach((uid) => {
       if (!liveUids.has(uid)) attemptedUids.current.delete(uid);
+    });
+    sizeRejected.current.forEach((_message, file) => {
+      if (!liveUids.has(uidFor(file))) sizeRejected.current.delete(file);
     });
     setEntries((prev) => {
       if (prev.length === 0 && value.length === 0) return prev;
@@ -516,14 +570,27 @@ export default function UploadCore({
           return { ...existing, status, percent };
         }
         changed = true;
-        return item instanceof File
-          ? { uid: uidFor(item), file: item, status: 'idle' as const, percent: 0 }
-          : {
+        if (!(item instanceof File)) {
+          return {
+            uid: uidFor(item),
+            file: item,
+            status: item.status ?? 'success',
+            percent: clampPercent(item.percent ?? 0),
+          };
+        }
+        // Fresh local pick: an intake size rejection lands straight at
+        // `error` with its message (never idle, so autostart skips it);
+        // everything else starts idle as before.
+        const rejected = sizeRejected.current.get(item);
+        return rejected != null
+          ? {
               uid: uidFor(item),
               file: item,
-              status: item.status ?? 'success',
-              percent: clampPercent(item.percent ?? 0),
-            };
+              status: 'error' as const,
+              percent: 0,
+              error: rejected,
+            }
+          : { uid: uidFor(item), file: item, status: 'idle' as const, percent: 0 };
       });
       return changed || byItem.size > 0 ? next : prev;
     });
@@ -547,7 +614,7 @@ export default function UploadCore({
   useEffect(() => {
     const emit = latestOnStatusChange.current;
     if (!emit || !tracking) return;
-    emit(entries.map(({ file, status, percent }) => ({ file, status, percent })));
+    emit(entries.map(({ file, status, percent, error }) => ({ file, status, percent, error })));
   }, [entries, tracking]);
 
   // Imperative surface: `ref.current?.upload()/uploadAll()/abort()/clear()`.
@@ -638,11 +705,29 @@ export default function UploadCore({
 
       const emit = (kept: File[]) => {
         if (kept.length === 0) return;
+        // maxSize verdicts are re-evaluated for the whole batch on
+        // every intake: over-limit files are marked (they stay in the
+        // batch as error rows), anything at or under the cap — or with
+        // no cap at all — forgets a stale rejection from an earlier
+        // pick of the same File.
+        const cap = resolveMaxSize(maxSize);
+        if (cap != null) {
+          kept.forEach((file) => {
+            if (file.size > cap) {
+              sizeRejected.current.set(file, sizeErrorMessage(file, cap));
+            } else {
+              sizeRejected.current.delete(file);
+            }
+          });
+        } else {
+          sizeRejected.current.clear();
+        }
         const next = multiple ? [...latestValue.current, ...kept] : kept;
-        // Order of operations: accept (applied by the caller for drops,
-        // by the native dialog for picks) → beforeUpload → maxCount.
-        // maxCount keeps existing entries first; excess fresh files are
-        // dropped silently.
+        // Order of operations: accept (applied by the caller for drops
+        // and pastes, by the native dialog for picks) → beforeUpload →
+        // maxSize (rejected rows stay, marked) → maxCount. maxCount
+        // keeps existing entries first; excess fresh files — rejected
+        // rows included — are dropped silently.
         onChange(maxCount == null ? next : next.slice(0, maxCount));
       };
 
@@ -660,7 +745,7 @@ export default function UploadCore({
         })
         .catch(() => undefined);
     },
-    [multiple, maxCount, beforeUpload, onChange]
+    [multiple, maxCount, maxSize, beforeUpload, onChange]
   );
 
   const handleClick = useCallback(() => {
@@ -697,6 +782,21 @@ export default function UploadCore({
       // discarded silently) so drops share the picker's semantics.
       const dropped = Array.from(e.dataTransfer.files);
       commit(accept ? dropped.filter((file) => matchesAccept(file, accept)) : dropped);
+    },
+    [commit, accept]
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      const files = Array.from(e.clipboardData.files);
+      // Clipboard without files (text, images as markup) passes through
+      // untouched — only a real file payload is ours to intercept.
+      if (files.length === 0) return;
+      e.preventDefault();
+      // Paste path: the same accept grammar and commit pipeline a drop
+      // takes (beforeUpload, maxSize, maxCount all apply), so reporting
+      // and list behavior follow the drop path exactly.
+      commit(accept ? files.filter((file) => matchesAccept(file, accept)) : files);
     },
     [commit, accept]
   );
@@ -740,6 +840,7 @@ export default function UploadCore({
         onDragOver={droppable ? handleDragOver : undefined}
         onDragEnter={droppable ? handleDragEnter : undefined}
         onDragLeave={droppable ? handleDragLeave : undefined}
+        onPaste={paste ? handlePaste : undefined}
         role="button"
         tabIndex={0}
       >

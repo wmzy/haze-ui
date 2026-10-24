@@ -2,13 +2,16 @@
 /**
  * Generate src/generated/search-index.json — the ⌘K palette's Docs tier.
  *
- * Every entry is shaped {type, label, sublabel?, route, keywords?}; four
+ * Every entry is shaped {type, label, sublabel?, route, keywords?}; five
  * kinds are collected:
  *
  *   - page:      static docs-page list (labels/keywords mirror the sidebar
  *                nav in src/views/Layout/index.tsx)
  *   - component: the sidebar's component-groups.ts (names + ALIASES search
  *                aliases, route=/components/<slug>)
+ *   - api:       one generated reference page per component
+ *                (route=/api/<slug>, label "<Name> API", keywords reuse the
+ *                component's ALIASES)
  *   - section:   every <h2> title in each registered component demo (the
  *                registry in ComponentDetail/index.tsx maps routes → demo
  *                files); generic headings (Demo/Props/API/Accessibility)
@@ -156,6 +159,27 @@ const PAGES = [
       'optimistic',
     ],
     zh: 'React 19 Actions',
+  },
+  {
+    label: 'Composition & customization',
+    sublabel: 'Guide',
+    route: '/guides/composition',
+    keywords: [
+      'composition',
+      'customization',
+      'escape hatch',
+      'core',
+      'unstyled',
+      'headless',
+      'as prop',
+      'polymorphic',
+      'classnames',
+      'data-slot',
+      'design tokens',
+      'z-index',
+      'brand theme',
+    ],
+    zh: '组合与定制',
   },
   {
     label: 'Design Tokens',
@@ -503,6 +527,19 @@ export function generateSearchIndex(rootDir = defaultRoot()) {
         keywords: aliases[item.route] ?? [],
       });
     }
+  }
+
+  // API tier: one generated reference page per component (mirrors the
+  // /api/:componentId route); keywords reuse the component's aliases so
+  // "modal" surfaces "Dialog API" just like it surfaces "Dialog".
+  for (const [route, name] of nameByRoute) {
+    entries.push({
+      type: 'api',
+      label: `${name} API`,
+      sublabel: 'Reference',
+      route: `/api/${route}`,
+      keywords: aliases[route] ?? [],
+    });
   }
 
   const sectionEntries = [];

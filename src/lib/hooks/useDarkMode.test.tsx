@@ -163,18 +163,21 @@ describe('useDarkMode', () => {
     );
     expect(ref.current).toBeNull(); // 未渲染元素：不炸、不落类
 
-    const Probe = () => {
-      const [, setIsDark] = useDarkMode({ storageKey: KEY, target: ref });
+    // ref 经 props 传入而非捕获外层闭包：React Compiler 会把仅引用
+    // 组件外自由变量的内联回调 hoist 出词法作用域，it() 作用域里的
+    // ref 会变成 ReferenceError（发布产物无此形态，测试侧改 props 传递）。
+    const Probe = ({ target }: { target: { current: HTMLElement | null } }) => {
+      const [, setIsDark] = useDarkMode({ storageKey: KEY, target });
       return (
         <div
           ref={(node) => {
-            ref.current = node;
+            target.current = node;
           }}
           onClick={() => setIsDark(true)}
         />
       );
     };
-    render(<Probe />);
+    render(<Probe target={ref} />);
     expect(ref.current).not.toBeNull();
     // 本用例此前 setIsDark(true) 已把 'dark' 持久化，Probe 恢复即暗色
     expect(ref.current?.className).toContain(darkTheme);

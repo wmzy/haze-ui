@@ -31,7 +31,7 @@ export const group = css`
    * (z-index works on flex items even when statically positioned). */
   & > *:focus,
   & > *:focus-visible {
-    z-index: 1;
+    z-index: var(--haze-z-local-1);
   }
 
   & > *:not(:first-child) {

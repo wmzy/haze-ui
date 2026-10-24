@@ -77,6 +77,27 @@ jobs:
             echo "- **total:** ${total} bytes ($(numfmt --to=iec --suffix=B "$total"))"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # React Compiler gate: the full unit suite re-run with
+  # babel-plugin-react-compiler auto-memoization enabled
+  # (HAZE_REACT_COMPILER=1 → pnpm test:compiler). Lib builds compile the
+  # dist through the same plugin (vite.config.mts), so this job keeps
+  # compiler bail-outs and behavior changes from ever reaching a
+  # published build unnoticed. Worker count is capped by the script
+  # itself (--maxWorkers=4) so the job behaves identically locally.
+  react-compiler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm test:compiler
+
   # Real-browser smoke tests + pixel baselines against the vite harness in
   # e2e/app (not the built demo). Snapshots are only reproducible on the
   # same Playwright-pinned Chromium as the baselines were captured with,

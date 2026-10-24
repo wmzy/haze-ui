@@ -1,3 +1,5 @@
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+
 import { Breadcrumb, BreadcrumbItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
@@ -7,6 +9,23 @@ import A11yNote from '../A11yNote';
 import { intro, section } from '../styles';
 
 import { CssVarsSection } from './shared';
+
+// Router-shaped `as`: BreadcrumbItem accepts any component that
+// forwards props to a DOM element — here a minimal Link stand-in whose
+// navigation prop is `to` rather than `href`. The item wears the link
+// skin, and the trail semantics (nav/ol, aria-current on the last
+// <li>) are unchanged.
+function RouterLink({
+  to,
+  children,
+  ...rest
+}: { to: string; children: ReactNode } & ComponentPropsWithoutRef<'a'>) {
+  return (
+    <a href={to} {...rest}>
+      {children}
+    </a>
+  );
+}
 
 // ─── Breadcrumb ────────────────────────────────────────────────
 export default function BreadcrumbDemo() {
@@ -32,6 +51,19 @@ export default function BreadcrumbDemo() {
           <BreadcrumbItem href='#'>Docs</BreadcrumbItem>
           <BreadcrumbItem href='#'>UI</BreadcrumbItem>
           <BreadcrumbItem>Current</BreadcrumbItem>
+        </Breadcrumb>
+      </div>
+
+      <div className={section}>
+        <h2>Router Links (as)</h2>
+        <Breadcrumb>
+          <BreadcrumbItem as={RouterLink} to='/'>
+            Home
+          </BreadcrumbItem>
+          <BreadcrumbItem as={RouterLink} to='/components'>
+            Components
+          </BreadcrumbItem>
+          <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
         </Breadcrumb>
       </div>
 

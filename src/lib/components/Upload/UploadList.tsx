@@ -101,6 +101,11 @@ const percentClass = css`
   font-variant-numeric: tabular-nums;
 `;
 
+const errorText = css`
+  flex-shrink: 0;
+  color: var(--haze-color-danger);
+`;
+
 const actionButton = css`
   display: inline-flex;
   align-items: center;
@@ -142,7 +147,7 @@ const cardRemove = css`
   position: absolute;
   top: var(--haze-space-1);
   inset-inline-end: var(--haze-space-1);
-  z-index: 2;
+  z-index: var(--haze-z-local-2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -224,7 +229,7 @@ const cardFallbackName = css`
 const cardMask = css`
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -245,7 +250,7 @@ const cardMaskPercent = css`
 const cardErrorOverlay = css`
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -338,7 +343,10 @@ function useThumbSource(file: UploadValueItem): string | null {
  * type), status icon + name + state text + per-state actions, with
  * the progress bar underneath while uploading/errored. Echo entries
  * (`UploadFile`) sit at a terminal status: they remove but never
- * retry — there is no local `File` to send again. */
+ * retry — there is no local `File` to send again. Intake-rejected
+ * entries (over `maxSize`) carry their rejection message instead of
+ * the retry + danger-progress affordances: the file never uploads, so
+ * remove is their only action. */
 function DefaultRow({
   entry,
   actions,
@@ -354,7 +362,7 @@ function DefaultRow({
   progressClassName?: string;
 }) {
   const strings = useStrings('upload');
-  const { file, status, percent } = entry;
+  const { file, status, percent, error } = entry;
   const isFile = file instanceof File;
   return (
     <>
@@ -368,7 +376,7 @@ function DefaultRow({
           </span>
         )}
         {status === 'error' && (
-          <span data-slot='icon' x-class={[statusIcon, errorIcon]} role="img" aria-label={strings.error}>
+          <span data-slot='icon' x-class={[statusIcon, errorIcon]} role="img" aria-label={error ?? strings.error}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
@@ -382,6 +390,13 @@ function DefaultRow({
         {status === 'uploading' && (
           <span data-slot='status' x-class={[percentClass]}>
             {strings.uploading} {percent}%
+          </span>
+        )}
+        {status === 'error' && error != null && (
+          // Intake rejection (over maxSize): the message replaces the
+          // upload state — nothing was ever transferred.
+          <span data-slot='status' x-class={[errorText]}>
+            {error}
           </span>
         )}
         {status === 'uploading' ? (
@@ -400,7 +415,7 @@ function DefaultRow({
           </button>
         ) : (
           <>
-            {status === 'error' && isFile && (
+            {status === 'error' && isFile && error == null && (
               <button
                 type="button"
                 data-slot='retry-button'
@@ -431,7 +446,7 @@ function DefaultRow({
           </>
         )}
       </div>
-      {(status === 'uploading' || (status === 'error' && isFile)) && (
+      {(status === 'uploading' || (status === 'error' && isFile && error == null)) && (
         <Progress
           value={percent}
           size="sm"
@@ -508,7 +523,7 @@ function PictureCard({
   progressClassName?: string;
 }) {
   const strings = useStrings('upload');
-  const { file, status, percent } = entry;
+  const { file, status, percent, error } = entry;
   const isFile = file instanceof File;
   const thumbSrc = useThumbSource(file);
 
@@ -565,8 +580,8 @@ function PictureCard({
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <span>{strings.error}</span>
-          {isFile && (
+          <span>{error ?? strings.error}</span>
+          {isFile && error == null && (
             <button
               type="button"
               data-slot='retry-button'

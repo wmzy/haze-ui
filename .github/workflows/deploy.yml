@@ -9,19 +9,37 @@ on:
       - "vite.config.mts"
       - "package.json"
       - ".github/workflows/deploy.yml"
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      channel:
+        description: "Docs channel to deploy"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - stable
 
 permissions:
   contents: write
   pages: write
   id-token: write
 
+# 双通道共享同一个 Pages 站点：stable（release 构建）→ 根，dev（main
+# 构建）→ /dev/ 子树。通道间排队而不是取消：账本回推（部署成功后把
+# 整棵站点树推回 gh-pages 分支）若被后续运行取消，下一次部署会从陈旧
+# 账本重建，把刚上线的另一通道子树回滚。
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    # release 触发只接受 v* tag（semantic-release 的版本 tag）；
+    # 非版本 tag 的 release 不动站点。
+    if: github.event_name != 'release' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -43,10 +61,58 @@ jobs:
 
       - run: pnpm install
 
-      - name: Build docs site
-        run: npm run build:demo
+      - name: Resolve docs channel
+        id: cfg
+        run: |
+          set -euo pipefail
+          case "${{ github.event_name }}" in
+            release) channel=stable ;;
+            workflow_dispatch) channel='${{ inputs.channel }}' ;;
+            *) channel=dev ;;
+          esac
+          case "$channel" in
+            stable) site_dir=dist ;;
+            dev) site_dir=site ;;
+            *) echo "unknown docs channel: $channel" >&2; exit 1 ;;
+          esac
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+          echo "site-dir=$site_dir" >> "$GITHUB_OUTPUT"
 
-      - name: Carry forward archived docs (/v/*)
+      - name: Build docs site (stable channel, gh-pages root)
+        if: steps.cfg.outputs.channel == 'stable'
+        run: HAZE_DOCS_CHANNEL=stable npm run build:demo
+
+      - name: Build docs site (dev channel, gh-pages /dev/ subtree)
+        if: steps.cfg.outputs.channel == 'dev'
+        run: HAZE_DEMO_BASE=/haze-ui/dev/ HAZE_DOCS_CHANNEL=dev npm run build:demo
+
+      - name: Make 404.html channel-aware
+        run: |
+          set -euo pipefail
+          # GH Pages 对任何 404 路径都回退到「根 404.html」——它是
+          # stable 通道的 app shell（base /haze-ui/）。/dev/ 与 /v/*
+          # 的深链会以错误的 base 启动、路由必然 miss：在 shell 前插
+          # 一个探针脚本，把这类路径重定向到对应子树根，由正确的
+          # 通道接管；stable 自身的深链不匹配探针，照常由 shell 渲染。
+          node --input-type=module <<'EOF'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const probe =
+            '<script>(function(){var m=location.pathname.match(' +
+            '/^(\\/haze-ui\\/(?:dev|v\\/[^/]+))\\/.+$/);' +
+            'if(m)location.replace(m[1]+"/");})();</script>';
+          const html = readFileSync('dist/index.html', 'utf8');
+          if (!/<head[^>]*>/.test(html)) {
+            throw new Error('dist/index.html has no <head> to anchor the 404 probe');
+          }
+          writeFileSync(
+            'dist/404.html',
+            html.replace(/<head[^>]*>/, (head) => head + probe)
+          );
+          console.log('dist/404.html written with channel probe');
+          EOF
+
+      - name: Carry forward archived docs (/v/*) and the dev subtree
+        if: steps.cfg.outputs.channel == 'stable'
         run: |
           set -euo pipefail
           # gh-pages 分支是「当前已部署站点」的账本：每次部署成功后由本
@@ -60,11 +126,17 @@ jobs:
               mkdir -p dist/v
               cp -a gh-pages-tree/v/. dist/v/
             fi
+            # dev 通道子树线上原样保留：stable 发布不重刷 dev 文档。
+            if [ -d gh-pages-tree/dev ]; then
+              mkdir -p dist/dev
+              cp -a gh-pages-tree/dev/. dist/dev/
+            fi
           else
             echo 'No gh-pages branch yet — first deploy, nothing to carry forward.'
           fi
 
       - name: Snapshot this release under /v/{version}/
+        if: steps.cfg.outputs.channel == 'stable'
         run: |
           set -euo pipefail
           VERSION=$(node -p "require('./dist/version.json').version")
@@ -85,27 +157,54 @@ jobs:
           cp llms.txt llms-full.txt "dist/v/$VERSION/"
           echo "Archived /v/$VERSION/."
 
+      - name: Assemble full site (stable root from ledger + fresh dev subtree)
+        if: steps.cfg.outputs.channel == 'dev'
+        run: |
+          set -euo pipefail
+          # dev 部署不动 stable 面：站点根（含 /v/* 归档）从账本原样
+          # 取回，仅整体替换 /dev/ 子树为本次构建。
+          mkdir -p site
+          if git fetch --no-tags --depth=1 origin gh-pages; then
+            git worktree add --detach gh-pages-tree FETCH_HEAD
+            cp -a gh-pages-tree/. site/
+            rm -f site/.git
+            rm -rf site/dev
+            mkdir -p site/dev
+            cp -a dist/. site/dev/
+            echo "Assembled: ledger stable root + fresh /dev/ subtree."
+          else
+            echo 'No gh-pages ledger yet — deploying the /dev/ subtree only (root goes live with the first release).'
+            mkdir -p site/dev
+            cp -a dist/. site/dev/
+          fi
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ${{ steps.cfg.outputs.site-dir }}
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Record deployed tree on the gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANNEL: ${{ steps.cfg.outputs.channel }}
         run: |
           set -euo pipefail
-          # 账本更新：让下一次部署能取回本次的 /v/* 归档与根 version.json。
-          # 在 deploy-pages 成功之后执行，部署失败时账本不超前于线上。
-          cd dist
+          # 账本更新：让下一次部署能取回本次的整棵站点树（stable 根 +
+          # /dev/ 子树 + /v/* 归档）。在 deploy-pages 成功之后执行，
+          # 部署失败时账本不超前于线上。
+          cd "${{ steps.cfg.outputs.site-dir }}"
+          # stable 部署的根 version.json 即本次版本；dev 部署的根是线上
+          # stable 的，本次构建在 dev/version.json。
+          VER_FILE="version.json"
+          [ "$CHANNEL" = "dev" ] && VER_FILE="dev/version.json"
           git init -q -b gh-pages
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -qm "docs: deploy $(node -p "require('./version.json').version")"
+          git commit -qm "docs: deploy $CHANNEL ($(node -p "require('./$VER_FILE').version"))"
           git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages:gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -36,7 +36,7 @@ export const rowDraggable = css`
 
 /** The dragged row stacks above its siblings while it flies. */
 export const rowDragging = css`
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 `;
 
 /**

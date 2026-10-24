@@ -1792,6 +1792,406 @@ describe('Upload — directory picking', () => {
   });
 });
 
+describe('Upload — paste intake', () => {
+  it('pastes clipboard files through the same value channel', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore value={[]} onChange={onChange} paste multiple />
+    );
+    const zone = container.firstChild as HTMLElement;
+    // paste rides the zone's existing focusability (role=button) —
+    // keyboard users tab to the zone and press Ctrl/Cmd+V.
+    expect(zone).toHaveAttribute('tabindex', '0');
+    const pasted = new File(['p'], 'pasted.txt', { type: 'text/plain' });
+    fireEvent.paste(zone, { clipboardData: { files: [pasted] } });
+    expect(onChange).toHaveBeenCalledWith([pasted]);
+  });
+
+  it('pastes append to the value like a multiple drop', () => {
+    const existing = new File(['e'], 'existing.txt', { type: 'text/plain' });
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore value={[existing]} onChange={onChange} paste multiple />
+    );
+    const pasted = new File(['p'], 'pasted.txt', { type: 'text/plain' });
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [pasted] },
+    });
+    expect(onChange).toHaveBeenCalledWith([existing, pasted]);
+  });
+
+  it('applies the accept grammar to pasted files', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore value={[]} onChange={onChange} paste accept=".txt" />
+    );
+    const note = new File(['n'], 'note.txt', { type: 'text/plain' });
+    const song = new File(['s'], 'song.mp3', { type: 'audio/mpeg' });
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [note, song] },
+    });
+    expect(onChange).toHaveBeenCalledWith([note]);
+  });
+
+  it('runs the beforeUpload gate and maxCount on pasted files', async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore
+        value={[]}
+        onChange={onChange}
+        paste
+        multiple
+        maxCount={1}
+        beforeUpload={(file) => file.name !== 'skip.txt'}
+      />
+    );
+    const skip = new File(['0'], 'skip.txt', { type: 'text/plain' });
+    const first = new File(['1'], 'first.txt', { type: 'text/plain' });
+    const second = new File(['2'], 'second.txt', { type: 'text/plain' });
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [skip, first, second] },
+    });
+    await flushGates();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    // gate first (skip dropped, first/second survive), then the cap
+    expect(onChange).toHaveBeenCalledWith([first]);
+  });
+
+  it('is inert without the paste prop', () => {
+    const onChange = vi.fn();
+    const { container } = render(<UploadCore value={[]} onChange={onChange} />);
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [new File(['p'], 'p.txt', { type: 'text/plain' })] },
+    });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('works on the click-only area', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore value={[]} onChange={onChange} paste droppable={false} />
+    );
+    const pasted = new File(['p'], 'pasted.txt', { type: 'text/plain' });
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [pasted] },
+    });
+    expect(onChange).toHaveBeenCalledWith([pasted]);
+  });
+
+  it('passes clipboard payloads without files through untouched', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore value={[]} onChange={onChange} paste />
+    );
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [] },
+    });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('sugar: Upload reports pasted files through onChange like picks', () => {
+    const onChange = vi.fn();
+    const { container } = render(<Upload paste onChange={onChange} />);
+    const pasted = new File(['p'], 'pasted.txt', { type: 'text/plain' });
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [pasted] },
+    });
+    expect(onChange).toHaveBeenCalledWith([pasted]);
+  });
+});
+
+describe('Upload — maxSize validation', () => {
+  /** `2.00 KB` of content against a `1.00 KB` cap. */
+  const bigFile = () =>
+    new File(['x'.repeat(2048)], 'big.png', { type: 'image/png' });
+  const smallFile = () => new File(['s'], 'small.png', { type: 'image/png' });
+
+  it('marks over-limit files as error rows with a size message and never uploads them', async () => {
+    const onStatusChange = vi.fn<(files: UploadFileStatus[]) => void>();
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload
+        request={request}
+        maxSize={1024}
+        multiple
+        showUploadList
+        onStatusChange={onStatusChange}
+      />
+    );
+    const big = bigFile();
+    const small = smallFile();
+    await userEvent.upload(getFileInput(), [big, small]);
+    await flushUploads();
+
+    // only the in-limit file ever reaches the executor
+    expect(calls.map((c) => c.file)).toEqual([small]);
+    const statuses = onStatusChange.mock.calls.at(-1)![0];
+    expect(statuses[0]).toEqual({
+      file: big,
+      status: 'error',
+      percent: 0,
+      error: '2.00 KB exceeds the 1.00 KB limit',
+    });
+    expect(statuses[1]!.file).toBe(small);
+    expect(statuses[1]!.status).toBe('uploading');
+
+    // the rejected row: error state + message, no retry, remove only
+    const rows = document.querySelectorAll('li[data-status]');
+    expect(rows[0]).toHaveAttribute('data-status', 'error');
+    expect(
+      within(rows[0] as HTMLElement).getByText(
+        '2.00 KB exceeds the 1.00 KB limit'
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Retry upload' })
+    ).not.toBeInTheDocument();
+    expect(
+      within(rows[0] as HTMLElement).getByRole('button', { name: 'Remove file' })
+    ).toBeInTheDocument();
+    // the icon names the rejection, not a generic upload failure
+    expect(
+      within(rows[0] as HTMLElement).getByRole('img', {
+        name: '2.00 KB exceeds the 1.00 KB limit',
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('rejects pasted over-limit files exactly like drops', async () => {
+    const onStatusChange = vi.fn<(files: UploadFileStatus[]) => void>();
+    const { calls, request } = makeDeferredRequest();
+    const { container } = render(
+      <Upload
+        request={request}
+        maxSize={1024}
+        paste
+        showUploadList
+        onStatusChange={onStatusChange}
+      />
+    );
+    const big = bigFile();
+    fireEvent.paste(container.firstChild as HTMLElement, {
+      clipboardData: { files: [big] },
+    });
+    await flushUploads();
+    expect(calls).toHaveLength(0);
+    expect(onStatusChange.mock.calls.at(-1)![0]).toEqual([
+      {
+        file: big,
+        status: 'error',
+        percent: 0,
+        error: '2.00 KB exceeds the 1.00 KB limit',
+      },
+    ]);
+  });
+
+  it('a single over-limit pick replaces the list with the rejected row', () => {
+    const onChange = vi.fn();
+    const props = {
+      maxSize: 1024,
+      showUploadList: true,
+    } as const;
+    const { container, rerender } = render(
+      <UploadCore value={[]} onChange={onChange} {...props} />
+    );
+    const big = bigFile();
+    fireEvent.drop(container.firstChild as HTMLElement, {
+      dataTransfer: { files: [big] },
+    });
+    expect(onChange).toHaveBeenCalledWith([big]);
+    // the controlled consumer commits the emitted list — the rejected
+    // file renders as an error row
+    rerender(<UploadCore value={[big]} onChange={onChange} {...props} />);
+    expect(document.querySelector('li[data-status]')).toHaveAttribute(
+      'data-status',
+      'error'
+    );
+  });
+
+  it('applies maxSize after beforeUpload and before maxCount', async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <UploadCore
+        value={[]}
+        onChange={onChange}
+        multiple
+        maxCount={2}
+        maxSize={1024}
+        beforeUpload={(file) => file.name !== 'skip.txt'}
+      />
+    );
+    const skip = new File(['0'], 'skip.txt', { type: 'text/plain' });
+    const big = bigFile();
+    const first = new File(['1'], 'first.txt', { type: 'text/plain' });
+    const second = new File(['2'], 'second.txt', { type: 'text/plain' });
+    fireEvent.drop(container.firstChild as HTMLElement, {
+      dataTransfer: { files: [skip, big, first, second] },
+    });
+    await flushGates();
+    // gate first (skip dropped), then the size mark (big stays, as an
+    // error row), then the cap — rejected rows occupy list slots, so
+    // the second in-limit file falls off the end silently
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith([big, first]);
+  });
+
+  it('rejected files never upload through retry, upload() or uploadAll()', async () => {
+    const ref = createRef<UploadHandle>();
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload
+        ref={ref}
+        request={request}
+        maxSize={1024}
+        manual
+        multiple
+        showUploadList
+      />
+    );
+    const big = bigFile();
+    await userEvent.upload(getFileInput(), big);
+    await flushUploads();
+    expect(document.querySelector('li[data-status]')).toHaveAttribute(
+      'data-status',
+      'error'
+    );
+
+    act(() => ref.current!.uploadAll());
+    await flushUploads();
+    act(() => ref.current!.upload(big));
+    await flushUploads();
+    expect(calls).toHaveLength(0);
+    // no retry affordance either — the file itself violates the cap
+    expect(
+      screen.queryByRole('button', { name: 'Retry upload' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('value-provided files bypass the maxSize gate', async () => {
+    const { calls, request } = makeDeferredRequest();
+    const big = bigFile();
+    render(
+      <UploadCore
+        value={[big]}
+        onChange={() => undefined}
+        request={request}
+        maxSize={1024}
+        showUploadList
+      />
+    );
+    await flushUploads();
+    // the cap gates intake (picks/drops/pastes) only — a File the
+    // consumer commits through value is their call and uploads
+    expect(calls.map((c) => c.file)).toEqual([big]);
+  });
+
+  it('a non-positive maxSize disables the cap', async () => {
+    const { calls, request } = makeDeferredRequest();
+    render(<Upload request={request} maxSize={0} showUploadList />);
+    await userEvent.upload(getFileInput(), bigFile());
+    await flushUploads();
+    expect(calls).toHaveLength(1);
+  });
+
+  it('removing a rejected row drops it from the value', async () => {
+    const onChange = vi.fn();
+    const props = {
+      maxSize: 1024,
+      multiple: true,
+      showUploadList: true,
+    } as const;
+    const { container, rerender } = render(
+      <UploadCore value={[]} onChange={onChange} {...props} />
+    );
+    const big = bigFile();
+    const small = smallFile();
+    fireEvent.drop(container.firstChild as HTMLElement, {
+      dataTransfer: { files: [big, small] },
+    });
+    rerender(
+      <UploadCore value={[big, small]} onChange={onChange} {...props} />
+    );
+    const row = document.querySelector('li[data-status="error"]')!;
+    await userEvent.click(
+      within(row as HTMLElement).getByRole('button', { name: 'Remove file' })
+    );
+    expect(onChange).toHaveBeenCalledWith([small]);
+  });
+
+  it('re-evaluates the cap when the same file is picked again', async () => {
+    const { calls, request } = makeDeferredRequest();
+    const big = bigFile();
+    const { rerender } = render(
+      <Upload request={request} maxSize={1024} multiple showUploadList />
+    );
+    await userEvent.upload(getFileInput(), big);
+    await flushUploads();
+    expect(calls).toHaveLength(0);
+    expect(document.querySelector('li[data-status]')).toHaveAttribute(
+      'data-status',
+      'error'
+    );
+
+    // remove the rejected file, raise the cap, re-pick the same File:
+    // the fresh intake verdict wins — no stale rejection sticks
+    await userEvent.click(screen.getByRole('button', { name: 'Remove file' }));
+    rerender(
+      <Upload request={request} maxSize={4096} multiple showUploadList />
+    );
+    await userEvent.upload(getFileInput(), big);
+    await flushUploads();
+    expect(calls.map((c) => c.file)).toEqual([big]);
+  });
+
+  it('picture-card rejected cards show the message without retry', async () => {
+    render(
+      <Upload
+        request={vi.fn()}
+        maxSize={1024}
+        multiple
+        showUploadList
+        listType="picture-card"
+      />
+    );
+    // non-image payload: the card takes the type-icon fallback (the
+    // object-URL path is covered by the picture-card suite)
+    const big = new File(['x'.repeat(2048)], 'big.txt', {
+      type: 'text/plain',
+    });
+    await userEvent.upload(getFileInput(), big);
+    await flushUploads();
+    const card = document.querySelector('li[data-status]')!;
+    expect(card).toHaveAttribute('data-status', 'error');
+    expect(
+      within(card as HTMLElement).getByText(
+        '2.00 KB exceeds the 1.00 KB limit'
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(card as HTMLElement).queryByRole('button', {
+        name: 'Retry upload',
+      })
+    ).not.toBeInTheDocument();
+  });
+
+  it('has no axe violations with a rejected row in the list', async () => {
+    const { axe } = await import('jest-axe');
+    const { calls, request } = makeDeferredRequest();
+    render(
+      <Upload request={request} maxSize={1024} multiple showUploadList />
+    );
+    await userEvent.upload(getFileInput(), [bigFile(), smallFile()]);
+    await flushUploads();
+    calls[0]!.resolve();
+    await flushUploads();
+    // one rejected row (icon + message + remove), one success row
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
 describe('Upload classNames slots', () => {
   it('applies the trigger slot to the drop zone', () => {
     const { container } = render(

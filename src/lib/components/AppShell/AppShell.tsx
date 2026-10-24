@@ -60,7 +60,7 @@ const header = css`
   grid-area: header;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   display: flex;
   align-items: center;
   gap: var(--haze-space-3);
@@ -94,7 +94,7 @@ const sidebar = css`
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
-    z-index: 2;
+    z-index: var(--haze-z-local-2);
     box-shadow: var(--haze-shadow-lg);
 
     &[data-state='collapsed'] {

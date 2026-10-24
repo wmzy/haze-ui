@@ -175,6 +175,28 @@
   },
   {
     "type": "page",
+    "label": "Composition & customization",
+    "sublabel": "Guide",
+    "route": "/guides/composition",
+    "keywords": [
+      "composition",
+      "customization",
+      "escape hatch",
+      "core",
+      "unstyled",
+      "headless",
+      "as prop",
+      "polymorphic",
+      "classnames",
+      "data-slot",
+      "design tokens",
+      "z-index",
+      "brand theme",
+      "组合与定制"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Design Tokens",
     "sublabel": "Reference",
     "route": "/tokens",
@@ -729,6 +751,12 @@
   },
   {
     "type": "component",
+    "label": "Popconfirm",
+    "route": "/components/popconfirm",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Popover",
     "route": "/components/popover",
     "keywords": [
@@ -1202,6 +1230,12 @@
   },
   {
     "type": "component",
+    "label": "Trace",
+    "route": "/components/trace",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Collapsible",
     "route": "/components/collapsible",
     "keywords": []
@@ -1241,8 +1275,1200 @@
   },
   {
     "type": "component",
+    "label": "PullToRefresh",
+    "route": "/components/pull-to-refresh",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "VisuallyHidden",
     "route": "/components/visually-hidden",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Avatar API",
+    "sublabel": "Reference",
+    "route": "/api/avatar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "AvatarGroup API",
+    "sublabel": "Reference",
+    "route": "/api/avatar-group",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Badge API",
+    "sublabel": "Reference",
+    "route": "/api/badge",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Button API",
+    "sublabel": "Reference",
+    "route": "/api/button",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ButtonGroup API",
+    "sublabel": "Reference",
+    "route": "/api/button-group",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "CopyButton API",
+    "sublabel": "Reference",
+    "route": "/api/copy-button",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Divider API",
+    "sublabel": "Reference",
+    "route": "/api/divider",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Icon API",
+    "sublabel": "Reference",
+    "route": "/api/icon",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Tag API",
+    "sublabel": "Reference",
+    "route": "/api/tag",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TagGroup API",
+    "sublabel": "Reference",
+    "route": "/api/tag-group",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Typography API",
+    "sublabel": "Reference",
+    "route": "/api/typography",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Ellipsis API",
+    "sublabel": "Reference",
+    "route": "/api/ellipsis",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "CountUp API",
+    "sublabel": "Reference",
+    "route": "/api/count-up",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Countdown API",
+    "sublabel": "Reference",
+    "route": "/api/countdown",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Mark API",
+    "sublabel": "Reference",
+    "route": "/api/mark",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Highlight API",
+    "sublabel": "Reference",
+    "route": "/api/highlight",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "NumberFormatter API",
+    "sublabel": "Reference",
+    "route": "/api/number-formatter",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "AppShell API",
+    "sublabel": "Reference",
+    "route": "/api/app-shell",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ActivityRail API",
+    "sublabel": "Reference",
+    "route": "/api/activity-rail",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "AspectRatio API",
+    "sublabel": "Reference",
+    "route": "/api/aspect-ratio",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Container API",
+    "sublabel": "Reference",
+    "route": "/api/container",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Flex API",
+    "sublabel": "Reference",
+    "route": "/api/flex",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Grid API",
+    "sublabel": "Reference",
+    "route": "/api/grid",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Masonry API",
+    "sublabel": "Reference",
+    "route": "/api/masonry",
+    "keywords": [
+      "columns",
+      "waterfall"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Resizable API",
+    "sublabel": "Reference",
+    "route": "/api/resizable",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ScrollArea API",
+    "sublabel": "Reference",
+    "route": "/api/scroll-area",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Sidebar API",
+    "sublabel": "Reference",
+    "route": "/api/sidebar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Splitter API",
+    "sublabel": "Reference",
+    "route": "/api/splitter",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "StatusBar API",
+    "sublabel": "Reference",
+    "route": "/api/status-bar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TabBar API",
+    "sublabel": "Reference",
+    "route": "/api/tab-bar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Workbench API",
+    "sublabel": "Reference",
+    "route": "/api/workbench",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Cascader API",
+    "sublabel": "Reference",
+    "route": "/api/cascader",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Checkbox API",
+    "sublabel": "Reference",
+    "route": "/api/checkbox",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ColorPicker API",
+    "sublabel": "Reference",
+    "route": "/api/color-picker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Combobox API",
+    "sublabel": "Reference",
+    "route": "/api/combobox",
+    "keywords": [
+      "autocomplete",
+      "search"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "DateField API",
+    "sublabel": "Reference",
+    "route": "/api/date-field",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Datepicker API",
+    "sublabel": "Reference",
+    "route": "/api/datepicker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "DateTimePicker API",
+    "sublabel": "Reference",
+    "route": "/api/date-time-picker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "DateRangePicker API",
+    "sublabel": "Reference",
+    "route": "/api/date-range-picker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Fieldset API",
+    "sublabel": "Reference",
+    "route": "/api/fieldset",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "FileInput API",
+    "sublabel": "Reference",
+    "route": "/api/file-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Form API",
+    "sublabel": "Reference",
+    "route": "/api/form",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ImageCrop API",
+    "sublabel": "Reference",
+    "route": "/api/image-crop",
+    "keywords": [
+      "cropper",
+      "avatar"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "InlineEdit API",
+    "sublabel": "Reference",
+    "route": "/api/inline-edit",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Input API",
+    "sublabel": "Reference",
+    "route": "/api/input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "InputGroup API",
+    "sublabel": "Reference",
+    "route": "/api/input-group",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "MaskedInput API",
+    "sublabel": "Reference",
+    "route": "/api/masked-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Mentions API",
+    "sublabel": "Reference",
+    "route": "/api/mentions",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "NumberInput API",
+    "sublabel": "Reference",
+    "route": "/api/number-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "OTPInput API",
+    "sublabel": "Reference",
+    "route": "/api/otp-input",
+    "keywords": [
+      "pin",
+      "verification"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "PasswordInput API",
+    "sublabel": "Reference",
+    "route": "/api/password-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "PhoneInput API",
+    "sublabel": "Reference",
+    "route": "/api/phone-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Radio API",
+    "sublabel": "Reference",
+    "route": "/api/radio",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Rating API",
+    "sublabel": "Reference",
+    "route": "/api/rating",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "RichTextEditor API",
+    "sublabel": "Reference",
+    "route": "/api/rich-text-editor",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Segmented API",
+    "sublabel": "Reference",
+    "route": "/api/segmented",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Select API",
+    "sublabel": "Reference",
+    "route": "/api/select",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Signature API",
+    "sublabel": "Reference",
+    "route": "/api/signature",
+    "keywords": [
+      "handwriting",
+      "pad"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Slider API",
+    "sublabel": "Reference",
+    "route": "/api/slider",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Switch API",
+    "sublabel": "Reference",
+    "route": "/api/switch",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TagInput API",
+    "sublabel": "Reference",
+    "route": "/api/tag-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TimeGrid API",
+    "sublabel": "Reference",
+    "route": "/api/time-grid",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Textarea API",
+    "sublabel": "Reference",
+    "route": "/api/textarea",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TimeField API",
+    "sublabel": "Reference",
+    "route": "/api/time-field",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TimePicker API",
+    "sublabel": "Reference",
+    "route": "/api/time-picker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Toggle API",
+    "sublabel": "Reference",
+    "route": "/api/toggle",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Transfer API",
+    "sublabel": "Reference",
+    "route": "/api/transfer",
+    "keywords": [
+      "shuttle"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "TreeSelect API",
+    "sublabel": "Reference",
+    "route": "/api/tree-select",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Upload API",
+    "sublabel": "Reference",
+    "route": "/api/upload",
+    "keywords": [
+      "drag",
+      "drop"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "BottomSheet API",
+    "sublabel": "Reference",
+    "route": "/api/bottom-sheet",
+    "keywords": [
+      "sheet",
+      "mobile"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "ConfirmDialog API",
+    "sublabel": "Reference",
+    "route": "/api/confirm-dialog",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ContextMenu API",
+    "sublabel": "Reference",
+    "route": "/api/context-menu",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Dialog API",
+    "sublabel": "Reference",
+    "route": "/api/dialog",
+    "keywords": [
+      "modal",
+      "popup"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Drawer API",
+    "sublabel": "Reference",
+    "route": "/api/drawer",
+    "keywords": [
+      "panel"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "DropdownMenu API",
+    "sublabel": "Reference",
+    "route": "/api/dropdown-menu",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "HoverCard API",
+    "sublabel": "Reference",
+    "route": "/api/hover-card",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Menu API",
+    "sublabel": "Reference",
+    "route": "/api/menu",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Popconfirm API",
+    "sublabel": "Reference",
+    "route": "/api/popconfirm",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Popover API",
+    "sublabel": "Reference",
+    "route": "/api/popover",
+    "keywords": [
+      "floating"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Tooltip API",
+    "sublabel": "Reference",
+    "route": "/api/tooltip",
+    "keywords": [
+      "hint"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Accordion API",
+    "sublabel": "Reference",
+    "route": "/api/accordion",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Calendar API",
+    "sublabel": "Reference",
+    "route": "/api/calendar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Card API",
+    "sublabel": "Reference",
+    "route": "/api/card",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Carousel API",
+    "sublabel": "Reference",
+    "route": "/api/carousel",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Chart API",
+    "sublabel": "Reference",
+    "route": "/api/chart",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Chip API",
+    "sublabel": "Reference",
+    "route": "/api/chip",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "CodeBlock API",
+    "sublabel": "Reference",
+    "route": "/api/code-block",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "DataTable API",
+    "sublabel": "Reference",
+    "route": "/api/data-table",
+    "keywords": [
+      "tanstack"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Descriptions API",
+    "sublabel": "Reference",
+    "route": "/api/descriptions",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Image API",
+    "sublabel": "Reference",
+    "route": "/api/image",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Indicator API",
+    "sublabel": "Reference",
+    "route": "/api/indicator",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "JsonView API",
+    "sublabel": "Reference",
+    "route": "/api/json-view",
+    "keywords": [
+      "json",
+      "tree"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Kbd API",
+    "sublabel": "Reference",
+    "route": "/api/kbd",
+    "keywords": [
+      "shortcut",
+      "hotkey"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "List API",
+    "sublabel": "Reference",
+    "route": "/api/list",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Progress API",
+    "sublabel": "Reference",
+    "route": "/api/progress",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Meter API",
+    "sublabel": "Reference",
+    "route": "/api/meter",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "QRCode API",
+    "sublabel": "Reference",
+    "route": "/api/qr-code",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Schedule API",
+    "sublabel": "Reference",
+    "route": "/api/schedule",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Sparkline API",
+    "sublabel": "Reference",
+    "route": "/api/sparkline",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Heatmap API",
+    "sublabel": "Reference",
+    "route": "/api/heatmap",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Spoiler API",
+    "sublabel": "Reference",
+    "route": "/api/spoiler",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Stat API",
+    "sublabel": "Reference",
+    "route": "/api/stat",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Table API",
+    "sublabel": "Reference",
+    "route": "/api/table",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Timeline API",
+    "sublabel": "Reference",
+    "route": "/api/timeline",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Tree API",
+    "sublabel": "Reference",
+    "route": "/api/tree",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "VirtualList API",
+    "sublabel": "Reference",
+    "route": "/api/virtual-list",
+    "keywords": [
+      "virtual",
+      "windowing"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Watermark API",
+    "sublabel": "Reference",
+    "route": "/api/watermark",
+    "keywords": [
+      "copyright"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Affix API",
+    "sublabel": "Reference",
+    "route": "/api/affix",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Anchor API",
+    "sublabel": "Reference",
+    "route": "/api/anchor",
+    "keywords": [
+      "toc",
+      "scrollspy"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "BackToTop API",
+    "sublabel": "Reference",
+    "route": "/api/back-to-top",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Breadcrumb API",
+    "sublabel": "Reference",
+    "route": "/api/breadcrumb",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Command API",
+    "sublabel": "Reference",
+    "route": "/api/command",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "FloatButton API",
+    "sublabel": "Reference",
+    "route": "/api/float-button",
+    "keywords": [
+      "fab"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "NavigationBar API",
+    "sublabel": "Reference",
+    "route": "/api/navigation-bar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "NavigationMenu API",
+    "sublabel": "Reference",
+    "route": "/api/navigation-menu",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Pagination API",
+    "sublabel": "Reference",
+    "route": "/api/pagination",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Stepper API",
+    "sublabel": "Reference",
+    "route": "/api/stepper",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Tabs API",
+    "sublabel": "Reference",
+    "route": "/api/tabs",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Toolbar API",
+    "sublabel": "Reference",
+    "route": "/api/toolbar",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Tour API",
+    "sublabel": "Reference",
+    "route": "/api/tour",
+    "keywords": [
+      "onboarding",
+      "guide"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Alert API",
+    "sublabel": "Reference",
+    "route": "/api/alert",
+    "keywords": [
+      "message"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "AsyncSection API",
+    "sublabel": "Reference",
+    "route": "/api/async-section",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Banner API",
+    "sublabel": "Reference",
+    "route": "/api/banner",
+    "keywords": [
+      "callout"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "Empty API",
+    "sublabel": "Reference",
+    "route": "/api/empty",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ErrorBoundary API",
+    "sublabel": "Reference",
+    "route": "/api/error-boundary",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Result API",
+    "sublabel": "Reference",
+    "route": "/api/result",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Skeleton API",
+    "sublabel": "Reference",
+    "route": "/api/skeleton",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Spinner API",
+    "sublabel": "Reference",
+    "route": "/api/spinner",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "LoadingOverlay API",
+    "sublabel": "Reference",
+    "route": "/api/loading-overlay",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Toast API",
+    "sublabel": "Reference",
+    "route": "/api/toast",
+    "keywords": [
+      "notification",
+      "snackbar"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "ApprovalCard API",
+    "sublabel": "Reference",
+    "route": "/api/approval-card",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ChatContainer API",
+    "sublabel": "Reference",
+    "route": "/api/chat-container",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ChatInput API",
+    "sublabel": "Reference",
+    "route": "/api/chat-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ChatMessage API",
+    "sublabel": "Reference",
+    "route": "/api/chat-message",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ConversationList API",
+    "sublabel": "Reference",
+    "route": "/api/conversation-list",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "DiffViewer API",
+    "sublabel": "Reference",
+    "route": "/api/diff-viewer",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "FilePreview API",
+    "sublabel": "Reference",
+    "route": "/api/file-preview",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "InlineCitation API",
+    "sublabel": "Reference",
+    "route": "/api/inline-citation",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "InlineCompletion API",
+    "sublabel": "Reference",
+    "route": "/api/inline-completion",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "LogViewer API",
+    "sublabel": "Reference",
+    "route": "/api/log-viewer",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "MarkdownRenderer API",
+    "sublabel": "Reference",
+    "route": "/api/markdown-renderer",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ModelPicker API",
+    "sublabel": "Reference",
+    "route": "/api/model-picker",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Plan API",
+    "sublabel": "Reference",
+    "route": "/api/plan",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "PromptInput API",
+    "sublabel": "Reference",
+    "route": "/api/prompt-input",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Queue API",
+    "sublabel": "Reference",
+    "route": "/api/queue",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Sources API",
+    "sublabel": "Reference",
+    "route": "/api/sources",
+    "keywords": [
+      "citations",
+      "rag"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "StepTimeline API",
+    "sublabel": "Reference",
+    "route": "/api/step-timeline",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "StreamingText API",
+    "sublabel": "Reference",
+    "route": "/api/streaming-text",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ThinkingIndicator API",
+    "sublabel": "Reference",
+    "route": "/api/thinking-indicator",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "TokenCounter API",
+    "sublabel": "Reference",
+    "route": "/api/token-counter",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ToolCallCard API",
+    "sublabel": "Reference",
+    "route": "/api/tool-call-card",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Trace API",
+    "sublabel": "Reference",
+    "route": "/api/trace",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Collapsible API",
+    "sublabel": "Reference",
+    "route": "/api/collapsible",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "ConfigProvider API",
+    "sublabel": "Reference",
+    "route": "/api/config-provider",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Disclosure API",
+    "sublabel": "Reference",
+    "route": "/api/disclosure",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "Fullscreen API",
+    "sublabel": "Reference",
+    "route": "/api/fullscreen",
+    "keywords": [
+      "maximize",
+      "immersive"
+    ]
+  },
+  {
+    "type": "api",
+    "label": "LocaleProvider API",
+    "sublabel": "Reference",
+    "route": "/api/locale-provider",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "SwipeAction API",
+    "sublabel": "Reference",
+    "route": "/api/swipe-action",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "PullToRefresh API",
+    "sublabel": "Reference",
+    "route": "/api/pull-to-refresh",
+    "keywords": []
+  },
+  {
+    "type": "api",
+    "label": "VisuallyHidden API",
+    "sublabel": "Reference",
+    "route": "/api/visually-hidden",
     "keywords": []
   },
   {
@@ -1493,6 +2719,24 @@
   },
   {
     "type": "section",
+    "label": "Danger, icon and custom labels",
+    "sublabel": "Popconfirm",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "section",
+    "label": "Async confirmation",
+    "sublabel": "Popconfirm",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "section",
+    "label": "Controlled",
+    "sublabel": "Popconfirm",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "section",
     "label": "classNames slots",
     "sublabel": "Popover",
     "route": "/components/popover"
@@ -1500,6 +2744,12 @@
   {
     "type": "section",
     "label": "Variants",
+    "sublabel": "Card",
+    "route": "/components/card"
+  },
+  {
+    "type": "section",
+    "label": "Whole-card link (as)",
     "sublabel": "Card",
     "route": "/components/card"
   },
@@ -1679,6 +2929,12 @@
   },
   {
     "type": "section",
+    "label": "Clickable tag links (as)",
+    "sublabel": "Tag",
+    "route": "/components/tag"
+  },
+  {
+    "type": "section",
     "label": "Variants",
     "sublabel": "Skeleton",
     "route": "/components/skeleton"
@@ -1746,6 +3002,12 @@
   {
     "type": "section",
     "label": "Custom Separator",
+    "sublabel": "Breadcrumb",
+    "route": "/components/breadcrumb"
+  },
+  {
+    "type": "section",
+    "label": "Router Links (as)",
     "sublabel": "Breadcrumb",
     "route": "/components/breadcrumb"
   },
@@ -2387,6 +3649,42 @@
   },
   {
     "type": "section",
+    "label": "Four States",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
+    "label": "Reasoning Steps",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
+    "label": "Custom Icons",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
+    "label": "Trace Props",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
+    "label": "TraceItem Props",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
+    "label": "TraceDetails Props",
+    "sublabel": "Trace",
+    "route": "/components/trace"
+  },
+  {
+    "type": "section",
     "label": "Error and Skipped States",
     "sublabel": "Plan",
     "route": "/components/plan"
@@ -2633,7 +3931,19 @@
   },
   {
     "type": "section",
+    "label": "Paste to upload",
+    "sublabel": "Upload",
+    "route": "/components/upload"
+  },
+  {
+    "type": "section",
     "label": "maxCount",
+    "sublabel": "Upload",
+    "route": "/components/upload"
+  },
+  {
+    "type": "section",
+    "label": "maxSize",
     "sublabel": "Upload",
     "route": "/components/upload"
   },
@@ -3380,6 +4690,12 @@
     "label": "Mobile: swipe to dismiss & virtual keyboard",
     "sublabel": "BottomSheet",
     "route": "/components/bottom-sheet"
+  },
+  {
+    "type": "section",
+    "label": "Custom indicator and texts",
+    "sublabel": "PullToRefresh",
+    "route": "/components/pull-to-refresh"
   },
   {
     "type": "section",
@@ -4787,6 +6103,12 @@
   },
   {
     "type": "prop",
+    "label": "as",
+    "sublabel": "BreadcrumbItem — Render element. Omitted (default) keeps the href-driven duality: href renders an <a> wearing the link skin, no href renders a <span> wearing the current-page skin. An explicit `as` overrides the element and opts into the link skin — the router-Link shape whose navigation lives in `to` rather than `href` (href still lands when passed). The trail semantics (nav/ol, aria-current on the parent <li>) are unaffected.",
+    "route": "/components/breadcrumb"
+  },
+  {
+    "type": "prop",
     "label": "separator",
     "sublabel": "Breadcrumb — Separator between items",
     "route": "/components/breadcrumb"
@@ -4885,6 +6207,12 @@
     "type": "prop",
     "label": "children",
     "sublabel": "Card — Card content",
+    "route": "/components/card"
+  },
+  {
+    "type": "prop",
+    "label": "as",
+    "sublabel": "Card — Render element: 'div' (default) keeps the plain container; 'a' renders the whole card as a native link — href/target/rel and every other anchor attribute flow through, and the anchor shape resets the UA underline/link-blue while restoring the div's block layout, so the card looks identical. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Never nest interactive elements inside a whole-card link (anchors/buttons don't nest) — keep secondary actions outside or use a stretched-link overlay.",
     "route": "/components/card"
   },
   {
@@ -5621,6 +6949,12 @@
   },
   {
     "type": "prop",
+    "label": "size",
+    "sublabel": "Drawer — Panel size preset. left/right sets width: sm 360px / md 480px / lg 640px; top/bottom sets height: sm 240px / md 360px / lg 480px. Implemented as the --haze-drawer-width / --haze-drawer-height custom properties (set by the preset, consumed by the placement class) — override either with an inline style or CSS instead of a fixed pixel value.",
+    "route": "/components/drawer"
+  },
+  {
+    "type": "prop",
     "label": "align",
     "sublabel": "DropdownMenuContent — Content alignment",
     "route": "/components/dropdown-menu"
@@ -6017,6 +7351,12 @@
   },
   {
     "type": "prop",
+    "label": "virtualized",
+    "sublabel": "Menu — Opt-in: window the data-driven items list through VirtualList (fixed-height rows; requires the items data API; group entries fall back to the plain DOM path with a dev error). Arrows/Home/End/typeahead reach rows outside the mounted window by scrolling them in and focusing after the commit.",
+    "route": "/components/menu"
+  },
+  {
+    "type": "prop",
     "label": "value",
     "sublabel": "ModelPicker — Selected model value",
     "route": "/components/model-picker"
@@ -6221,6 +7561,90 @@
   },
   {
     "type": "prop",
+    "label": "title",
+    "sublabel": "Popconfirm — Panel heading — the confirmation question",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "description",
+    "sublabel": "Popconfirm — Secondary explanation under the title",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "okText",
+    "sublabel": "Popconfirm — OK button label override",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "cancelText",
+    "sublabel": "Popconfirm — Cancel button label override",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "okVariant",
+    "sublabel": "Popconfirm — OK button tone; danger remaps the solid skin onto the danger token family",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "icon",
+    "sublabel": "Popconfirm — Decorative glyph beside the title",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "onConfirm",
+    "sublabel": "Popconfirm — Fired on confirm; a returned promise busy's the OK button, closes on resolve, stays open on reject",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "onCancel",
+    "sublabel": "Popconfirm — Fired on cancel (button, Escape); same async busy contract on the cancel button",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "placement",
+    "sublabel": "Popconfirm — Panel placement relative to the trigger (logical, same set as Popover minus 'point')",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "open",
+    "sublabel": "Popconfirm — Whether the panel is open (controlled or uncontrolled)",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "disabled",
+    "sublabel": "Popconfirm — Inert trigger: no pointer or keyboard open",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "Popconfirm — Trigger content",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "Popconfirm — Imperative handle: open() (respects disabled), close(), focusTrigger()",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
+    "label": "...rest",
+    "sublabel": "Popconfirm — Native div attributes spread onto the floating panel",
+    "route": "/components/popconfirm"
+  },
+  {
+    "type": "prop",
     "label": "content",
     "sublabel": "Popover — Popover panel content",
     "route": "/components/popover"
@@ -6320,6 +7744,66 @@
     "label": "maxRows",
     "sublabel": "PromptInput — Auto-grow cap in rows; the textarea scrolls beyond it",
     "route": "/components/prompt-input"
+  },
+  {
+    "type": "prop",
+    "label": "onRefresh",
+    "sublabel": "PullToRefresh — Refresh action; a returned promise holds the refreshing phase (spinner) until it settles — fulfilled or rejected — then the head springs back",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "PullToRefresh — Scrolling content; the gesture starts from anywhere inside it",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "distance",
+    "sublabel": "PullToRefresh — Pull distance (px) that arms the refresh; also sizes the head and the resting offset while refreshing (mirrors --haze-space-16)",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "disabled",
+    "sublabel": "PullToRefresh — Disables the gesture entirely (render output unchanged)",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "canRefresh",
+    "sublabel": "PullToRefresh — Replaces the default scroll-edge gate (every ancestor between the touched element and the document root at scrollTop 0); evaluated once per pull as it crosses the slop",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "indicator",
+    "sublabel": "PullToRefresh — Render prop for the head ({ phase, progress 0..1 }); default is a down arrow that flips when armed, a Spinner once refreshing, plus the status text props",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "pullingText",
+    "sublabel": "PullToRefresh — Status text while pulling below the threshold (default indicator)",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "readyText",
+    "sublabel": "PullToRefresh — Status text once the pull passes the threshold (default indicator)",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "refreshingText",
+    "sublabel": "PullToRefresh — Status text while the refresh promise is pending (default indicator)",
+    "route": "/components/pull-to-refresh"
+  },
+  {
+    "type": "prop",
+    "label": "ref",
+    "sublabel": "PullToRefresh — Forwarded to the root container (data-slot='container')",
+    "route": "/components/pull-to-refresh"
   },
   {
     "type": "prop",
@@ -6996,7 +8480,7 @@
   {
     "type": "prop",
     "label": "ref",
-    "sublabel": "Tag — Forwarded to the root span (data-slot='tag')",
+    "sublabel": "Tag — Forwarded to the rendered root element (data-slot='tag'); with the default span it is a Ref<HTMLSpanElement>, with as='a' a Ref<HTMLAnchorElement>",
     "route": "/components/tag"
   },
   {
@@ -7027,6 +8511,12 @@
     "type": "prop",
     "label": "children",
     "sublabel": "Tag — Tag content",
+    "route": "/components/tag"
+  },
+  {
+    "type": "prop",
+    "label": "as",
+    "sublabel": "Tag — Render element: 'span' (default) keeps the static tag; 'a' renders a clickable tag link — href/target/rel and the rest of the anchor surface flow through, and the link shape resets the UA underline so the tag looks identical to the span form. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Don't combine an interactive `as` with `closable`: the remove button would nest inside a link (invalid HTML, SR/keyboard trap).",
     "route": "/components/tag"
   },
   {
@@ -7313,6 +8803,54 @@
   },
   {
     "type": "prop",
+    "label": "children",
+    "sublabel": "TraceDetails — Payload content — rendered as a monospace pre-wrap body",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "title",
+    "sublabel": "TraceItem — The step's headline — the line's visible text",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "status",
+    "sublabel": "TraceItem — Step status driving the marker color and the live-region announcements",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "icon",
+    "sublabel": "TraceItem — Replaces the status glyph inside the marker (the marker keeps its status ring)",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "details",
+    "sublabel": "TraceItem — Payload revealed by the line's disclosure toggle; omit for a plain line",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "open",
+    "sublabel": "TraceItem — Controlled/uncontrolled expanded state of the details panel",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "onOpenChange",
+    "sublabel": "TraceItem — Fires on every expand/collapse transition, whatever drove it",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
+    "label": "children",
+    "sublabel": "Trace — TraceItem steps composing the trace, one per line",
+    "route": "/components/trace"
+  },
+  {
+    "type": "prop",
     "label": "dataSource",
     "sublabel": "Transfer — Array of { key, title, disabled? } items",
     "route": "/components/transfer"
@@ -7573,6 +9111,18 @@
     "type": "prop",
     "label": "children",
     "sublabel": "Upload — Custom dropzone content",
+    "route": "/components/upload"
+  },
+  {
+    "type": "prop",
+    "label": "paste",
+    "sublabel": "Upload — Paste-to-upload: focus the zone (role=button, in the tab order) and press Ctrl/Cmd+V — clipboard files run through the exact drop pipeline (accept, beforeUpload, maxSize, maxCount) and report like any pick; clipboard content without files passes through untouched. Works in droppable and click-only modes alike.",
+    "route": "/components/upload"
+  },
+  {
+    "type": "prop",
+    "label": "maxSize",
+    "sublabel": "Upload — Per-file size cap in bytes, applied after beforeUpload and before maxCount. An over-limit file still enters the list — as an error row carrying its size message (e.g. '2.50 MB exceeds the 1.00 MB limit') — but never uploads: auto mode, retry and the UploadHandle all refuse it, leaving remove as its only action. Rejected rows occupy maxCount slots like any entry. The cap gates intake only; a File arriving through value uploads normally. A non-positive or non-finite value disables the cap.",
     "route": "/components/upload"
   },
   {

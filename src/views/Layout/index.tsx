@@ -25,11 +25,17 @@ import {
 } from '@/lib';
 import { useTheme } from '@/contexts/theme';
 import { fill, isSiteLocale, useSiteLocale } from '@/views/i18n';
-import { sourceUrl, shortCommit, versionInfo } from '@/views/version-info';
+import {
+  sourceUrl,
+  shortCommit,
+  versionInfo,
+  isDevDocs,
+} from '@/views/version-info';
 
 import SidebarSearch, { MatchText } from './SidebarSearch';
 import CommandPalette from './CommandPalette';
 import VersionBadge from './VersionBadge';
+import DevDocsBanner from './DevDocsBanner';
 import {
   ALIASES,
   COMPONENT_GROUPS,
@@ -435,6 +441,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
               </Link>
               {guideSummary(t.guideSummaries.serverActions)}
             </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
+                to='/guides/composition'
+                onClick={onNavigate}
+              >
+                {t.guides.composition}
+              </Link>
+              {guideSummary(t.guideSummaries.composition)}
+            </ListItem>
           </List>
         </Disclosure>
       </ListItem>
@@ -571,6 +587,8 @@ export default function Layout() {
       x-class={[themeClass, spacing, typography]}
       style={activeCustomThemeStyle}
     >
+      {/* dev 通道（/dev/ 子树部署）提示横幅；stable 构建不挂载。 */}
+      {isDevDocs && <DevDocsBanner />}
       <header className={header}>
         <div className={menuBtnWrap}>
           <Button

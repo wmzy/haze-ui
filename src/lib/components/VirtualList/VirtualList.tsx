@@ -194,7 +194,7 @@ const viewportHorizontal = css`
 const groupHeader = css`
   position: absolute;
   inset-inline: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   box-sizing: border-box;
   background: var(--haze-color-bg);
   border-bottom: 1px solid var(--haze-color-border);
@@ -204,7 +204,7 @@ const groupHeader = css`
 const groupHeaderHorizontal = css`
   position: absolute;
   inset-block: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   box-sizing: border-box;
   background: var(--haze-color-bg);
   border-inline-end: 1px solid var(--haze-color-border);

@@ -560,7 +560,7 @@ const eventBlock = css`
   cursor: grab;
   user-select: none;
   touch-action: none;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 
   &:focus-visible {
     outline: 2px solid var(--haze-color-focus-ring);
@@ -575,7 +575,7 @@ const eventBlock = css`
 const eventDragging = css`
   cursor: grabbing;
   box-shadow: var(--haze-shadow-md);
-  z-index: 2;
+  z-index: var(--haze-z-local-2);
   opacity: 0.9;
 `;
 
@@ -658,7 +658,7 @@ const nowLine = css`
   inset-inline: 0;
   border-block-start: 2px solid var(--haze-color-danger);
   pointer-events: none;
-  z-index: 3;
+  z-index: var(--haze-z-local-3);
 `;
 
 const nowDot = css`

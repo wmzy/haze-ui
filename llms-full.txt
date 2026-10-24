@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 156 Haze UI components in one
-> file (285 type tables), generated from the library source. Do not
+> Complete props reference for all 159 Haze UI components in one
+> file (293 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -327,13 +327,21 @@ import { BottomSheet } from 'haze-ui';
 import { Breadcrumb, BreadcrumbItem } from 'haze-ui';
 ```
 
+### BreadcrumbItemOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `href` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
 ### BreadcrumbItemProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `href` | `string` | — | Link URL; omit for current page |
-| `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Item label |
+| `as` | `T` | `omitted → href-driven ('a' \| 'span')` | Render element. Omitted (default) keeps the href-driven duality: href renders an <a> wearing the link skin, no href renders a <span> wearing the current-page skin. An explicit `as` overrides the element and opts into the link skin — the router-Link shape whose navigation lives in `to` rather than `href` (href still lands when passed). The trail semantics (nav/ol, aria-current on the parent <li>) are unaffected. |
+| `className` | `string` | — | Additional CSS class |
 
 ### BreadcrumbProps
 
@@ -441,13 +449,21 @@ import { Calendar } from 'haze-ui';
 import { Card, cardVariants } from 'haze-ui';
 ```
 
+### CardOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'elevated' \| 'outlined' \| 'filled'` | — |  |
+| `children` | `ReactNode` | — |  |
+
 ### CardProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `'elevated' \| 'outlined' \| 'filled'` | `'elevated'` | Visual style of the card |
-| `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Card content |
+| `as` | `T` | `'div'` | Render element: 'div' (default) keeps the plain container; 'a' renders the whole card as a native link — href/target/rel and every other anchor attribute flow through, and the anchor shape resets the UA underline/link-blue while restoring the div's block layout, so the card looks identical. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Never nest interactive elements inside a whole-card link (anchors/buttons don't nest) — keep secondary actions outside or use a stretched-link overlay. |
+| `className` | `string` | — | Additional CSS class |
 
 ## Carousel
 
@@ -992,11 +1008,11 @@ import { CopyButton, Snippet, iconSizes } from 'haze-ui';
 | `copiedLabel` | `string` | — |  |
 | `classNames` | `CopyButtonClassNames` | — |  |
 | `children` | `ReactNode \| ((copied: boolean) => ReactNode)` | — |  |
+| `as` | `T` | — |  |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
 | `loading` | `boolean \| { icon?: ReactNode; text?: ReactNode; }` | — |  |
-| `as` | `T` | — |  |
 
 ### SnippetProps
 
@@ -1361,6 +1377,7 @@ import { Drawer } from 'haze-ui';
 | --- | --- | --- | --- |
 | `open` | `ControlOrValue<boolean>` | `false` | Whether the drawer is open |
 | `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'right'` | Edge to anchor the drawer |
+| `size` | `'sm' \| 'md' \| 'lg'` | `— (不传保持 320px)` | Panel size preset. left/right sets width: sm 360px / md 480px / lg 640px; top/bottom sets height: sm 240px / md 360px / lg 480px. Implemented as the --haze-drawer-width / --haze-drawer-height custom properties (set by the preset, consumed by the placement class) — override either with an inline style or CSS instead of a fixed pixel value. |
 | `onClose` | `() => void` | — | Called when the drawer is closed |
 | `viewTransition` | `boolean` | — |  |
 | `className` | `string` | — | Additional CSS class |
@@ -2206,6 +2223,7 @@ import { Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGr
 | `open` | `ControlOrValue<boolean>` | `false` | Whether the menu is open |
 | `trigger` | `ReactNode` | — | Trigger element |
 | `items` | `MenuDataItem[]` | — |  |
+| `virtualized` | `boolean` | `false` | Opt-in: window the data-driven items list through VirtualList (fixed-height rows; requires the items data API; group entries fall back to the plain DOM path with a dev error). Arrows/Home/End/typeahead reach rows outside the mounted window by scrolling them in and focusing after the commit. |
 | `classNames` | `MenuClassNames` | — |  |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | MenuItem and MenuDivider elements |
@@ -2550,6 +2568,32 @@ import { Plan, PlanItem } from 'haze-ui';
 | `children` | `ReactNode` | — |  |
 | `className` | `string` | — |  |
 
+## Popconfirm
+
+```jsx
+import { Popconfirm } from 'haze-ui';
+```
+
+### PopconfirmProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `ReactNode` | — | Panel heading — the confirmation question |
+| `description` | `ReactNode` | — | Secondary explanation under the title |
+| `okText` | `string` | `confirmDialog.confirm locale` | OK button label override |
+| `cancelText` | `string` | `confirmDialog.cancel locale` | Cancel button label override |
+| `okVariant` | `'primary' \| 'danger'` | `'primary'` | OK button tone; danger remaps the solid skin onto the danger token family |
+| `icon` | `ReactNode` | — | Decorative glyph beside the title |
+| `onConfirm` | `() => void \| Promise<unknown>` | — | Fired on confirm; a returned promise busy's the OK button, closes on resolve, stays open on reject |
+| `onCancel` | `() => void \| Promise<unknown>` | — | Fired on cancel (button, Escape); same async busy contract on the cancel button |
+| `placement` | `PopconfirmPlacement` | `'top'` | Panel placement relative to the trigger (logical, same set as Popover minus 'point') |
+| `open` | `ControlOrValue<boolean>` | `false` | Whether the panel is open (controlled or uncontrolled) |
+| `disabled` | `boolean` | `false` | Inert trigger: no pointer or keyboard open |
+| `className` | `string` | — | Additional CSS class on the floating panel |
+| `children` | `ReactNode` | — | Trigger content |
+| `ref` | `Ref<PopconfirmHandle>` | — | Imperative handle: open() (respects disabled), close(), focusTrigger() |
+| `...rest` | `div props` | — | Native div attributes spread onto the floating panel |
+
 ## Popover
 
 ```jsx
@@ -2609,6 +2653,28 @@ import { PromptInput } from 'haze-ui';
 | `disabled` | `boolean` | — |  |
 | `maxRows` | `number` | — | Auto-grow cap in rows; the textarea scrolls beyond it |
 | `className` | `string` | — |  |
+
+## PullToRefresh
+
+```jsx
+import { PullToRefresh } from 'haze-ui';
+```
+
+### PullToRefreshProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onRefresh` | `() => void \| Promise<unknown>` | — | Refresh action; a returned promise holds the refreshing phase (spinner) until it settles — fulfilled or rejected — then the head springs back |
+| `children` | `ReactNode` | — | Scrolling content; the gesture starts from anywhere inside it |
+| `distance` | `number` | `64` | Pull distance (px) that arms the refresh; also sizes the head and the resting offset while refreshing (mirrors --haze-space-16) |
+| `disabled` | `boolean` | `false` | Disables the gesture entirely (render output unchanged) |
+| `canRefresh` | `() => boolean` | — | Replaces the default scroll-edge gate (every ancestor between the touched element and the document root at scrollTop 0); evaluated once per pull as it crosses the slop |
+| `indicator` | `(info: PullToRefreshIndicatorInfo) => ReactNode` | — | Render prop for the head ({ phase, progress 0..1 }); default is a down arrow that flips when armed, a Spinner once refreshing, plus the status text props |
+| `pullingText` | `ReactNode` | `'Pull to refresh'` | Status text while pulling below the threshold (default indicator) |
+| `readyText` | `ReactNode` | `'Release to refresh'` | Status text once the pull passes the threshold (default indicator) |
+| `refreshingText` | `ReactNode` | `'Refreshing…'` | Status text while the refresh promise is pending (default indicator) |
+| `ref` | `Ref<HTMLDivElement>` | — | Forwarded to the root container (data-slot='container') |
+| `className` | `string` | — | Additional CSS class |
 
 ## QRCode
 
@@ -3501,6 +3567,17 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariant
 import { Tag, tagVariants, tagSizes } from 'haze-ui';
 ```
 
+### TagOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `color` | `'default' \| 'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | — |  |
+| `size` | `'sm' \| 'md'` | — |  |
+| `closable` | `boolean` | — |  |
+| `onClose` | `() => void` | — |  |
+| `removeLabel` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
 ### TagProps
 
 | Prop | Type | Default | Description |
@@ -3510,9 +3587,10 @@ import { Tag, tagVariants, tagSizes } from 'haze-ui';
 | `closable` | `boolean` | `false` | Show close button |
 | `onClose` | `() => void` | — | Called when close button is clicked |
 | `removeLabel` | `string` | `'Remove'` | Accessible label for the remove button; inlined default keeps the component RSC-safe (hook-free), locale-aware callers pass their own string |
-| `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Tag content |
-| `ref` | `Ref<HTMLSpanElement>` | — | Forwarded to the root span (data-slot='tag') |
+| `as` | `T` | `'span'` | Render element: 'span' (default) keeps the static tag; 'a' renders a clickable tag link — href/target/rel and the rest of the anchor surface flow through, and the link shape resets the UA underline so the tag looks identical to the span form. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Don't combine an interactive `as` with `closable`: the remove button would nest inside a link (invalid HTML, SR/keyboard trap). |
+| `ref` | `Ref<T>` | — | Forwarded to the rendered root element (data-slot='tag'); with the default span it is a Ref<HTMLSpanElement>, with as='a' a Ref<HTMLAnchorElement> |
+| `className` | `string` | — | Additional CSS class |
 
 ## TagGroup
 
@@ -3931,6 +4009,38 @@ import { Tour } from 'haze-ui';
 | `maskClosable` | `boolean` | — |  |
 | `className` | `string` | — |  |
 
+## Trace
+
+```jsx
+import { Trace, TraceItem, TraceDetails } from 'haze-ui';
+```
+
+### TraceDetailsProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | Payload content — rendered as a monospace pre-wrap body |
+| `className` | `string` | — | Additional CSS class |
+
+### TraceItemProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `ReactNode` | — | The step's headline — the line's visible text |
+| `status` | `TraceStatus` | `'pending'` | Step status driving the marker color and the live-region announcements |
+| `icon` | `ComponentType` | — | Replaces the status glyph inside the marker (the marker keeps its status ring) |
+| `details` | `ReactNode` | — | Payload revealed by the line's disclosure toggle; omit for a plain line |
+| `open` | `ControlOrValue<boolean>` | `false` | Controlled/uncontrolled expanded state of the details panel |
+| `onOpenChange` | `(open: boolean) => void` | — | Fires on every expand/collapse transition, whatever drove it |
+| `className` | `string` | — | Additional CSS class |
+
+### TraceProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | TraceItem steps composing the trace, one per line |
+| `className` | `string` | — | Additional CSS class |
+
 ## Transfer
 
 ```jsx
@@ -4129,7 +4239,9 @@ import { Upload, UploadCore } from 'haze-ui';
 | `onChange` | `(files: UploadValueItem[]) => void` | — |  |
 | `accept` | `string` | — |  |
 | `droppable` | `boolean` | — |  |
+| `paste` | `boolean` | — |  |
 | `beforeUpload` | `(file: File) => boolean \| Promise<boolean>` | — |  |
+| `maxSize` | `number` | — |  |
 | `maxCount` | `number` | — |  |
 | `multiple` | `boolean` | — |  |
 | `request` | `UploadRequest` | — |  |
@@ -4173,8 +4285,10 @@ import { Upload, UploadCore } from 'haze-ui';
 | `value` | `ControlOrValue<UploadValueItem[]>` | — | Selected files — local File picks mixed freely with UploadFile echo entries (files already on the server); uncontrolled (accumulating internally) when omitted |
 | `accept` | `string` | — | Accepted file types |
 | `droppable` | `boolean` | — |  |
+| `paste` | `boolean` | `false` | Paste-to-upload: focus the zone (role=button, in the tab order) and press Ctrl/Cmd+V — clipboard files run through the exact drop pipeline (accept, beforeUpload, maxSize, maxCount) and report like any pick; clipboard content without files passes through untouched. Works in droppable and click-only modes alike. |
 | `beforeUpload` | `(file: File) => boolean \| Promise<boolean>` | — |  |
 | `maxCount` | `number` | — |  |
+| `maxSize` | `number` | — | Per-file size cap in bytes, applied after beforeUpload and before maxCount. An over-limit file still enters the list — as an error row carrying its size message (e.g. '2.50 MB exceeds the 1.00 MB limit') — but never uploads: auto mode, retry and the UploadHandle all refuse it, leaving remove as its only action. Rejected rows occupy maxCount slots like any entry. The cap gates intake only; a File arriving through value uploads normally. A non-positive or non-finite value disables the cap. |
 | `multiple` | `boolean` | `false` | Allow multiple files |
 | `request` | `UploadRequest` | — |  |
 | `action` | `string` | — |  |

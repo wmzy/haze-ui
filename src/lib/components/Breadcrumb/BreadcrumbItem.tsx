@@ -1,12 +1,32 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
-type BreadcrumbItemProps = {
+type BreadcrumbItemOwnProps = {
+  /** Link URL; omit for the current page (renders a non-link span). */
   href?: string;
-  className?: string;
   children: ReactNode;
 };
+
+/**
+ * MUI-OverridableComponent-shaped polymorphism (Button's pattern): own
+ * props first, then the target element's props minus the colliding keys.
+ * The skin and `data-slot` always land on the rendered element; the
+ * parent `<li>`'s `aria-current` wiring (Breadcrumb.tsx) is untouched by
+ * `as` — the trail semantics survive any element.
+ */
+type BreadcrumbItemProps<T extends ElementType = 'a'> =
+  BreadcrumbItemOwnProps & {
+    /**
+     * Render element. Omitted (default) keeps the historical
+     * href-driven duality: `href` renders an `<a>` wearing the link
+     * skin, no `href` renders a `<span>` wearing the current-page skin.
+     * An explicit `as` overrides the element and opts into the link
+     * skin — the router-Link shape whose navigation lives in `to`
+     * rather than `href` (`href` still lands when actually passed).
+     */
+    as?: T;
+  } & Omit<ComponentPropsWithRef<T>, keyof BreadcrumbItemOwnProps | 'as'>;
 
 const link = css`
   display: inline-flex;
@@ -35,18 +55,29 @@ const current = css`
   font-weight: var(--haze-weight-medium);
 `;
 
-export default function BreadcrumbItem({
+export default function BreadcrumbItem<T extends ElementType = 'a'>({
   href,
+  as,
   className,
   children,
-}: BreadcrumbItemProps) {
-  return href ? (
-    <a data-slot='breadcrumb-item' href={href} x-class={[link, className]}>
+  ...rest
+}: BreadcrumbItemProps<T>) {
+  // Historical duality when `as` is omitted: href renders an anchor
+  // (link skin), no href renders a span (current-page skin). An
+  // explicit `as` takes the element and the link skin — Button's
+  // "wiring wins" precedence (any non-default shape is navigational).
+  const Tag = (as ?? (href !== undefined ? 'a' : 'span'));
+  const isLink = as !== undefined || href !== undefined;
+  return (
+    <Tag
+      {...(href !== undefined ? { href } : {})}
+      data-slot='breadcrumb-item'
+      x-class={[isLink ? link : current, className]}
+      {...rest}
+    >
       {children}
-    </a>
-  ) : (
-    <span data-slot='breadcrumb-item' x-class={[current, className]}>{children}</span>
+    </Tag>
   );
 }
 
-export type { BreadcrumbItemProps };
+export type { BreadcrumbItemOwnProps, BreadcrumbItemProps };

@@ -74,7 +74,7 @@ const sortableNode = css`
 const sortableNodeDragging = css`
   /* Stack the translated item above its siblings while dragging. */
   position: relative;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 `;
 
 type SortableItemProps = {

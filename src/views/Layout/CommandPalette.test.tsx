@@ -41,6 +41,11 @@ function GuideStub() {
   return <div>guide-view:{params.guide ?? ''}</div>;
 }
 
+function ApiStub() {
+  const { params } = useMatched();
+  return <div>api-view:{params.componentId ?? ''}</div>;
+}
+
 const routes = [
   { path: '/', component: () => Promise.resolve({ default: HomeStub }) },
   {
@@ -54,6 +59,10 @@ const routes = [
   {
     path: '/guides/:guide',
     component: () => Promise.resolve({ default: GuideStub }),
+  },
+  {
+    path: '/api/:componentId',
+    component: () => Promise.resolve({ default: ApiStub }),
   },
 ] as Route[];
 
@@ -153,7 +162,10 @@ describe('CommandPalette', () => {
     const texts = optionTexts();
     expect(texts.some((t) => t.startsWith('Dialog'))).toBe(true);
     expect(texts.some((t) => t.startsWith('DialogOverlays'))).toBe(true);
-    expect(texts.length).toBe(1);
+    // Docs tier joins the alias too: the generated /api/dialog reference
+    // page rides the same ALIASES keywords.
+    expect(texts.some((t) => t.startsWith('Dialog API'))).toBe(true);
+    expect(texts.length).toBe(2);
   });
 
   it('shows a no-results row when nothing matches', async () => {
@@ -266,8 +278,10 @@ describe('CommandPalette', () => {
     await user.keyboard('[ArrowDown]'.repeat(index + 1));
     expect(document.activeElement).toBe(docsFirst);
 
+    // The first Docs hit for 'dialog' is a generated API reference page
+    // (ConfirmDialog API, by sidebar order) — Enter navigates it.
     await user.keyboard('[Enter]');
-    expect(await screen.findByText(/doc-view:/)).toBeInTheDocument();
+    expect(await screen.findByText(/api-view:/)).toBeInTheDocument();
   });
 
   it('has no axe violations while open', async () => {

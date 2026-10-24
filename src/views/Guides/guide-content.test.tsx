@@ -8,6 +8,7 @@ import { LOCALE_STORAGE_KEY, SITE_LOCALES, SiteLocaleProvider } from '@/views/i1
 import { GUIDE_CONTENT, getGuideDoc } from '@/views/Guides/guide-content';
 import A11yContracts from '@/views/Guides/A11yContracts';
 import A11yGuide from '@/views/Guides/A11y';
+import CompositionGuide from '@/views/Guides/Composition';
 import DarkModeGuide from '@/views/Guides/DarkMode';
 import DensityGuide from '@/views/Guides/Density';
 import MigrationGuide from '@/views/Guides/Migration';
@@ -285,6 +286,36 @@ describe('guide pages locale smoke', () => {
       expect(screen.getByText('服务端将收到')).toBeInTheDocument();
       expect(screen.getByText(/以 @taken.dev 结尾/)).toBeInTheDocument();
       expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    });
+  });
+
+  describe('Composition', () => {
+    it('renders the English source verbatim', () => {
+      renderAt(<CompositionGuide />, 'en');
+      expect(screen.getByRole('heading', { level: 1, name: 'Composition & customization' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'The five escape hatches' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Core variants: fields without the state layer' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'The as prop: another element in the same skin' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'The headless entry: behaviors without components' })).toBeInTheDocument();
+      // Inventory tables survive: one row per Core variant (25 rows).
+      expect(screen.getAllByRole('row').length).toBeGreaterThanOrEqual(25);
+      expect(screen.getByText('value: UploadValueItem[]')).toBeInTheDocument();
+      // Demo chrome: the as-playground slot renders with its ui string.
+      expect(screen.getByRole('link', { name: "as='a'" })).toBeInTheDocument();
+      expect(screen.getByText(/straight from the DOM/)).toBeInTheDocument();
+    });
+
+    it('renders the Chinese translation under zh', () => {
+      renderAt(<CompositionGuide />, 'zh');
+      expect(screen.getByRole('heading', { level: 1, name: '组合与定制' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: '五个逃生舱' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Core 变体：去掉状态层的表单域' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'as 属性：同一副皮肤，换一个元素' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'headless 入口：只要行为，不要组件' })).toBeInTheDocument();
+      // Measured inventory data survives translation.
+      expect(screen.getByText('value: UploadValueItem[]')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: "as='a'" })).toBeInTheDocument();
+      expect(screen.getByText(/报告实际渲染出的元素/)).toBeInTheDocument();
     });
   });
 });

@@ -17,6 +17,8 @@ export const zh: DeepPartial<SiteStrings> = {
     themeEditor: '主题编辑器',
     viewSourceAt: '查看 {version}（{commit}）的源码',
     viewSource: '在 GitHub 查看源码',
+    devDocsBanner: '正在查看开发分支文档（未发布版本）。',
+    devDocsBannerStableLink: '查看最新稳定版文档。',
     starOnGitHub: 'GitHub 加星',
     search: '搜索',
     searchComponents: '搜索组件',
@@ -51,6 +53,7 @@ export const zh: DeepPartial<SiteStrings> = {
     motion: '动效预设',
     figmaTokens: 'Figma 中的设计令牌',
     serverActions: 'React 19 Actions',
+    composition: '组合与定制',
   },
   guideSummaries: {
     darkMode: '明暗两套 token 类、useDarkMode 钩子与运行时品牌主题。',
@@ -64,6 +67,8 @@ export const zh: DeepPartial<SiteStrings> = {
       '把 W3C DTF 令牌导出接进 Tokens Studio 与 Figma Variables：流程与局限。',
     serverActions:
       '用原生 FormData、useActionState 与 useOptimistic 驾驭 haze-ui 的 Server Actions。',
+    composition:
+      '五个组合逃生舱：Core 变体、as 多态、headless 入口、classNames 槽位与设计 token。',
   },
   blocks: {
     title: '页面区块',
@@ -229,6 +234,7 @@ export const zh: DeepPartial<SiteStrings> = {
     DropdownMenu: '点击触发的浮动菜单。',
     HoverCard: '非模态悬浮预览（头像卡片、链接摘要），锚定于触发器。',
     Menu: '轻量切换菜单：触发器 + 静态定位面板（MenuItem、MenuDivider）。',
+    Popconfirm: '锚定于触发元素的确认气泡，含确认/取消操作。',
     Popover: '锚定于触发元素的浮动气泡。',
     Tooltip: '悬停/聚焦提示气泡。',
 
@@ -326,6 +332,8 @@ export const zh: DeepPartial<SiteStrings> = {
     ThinkingIndicator: '弹跳动点指示器，表示代理思考中。',
     TokenCounter: '上下文窗口 token 用量计数，含预算进度。',
     ToolCallCard: '工具调用卡片：名称、输入、输出与运行状态。',
+    Trace:
+      '逐行推理步骤追踪：每行带状态（等待/运行/完成/错误）、自定义图标、可展开详情与屏幕阅读器状态播报。',
 
     // Utilities
     Collapsible: '无样式开合容器，open 状态可控。',
@@ -337,6 +345,8 @@ export const zh: DeepPartial<SiteStrings> = {
     ConfigProvider:
       '组件默认值覆写（Button 尺寸、Toast 时长/位置、Tooltip 延迟、HoverCard 开合延迟），经 useConfigDefaults() 读取；显式 props 恒胜，Provider 嵌套时按 section 浅合并。',
     SwipeAction: '滑动操作：左/右缘滑动露出动作，越过阈值提交。',
+    PullToRefresh:
+      '移动端下拉刷新：包裹滚动内容，阻尼下拉到位触发，promise 落定前保持刷新态，指示器为 render prop。',
   },
   home: {
     hero: {
@@ -520,6 +530,41 @@ export const zh: DeepPartial<SiteStrings> = {
           ' 上——所有路由都会继承。',
         ],
       },
+    },
+    otherBundlers: {
+      title: '其他打包器（webpack / Rspack）',
+      lead: [
+        'Vite 之外无需任何插件——haze-ui 发布的就是预先抽取好的普通 CSS 文件。在入口模块导入 ',
+        { code: 'haze-ui/styles.css' },
+        '（或按组件的 ',
+        { code: 'haze-ui/css/*' },
+        ' 文件），交给标准的 css 加载链即可：',
+      ],
+      configLead: [
+        { strong: '最小 webpack 5 配置' },
+        ' —— ',
+        { code: 'css-loader' },
+        ' 加一个样式注入器（开发用 ',
+        { code: 'style-loader' },
+        '，独立样式表用 ',
+        { code: 'mini-css-extract-plugin' },
+        '）：',
+      ],
+      sideEffectsNote: [
+        '包内已把 ',
+        { code: '*.css' },
+        ' 标记为 ',
+        { code: 'sideEffects' },
+        '，CSS 导入不会因 tree-shaking 丢失，未用到的 JS 照常摇掉。',
+        { code: '@linaria/core' },
+        ' 只有在你要自己编写匹配样式时才需要——库内样式构建期已抽取完毕，不会有任何 Linaria 代码进入产物。',
+      ],
+      rspackNote: [
+        { strong: 'Rspack 开箱即用：' },
+        '同一份 webpack 配置直接跑——把执行器指向 ',
+        { code: 'rspack build' },
+        '，上面的 css 规则原样保留即可。',
+      ],
     },
     setup: {
       title: '初始化',

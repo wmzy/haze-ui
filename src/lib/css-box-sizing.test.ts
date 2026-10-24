@@ -27,6 +27,7 @@ const PANEL_FAMILIES = [
   'drawer',
   'bottom-sheet',
   'popover',
+  'popconfirm',
   'menu',
   'dropdown-menu',
   'context-menu',

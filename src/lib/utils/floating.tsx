@@ -287,7 +287,7 @@ const fallbackBottom = css`
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-top: var(--haze-space-1);
 `;
 
@@ -298,7 +298,7 @@ const fallbackBottomCenter = css`
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-top: var(--haze-space-1);
 `;
 
@@ -306,7 +306,7 @@ const fallbackBottomEnd = css`
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-top: var(--haze-space-1);
 `;
 
@@ -315,7 +315,7 @@ const fallbackTop = css`
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-bottom: var(--haze-space-1);
 `;
 
@@ -324,7 +324,7 @@ const fallbackLeft = css`
   right: 100%;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-right: var(--haze-space-1);
 `;
 
@@ -333,7 +333,7 @@ const fallbackRight = css`
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: var(--haze-z-overlay-fallback);
   margin-left: var(--haze-space-1);
 `;
 

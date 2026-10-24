@@ -678,14 +678,9 @@
         "BreadcrumbItem"
       ],
       "propsTypes": {
-        "BreadcrumbItemProps": [
+        "BreadcrumbItemOwnProps": [
           {
             "name": "href",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "className",
             "type": "string",
             "required": false
           },
@@ -693,6 +688,23 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          }
+        ],
+        "BreadcrumbItemProps": [
+          {
+            "name": "href",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "as",
+            "type": "T",
+            "required": false
           }
         ],
         "BreadcrumbProps": [
@@ -965,6 +977,18 @@
         "cardVariants"
       ],
       "propsTypes": {
+        "CardOwnProps": [
+          {
+            "name": "variant",
+            "type": "'elevated' | 'outlined' | 'filled'",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ],
         "CardProps": [
           {
             "name": "variant",
@@ -972,14 +996,14 @@
             "required": false
           },
           {
-            "name": "className",
-            "type": "string",
-            "required": false
-          },
-          {
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "as",
+            "type": "T",
+            "required": false
           }
         ]
       },
@@ -2455,6 +2479,11 @@
             "required": false
           },
           {
+            "name": "as",
+            "type": "T",
+            "required": false
+          },
+          {
             "name": "variant",
             "type": "'solid' | 'outline' | 'ghost'",
             "required": false
@@ -2472,11 +2501,6 @@
           {
             "name": "loading",
             "type": "boolean | { icon?: ReactNode; text?: ReactNode; }",
-            "required": false
-          },
-          {
-            "name": "as",
-            "type": "T",
             "required": false
           }
         ],
@@ -3584,6 +3608,11 @@
           {
             "name": "placement",
             "type": "'top' | 'bottom' | 'left' | 'right'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
             "required": false
           },
           {
@@ -5745,6 +5774,11 @@
             "required": false
           },
           {
+            "name": "virtualized",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "classNames",
             "type": "MenuClassNames",
             "required": false
@@ -6648,6 +6682,88 @@
       },
       "otherTypes": {}
     },
+    "Popconfirm": {
+      "routeKey": "popconfirm",
+      "cssFamily": "popconfirm",
+      "imports": [
+        "Popconfirm"
+      ],
+      "propsTypes": {
+        "PopconfirmProps": [
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "description",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "okText",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "cancelText",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "okVariant",
+            "type": "'primary' | 'danger'",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "onConfirm",
+            "type": "() => void | Promise<unknown>",
+            "required": false
+          },
+          {
+            "name": "onCancel",
+            "type": "() => void | Promise<unknown>",
+            "required": false
+          },
+          {
+            "name": "placement",
+            "type": "PopconfirmPlacement",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "ref",
+            "type": "Ref<PopconfirmHandle>",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Popover": {
       "routeKey": "popover",
       "cssFamily": "popover",
@@ -6805,6 +6921,68 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "PullToRefresh": {
+      "routeKey": "pull-to-refresh",
+      "cssFamily": "pull-to-refresh",
+      "imports": [
+        "PullToRefresh"
+      ],
+      "propsTypes": {
+        "PullToRefreshProps": [
+          {
+            "name": "onRefresh",
+            "type": "() => void | Promise<unknown>",
+            "required": true
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "distance",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "canRefresh",
+            "type": "() => boolean",
+            "required": false
+          },
+          {
+            "name": "indicator",
+            "type": "(info: PullToRefreshIndicatorInfo) => ReactNode",
+            "required": false
+          },
+          {
+            "name": "pullingText",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "readyText",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "refreshingText",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLDivElement>",
             "required": false
           }
         ]
@@ -9127,6 +9305,38 @@
         "tagSizes"
       ],
       "propsTypes": {
+        "TagOwnProps": [
+          {
+            "name": "color",
+            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md'",
+            "required": false
+          },
+          {
+            "name": "closable",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onClose",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "removeLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ],
         "TagProps": [
           {
             "name": "color",
@@ -9154,18 +9364,13 @@
             "required": false
           },
           {
-            "name": "className",
-            "type": "string",
-            "required": false
-          },
-          {
             "name": "children",
             "type": "ReactNode",
             "required": true
           },
           {
-            "name": "ref",
-            "type": "Ref<HTMLSpanElement>",
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]
@@ -10281,6 +10486,79 @@
       },
       "otherTypes": {}
     },
+    "Trace": {
+      "routeKey": "trace",
+      "cssFamily": "trace",
+      "imports": [
+        "Trace",
+        "TraceItem",
+        "TraceDetails"
+      ],
+      "propsTypes": {
+        "TraceDetailsProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "TraceItemProps": [
+          {
+            "name": "title",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "TraceStatus",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "ComponentType",
+            "required": false
+          },
+          {
+            "name": "details",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "onOpenChange",
+            "type": "(open: boolean) => void",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "TraceProps": [
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
     "Transfer": {
       "routeKey": "transfer",
       "cssFamily": "transfer",
@@ -10904,8 +11182,18 @@
             "required": false
           },
           {
+            "name": "paste",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "beforeUpload",
             "type": "(file: File) => boolean | Promise<boolean>",
+            "required": false
+          },
+          {
+            "name": "maxSize",
+            "type": "number",
             "required": false
           },
           {
@@ -11078,12 +11366,22 @@
             "required": false
           },
           {
+            "name": "paste",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "beforeUpload",
             "type": "(file: File) => boolean | Promise<boolean>",
             "required": false
           },
           {
             "name": "maxCount",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "maxSize",
             "type": "number",
             "required": false
           },

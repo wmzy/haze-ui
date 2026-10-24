@@ -12,7 +12,7 @@ type AffixProps = {
 
 const affix = css`
   position: fixed;
-  z-index: 100;
+  z-index: var(--haze-z-overlay);
 `;
 
 const posTop = css`

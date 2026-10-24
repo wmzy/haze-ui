@@ -29,7 +29,7 @@ const content = css`
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   box-shadow: var(--haze-shadow-md);
-  z-index: 100;
+  z-index: var(--haze-z-overlay);
 
   /* Forced-colors: the UA keeps the author border visible by forcing
      its color to CanvasText — restated so the panel stays separated

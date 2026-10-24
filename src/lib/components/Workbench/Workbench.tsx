@@ -198,12 +198,13 @@ const verticalFill = css`
 const statusBarRegion = css`
   grid-area: status;
   box-sizing: border-box;
-  /* Above the mobile overlays so the status strip
-     stays visible while the sidebar slide-out is
-     open. Grid items layer by z-index without a
-     position declaration; harmless on desktop, where
-     nothing overlaps this row. */
-  z-index: 110;
+  /* Above the mobile overlays (one step over the
+     overlay tier) so the status strip stays visible
+     while the sidebar slide-out is open. Grid items
+     layer by z-index without a position declaration;
+     harmless on desktop, where nothing overlaps this
+     row. */
+  z-index: calc(var(--haze-z-overlay) + 10);
 `;
 
 /* Mobile-only bottom navigation: absent from the desktop grid, shown
@@ -215,12 +216,13 @@ const tabBarRegion = css`
 
   @container workbench (max-width: 768px) {
     display: block;
-    /* Above the mobile overlays: the bottom nav stays
-     * visible and tappable while the slide-out is open —
-     * its Sidebar item is the overlay's own toggle, so
+    /* Above the mobile overlays (one step over the
+     * overlay tier): the bottom nav stays visible and
+     * tappable while the slide-out is open — its
+     * Sidebar item is the overlay's own toggle, so
      * burying it under the panel would remove the
      * reselect-to-close path. */
-    z-index: 110;
+    z-index: calc(var(--haze-z-overlay) + 10);
   }
 `;
 
@@ -239,7 +241,7 @@ const scrim = css`
     display: none;
     position: absolute;
     inset: 0;
-    z-index: 90;
+    z-index: calc(var(--haze-z-overlay) - 10);
     background: rgba(0, 0, 0, 0.4);
 
     &[data-open] {
@@ -260,7 +262,7 @@ const sidenavOverlay = css`
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
-    z-index: 100;
+    z-index: var(--haze-z-overlay);
     width: 100%;
     /* Opaque fill: the docked column rides the shell's
      * own background, but as an overlay the region is
@@ -298,7 +300,7 @@ const auxOverlay = css`
     position: absolute;
     inset-block: 0;
     inset-inline-end: 0;
-    z-index: 100;
+    z-index: var(--haze-z-overlay);
     width: min(var(--haze-workbench-auxiliary-width, 300px), 85%);
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-lg);

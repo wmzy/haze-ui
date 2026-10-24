@@ -1,6 +1,7 @@
 {
   "version": "v1.33.0",
   "gitTag": "v1.33.0",
-  "commit": "21eac5ed4be6bc7d1ee76c31732f6e11a6e6c636",
-  "buildDate": "2026-10-23T10:39:03.983Z"
+  "commit": "1c4e32358552e1de8b34dc564932280dd6f4134f",
+  "channel": "dev",
+  "buildDate": "2026-10-23T22:06:09.799Z"
 }

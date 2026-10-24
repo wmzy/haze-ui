@@ -36,6 +36,11 @@ type UploadFileStatus = {
   status: UploadStatus;
   /** 0–100, clamped; forced to 100 when the upload succeeds. */
   percent: number;
+  /** Why an `error` entry never uploaded: set when the file was
+   * refused at intake (over `maxSize`) — the row renders the message
+   * in place of the retry/progress affordances and only remove
+   * applies. Absent for transport failures (retryable) and echoes. */
+  error?: string;
 };
 
 /** Runtime handed to a custom `request` (and used internally by the

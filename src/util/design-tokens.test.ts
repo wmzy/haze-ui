@@ -22,7 +22,14 @@ describe('toDesignTokens', () => {
   it('groups tokens by mapped category', () => {
     const file = toDesignTokens(TOKEN_REGISTRY);
 
-    expect(Object.keys(file).sort()).toEqual(['color', 'dimension', 'font', 'shadow', 'spacing']);
+    expect(Object.keys(file).sort()).toEqual([
+      'color',
+      'dimension',
+      'font',
+      'shadow',
+      'spacing',
+      'z-index',
+    ]);
 
     const groupForCategory = {
       color: 'color',
@@ -30,6 +37,7 @@ describe('toDesignTokens', () => {
       spacing: 'spacing',
       radius: 'dimension',
       shadow: 'shadow',
+      'z-index': 'z-index',
     } as const;
 
     for (const [cat, group] of Object.entries(groupForCategory)) {

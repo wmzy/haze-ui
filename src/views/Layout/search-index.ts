@@ -1,20 +1,20 @@
 /*
  * Docs-tier search for the ⌘K palette (./CommandPalette.tsx): a pure
  * matcher over the build-time index src/generated/search-index.json
- * (scripts/generate-search-index.mjs — pages, demo section titles, prop
- * descriptions). The component tier keeps the fuzzy scorer in
- * ./search-score.ts; this module only serves the entries that are not
- * components.
+ * (scripts/generate-search-index.mjs — pages, per-component API pages,
+ * demo section titles, prop descriptions). The component tier keeps the
+ * fuzzy scorer in ./search-score.ts; this module only serves the entries
+ * that are not components.
  *
  * Semantics: every whitespace-separated term must be a case-insensitive
  * substring of at least one of the entry's text fields (label, sublabel,
  * keywords) — an AND across terms, OR across fields. Hits keep index order
- * (pages → sections → props) and truncate at `maxN`.
+ * (pages → API pages → sections → props) and truncate at `maxN`.
  */
 
 import rawIndex from '@/generated/search-index.json';
 
-export type SearchEntryType = 'component' | 'page' | 'section' | 'prop';
+export type SearchEntryType = 'component' | 'page' | 'api' | 'section' | 'prop';
 
 export type SearchEntry = {
   type: SearchEntryType;

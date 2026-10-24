@@ -109,6 +109,7 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'DropdownMenu', route: 'dropdown-menu' },
       { name: 'HoverCard', route: 'hover-card' },
       { name: 'Menu', route: 'menu' },
+      { name: 'Popconfirm', route: 'popconfirm' },
       { name: 'Popover', route: 'popover' },
       { name: 'Tooltip', route: 'tooltip' },
     ],
@@ -202,6 +203,7 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'ThinkingIndicator', route: 'thinking-indicator' },
       { name: 'TokenCounter', route: 'token-counter' },
       { name: 'ToolCallCard', route: 'tool-call-card' },
+      { name: 'Trace', route: 'trace' },
     ],
   },
   {
@@ -213,6 +215,7 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'Fullscreen', route: 'fullscreen' },
       { name: 'LocaleProvider', route: 'locale-provider' },
       { name: 'SwipeAction', route: 'swipe-action' },
+      { name: 'PullToRefresh', route: 'pull-to-refresh' },
       { name: 'VisuallyHidden', route: 'visually-hidden' },
     ],
   },

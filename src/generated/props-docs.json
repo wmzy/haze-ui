@@ -454,6 +454,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Item label"
+    },
+    {
+      "name": "as",
+      "default": "omitted → href-driven ('a' | 'span')",
+      "description": "Render element. Omitted (default) keeps the href-driven duality: href renders an <a> wearing the link skin, no href renders a <span> wearing the current-page skin. An explicit `as` overrides the element and opts into the link skin — the router-Link shape whose navigation lives in `to` rather than `href` (href still lands when passed). The trail semantics (nav/ol, aria-current on the parent <li>) are unaffected."
     }
   ],
   "BreadcrumbProps": [
@@ -537,6 +542,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Card content"
+    },
+    {
+      "name": "as",
+      "default": "'div'",
+      "description": "Render element: 'div' (default) keeps the plain container; 'a' renders the whole card as a native link — href/target/rel and every other anchor attribute flow through, and the anchor shape resets the UA underline/link-blue while restoring the div's block layout, so the card looks identical. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Never nest interactive elements inside a whole-card link (anchors/buttons don't nest) — keep secondary actions outside or use a stretched-link overlay."
     }
   ],
   "CarouselProps": [
@@ -1321,6 +1331,12 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Drawer content"
+    },
+    {
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "default": "— (不传保持 320px)",
+      "description": "Panel size preset. left/right sets width: sm 360px / md 480px / lg 640px; top/bottom sets height: sm 240px / md 360px / lg 480px. Implemented as the --haze-drawer-width / --haze-drawer-height custom properties (set by the preset, consumed by the placement class) — override either with an inline style or CSS instead of a fixed pixel value."
     }
   ],
   "DropdownMenuContentProps": [
@@ -1821,6 +1837,12 @@
       "name": "children",
       "type": "ReactNode",
       "description": "MenuItem and MenuDivider elements"
+    },
+    {
+      "name": "virtualized",
+      "type": "boolean",
+      "default": "false",
+      "description": "Opt-in: window the data-driven items list through VirtualList (fixed-height rows; requires the items data API; group entries fall back to the plain DOM path with a dev error). Arrows/Home/End/typeahead reach rows outside the mounted window by scrolling them in and focusing after the commit."
     }
   ],
   "ModelPickerProps": [
@@ -2987,8 +3009,8 @@
     },
     {
       "name": "ref",
-      "type": "Ref<HTMLSpanElement>",
-      "description": "Forwarded to the root span (data-slot='tag')"
+      "type": "Ref<T>",
+      "description": "Forwarded to the rendered root element (data-slot='tag'); with the default span it is a Ref<HTMLSpanElement>, with as='a' a Ref<HTMLAnchorElement>"
     },
     {
       "name": "size",
@@ -3022,6 +3044,11 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Tag content"
+    },
+    {
+      "name": "as",
+      "default": "'span'",
+      "description": "Render element: 'span' (default) keeps the static tag; 'a' renders a clickable tag link — href/target/rel and the rest of the anchor surface flow through, and the link shape resets the UA underline so the tag looks identical to the span form. Any component forwarding props to a DOM element (e.g. a router Link) works the same way. Don't combine an interactive `as` with `closable`: the remove button would nest inside a link (invalid HTML, SR/keyboard trap)."
     }
   ],
   "ToastProps": [
@@ -3280,6 +3307,69 @@
       "type": "string",
       "default": "'Tokens'",
       "description": "Label text"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    }
+  ],
+  "TraceProps": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "TraceItem steps composing the trace, one per line"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    }
+  ],
+  "TraceItemProps": [
+    {
+      "name": "title",
+      "type": "ReactNode",
+      "description": "The step's headline — the line's visible text"
+    },
+    {
+      "name": "status",
+      "type": "'pending' | 'running' | 'done' | 'error'",
+      "default": "'pending'",
+      "description": "Step status driving the marker color and the live-region announcements"
+    },
+    {
+      "name": "icon",
+      "type": "ComponentType",
+      "description": "Replaces the status glyph inside the marker (the marker keeps its status ring)"
+    },
+    {
+      "name": "details",
+      "type": "ReactNode",
+      "description": "Payload revealed by the line's disclosure toggle; omit for a plain line"
+    },
+    {
+      "name": "open",
+      "type": "ControlOrValue<boolean>",
+      "default": "false",
+      "description": "Controlled/uncontrolled expanded state of the details panel"
+    },
+    {
+      "name": "onOpenChange",
+      "type": "(open: boolean) => void",
+      "description": "Fires on every expand/collapse transition, whatever drove it"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    }
+  ],
+  "TraceDetailsProps": [
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Payload content — rendered as a monospace pre-wrap body"
     },
     {
       "name": "className",
@@ -3564,6 +3654,17 @@
       "name": "children",
       "type": "ReactNode",
       "description": "Custom dropzone content"
+    },
+    {
+      "name": "paste",
+      "type": "boolean",
+      "default": "false",
+      "description": "Paste-to-upload: focus the zone (role=button, in the tab order) and press Ctrl/Cmd+V — clipboard files run through the exact drop pipeline (accept, beforeUpload, maxSize, maxCount) and report like any pick; clipboard content without files passes through untouched. Works in droppable and click-only modes alike."
+    },
+    {
+      "name": "maxSize",
+      "type": "number",
+      "description": "Per-file size cap in bytes, applied after beforeUpload and before maxCount. An over-limit file still enters the list — as an error row carrying its size message (e.g. '2.50 MB exceeds the 1.00 MB limit') — but never uploads: auto mode, retry and the UploadHandle all refuse it, leaving remove as its only action. Rejected rows occupy maxCount slots like any entry. The cap gates intake only; a File arriving through value uploads normally. A non-positive or non-finite value disables the cap."
     }
   ],
   "VirtualListProps": [
@@ -3756,6 +3857,68 @@
       "description": "Appends custom content inside every picker cell (day numbers, month/quarter/year labels, drill-down grids) — receives the cell's civil date and the mode it renders in"
     }
   ],
+  "PullToRefreshProps": [
+    {
+      "name": "onRefresh",
+      "type": "() => Promise<unknown> | void",
+      "description": "Refresh action; a returned promise holds the refreshing phase (spinner) until it settles — fulfilled or rejected — then the head springs back"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Scrolling content; the gesture starts from anywhere inside it"
+    },
+    {
+      "name": "distance",
+      "type": "number",
+      "default": "64",
+      "description": "Pull distance (px) that arms the refresh; also sizes the head and the resting offset while refreshing (mirrors --haze-space-16)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "description": "Disables the gesture entirely (render output unchanged)"
+    },
+    {
+      "name": "canRefresh",
+      "type": "() => boolean",
+      "description": "Replaces the default scroll-edge gate (every ancestor between the touched element and the document root at scrollTop 0); evaluated once per pull as it crosses the slop"
+    },
+    {
+      "name": "indicator",
+      "type": "(info: PullToRefreshIndicatorInfo) => ReactNode",
+      "description": "Render prop for the head ({ phase, progress 0..1 }); default is a down arrow that flips when armed, a Spinner once refreshing, plus the status text props"
+    },
+    {
+      "name": "pullingText",
+      "type": "ReactNode",
+      "default": "'Pull to refresh'",
+      "description": "Status text while pulling below the threshold (default indicator)"
+    },
+    {
+      "name": "readyText",
+      "type": "ReactNode",
+      "default": "'Release to refresh'",
+      "description": "Status text once the pull passes the threshold (default indicator)"
+    },
+    {
+      "name": "refreshingText",
+      "type": "ReactNode",
+      "default": "'Refreshing…'",
+      "description": "Status text while the refresh promise is pending (default indicator)"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<HTMLDivElement>",
+      "description": "Forwarded to the root container (data-slot='container')"
+    }
+  ],
   "PromptInputProps": [
     {
       "name": "value",
@@ -3850,6 +4013,89 @@
       "name": "className",
       "type": "string",
       "description": "Additional CSS class"
+    }
+  ],
+  "PopconfirmProps": [
+    {
+      "name": "title",
+      "type": "ReactNode",
+      "description": "Panel heading — the confirmation question"
+    },
+    {
+      "name": "description",
+      "type": "ReactNode",
+      "description": "Secondary explanation under the title"
+    },
+    {
+      "name": "okText",
+      "type": "string",
+      "default": "confirmDialog.confirm locale",
+      "description": "OK button label override"
+    },
+    {
+      "name": "cancelText",
+      "type": "string",
+      "default": "confirmDialog.cancel locale",
+      "description": "Cancel button label override"
+    },
+    {
+      "name": "okVariant",
+      "type": "'primary' | 'danger'",
+      "default": "'primary'",
+      "description": "OK button tone; danger remaps the solid skin onto the danger token family"
+    },
+    {
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "Decorative glyph beside the title"
+    },
+    {
+      "name": "onConfirm",
+      "type": "() => void | Promise<unknown>",
+      "description": "Fired on confirm; a returned promise busy's the OK button, closes on resolve, stays open on reject"
+    },
+    {
+      "name": "onCancel",
+      "type": "() => void | Promise<unknown>",
+      "description": "Fired on cancel (button, Escape); same async busy contract on the cancel button"
+    },
+    {
+      "name": "placement",
+      "type": "'top' | 'bottom' | 'bottom-span' | 'bottom-center' | 'bottom-end' | 'left' | 'right'",
+      "default": "'top'",
+      "description": "Panel placement relative to the trigger (logical, same set as Popover minus 'point')"
+    },
+    {
+      "name": "open",
+      "type": "Control<boolean> | boolean",
+      "default": "false",
+      "description": "Whether the panel is open (controlled or uncontrolled)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "description": "Inert trigger: no pointer or keyboard open"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "description": "Additional CSS class on the floating panel"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "Trigger content"
+    },
+    {
+      "name": "ref",
+      "type": "Ref<PopconfirmHandle>",
+      "description": "Imperative handle: open() (respects disabled), close(), focusTrigger()"
+    },
+    {
+      "name": "...rest",
+      "type": "div props",
+      "description": "Native div attributes spread onto the floating panel"
     }
   ]
 }

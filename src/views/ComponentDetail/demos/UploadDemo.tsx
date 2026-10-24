@@ -153,9 +153,25 @@ export default function UploadDemo() {
       </div>
 
       <div className={section}>
+        <h2>Paste to upload</h2>
+        <p style={noteStyle}>
+          <code>paste</code> lets the zone accept clipboard files: focus
+          it (the zone is a <code>role="button"</code> in the tab order)
+          and press Ctrl/Cmd+V. Pasted files run through the exact drop
+          pipeline — <code>accept</code>, <code>beforeUpload</code>,{' '}
+          <code>maxSize</code>, <code>maxCount</code> — and report like
+          any pick. Copy a file in your file manager and paste it here;
+          clipboard text passes through untouched.
+        </p>
+        <div style={{ maxWidth: 400 }}>
+          <Upload paste multiple showUploadList />
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>maxCount</h2>
         <p style={noteStyle}>
-          The pipeline runs <code>accept → beforeUpload → merge → maxCount</code>:
+          The pipeline runs <code>accept → beforeUpload → maxSize → maxCount</code>:
           existing entries are kept first, excess fresh files are dropped
           silently. This picker caps the list at three images.
         </p>
@@ -178,6 +194,28 @@ export default function UploadDemo() {
             Reset counter
           </Button>
         </p>
+      </div>
+
+      <div className={section}>
+        <h2>maxSize</h2>
+        <p style={noteStyle}>
+          <code>maxSize</code> caps each file in bytes. An over-limit
+          file stays in the list as a rejected error row carrying its
+          size message — it never uploads (auto mode, retry and the{' '}
+          <code>UploadHandle</code> all refuse it), leaving remove as
+          its only action. Rejected rows occupy <code>maxCount</code>{' '}
+          slots like any entry. This picker caps files at 512 KB — pick
+          something larger to see the rejection row next to a normal
+          upload.
+        </p>
+        <div style={{ maxWidth: 400 }}>
+          <Upload
+            request={simulateRequest}
+            maxSize={512 * 1024}
+            multiple
+            showUploadList
+          />
+        </div>
       </div>
 
       <div className={section}>
@@ -380,6 +418,7 @@ export default function UploadDemo() {
           <ul>
             <li>Uses <strong>role=&quot;button&quot;</strong> with <strong>tabIndex</strong></li>
             <li>Click or drag-and-drop to select files</li>
+            <li>With <strong>paste</strong>, focus the zone and press Ctrl/Cmd+V</li>
             <li>Hidden native <strong>&lt;input type=&quot;file&quot;&gt;</strong></li>
           </ul>
         </A11yNote>

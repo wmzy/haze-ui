@@ -72,7 +72,7 @@ const leafOf = (file: DtfFile, token: TokenDef): DtfToken => {
 
 const dtfContract = built ? describe : describe.skip;
 dtfContract('dist 发布契约：design-tokens JSON 与 TOKEN_REGISTRY 一致', () => {
-  it('两个文件可解析且顶层形状正确（$schema + haze 五组）', () => {
+  it('两个文件可解析且顶层形状正确（$schema + haze 六组）', () => {
     for (const file of [lightFile, darkFile]) {
       if (file === undefined) throw new Error('unreachable: gated by built');
       expect(file.$schema).toBe('https://tr.designtokens.org/format/');
@@ -82,6 +82,7 @@ dtfContract('dist 发布契约：design-tokens JSON 与 TOKEN_REGISTRY 一致', 
         'shadow',
         'spacing',
         'typography',
+        'z-index',
       ]);
     }
   });

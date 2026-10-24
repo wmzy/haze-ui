@@ -92,8 +92,8 @@ function resolveTarget(step: TourStep): HTMLElement | null {
 const overlay = css`
   position: fixed;
   inset: 0;
-  /* ConfirmDialog tier: above page content; toasts stay on top (9999). */
-  z-index: 100;
+  /* Overlay tier: above page content; toasts stay on top (--haze-z-toast). */
+  z-index: var(--haze-z-overlay);
   font-family: var(--haze-font-sans);
   color: var(--haze-color-text);
 
@@ -160,7 +160,7 @@ const card = css`
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   max-width: 360px;
   padding: var(--haze-space-4);
   background: var(--haze-color-bg);

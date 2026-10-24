@@ -55,7 +55,7 @@ const dot = css`
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-border);
   flex-shrink: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 `;
 
 const dotColors = {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T10:39:06.421Z",
+  "generatedAt": "2026-10-23T22:05:30.653Z",
   "components": [
     {
       "component": "Accordion",
@@ -168,7 +168,7 @@
         "aria-current"
       ],
       "keys": [],
-      "testCount": 9
+      "testCount": 14
     },
     {
       "component": "Button",
@@ -227,10 +227,12 @@
     },
     {
       "component": "Card",
-      "roles": [],
+      "roles": [
+        "link"
+      ],
       "aria": [],
       "keys": [],
-      "testCount": 6
+      "testCount": 11
     },
     {
       "component": "Carousel",
@@ -666,7 +668,7 @@
       ],
       "aria": [],
       "keys": [],
-      "testCount": 29
+      "testCount": 33
     },
     {
       "component": "DropdownMenu",
@@ -1090,7 +1092,7 @@
         "Home",
         "Tab"
       ],
-      "testCount": 61
+      "testCount": 73
     },
     {
       "component": "Meter",
@@ -1226,6 +1228,25 @@
       "testCount": 11
     },
     {
+      "component": "Popconfirm",
+      "roles": [
+        "button"
+      ],
+      "aria": [
+        "aria-busy",
+        "aria-disabled",
+        "aria-expanded",
+        "aria-haspopup"
+      ],
+      "keys": [
+        " ",
+        "Enter",
+        "Escape",
+        "Tab"
+      ],
+      "testCount": 32
+    },
+    {
       "component": "Popover",
       "roles": [
         "button"
@@ -1283,6 +1304,19 @@
         "Escape"
       ],
       "testCount": 34
+    },
+    {
+      "component": "PullToRefresh",
+      "roles": [
+        "status"
+      ],
+      "aria": [
+        "aria-busy",
+        "aria-hidden",
+        "aria-label"
+      ],
+      "keys": [],
+      "testCount": 24
     },
     {
       "component": "QRCode",
@@ -1704,11 +1738,12 @@
     {
       "component": "Tag",
       "roles": [
-        "button"
+        "button",
+        "link"
       ],
       "aria": [],
       "keys": [],
-      "testCount": 12
+      "testCount": 17
     },
     {
       "component": "TagGroup",
@@ -1927,6 +1962,22 @@
       "testCount": 19
     },
     {
+      "component": "Trace",
+      "roles": [
+        "button",
+        "status"
+      ],
+      "aria": [
+        "aria-controls",
+        "aria-expanded",
+        "aria-label"
+      ],
+      "keys": [
+        "Enter"
+      ],
+      "testCount": 23
+    },
+    {
       "component": "Transfer",
       "roles": [
         "button",
@@ -2004,6 +2055,7 @@
       "component": "Upload",
       "roles": [
         "button",
+        "img",
         "progressbar"
       ],
       "aria": [
@@ -2015,7 +2067,7 @@
       "keys": [
         "Enter"
       ],
-      "testCount": 92
+      "testCount": 111
     },
     {
       "component": "VirtualList",

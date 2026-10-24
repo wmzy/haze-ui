@@ -19,6 +19,8 @@ export const de: DeepPartial<SiteStrings> = {
     themeEditor: 'Theme-Editor',
     viewSourceAt: 'Quelltext von {version} ({commit}) ansehen',
     viewSource: 'Quelltext auf GitHub ansehen',
+    devDocsBanner: 'Du siehst die Dokumentation des Entwicklungs-Zweigs (unveröffentlicht).',
+    devDocsBannerStableLink: 'Dokumentation der aktuellen Version ansehen.',
     starOnGitHub: 'Auf GitHub einen Star geben',
     search: 'Suchen',
     searchComponents: 'Komponenten suchen',
@@ -53,6 +55,7 @@ export const de: DeepPartial<SiteStrings> = {
     motion: 'Motion-Presets',
     figmaTokens: 'Tokens in Figma',
     serverActions: 'React 19 Actions',
+    composition: 'Komposition & Anpassung',
   },
   guideSummaries: {
     darkMode:
@@ -69,6 +72,8 @@ export const de: DeepPartial<SiteStrings> = {
       'Die W3C-DTF-Token-Exporte in Tokens Studio und Figma Variables — Workflow und Grenzen.',
     serverActions:
       'Server Actions über natives FormData, useActionState und useOptimistic mit haze-ui.',
+    composition:
+      'Die fünf Escape-Hatches: Core-Varianten, as-Polymorphie, der Headless-Einstieg, classNames-Slots und Design-Tokens.',
   },
   blocks: {
     title: 'Blöcke',
@@ -250,6 +255,7 @@ export const de: DeepPartial<SiteStrings> = {
     HoverCard:
       'Nicht-modale schwebende Vorschau (Avatar-Karte, Link-Zusammenfassung), verankert am Trigger.',
     Menu: 'Leichtgewichtiges Toggle-Menü mit Trigger und statisch positioniertem Panel (MenuItem, MenuDivider).',
+    Popconfirm: 'Bestätigungs-Blase, verankert am Trigger, mit Bestätigen/Abbrechen-Aktionen.',
     Popover: 'Schwebendes Popover, verankert an einem Trigger-Element.',
     Tooltip: 'Hover-/Fokus-Hinweisblase.',
 
@@ -373,6 +379,8 @@ export const de: DeepPartial<SiteStrings> = {
       'Zähler für die Token-Nutzung im Kontextfenster mit Budget-Fortschritt.',
     ToolCallCard:
       'Karte für einen Agenten-Tool-Aufruf — Name, Input, Output und Laufzustand.',
+    Trace:
+      'Zeilenweise Reasoning-Trace für Agent-Schritte — Status je Zeile (wartend/läuft/fertig/Fehler), eigene Icons, ausklappbare Details und Screenreader-Ansagen zum Status.',
 
     // Utilities
     Collapsible: 'Unstyled Auf-/Zuklapp-Container mit steuerbarem open-Zustand.',
@@ -385,6 +393,8 @@ export const de: DeepPartial<SiteStrings> = {
       'Überschreibt Komponenten-Prop-Defaults (Button-Größe, Toast duration/placement, Tooltip-Verzögerung, HoverCard-Öffnen-/Schließen-Verzögerung), gelesen über useConfigDefaults(); explizite Props gewinnen immer, Provider schachteln mit flachem Merge je Sektion.',
     SwipeAction:
       'Wischgesten, die Zeilen-Aktionen an linker/rechter Kante freilegen, mit Commit-Schwelle.',
+    PullToRefresh:
+      'Pull-to-refresh für Mobilgeräte: umschließt scrollenden Inhalt, gedämpftes Ziehen bis zur Auslöseschwelle, Spinner hält bis zum Promise-Abschluss, Indikator als Render-Prop.',
   },
   home: {
     hero: {
@@ -575,6 +585,41 @@ export const de: DeepPartial<SiteStrings> = {
           ' anwenden — jede Route erbt sie.',
         ],
       },
+    },
+    otherBundlers: {
+      title: 'Weitere Bundler (webpack / Rspack)',
+      lead: [
+        'Außerhalb von Vite ist kein Plugin nötig — haze-ui wird als fertige, vorab extrahierte CSS-Dateien ausgeliefert. Importiere ',
+        { code: 'haze-ui/styles.css' },
+        ' (oder die komponentenweisen ',
+        { code: 'haze-ui/css/*' },
+        '-Dateien) im Einstiegsmodul und überlass den Rest der üblichen css-loader-Kette:',
+      ],
+      configLead: [
+        { strong: 'Minimale webpack-5-Konfiguration' },
+        ' — ',
+        { code: 'css-loader' },
+        ' plus Style-Injector (',
+        { code: 'style-loader' },
+        ' in der Entwicklung oder ',
+        { code: 'mini-css-extract-plugin' },
+        ' für ein eigenes Stylesheet):',
+      ],
+      sideEffectsNote: [
+        'Das Paket markiert ',
+        { code: '*.css' },
+        ' als ',
+        { code: 'sideEffects' },
+        ', sodass CSS-Imports das Tree-Shaking immer überstehen, während ungenutztes JS wie üblich entfernt wird.',
+        { code: '@linaria/core' },
+        ' wird nur gebraucht, wenn du eigene Match-Styles schreibst — die Bibliotheks-Styles sind beim Build bereits extrahiert, es gelangt kein Linaria-Code ins Bundle.',
+      ],
+      rspackNote: [
+        { strong: 'Rspack ist ein Drop-in:' },
+        ' dieselbe webpack-Konfiguration läuft unter ',
+        { code: 'rspack build' },
+        ' — die css-Regel oben bleibt unverändert.',
+      ],
     },
     setup: {
       title: 'Einrichtung',

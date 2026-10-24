@@ -34,6 +34,7 @@ export const RSC_SAFE_MODULES = new Set([
   'tokens/colors.ts',
   'tokens/brands.ts',
   'tokens/spacing.ts',
+  'tokens/z-index.ts',
   'tokens/density.ts',
   'tokens/typography.ts',
   'tokens/motion.ts',

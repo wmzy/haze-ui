@@ -470,6 +470,7 @@ const descriptions = {
   'password-input': 'Text input with a visibility reveal toggle.',
   'phone-input':
     'International phone input backed by libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` pure helper.',
+  'popconfirm': 'Anchored confirmation bubble with confirm/cancel actions and async busy support.',
   'popover': 'Floating popover anchored to a trigger element.',
   'prompt-input':
     'AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.',
@@ -507,6 +508,7 @@ const descriptions = {
   'streaming-text':
     'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
   'swipe-action': 'Swipe-to-reveal row actions on left/right edges with a commit threshold.',
+  'pull-to-refresh': 'Mobile pull-to-refresh gesture wrapper: pointer/touch state machine (idle → pulling → ready → refreshing) with damped pull, scroll-edge canRefresh gate and a promise-gated spinner head.',
   'visually-hidden':
     'Screen-reader-only content primitive: clipped off every visual axis while staying in the a11y tree (the icon-only-button label soup).',
   switch: 'Toggle switch (`role="switch"`) with controllable `checked`.',
@@ -529,6 +531,8 @@ const descriptions = {
   tokens:
     'Theme classes for haze-ui: `lightTheme`/`darkTheme`/`autoTheme` (zero-JS system-following) plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',
   'tool-call-card': 'Card presenting an agent tool call — name, input, output and running state.',
+  trace:
+    'Line-by-line agent reasoning trace: `Trace` + `TraceItem` steps with pending/running/done/error status, custom icons, collapsible `details` and sr-only status announcements.',
   toolbar:
     'Button group with toolbar a11y (roving tabindex): `ToolbarButton`, `ToolbarSeparator`, `ToolbarToggle`.',
   tooltip: 'Hover/focus hint bubble.',
@@ -604,7 +608,7 @@ const CATEGORY_GROUPS = {
   ],
   overlay: [
     'bottom-sheet', 'confirm-dialog', 'context-menu', 'dialog', 'drawer',
-    'dropdown-menu', 'hover-card', 'menu', 'popover', 'tooltip',
+    'dropdown-menu', 'hover-card', 'menu', 'popconfirm', 'popover', 'tooltip',
   ],
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
@@ -629,8 +633,9 @@ const CATEGORY_GROUPS = {
     'inline-completion', 'log-viewer', 'markdown-renderer', 'model-picker',
     'plan', 'prompt-input', 'queue', 'sources', 'step-timeline',
     'streaming-text', 'thinking-indicator', 'token-counter', 'tool-call-card',
+    'trace',
   ],
-  utilities: ['collapsible', 'disclosure', 'swipe-action', 'visually-hidden'],
+  utilities: ['collapsible', 'disclosure', 'pull-to-refresh', 'swipe-action', 'visually-hidden'],
 };
 
 const categoryByFamily = new Map();

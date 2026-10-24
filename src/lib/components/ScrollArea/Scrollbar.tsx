@@ -38,7 +38,7 @@ type ScrollbarProps = {
 
 const track = css`
   position: absolute;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   touch-action: none;
   user-select: none;
 

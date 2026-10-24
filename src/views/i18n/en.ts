@@ -161,6 +161,7 @@ const COMPONENT_BLURBS = {
   HoverCard:
     'Non-modal floating preview (avatar card, link summary) anchored to its trigger.',
   Menu: 'Lightweight toggle menu with a trigger and statically positioned panel (MenuItem, MenuDivider).',
+  Popconfirm: 'Anchored confirmation bubble with confirm/cancel actions.',
   Popover: 'Floating popover anchored to a trigger element.',
   Tooltip: 'Hover/focus hint bubble.',
 
@@ -281,6 +282,8 @@ const COMPONENT_BLURBS = {
   TokenCounter: 'Context-window token usage counter with budget progress.',
   ToolCallCard:
     'Card presenting an agent tool call — name, input, output and running state.',
+  Trace:
+    'Line-by-line reasoning trace for agent steps — per-line status (pending/running/done/error), custom icons, collapsible details and screen-reader status announcements.',
 
   // Utilities
   Collapsible: 'Unstyled open/close container with controllable open state.',
@@ -293,6 +296,8 @@ const COMPONENT_BLURBS = {
     'Component prop-default overrides (Button size, Toast duration/placement, Tooltip delay, HoverCard open/close delay) read via useConfigDefaults(); explicit props always win, providers nest with shallow per-section merge.',
   SwipeAction:
     'Swipe-to-reveal row actions on left/right edges with a commit threshold.',
+  PullToRefresh:
+    'Mobile pull-to-refresh around scrolling content: damped pull-to-arm gesture, promise-gated spinner head, render-prop indicator.',
 };
 
 export const en = {
@@ -306,6 +311,8 @@ export const en = {
     themeEditor: 'Theme Editor',
     viewSourceAt: 'View source at {version} ({commit})',
     viewSource: 'View source on GitHub',
+    devDocsBanner: 'You are viewing the documentation of the development branch (unreleased).',
+    devDocsBannerStableLink: 'View the latest release docs.',
     starOnGitHub: 'Star on GitHub',
     search: 'Search',
     searchComponents: 'Search components',
@@ -340,6 +347,7 @@ export const en = {
     motion: 'Motion presets',
     figmaTokens: 'Tokens in Figma',
     serverActions: 'React 19 Actions',
+    composition: 'Composition & customization',
   },
   /* One-line summaries shown under the guide links (zh mode only for now;
    * the strings exist for both locales so any surface can adopt them). */
@@ -359,6 +367,8 @@ export const en = {
       'The W3C DTF token exports into Tokens Studio and Figma Variables — workflow and limits.',
     serverActions:
       'Server actions over native FormData, useActionState and useOptimistic against haze-ui.',
+    composition:
+      'The five escape hatches: Core variants, as polymorphism, the headless entry, classNames slots and design tokens.',
   },
   /* Blocks page (/blocks): full-page compositions gallery. */
   blocks: {
@@ -613,6 +623,41 @@ export const en = {
           ' as shown in the Server rendering section below — every route inherits them.',
         ],
       },
+    },
+    otherBundlers: {
+      title: 'Other bundlers (webpack / Rspack)',
+      lead: [
+        'Outside Vite no plugin is needed — haze-ui ships plain, pre-extracted CSS files. Import ',
+        { code: 'haze-ui/styles.css' },
+        ' (or the per-component ',
+        { code: 'haze-ui/css/*' },
+        ' files) from your entry module and hand it to the standard css loader chain:',
+      ],
+      configLead: [
+        { strong: 'Minimal webpack 5 config' },
+        ' — ',
+        { code: 'css-loader' },
+        ' plus a style injector (',
+        { code: 'style-loader' },
+        ' in dev, or ',
+        { code: 'mini-css-extract-plugin' },
+        ' for a separate stylesheet):',
+      ],
+      sideEffectsNote: [
+        'The package marks ',
+        { code: '*.css' },
+        ' as ',
+        { code: 'sideEffects' },
+        ', so CSS imports always survive tree-shaking while unused JS drops out as usual. ',
+        { code: '@linaria/core' },
+        ' is only needed when you author your own matched styles — the library styles ship already extracted at build time, so no Linaria code enters your bundle.',
+      ],
+      rspackNote: [
+        { strong: 'Rspack is drop-in:' },
+        ' it runs the same webpack config — point the runner at ',
+        { code: 'rspack build' },
+        ' and keep the css rule above exactly as it is.',
+      ],
     },
     setup: {
       title: 'Setup',

@@ -598,3 +598,71 @@ describe('Drawer view transitions', () => {
     await waitFor(() => expect(drawer).not.toHaveAttribute('open'));
   });
 });
+
+describe('Drawer size presets', () => {
+  /** Tokenized class list of the dialog for the currently rendered props. */
+  function dialogClassSet() {
+    const dialog = screen.getByRole('dialog');
+    return new Set(
+      (dialog.getAttribute('class') ?? '').split(/\s+/).filter(Boolean)
+    );
+  }
+
+  it('keeps the default class set unchanged until a size is set', () => {
+    const view = render(<Drawer open>Body</Drawer>);
+    const base = dialogClassSet();
+    view.rerender(<Drawer open size="md">Body</Drawer>);
+    const withSize = dialogClassSet();
+    const added = [...withSize].filter((c) => !base.has(c));
+    // 恰好追加一个预设类，基类一个不少——默认（不传 size）与既有渲染
+    // 逐字节一致
+    expect(added).toHaveLength(1);
+    expect([...base].filter((c) => !withSize.has(c))).toHaveLength(0);
+  });
+
+  it('swaps exactly one preset class when the size changes', () => {
+    const view = render(<Drawer open size="sm">Body</Drawer>);
+    const sm = dialogClassSet();
+    view.rerender(<Drawer open size="lg">Body</Drawer>);
+    const lg = dialogClassSet();
+    expect([...lg].filter((c) => !sm.has(c))).toHaveLength(1);
+    expect([...sm].filter((c) => !lg.has(c))).toHaveLength(1);
+  });
+
+  it('composes the preset with every placement', () => {
+    for (const placement of ['left', 'right', 'top', 'bottom'] as const) {
+      const view = render(
+        <Drawer open placement={placement}>
+          Body
+        </Drawer>
+      );
+      const base = dialogClassSet();
+      view.rerender(
+        <Drawer open placement={placement} size="lg">
+          Body
+        </Drawer>
+      );
+      const withSize = dialogClassSet();
+      const added = [...withSize].filter((c) => !base.has(c));
+      // exactly one preset class lands per placement
+      expect(added).toHaveLength(1);
+      view.unmount();
+    }
+  });
+
+  it('keeps the preset alongside className and the content slot', () => {
+    render(
+      <Drawer open size="sm" className="custom" classNames={{ content: 'slot' }}>
+        Body
+      </Drawer>
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('custom');
+    expect(dialog).toHaveClass('slot');
+    // overlay + placement + size 预设三个 Linaria 类也都在
+    const linariaClasses = [...dialogClassSet()].filter(
+      (c) => c !== 'custom' && c !== 'slot'
+    );
+    expect(linariaClasses).toHaveLength(3);
+  });
+});

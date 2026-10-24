@@ -182,6 +182,42 @@ import 'haze-ui/css/button.css'; // OTPInput -> 'haze-ui/css/otp-input.css'`}</p
       </div>
 
       <div className={section}>
+        <h2>{gs.otherBundlers.title}</h2>
+        <p className={paragraph}>
+          <Rich text={gs.otherBundlers.lead} codeClass={inlineCode} />
+        </p>
+        <pre className={codeBlock}>{`// entry module — no plugin to install, the CSS ships as plain files
+import 'haze-ui/styles.css';
+// or per-component (the same files the Vite plugin would inject):
+// import 'haze-ui/css/tokens.css';
+// import 'haze-ui/css/button.css';`}</pre>
+        <p className={paragraph}>
+          <Rich text={gs.otherBundlers.configLead} codeClass={inlineCode} />
+        </p>
+        <pre className={codeBlock}>{`// webpack.config.js — webpack 5, css-loader + a style injector
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\\.css$/,
+        // style-loader instead of MiniCssExtractPlugin also works in dev
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      },
+    ],
+  },
+  plugins: [new MiniCssExtractPlugin()],
+};`}</pre>
+        <div className={note}>
+          <Rich text={gs.otherBundlers.sideEffectsNote} codeClass={inlineCode} />
+        </div>
+        <div className={note}>
+          <Rich text={gs.otherBundlers.rspackNote} codeClass={inlineCode} />
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>{gs.setup.title}</h2>
         <ol className={stepList}>
           <li>

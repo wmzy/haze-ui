@@ -13,6 +13,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/guides/motion</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/figma-tokens</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/guides/server-actions</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/guides/composition</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/tokens</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/button</loc></url>
@@ -25,6 +26,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/badge</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/dialog</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/tooltip</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/popconfirm</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/popover</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/card</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/radio</loc></url>
@@ -70,6 +72,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/tool-call-card</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/thinking-indicator</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/step-timeline</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/trace</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/plan</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/queue</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/inline-citation</loc></url>
@@ -130,6 +133,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/tag-group</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/bottom-sheet</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/swipe-action</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/components/pull-to-refresh</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/descriptions</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/json-view</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/qr-code</loc></url>
@@ -172,6 +176,7 @@
   <url><loc>https://wmzy.github.io/haze-ui/components/spoiler</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/visually-hidden</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/components/date-time-picker</loc></url>
+  <url><loc>https://wmzy.github.io/haze-ui/api/:componentId</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/ai-showcase</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/theme-editor</loc></url>
   <url><loc>https://wmzy.github.io/haze-ui/changelog</loc></url>

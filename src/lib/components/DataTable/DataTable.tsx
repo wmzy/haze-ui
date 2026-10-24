@@ -730,9 +730,9 @@ const stickyHead = css`
   & th {
     position: sticky;
     top: 0;
-    /* Above sticky fixed-column body cells (z-index 1): at equal z-indexes
-     * the later-in-DOM body cells would paint over the header row. */
-    z-index: 2;
+    /* Above sticky fixed-column body cells (--haze-z-local-1): at equal
+     * z-indexes the later-in-DOM body cells would paint over the header row. */
+    z-index: var(--haze-z-local-2);
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-sm);
   }
@@ -803,7 +803,7 @@ const checkCellCol = css`
  * the cell itself. */
 const fixedCell = css`
   position: sticky;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   background: var(--haze-color-bg);
 
   tr:hover & {
@@ -822,9 +822,10 @@ const fixedCellSelected = css`
 `;
 
 /* A fixed cell inside a sticky header is the scroll corner — it must
- * outrank both the header row (z-index 2) and fixed body cells (1). */
+ * outrank both the header row (--haze-z-local-2) and fixed body cells
+ * (--haze-z-local-1). */
 const fixedHeadCell = css`
-  z-index: 3;
+  z-index: var(--haze-z-local-3);
 `;
 
 /* Scroll-hint shadow on the inner edge of the outermost pinned column;
@@ -919,7 +920,7 @@ const resizeHandle = css`
   bottom: 0;
   inset-inline-end: -3px;
   width: 6px;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   cursor: col-resize;
   touch-action: none;
   border-radius: var(--haze-radius-sm);
@@ -1061,7 +1062,7 @@ const stickyFoot = css`
   & td {
     position: sticky;
     bottom: 0;
-    z-index: 2;
+    z-index: var(--haze-z-local-2);
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-sm);
   }

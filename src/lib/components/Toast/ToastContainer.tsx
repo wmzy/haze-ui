@@ -43,7 +43,7 @@ type ToastContainerProps = {
 
 const containerBase = css`
   position: fixed;
-  z-index: 9999;
+  z-index: var(--haze-z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--haze-space-2);

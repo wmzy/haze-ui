@@ -34,12 +34,13 @@ import {
 import { useHazeChat } from './ai-chat-adapter';
 import { useMockChat } from './mock-use-chat';
 import { arPack, frPack } from './locale-packs';
+import { IconEcosystemDemo } from './icon-ecosystems';
 import { MemberCrudDemo } from './member-crud';
 
 // 展示的是真实适配器源码（?raw 导入），文档与实现永不漂移——同
 // ComponentDetail/DemoSource 的源码映射机制。
 const rawSources = import.meta.glob<string>(
-  './{locale-packs,ai-chat-adapter,mock-use-chat,member-crud}.{ts,tsx}',
+  './{locale-packs,ai-chat-adapter,mock-use-chat,member-crud,icon-ecosystems}.{ts,tsx}',
   {
     query: '?raw',
     import: 'default',
@@ -50,6 +51,7 @@ const packsSource = rawSources['./locale-packs.ts'] ?? '';
 const aiAdapterSource = rawSources['./ai-chat-adapter.tsx'] ?? '';
 const aiMockSource = rawSources['./mock-use-chat.ts'] ?? '';
 const memberCrudSource = rawSources['./member-crud.tsx'] ?? '';
+const iconEcosystemSource = rawSources['./icon-ecosystems.tsx'] ?? '';
 
 const paragraph = css`
   font-family: var(--haze-font-sans);
@@ -384,9 +386,11 @@ export default function Recipes() {
         all fire in real time, run the CRUD recipe&apos;s server-paginated
         table end to end (search, sort, create, edit, delete — toasts and
         all), switch languages in the locale recipe to see packs, partial
-        overrides and RTL derivation at work, or chat with the AI runtime
+        overrides and RTL derivation at work, chat with the AI runtime
         recipe: a Vercel AI SDK useChat shape driving the agent components
-        through one small adapter.
+        through one small adapter, or wire an icon ecosystem — the last
+        recipe pairs lucide-react and react-icons with every icon slot
+        haze-ui exposes.
       </p>
 
       <div className={section}>
@@ -940,6 +944,140 @@ status error                 → system ChatMessage with the transport error`}
             part first.
           </li>
         </ul>
+      </div>
+
+      <div className={section}>
+        <h2>Icon ecosystems — lucide-react &amp; react-icons × icon slots</h2>
+        <p className={paragraph}>
+          haze-ui ships no icon set on purpose:{' '}
+          <code className={inlineCode}>Icon</code> is a thin sizing and
+          coloring wrapper, and every component that renders an icon also
+          accepts a raw svg — so the icon library stays a dependency of
+          your app, never of the UI kit. Two wiring styles cover both
+          major ecosystems: pass icons straight into the slots, or
+          generate a type-safe set once and keep every call site
+          declarative.
+        </p>
+
+        <h3>Live demo</h3>
+        <div className={demoPanel}>
+          <IconEcosystemDemo />
+        </div>
+
+        <h3>lucide-react — named imports, straight into the slots</h3>
+        <p className={paragraph}>
+          lucide icons are stroke-based, which is exactly the contract the{' '}
+          <code className={inlineCode}>icon</code> prop is built for. Named
+          imports are tree-shakeable — every import pulls one icon module
+          and nothing more. Compose inside{' '}
+          <code className={inlineCode}>Button</code> children (the skin
+          supplies the gap), pass one per{' '}
+          <code className={inlineCode}>Menu</code> data item, and replace
+          the default illustrations of{' '}
+          <code className={inlineCode}>Result</code> (
+          <code className={inlineCode}>icon</code>) and{' '}
+          <code className={inlineCode}>Empty</code> (
+          <code className={inlineCode}>image</code>):
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`import { PackageOpen, Rocket, Trash2 } from 'lucide-react';
+import { Button, Empty, Icon, Menu, Result } from 'haze-ui';
+
+<Button variant='outline'><Icon icon={Rocket} /> Deploy</Button>
+<Button square aria-label='Discard draft'><Icon icon={Trash2} /></Button>
+
+<Menu
+  trigger={<Button variant='outline'>Actions</Button>}
+  items={[
+    { type: 'item', label: 'Deploy', icon: <Icon icon={Rocket} size='sm' /> },
+    { type: 'item', label: 'Discard', icon: <Icon icon={Trash2} size='sm' />, danger: true },
+  ]}
+/>
+
+<Result icon={<Icon icon={Rocket} size='lg' />} title='Deployment live' … />
+<Empty image={<Icon icon={PackageOpen} size='lg' />} description='Nothing here yet' />`}
+        </CodeBlock>
+
+        <h3>react-icons — mind the fill/stroke split</h3>
+        <p className={paragraph}>
+          react-icons publishes many sets under one package. The{' '}
+          <em>stroke</em> sets (<code className={inlineCode}>fi</code>,{' '}
+          <code className={inlineCode}>lu</code>,{' '}
+          <code className={inlineCode}>tb</code>…) behave like lucide and
+          slot in through <code className={inlineCode}>children</code>. The{' '}
+          <em>fill</em> sets (<code className={inlineCode}>md</code>,{' '}
+          <code className={inlineCode}>fa</code>,{' '}
+          <code className={inlineCode}>hi</code>…) must stay{' '}
+          <em>bare</em>: <code className={inlineCode}>Icon</code> assumes
+          stroke glyphs and forces <code className={inlineCode}>fill: none</code>{' '}
+          on the svg, which blanks filled ones — every react-icons svg
+          carries <code className={inlineCode}>stroke=currentColor</code>,
+          so even the children detection trips it (verified in Chromium:
+          the glyph computes fill:none / stroke-width:0 and paints
+          nothing). Bare is not a compromise: react-icons sizes itself at{' '}
+          <code className={inlineCode}>1em</code> and inherits{' '}
+          <code className={inlineCode}>currentColor</code>, which is
+          exactly what <code className={inlineCode}>Button</code>{' '}
+          children want.
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`import { FiSearch } from 'react-icons/fi';    // stroke set
+import { MdRocketLaunch } from 'react-icons/md'; // fill set
+import { Button, Icon } from 'haze-ui';
+
+// ✓ stroke set via children — Icon's fill:none mode is correct here
+<Button variant='outline'>
+  <Icon size='sm'><FiSearch /></Icon> Feather via children
+</Button>
+
+// ✓ fill set bare — 1em sizing, currentColor, Button supplies the gap
+<Button variant='outline'><MdRocketLaunch /> Material, bare</Button>
+
+// ✗ never route a fill set through Icon — the glyph disappears:
+// <Icon icon={MdRocketLaunch} />
+// <Icon><MdRocketLaunch /></Icon>`}
+        </CodeBlock>
+
+        <h3>A type-safe set for the whole app</h3>
+        <p className={paragraph}>
+          One <code className={inlineCode}>satisfies</code>-pinned record
+          gives every product concept a name; a tiny wrapper is then the
+          only place that knows about haze sizing. Names autocomplete, a
+          typo is a compile error, and swapping icon libraries later
+          touches exactly one file:
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {`import type { IconProps } from 'haze-ui';
+import { PackageOpen, Rocket, Trash2 } from 'lucide-react';
+import { Icon } from 'haze-ui';
+
+const APP_ICONS = {
+  deploy: Rocket,
+  discard: Trash2,
+  empty: PackageOpen,
+} satisfies Record<string, NonNullable<IconProps['icon']>>;
+
+type AppIconName = keyof typeof APP_ICONS;
+
+function AppIcon({ name, size = 'md' }: { name: AppIconName; size?: IconProps['size'] }) {
+  return <Icon icon={APP_ICONS[name]} size={size} />;
+}
+
+// call sites never see a lucide type:
+<Button><AppIcon name='deploy' /> Deploy</Button>
+<Empty image={<AppIcon name='empty' size='lg' />} description='Nothing here yet' />`}
+        </CodeBlock>
+
+        <h3>The whole file</h3>
+        <p className={paragraph}>
+          This is the real source powering the demo — icon sets, wrapper
+          and every slot combination, nothing elided. Swap{' '}
+          <code className={inlineCode}>@/lib</code> for{' '}
+          <code className={inlineCode}>haze-ui</code> in your app:
+        </p>
+        <CodeBlock language='tsx' className={codeMargin}>
+          {iconEcosystemSource}
+        </CodeBlock>
       </div>
     </div>
   );

@@ -59,6 +59,14 @@ export const tagSizes = {
   `,
 } as const;
 
+/** The link shape (`as` set): anchors get a UA underline the tag skin
+ * never asked for — reset it (the color classes already own the ink;
+ * Button's `link` class does the same for its anchor shape). Applies to
+ * every explicit `as`, including router Links that render anchors. */
+export const linkShape = css`
+  text-decoration: none;
+`;
+
 export const closeBtn = css`
   appearance: none;
   border: none;

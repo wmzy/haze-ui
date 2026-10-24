@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { render, screen } from '@testing-library/react';
 
 import Breadcrumb from './Breadcrumb';
@@ -97,6 +99,78 @@ describe('Breadcrumb', () => {
       <Breadcrumb>
         <BreadcrumbItem href="/">Home</BreadcrumbItem>
         <BreadcrumbItem href="/docs">Docs</BreadcrumbItem>
+        <BreadcrumbItem>Current page</BreadcrumbItem>
+      </Breadcrumb>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});
+
+describe('BreadcrumbItem as polymorphism', () => {
+  it("as='a' renders a real anchor wearing the link skin", () => {
+    render(<BreadcrumbItem as='a' href='/docs'>Docs</BreadcrumbItem>);
+    const link = screen.getByRole('link', { name: 'Docs' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/docs');
+    expect(link).toHaveAttribute('data-slot', 'breadcrumb-item');
+  });
+
+  it('href-less as still renders the chosen element (no href injected)', () => {
+    render(<BreadcrumbItem as='a'>Bare</BreadcrumbItem>);
+    const el = screen.getByText('Bare');
+    expect(el.tagName).toBe('A');
+    expect(el).not.toHaveAttribute('href');
+  });
+
+  it('forwards native attrs and the rest onto the rendered element', () => {
+    render(
+      <BreadcrumbItem href='/docs' target='_blank' data-testid='crumb'>
+        Docs
+      </BreadcrumbItem>
+    );
+    const link = screen.getByTestId('crumb');
+    expect(link).toHaveAttribute('href', '/docs');
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  it('as with a router component: to flows through, skin and trail semantics intact', () => {
+    function RouterLink({
+      to,
+      children,
+      ...rest
+    }: { to: string; children: ReactNode } & Record<string, unknown>) {
+      return <a href={to} {...rest}>{children}</a>;
+    }
+    render(
+      <Breadcrumb>
+        <BreadcrumbItem as={RouterLink} to='/'>Home</BreadcrumbItem>
+        <BreadcrumbItem>Current</BreadcrumbItem>
+      </Breadcrumb>
+    );
+    const link = screen.getByRole('link', { name: 'Home' });
+    expect(link).toHaveAttribute('href', '/');
+    expect(link).toHaveAttribute('data-slot', 'breadcrumb-item');
+    // the parent <li> keeps the aria-current wiring regardless of as
+    const items = screen.getAllByRole('listitem');
+    expect(items[items.length - 1]).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('custom-as trails have no axe violations', async () => {
+    const { axe } = await import('jest-axe');
+    function RouterLink({
+      to,
+      children,
+      ...rest
+    }: { to: string; children: ReactNode } & Record<string, unknown>) {
+      return <a href={to} {...rest}>{children}</a>;
+    }
+    render(
+      <Breadcrumb>
+        <BreadcrumbItem as={RouterLink} to='/'>Home</BreadcrumbItem>
+        <BreadcrumbItem as={RouterLink} to='/docs'>Docs</BreadcrumbItem>
         <BreadcrumbItem>Current page</BreadcrumbItem>
       </Breadcrumb>
     );

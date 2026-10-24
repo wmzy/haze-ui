@@ -57,6 +57,8 @@ export { Dialog } from './components/Dialog';
 export type { DialogProps, DialogHandle, DialogClassNames } from './components/Dialog';
 export { Tooltip } from './components/Tooltip';
 export type { TooltipProps, TooltipClassNames } from './components/Tooltip';
+export { Popconfirm } from './components/Popconfirm';
+export type { PopconfirmProps, PopconfirmHandle, PopconfirmPlacement } from './components/Popconfirm';
 export { Popover } from './components/Popover';
 export type { PopoverProps, PopoverHandle, PopoverClassNames } from './components/Popover';
 export { Card, cardVariants } from './components/Card';
@@ -279,6 +281,8 @@ export { BottomSheet } from './components/BottomSheet';
 export type { BottomSheetProps, BottomSheetHandle } from './components/BottomSheet';
 export { SwipeAction } from './components/SwipeAction';
 export type { SwipeActionProps } from './components/SwipeAction';
+export { PullToRefresh } from './components/PullToRefresh';
+export type { PullToRefreshProps, PullToRefreshPhase, PullToRefreshIndicatorInfo } from './components/PullToRefresh';
 
 // i18n
 export { default as LocaleProvider, useStrings } from './components/LocaleProvider';
@@ -394,6 +398,8 @@ export { ThinkingIndicator } from './components/ThinkingIndicator';
 export type { ThinkingIndicatorProps } from './components/ThinkingIndicator';
 export { StepTimeline, StepTimelineItem } from './components/StepTimeline';
 export type { StepTimelineProps, StepTimelineItemProps, StepStatus } from './components/StepTimeline';
+export { Trace, TraceItem, TraceDetails } from './components/Trace';
+export type { TraceProps, TraceItemProps, TraceDetailsProps, TraceStatus } from './components/Trace';
 export { ApprovalCard } from './components/ApprovalCard';
 export type { ApprovalCardProps } from './components/ApprovalCard';
 export { TokenCounter } from './components/TokenCounter';

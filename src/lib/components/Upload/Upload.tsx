@@ -22,11 +22,17 @@ type UploadProps = {
   /** Renders the drag-and-drop drop area (default) or a plain
    * click-only picker area — see `UploadCoreProps.droppable`. */
   droppable?: boolean;
+  /** Paste-to-upload: clipboard files run through the drop pipeline —
+   * see `UploadCoreProps.paste`. */
+  paste?: boolean;
   /** Gatekeeper for every picked or dropped file — see
    * `UploadCoreProps.beforeUpload`. */
   beforeUpload?: (file: File) => boolean | Promise<boolean>;
   /** Cap for the committed list — see `UploadCoreProps.maxCount`. */
   maxCount?: number;
+  /** Per-file size cap in bytes; over-limit files stay as error rows
+   * that never upload — see `UploadCoreProps.maxSize`. */
+  maxSize?: number;
   multiple?: boolean;
   /** Custom upload executor — see `UploadCoreProps.request`. */
   request?: UploadRequest;
@@ -94,8 +100,10 @@ export default function Upload({
   value: valueControl,
   accept,
   droppable,
+  paste,
   beforeUpload,
   maxCount,
+  maxSize,
   multiple = false,
   request,
   action,
@@ -131,8 +139,10 @@ export default function Upload({
       }}
       accept={accept}
       droppable={droppable}
+      paste={paste}
       beforeUpload={beforeUpload}
       maxCount={maxCount}
+      maxSize={maxSize}
       multiple={multiple}
       request={request}
       action={action}

@@ -242,7 +242,12 @@ export default function ScrollThumb({
     dragRef.current = null;
     if (!el) return;
     el.dataset.active = 'false';
-    if (el.hasPointerCapture(event.pointerId)) {
+    // Mirror the setPointerCapture guard: engines without pointer capture
+    // (jsdom, older browsers) never captured, so there is nothing to release.
+    if (
+      typeof el.hasPointerCapture === 'function' &&
+      el.hasPointerCapture(event.pointerId)
+    ) {
       el.releasePointerCapture(event.pointerId);
     }
     if (mode === 'scroll') {

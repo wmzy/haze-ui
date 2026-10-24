@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { zIndexDeclarations } from './z-index';
+
 /*
  * Spacing defaults live in SPACING_DEFAULTS so the css template below, the
  * compact density class (./density) and the token tests all read one source
@@ -12,7 +14,10 @@ import { css } from '@linaria/core';
  * onto that same element is what the scale resolves to there — while the
  * spacing class and a density class never declare the same property name,
  * so neither can win or lose by stylesheet emission order (see ./density).
- * Radius and shadow stay direct: they are not density-adjusted.
+ * Radius and shadow stay direct: they are not density-adjusted. The
+ * z-index ladder stays direct too and rides the same class — the spacing
+ * class is the always-applied invariant token carrier, so its tiers
+ * resolve wherever spacing does (see ./z-index).
  */
 
 const SPACE_STEPS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16] as const;
@@ -63,4 +68,6 @@ ${spacingDeclarations()}
   --haze-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --haze-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   --haze-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+
+${zIndexDeclarations()}
 `;

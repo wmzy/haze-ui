@@ -26,7 +26,7 @@ type ComboboxGroupProps = {
 const groupHeading = css`
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   box-sizing: border-box;
   background: var(--haze-color-bg);
   border-bottom: 1px solid var(--haze-color-border);

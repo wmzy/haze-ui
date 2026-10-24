@@ -18,6 +18,8 @@ export const ja: DeepPartial<SiteStrings> = {
     themeEditor: 'テーマエディター',
     viewSourceAt: '{version}（{commit}）のソースを見る',
     viewSource: 'GitHub でソースを見る',
+    devDocsBanner: '開発ブランチのドキュメントを表示しています（未リリース）。',
+    devDocsBannerStableLink: '最新の安定版ドキュメントを見る。',
     starOnGitHub: 'GitHub にスター',
     search: '検索',
     searchComponents: 'コンポーネントを検索',
@@ -52,6 +54,7 @@ export const ja: DeepPartial<SiteStrings> = {
     motion: 'モーションプリセット',
     figmaTokens: 'Figma のデザイントークン',
     serverActions: 'React 19 Actions',
+    composition: 'コンポジションとカスタマイズ',
   },
   guideSummaries: {
     darkMode: '明暗両方のトークンクラス、useDarkMode フック、実行時ブランドテーマ。',
@@ -66,6 +69,8 @@ export const ja: DeepPartial<SiteStrings> = {
       'W3C DTF トークンエクスポートを Tokens Studio と Figma Variables に接続する：手順と限界。',
     serverActions:
       'ネイティブ FormData・useActionState・useOptimistic で haze-ui を Server Actions に接続。',
+    composition:
+      '5つのエスケープハッチ：Core バリアント、as ポリモーフィズム、headless エントリ、classNames スロット、デザイントークン。',
   },
   blocks: {
     title: 'ブロック',
@@ -242,6 +247,7 @@ export const ja: DeepPartial<SiteStrings> = {
     HoverCard:
       'トリガーにアンカーされた非モーダルのフローティングプレビュー（アバターカード、リンク要約）。',
     Menu: '軽量トグルメニュー：トリガーと静的配置パネル（MenuItem、MenuDivider）。',
+    Popconfirm: 'トリガー要素にアンカーされた確認バブル（確認/キャンセル操作付き）。',
     Popover: 'トリガー要素にアンカーされたフローティングポップオーバー。',
     Tooltip: 'ホバー/フォーカス時のヒントバブル。',
 
@@ -354,6 +360,8 @@ export const ja: DeepPartial<SiteStrings> = {
     TokenCounter: 'コンテキストウィンドウの token 使用量カウンター。予算の進捗付き。',
     ToolCallCard:
       'エージェントのツール呼び出しを示すカード——名前、入力、出力、実行状態。',
+    Trace:
+      'エージェントの推論ステップを1行ずつ示すトレース。行ごとのステータス（待機/実行中/完了/エラー）、カスタムアイコン、展開可能な詳細、スクリーンリーダー向けステータス読み上げに対応。',
 
     // Utilities
     Collapsible: 'スタイルなしの開閉コンテナ。open 状態を制御可能。',
@@ -365,6 +373,8 @@ export const ja: DeepPartial<SiteStrings> = {
     ConfigProvider:
       'コンポーネント prop のデフォルト上書き（Button サイズ、Toast の duration/placement、Tooltip 遅延、HoverCard 開閉遅延）。useConfigDefaults() 経由で読み取る。明示的な props が常に優先され、Provider はセクションごとの浅いマージでネスト可能。',
     SwipeAction: 'スワイプ操作：左右端のスワイプで行アクションを露出。コミットしきい値付き。',
+    PullToRefresh:
+      'モバイルのプル・トゥ・リフレッシュ：スクロールコンテンツを包み、減衰付きのプルで発火。promise の解決までスピナーを保持、インジケーターは render prop。',
   },
   home: {
     hero: {
@@ -552,6 +562,41 @@ export const ja: DeepPartial<SiteStrings> = {
           ' に適用すると全ルートに継承されます。',
         ],
       },
+    },
+    otherBundlers: {
+      title: 'その他のバンドラー（webpack / Rspack）',
+      lead: [
+        'Vite 以外ではプラグイン不要です。haze-ui は事前抽出済みのプレーンな CSS ファイルとして公開されます。エントリーモジュールで ',
+        { code: 'haze-ui/styles.css' },
+        '（またはコンポーネント単位の ',
+        { code: 'haze-ui/css/*' },
+        '）をインポートし、標準の css ローダーチェーンに渡すだけです：',
+      ],
+      configLead: [
+        { strong: '最小限の webpack 5 設定' },
+        ' —— ',
+        { code: 'css-loader' },
+        ' とスタイル注入器（開発では ',
+        { code: 'style-loader' },
+        '、独立スタイルシートには ',
+        { code: 'mini-css-extract-plugin' },
+        '）：',
+      ],
+      sideEffectsNote: [
+        'パッケージは ',
+        { code: '*.css' },
+        ' を ',
+        { code: 'sideEffects' },
+        ' としてマークしているため、CSS インポートは tree-shaking で失われず、未使用の JS は通常どおり除去されます。',
+        { code: '@linaria/core' },
+        ' は自分でマッチスタイルを書くときにだけ必要です。ライブラリのスタイルはビルド時に抽出済みで、Linaria のコードはバンドルに入りません。',
+      ],
+      rspackNote: [
+        { strong: 'Rspack はそのまま動作します：' },
+        '同じ webpack 設定を ',
+        { code: 'rspack build' },
+        ' で実行するだけで、上の css ルールは変更不要です。',
+      ],
     },
     setup: {
       title: 'セットアップ',

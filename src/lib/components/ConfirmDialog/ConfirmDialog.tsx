@@ -29,7 +29,7 @@ const overlay = css`
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.4);
-  z-index: 100;
+  z-index: var(--haze-z-overlay);
 
   /* Presence 注入的 data-state 驱动 backdrop 与内容各自的进退场 */
   &[data-state='open'] {

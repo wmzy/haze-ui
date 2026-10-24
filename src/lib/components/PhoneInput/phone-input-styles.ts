@@ -22,7 +22,7 @@ export const row = css`
    * z-index works on flex items even when statically positioned. */
   & > *:focus,
   & > *:focus-visible {
-    z-index: 1;
+    z-index: var(--haze-z-local-1);
   }
 
   /* One 1px seam: the trailing cell pulls over the leading cell's

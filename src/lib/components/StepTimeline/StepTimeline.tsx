@@ -104,7 +104,7 @@ const marker = css`
   align-items: center;
   justify-content: center;
   font-size: 0.5rem;
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 `;
 
 const markerPending = css`

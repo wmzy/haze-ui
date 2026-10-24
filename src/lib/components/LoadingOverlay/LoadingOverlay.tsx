@@ -43,7 +43,7 @@ const veil = css`
   /* Host children that build their own stacking context can surface
    * above a bare z-index:1 — component variable keeps the veil
    * overridable without new tokens. */
-  z-index: var(--haze-overlay-z, 1);
+  z-index: var(--haze-overlay-z, var(--haze-z-local-1));
 
   @media (forced-colors: active) {
     background: Canvas;

@@ -44,6 +44,17 @@ type DrawerClassNames = {
 type DrawerProps = {
   open?: ControlOrValue<boolean>;
   placement?: 'left' | 'right' | 'top' | 'bottom';
+  /**
+   * 面板尺寸预设（默认不传，保持历史 320px 不变）。映射：
+   * left/right 控宽 —— sm 360px / md 480px / lg 640px；
+   * top/bottom 控高 —— sm 240px / md 360px / lg 480px。
+   * 实现为尺寸自定义属性：预设类只声明 `--haze-drawer-width` /
+   * `--haze-drawer-height`，placement 类消费（`width:
+   * var(--haze-drawer-width, 320px)`）——不存在同属性类竞争，预设
+   * 的生效与 CSS 注入顺序无关；消费方也可用内联 style 或
+   * `classNames.content` 上的同名自定义属性直接覆盖像素值。
+   */
+  size?: 'sm' | 'md' | 'lg';
   onClose?: () => void;
   /**
    * 开/关状态翻转是否包进 View Transitions API（默认 `false`，行为与
@@ -168,7 +179,7 @@ const overlay = css`
 const placements = {
   left: css`
     height: 100vh;
-    width: 320px;
+    width: var(--haze-drawer-width, 320px);
     min-width: 280px;
     max-width: 85vw;
     /* physical: pins the left drawer to the physical left edge.
@@ -182,7 +193,7 @@ const placements = {
   `,
   right: css`
     height: 100vh;
-    width: 320px;
+    width: var(--haze-drawer-width, 320px);
     min-width: 280px;
     max-width: 85vw;
     /* physical: pins the right drawer to the physical right edge. */
@@ -193,7 +204,7 @@ const placements = {
   `,
   top: css`
     width: 100vw;
-    height: 320px;
+    height: var(--haze-drawer-height, 320px);
     margin-top: 0;
     margin-bottom: auto;
     --haze-drawer-from-x: 0;
@@ -201,7 +212,7 @@ const placements = {
   `,
   bottom: css`
     width: 100vw;
-    height: 320px;
+    height: var(--haze-drawer-height, 320px);
     margin-top: auto;
     margin-bottom: 0;
     --haze-drawer-from-x: 0;
@@ -209,9 +220,30 @@ const placements = {
   `,
 } as const;
 
+/* Size presets: the classes only SET the sizing custom properties the
+   placement classes consume above — no same-property class conflict, so
+   a preset wins regardless of CSS emission order, and consumers keep a
+   plain custom-property override entry (inline style or CSS on the
+   dialog). Mapping documented on the `size` prop. */
+const sizes = {
+  sm: css`
+    --haze-drawer-width: 360px;
+    --haze-drawer-height: 240px;
+  `,
+  md: css`
+    --haze-drawer-width: 480px;
+    --haze-drawer-height: 360px;
+  `,
+  lg: css`
+    --haze-drawer-width: 640px;
+    --haze-drawer-height: 480px;
+  `,
+} as const;
+
 export default function Drawer({
   open: openControl,
   placement = 'right',
+  size,
   onClose,
   viewTransition = false,
   keepMounted = false,
@@ -320,7 +352,7 @@ export default function Drawer({
       data-state={open ? 'open' : 'closed'}
       hidden={dormant || undefined}
       inert={dormant || undefined}
-      x-class={[overlay, placements[placement], className, resolvedClassNames?.content]}
+      x-class={[overlay, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
       onClose={() => {
         // 原生 close 事件到达时 DOM 已关闭（el.close() 已生效），这里
         // 的 setOpen(false) 只是把 React 状态同步回事实——发起关闭的

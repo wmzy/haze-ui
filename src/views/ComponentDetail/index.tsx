@@ -71,6 +71,8 @@ import DialogDemo from './demos/DialogDemo';
 
 import TooltipDemo from './demos/TooltipDemo';
 
+import PopconfirmDemo from './demos/PopconfirmDemo';
+
 import PopoverDemo from './demos/PopoverDemo';
 
 import CardDemo from './demos/CardDemo';
@@ -161,6 +163,8 @@ import ToolCallCardDemo from './demos/ToolCallCardDemo';
 import ThinkingIndicatorDemo from './demos/ThinkingIndicatorDemo';
 
 import StepTimelineDemo from './demos/StepTimelineDemo';
+
+import TraceDemo from './demos/TraceDemo';
 import PlanDemo from './demos/PlanDemo';
 import QueueDemo from './demos/QueueDemo';
 import InlineCitationDemo from './demos/InlineCitationDemo';
@@ -265,6 +269,8 @@ import BottomSheetDemo from './demos/BottomSheetDemo';
 
 import SwipeActionDemo from './demos/SwipeActionDemo';
 
+import PullToRefreshDemo from './demos/PullToRefreshDemo';
+
 import DescriptionsDemo from './demos/DescriptionsDemo';
 
 import JsonViewDemo from './demos/JsonViewDemo';
@@ -303,6 +309,7 @@ const demos: Record<string, () => ReactNode> = {
   badge: BadgeDemo,
   dialog: DialogDemo,
   tooltip: TooltipDemo,
+  popconfirm: PopconfirmDemo,
   popover: PopoverDemo,
   card: CardDemo,
   radio: RadioDemo,
@@ -348,6 +355,7 @@ const demos: Record<string, () => ReactNode> = {
   'tool-call-card': ToolCallCardDemo,
   'thinking-indicator': ThinkingIndicatorDemo,
   'step-timeline': StepTimelineDemo,
+  trace: TraceDemo,
   plan: PlanDemo,
   queue: QueueDemo,
   'inline-citation': InlineCitationDemo,
@@ -408,6 +416,7 @@ const demos: Record<string, () => ReactNode> = {
   'tag-group': TagGroupDemo,
   'bottom-sheet': BottomSheetDemo,
   'swipe-action': SwipeActionDemo,
+  'pull-to-refresh': PullToRefreshDemo,
   descriptions: DescriptionsDemo,
   'json-view': JsonViewDemo,
   'qr-code': QRCodeDemo,
@@ -455,8 +464,23 @@ const demos: Record<string, () => ReactNode> = {
 // ─── Copy import ────────────────────────────────────────────────
 const copyBar = css`
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--haze-space-3);
   margin-bottom: var(--haze-space-3);
+`;
+
+/* 页头动作行里的 /api/<route> 深链，与旁边的 copy-import 按钮同高。 */
+const apiLink = css`
+  font-family: var(--haze-font-mono);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-primary);
+  text-decoration: none;
+  padding: var(--haze-space-1) var(--haze-space-2);
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 /** route param (`:name`, e.g. 'number-input') → generated component entry. */
@@ -555,10 +579,27 @@ function NotFound({ name }: { name: string }) {
 }
 
 /**
- * Small wrapper-level action: copies the `import { … } from 'haze-ui'` lines
- * (plus the tokens.css / per-component css imports) for the current route.
- * Rendered once next to the demo, not inside each demo. Hidden when the
- * route has no component entry in the generated props index (e.g. 'form').
+ * Small wrapper-level actions: the per-route 「API」 reference link (every
+ * demo route has an /api/<route> page) plus the copy-import button that
+ * copies the `import { … } from 'haze-ui'` lines (plus the tokens.css /
+ * per-component css imports). The copy button self-hides when the route
+ * has no component entry in the generated props index (e.g. 'form').
+ */
+function HeaderActions({ name }: { name: string }) {
+  return (
+    <div className={copyBar}>
+      <Link className={apiLink} to={`/api/${name}`}>
+        API
+      </Link>
+      <CopyImportButton name={name} />
+    </div>
+  );
+}
+
+/**
+ * Copies the `import { … } from 'haze-ui'` lines for the current route.
+ * Hidden when the route has no component entry in the generated props
+ * index (e.g. 'form').
  */
 function CopyImportButton({ name }: { name: string }) {
   const { t } = useSiteLocale();
@@ -582,20 +623,18 @@ function CopyImportButton({ name }: { name: string }) {
   ].join('\n');
 
   return (
-    <div className={copyBar}>
-      <Button
-        size='sm'
-        variant='outline'
-        onClick={() => {
-          void navigator.clipboard.writeText(importText);
-          setCopied(true);
-          if (timer.current) clearTimeout(timer.current);
-          timer.current = setTimeout(() => setCopied(false), 2000);
-        }}
-      >
-        {copied ? t.componentDetail.copied : t.componentDetail.copyImport}
-      </Button>
-    </div>
+    <Button
+      size='sm'
+      variant='outline'
+      onClick={() => {
+        void navigator.clipboard.writeText(importText);
+        setCopied(true);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? t.componentDetail.copied : t.componentDetail.copyImport}
+    </Button>
   );
 }
 
@@ -619,7 +658,7 @@ export default function ComponentDetail() {
       {redirectTo ? null : Demo ? (
         <>
           <ComponentLede route={name} />
-          <CopyImportButton name={name} />
+          <HeaderActions name={name} />
           <DemoPreview name={name}>
             <Demo />
           </DemoPreview>

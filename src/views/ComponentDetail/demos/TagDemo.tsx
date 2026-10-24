@@ -58,6 +58,30 @@ export default function TagDemo() {
       </div>
 
       <div className={section}>
+        <h2>Clickable tag links (as)</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          <code>as=&#123;'a'&#125;</code> renders the tag as a native{' '}
+          <code>&lt;a&gt;</code>: <code>href</code>, <code>target</code> and
+          the rest of the anchor surface flow through, with the UA
+          underline reset so the tag looks identical to the{' '}
+          <code>span</code> form. Don't combine an interactive{' '}
+          <code>as</code> with <code>closable</code> — the remove button
+          would nest inside a link (invalid HTML).
+        </p>
+        <div className={row}>
+          <Tag as='a' href='#tag'>React</Tag>
+          <Tag as='a' href='#tag' color='primary'>TypeScript</Tag>
+          <Tag as='a' href='#tag' color='success' size='sm'>Linaria</Tag>
+        </div>
+      </div>
+
+      <div className={section}>
         <h2>Props</h2>
         <PropsTable of='TagProps' />
       </div>

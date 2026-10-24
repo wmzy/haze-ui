@@ -1117,3 +1117,259 @@ describe('Menu classNames slots', () => {
     expect(root).toHaveAttribute('data-probe', 'set');
   });
 });
+
+describe('Menu virtualization', () => {
+  // Row height of the virtualized path — VIRTUAL_ROW_HEIGHT in Menu.tsx
+  // (space-2 padding block + the text-sm line box at leading-normal).
+  const ROW_HEIGHT = 37;
+
+  /** 300 plain items with one distinctive typeahead target at index 42. */
+  function makeItems(count: number): MenuDataItem[] {
+    return Array.from({ length: count }, (_, i) =>
+      i === 42 && count > 42
+        ? { type: 'item' as const, label: 'Target item', key: 'target' }
+        : { type: 'item' as const, label: `Item ${i}` }
+    );
+  }
+
+  // jsdom has no layout: scrollHeight reads 0, which clamps every
+  // programmatic scrollTop to 0 inside VirtualList.scrollToIndex. Give
+  // the scrollport a real range (Select's virtualization test pattern).
+  function giveScrollRange(port: HTMLElement, rows: number) {
+    Object.defineProperty(port, 'scrollHeight', {
+      value: rows * ROW_HEIGHT,
+      configurable: true,
+    });
+  }
+
+  function getPort() {
+    return document.querySelector<HTMLElement>('[data-virtualized]')!;
+  }
+
+  it('renders only the windowed subset of a 300-item menu', () => {
+    render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
+    expect(getPort()).toBeInTheDocument();
+    const mounted = screen.getAllByRole('menuitem');
+    expect(mounted.length).toBeGreaterThan(0);
+    expect(mounted.length).toBeLessThan(300);
+    // far outside the initial window
+    expect(screen.queryByText('Item 100')).not.toBeInTheDocument();
+    expect(screen.getByText('Item 0')).toBeInTheDocument();
+  });
+
+  it('keeps the full plain DOM list when virtualized is off', () => {
+    render(<Menu open trigger="T" items={makeItems(300)} />);
+    expect(document.querySelector('[data-virtualized]')).toBeNull();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(300);
+  });
+
+  it('moves focus across the virtual window with ArrowDown', () => {
+    render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
+    giveScrollRange(getPort(), 300);
+    // the open menu auto-focuses its first item
+    let focused: HTMLElement = screen.getByRole('menuitem', { name: 'Item 0' });
+    expect(focused).toHaveFocus();
+    for (let i = 1; i <= 14; i++) {
+      fireEvent.keyDown(focused, { key: 'ArrowDown' });
+      focused = screen.getByRole('menuitem', { name: `Item ${i}` });
+      expect(focused).toHaveFocus();
+    }
+    // the window followed: the rows left behind are unmounted
+    expect(screen.queryByText('Item 0')).not.toBeInTheDocument();
+    expect(screen.getByText('Item 14')).toBeInTheDocument();
+  });
+
+  it('skips disabled rows and dividers while traversing', () => {
+    const items: MenuDataItem[] = [
+      { type: 'item', label: 'Alpha' },
+      { type: 'divider' },
+      { type: 'item', label: 'Beta', disabled: true },
+      { type: 'item', label: 'Gamma' },
+    ];
+    render(<Menu open trigger="T" virtualized items={items} />);
+    expect(screen.getByRole('menuitem', { name: 'Alpha' })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Alpha' }), {
+      key: 'ArrowDown',
+    });
+    // the divider and the disabled Beta are both skipped
+    expect(screen.getByRole('menuitem', { name: 'Gamma' })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Gamma' }), {
+      key: 'ArrowDown',
+    });
+    // wraps back to Alpha
+    expect(screen.getByRole('menuitem', { name: 'Alpha' })).toHaveFocus();
+  });
+
+  it('jumps to the ends with Home and End across the window', () => {
+    render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
+    giveScrollRange(getPort(), 300);
+    const first = screen.getByRole('menuitem', { name: 'Item 0' });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: 'End' });
+    const last = screen.getByRole('menuitem', { name: 'Item 299' });
+    expect(last).toBeInTheDocument();
+    expect(last).toHaveFocus();
+    fireEvent.keyDown(last, { key: 'Home' });
+    expect(screen.getByRole('menuitem', { name: 'Item 0' })).toHaveFocus();
+    // the window is back at the top
+    expect(screen.queryByText('Item 299')).not.toBeInTheDocument();
+  });
+
+  it('reaches an item outside the window through typeahead', () => {
+    render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
+    giveScrollRange(getPort(), 300);
+    expect(screen.getByRole('menuitem', { name: 'Item 0' })).toHaveFocus();
+    // 't' matches only the target at index 42 — well past the window
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Item 0' }), {
+      key: 't',
+    });
+    const target = screen.getByRole('menuitem', { name: 'Target item' });
+    expect(target).toBeInTheDocument();
+    expect(target).toHaveFocus();
+    expect(screen.queryByText('Item 0')).not.toBeInTheDocument();
+  });
+
+  it('opens a submenu from a virtualized row and keeps it level-scoped', () => {
+    const items: MenuDataItem[] = [
+      { type: 'item', label: 'Alpha' },
+      {
+        type: 'sub',
+        label: 'More',
+        children: [
+          { type: 'item', label: 'Sub One' },
+          { type: 'item', label: 'Sub Two' },
+        ],
+      },
+      ...Array.from({ length: 60 }, (_, i) => ({
+        type: 'item' as const,
+        label: `Item ${i}`,
+      })),
+    ];
+    render(<Menu open trigger="T" virtualized items={items} />);
+    // the sub trigger is a root-level row: arrows reach it
+    const alpha = screen.getByRole('menuitem', { name: 'Alpha' });
+    expect(alpha).toHaveFocus();
+    fireEvent.keyDown(alpha, { key: 'ArrowDown' });
+    const more = screen.getByRole('menuitem', { name: 'More' });
+    expect(more).toHaveFocus();
+    fireEvent.keyDown(more, { key: 'ArrowRight' });
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Sub One' })).toHaveFocus();
+    // submenu-level navigation stays inside the submenu (plain DOM level)
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Sub One' }), {
+      key: 'ArrowDown',
+    });
+    expect(screen.getByRole('menuitem', { name: 'Sub Two' })).toHaveFocus();
+    // Escape closes only the submenu and returns focus to its trigger
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Sub Two' }), {
+      key: 'Escape',
+    });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    expect(more).toHaveFocus();
+  });
+
+  it('keeps exactly one roving tab stop inside the mounted window', () => {
+    render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
+    giveScrollRange(getPort(), 300);
+    const stops = () =>
+      screen.getAllByRole('menuitem').filter((el) => el.tabIndex === 0);
+    expect(stops()).toHaveLength(1);
+    // after crossing the window the stop follows focus
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Item 0' }), {
+      key: 'End',
+    });
+    const after = stops();
+    expect(after).toHaveLength(1);
+    expect(after[0]).toHaveFocus();
+  });
+
+  it('closes on Escape and returns focus to the trigger', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu virtualized trigger={<button>Open</button>} items={makeItems(300)} />
+    );
+    const trigger = screen.getByText('Open');
+    await user.click(trigger);
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'open');
+    const first = screen.getByRole('menuitem', { name: 'Item 0' });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: 'Escape' });
+    expect(screen.getByRole('menu')).toHaveAttribute('data-state', 'closed');
+    expect(trigger).toHaveFocus();
+  });
+
+  it('falls back to the plain DOM path for group entries, with a dev error', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      render(
+        <Menu
+          open
+          trigger="T"
+          virtualized
+          items={[
+            { type: 'item', label: 'Alpha' },
+            {
+              type: 'group',
+              label: 'View',
+              children: [{ type: 'checkbox', label: 'Status bar' }],
+            },
+          ]}
+        />
+      );
+      expect(document.querySelector('[data-virtualized]')).toBeNull();
+      // the group keeps its full DOM semantics
+      expect(screen.getByRole('group', { name: 'View' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitemcheckbox', { name: 'Status bar' })).toBeInTheDocument();
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('virtualized'));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('ignores virtualized without items, with a dev error', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      render(
+        <Menu open trigger="T" virtualized>
+          <MenuItem>Alpha</MenuItem>
+        </Menu>
+      );
+      expect(document.querySelector('[data-virtualized]')).toBeNull();
+      expect(screen.getByRole('menuitem', { name: 'Alpha' })).toBeInTheDocument();
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('items'));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('has no axe violations when the menu is virtualized', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <Menu
+        open
+        trigger={<button>Open</button>}
+        virtualized
+        items={[
+          { type: 'item', label: 'Rename', kbdLabel: 'F2' },
+          { type: 'checkbox', label: 'Status bar', checked: true },
+          { type: 'divider' },
+          {
+            type: 'sub',
+            label: 'Share',
+            children: [{ type: 'item', label: 'Copy link' }],
+          },
+          ...Array.from({ length: 40 }, (_, i) => ({
+            type: 'item' as const,
+            label: `Item ${i}`,
+          })),
+        ]}
+      />
+    );
+    // 'region' fires for any content outside a landmark — an artifact of
+    // the bare test document, not the component.
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
+});

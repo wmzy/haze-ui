@@ -106,7 +106,7 @@ const sortableTabActive = css`
 
 /** The dragged tab stacks above its siblings while it flies. */
 const sortableTabDragging = css`
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
 `;
 
 /** Handle to the strip's hidden scroll viewport, shared with the

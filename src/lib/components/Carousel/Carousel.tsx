@@ -124,7 +124,7 @@ const navBtn = css`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1;
+  z-index: var(--haze-z-local-1);
   appearance: none;
   border: none;
   width: 2.5rem;
