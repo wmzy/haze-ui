@@ -1,0 +1,1 @@
+var e={"--haze-space-1":`4px`,"--haze-space-2":`8px`,"--haze-space-3":`12px`,"--haze-space-4":`16px`,"--haze-space-5":`20px`,"--haze-space-6":`24px`,"--haze-space-8":`32px`,"--haze-space-10":`40px`,"--haze-space-12":`48px`,"--haze-space-16":`64px`},t=`haze-spacing__spacing`;export{t as n,e as t};

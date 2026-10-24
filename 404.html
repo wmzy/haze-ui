@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A lightweight, accessible React component library with zero-runtime CSS-in-JS, design tokens, and controllable state on every component."
+    />
+    <meta
+      property="og:title"
+      content="Haze UI — Accessible React Component Library"
+    />
+    <meta
+      property="og:description"
+      content="A lightweight, accessible React component library with zero-runtime CSS-in-JS, design tokens, and controllable state on every component."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://wmzy.github.io/haze-ui/" />
+    <meta name="twitter:card" content="summary" />
+    <!-- theme-color mirrors --haze-color-bg (palette.ts gray step 1) -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212" />
+    <title>Haze UI — Accessible React Component Library</title>
+    <style>html,body{height:100%;margin:0;overflow:hidden}#root{height:100%}</style>
+    <script type="module" crossorigin src="/haze-ui/assets/index-C6JxAK1w.js"></script>
+    <link rel="modulepreload" crossorigin href="/haze-ui/assets/jsx-runtime-Cx0BB4qO.js">
+    <link rel="modulepreload" crossorigin href="/haze-ui/assets/classnames-DwgxuFP5.js">
+    <link rel="modulepreload" crossorigin href="/haze-ui/assets/palette-7V3ZTFcY.js">
+    <link rel="stylesheet" crossorigin href="/haze-ui/assets/index-Cv3yIBDp.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // StackBlitz WebContainer（demo 页内运行）要求宿主页跨域隔离。
+      // dev server 由 vite.config.mts 的 server.headers 提供 COOP/COEP；
+      // 生产 gh-pages 无法设置响应头，由 coi-serviceworker 在 SW 响应上补齐
+      // （检测到页面已隔离时自动跳过注册）。强制 coepCredentialless：
+      // 默认启发式在 Chromium 下会退到 require-corp，拦掉 demo 中的跨域
+      // 图片；credentialless 让无凭据的跨域图片照常加载。
+      window.coi = { coepCredentialless: () => true, quiet: true };
+    </script>
+    <script src="/haze-ui/coi-serviceworker.js"></script>
+  </body>
+</html>

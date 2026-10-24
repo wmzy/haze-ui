@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./CheckboxCore-ClG0n-d6.js";import{d as n}from"./index-D3UH0BOM.js";var r=e();function i({checked:e,className:i,label:a,onChange:o,ref:s,...c}){let[l,u]=n(e,!1);return(0,r.jsx)(t,{ref:s,checked:l,onChange:u,onNativeChange:o,className:i,label:a,...c})}export{i as t};

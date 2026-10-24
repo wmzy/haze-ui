@@ -1,0 +1,1 @@
+var e={version:`v1.33.0`,gitTag:`v1.33.0`,commit:`1c4e32358552e1de8b34dc564932280dd6f4134f`,buildDate:`2026-10-23T10:51:33.438Z`},t=`https://github.com/wmzy/haze-ui/tree/${e.gitTag??`main`}`,n=e.commit?e.commit.slice(0,7):null;export{t as n,e as r,n as t};
