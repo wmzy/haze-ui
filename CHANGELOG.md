@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.1](https://github.com/wmzy/haze-ui/compare/v1.34.0...v1.34.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* deterministic wave5 baselines + compiler-safe reorder test waits ([ef71666](https://github.com/wmzy/haze-ui/commit/ef7166680f6238ddf7cd891d0466cee3e9f5a1c3))
+
 # [1.34.0](https://github.com/wmzy/haze-ui/compare/v1.33.0...v1.34.0) (2026-10-24)
 
 
