@@ -374,6 +374,125 @@ function parseGroups(rootDir) {
   return groups;
 }
 
+/**
+ * Parse the `haze-ui/headless` barrel. Every export clause carries a JSDoc
+ * one-liner (the module's own curation contract) and sits under a
+ * `// --- Title ---` divider — both are read straight from source so the
+ * llms.txt section can never drift from the barrel.
+ */
+function parseHeadless(rootDir) {
+  const file = path.join(rootDir, 'src/lib/headless/index.ts');
+  const source = readFileSync(file, 'utf8');
+
+  const sections = [];
+  const divider = /^\/\/ -{20,}\n\/\/ (.+)\n\/\/ -{20,}$/gm;
+  for (const match of source.matchAll(divider)) {
+    sections.push({
+      title: match[1].replace(/\s+\([^)]*\)\s*$/, ''),
+      entries: [],
+      start: match.index,
+      end: Number.POSITIVE_INFINITY,
+    });
+  }
+  if (sections.length === 0) {
+    throw new Error(
+      `no section dividers parsed from ${path.relative(rootDir, file)} — shape changed?`
+    );
+  }
+  for (const [i, section] of sections.entries()) {
+    if (i > 0) sections[i - 1].end = section.start;
+  }
+
+  // The JSDoc body may not cross its own `*/` (negative lookahead), so a
+  // match can never swallow an import statement between two blocks.
+  const clause =
+    /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*export\s+(?:(type)\s+)?(?:\{([^}]+)\}|([A-Za-z_$][\w$]*)\s*=)/g;
+  for (const match of source.matchAll(clause)) {
+    const [, doc, typeKeyword, braced, aliased] = match;
+    const section = sections.find(
+      (s) => match.index >= s.start && match.index < s.end
+    );
+    if (!section) {
+      throw new Error(
+        `headless export outside any section divider (offset ${match.index}) — shape changed?`
+      );
+    }
+    const names =
+      braced !== undefined
+        ? braced.split(',').map((name) => name.trim()).filter(Boolean)
+        : [aliased];
+    const blurb = doc
+      .split('\n')
+      .map((line) => line.replace(/^\s*\*\s?/, ''))
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\{@link\s+([^}\s]+)[^}]*\}/g, '`$1`')
+      .trim();
+    if (blurb === '') {
+      throw new Error(
+        `no JSDoc blurb above an export in ${path.relative(rootDir, file)} — the headless barrel requires one per export`
+      );
+    }
+    for (const name of names) {
+      section.entries.push({
+        name,
+        isType: typeKeyword !== undefined || aliased !== undefined,
+        blurb,
+      });
+    }
+  }
+  const exportCount = sections.reduce((sum, s) => sum + s.entries.length, 0);
+  if (exportCount === 0) {
+    throw new Error(
+      `no export clauses parsed from ${path.relative(rootDir, file)} — shape changed?`
+    );
+  }
+  return { sections, exportCount };
+}
+
+/**
+ * Parse the `haze-ui/hooks` barrel: value-export names (each clause may list
+ * several) plus a count of the `export type { … }` clauses that follow them.
+ */
+function parseHooks(rootDir) {
+  const file = path.join(rootDir, 'src/lib/hooks/index.ts');
+  const source = readFileSync(file, 'utf8');
+  const names = [];
+  for (const match of source.matchAll(/^export\s+\{([^}]+)\}\s+from/gm)) {
+    for (const raw of match[1].split(',')) {
+      const name = raw.trim();
+      if (name !== '') names.push(name);
+    }
+  }
+  const typeCount = [...source.matchAll(/^export\s+type\s+\{/gm)].length;
+  if (names.length === 0) {
+    throw new Error(
+      `no value exports parsed from ${path.relative(rootDir, file)} — shape changed?`
+    );
+  }
+  return { names, typeCount };
+}
+
+/**
+ * Parse the `haze-ui/icons` barrel: the count of lucide-react re-exports and
+ * the presence of the `hazeIconSize` scale export.
+ */
+function parseIcons(rootDir) {
+  const file = path.join(rootDir, 'src/lib/icons/index.ts');
+  const source = readFileSync(file, 'utf8');
+  const count = [
+    ...source.matchAll(
+      /^export\s+\{\s*([A-Za-z_$][\w$]*)\s*\}\s+from\s+'lucide-react';/gm
+    ),
+  ].length;
+  if (count === 0 || !/export const hazeIconSize/.test(source)) {
+    throw new Error(
+      `icon re-exports not parsed from ${path.relative(rootDir, file)} — shape changed?`
+    );
+  }
+  return { count };
+}
+
 function renderComponents(groups) {
   const lines = ['## Components', ''];
   for (const { group, items } of groups) {
@@ -390,6 +509,69 @@ function renderComponents(groups) {
     lines.push('');
   }
   return lines.join('\n');
+}
+
+/**
+ * Render the generated Headless / Hooks / Icons sections. All three read the
+ * subpath barrels via the parsers above — llms.txt stays current whenever a
+ * primitive, hook or glyph is added, with no second table to maintain.
+ */
+function renderHeadless({ sections, exportCount }) {
+  const lines = [
+    '## Headless primitives',
+    '',
+    '`haze-ui/headless` re-exports the behavior layer the components are built',
+    'on — the floating engine, exit animations, the `Portal` primitive, focus',
+    'scope, pure collision math, menu/submenu keyboard machinery, RTL direction',
+    'resolution, ref composition, View-Transition-wrapped state flips and the',
+    'document-level interaction hooks — for component authors assembling their',
+    'own panels. Same source, same version as the styled library; stable public',
+    `API with the same semver commitment. The full export surface (${exportCount} entries):`,
+    '',
+  ];
+  for (const { title, entries } of sections) {
+    lines.push(`### ${title}`, '');
+    for (const { name, isType, blurb } of entries) {
+      lines.push(`- \`${name}\`${isType ? ' (type)' : ''} — ${blurb}`);
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function renderHooks({ names, typeCount }) {
+  return `## Hooks
+
+\`haze-ui/hooks\` is the standalone hooks entry — ${names.length} value exports
+(plus ${typeCount} options/result type clauses) with no component code:
+clipboard, dark mode, debounce, fullscreen, hotkeys, viewport and element
+observation, idle, network, orientation, reduced motion, storage-persisted
+state (\`useLocalStorage\`/\`useSessionStorage\` over the shared
+\`useStorageState\` kernel: JSON persisted, cross-tab \`storage\` events,
+Control-friendly) and the tab title. The overlay-relevant subset is also
+re-exported from \`haze-ui/headless\`; a curated selection ships on the main
+barrel.
+
+${names.map((name) => `\`${name}\``).join(', ')}
+`;
+}
+
+function renderIcons({ count }) {
+  return `## Icons
+
+\`haze-ui/icons\` re-exports ${count} curated [lucide-react](https://lucide.dev)
+glyphs — the common UI vocabulary (navigation chevrons, form feedback, media,
+communication, files, commerce) as individual named exports in alphabetical
+order. \`lucide-react\` is a regular dependency with \`sideEffects: false\` and
+stays external in the lib build: an icon never imported costs zero bytes, and
+consumers who import none of them tree-shake the package out entirely. The full
+1800+ lucide catalog stays one direct \`lucide-react\` import away.
+
+Pair with the \`Icon\` component — \`<Icon icon={Check} size='sm' />\` — and use
+the frozen \`hazeIconSize\` map (\`{ sm: 16, md: 20, lg: 24 }\`, the \`Icon\`
+size scale) when a lucide glyph renders outside \`<Icon>\` so both paths agree
+on the size scale.
+`;
 }
 
 const preamble = (componentCount, rscSafeCount) => `# Haze UI
@@ -444,7 +626,7 @@ map (with family absorption and a \`noCss\` list) — tooling should read it ins
 re-deriving file names.
 `;
 
-const closing = `## Design tokens
+const closing = ({ headless, hooks, icons }) => `## Design tokens
 
 Colors are generated in **OKLCH** from \`src/lib/tokens/palette.ts\`: 12-step primitive
 scales (gray/blue/green/amber/red × light/dark) plus semantic aliases. Interaction
@@ -476,15 +658,9 @@ controlled-mode aware. Dialog, Drawer and BottomSheet also take a \`viewTransiti
 open/close flips wrapped in the View Transitions API (\`startViewTransition\` + \`flushSync\`),
 auto-degrading without engine support or under reduced motion.
 
-## Headless primitives
-
-\`haze-ui/headless\` re-exports the behavior layer the components are built on —
-\`useFloating\` (the three-tier floating engine), \`Presence\` (exit animations),
-the focus-scope hooks and the \`computeFloatingPosition\` collision math — for
-component authors assembling their own panels. Same source, same version as
-the styled library; stable public API with the same semver commitment.
-
-## Locale packs
+${headless}
+${hooks}
+${icons}## Locale packs
 
 \`haze-ui/locales\` re-exports the string packs standalone — \`enUS\` (the same
 object as \`defaultStrings\`), \`zhCN\`, \`jaJP\`, \`deDE\`, \`frFR\`, \`esES\`, \`itIT\`,
@@ -580,9 +756,12 @@ interruption tiers, async option loading and lazy trees).
 
 The Components section above is generated from the demo sidebar contract
 (\`src/views/Layout/component-groups.ts\`) plus the blurb table in
-\`scripts/generate-llms.mjs\` — regenerate with \`node scripts/generate-llms.mjs\`
-when the component set changes. The preamble and the closing sections are
-maintained by hand.
+\`scripts/generate-llms.mjs\`; the Headless / Hooks / Icons sections are
+generated from the subpath barrels (\`src/lib/headless/index.ts\`,
+\`src/lib/hooks/index.ts\`, \`src/lib/icons/index.ts\`) — every export is
+enumerated with the JSDoc blurb written next to it in source. Regenerate with
+\`node scripts/generate-llms.mjs\` when any of those change. The preamble and
+the remaining closing sections are maintained by hand.
 `;
 
 /** Build the full document. */
@@ -591,7 +770,11 @@ export function generateLlms(rootDir = defaultRoot()) {
   const componentCount = groups.reduce((sum, group) => sum + group.items.length, 0);
   // The RSC-safe count comes from the manifest the build itself uses
   // (scripts/rsc-safe.mjs) — never a hand-updated number.
-  return `${preamble(componentCount, RSC_SAFE_MODULES.size)}\n${renderComponents(groups)}\n${closing}`;
+  return `${preamble(componentCount, RSC_SAFE_MODULES.size)}\n${renderComponents(groups)}\n${closing({
+    headless: renderHeadless(parseHeadless(rootDir)),
+    hooks: renderHooks(parseHooks(rootDir)),
+    icons: renderIcons(parseIcons(rootDir)),
+  })}`;
 }
 
 /**

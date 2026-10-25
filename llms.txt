@@ -275,12 +275,141 @@ auto-degrading without engine support or under reduced motion.
 
 ## Headless primitives
 
-`haze-ui/headless` re-exports the behavior layer the components are built on —
-`useFloating` (the three-tier floating engine), `Presence` (exit animations),
-the focus-scope hooks and the `computeFloatingPosition` collision math — for
-component authors assembling their own panels. Same source, same version as
-the styled library; stable public API with the same semver commitment.
+`haze-ui/headless` re-exports the behavior layer the components are built
+on — the floating engine, exit animations, the `Portal` primitive, focus
+scope, pure collision math, menu/submenu keyboard machinery, RTL direction
+resolution, ref composition, View-Transition-wrapped state flips and the
+document-level interaction hooks — for component authors assembling their
+own panels. Same source, same version as the styled library; stable public
+API with the same semver commitment. The full export surface (60 entries):
 
+### Floating behavior
+
+- `supportsNativePopover` — Detects the native Popover API (`popover` attribute, top layer, light-dismiss). The floating primitives use this to choose their rendering tier.
+- `supportsAnchorPositioning` — Detects CSS anchor positioning on top of the native Popover API. The floating primitives use this to choose between the declarative anchored tier and JS-assisted positioning.
+- `useFloating` — The floating-pair behavior hook: pass the open state pair plus trigger and panel refs, receive a `FloatingBehavior` record describing the engine tier and everything to spread on the trigger and panel. This is the same engine Popover, DropdownMenu, Combobox, Datepicker and Tooltip run on.
+- `UseFloatingOptions` (type) — Options accepted by `useFloating`: the open state pair, trigger and panel refs, plus optional animation and collision knobs.
+- `FloatingBehavior` (type) — Behavior record returned by `useFloating`: tier flags, lifecycle phases (`shown`/`dataState`/`exited`), and the props/class entries to spread on the trigger and panel elements.
+- `FloatingPlacement` (type) — Panel placement relative to the trigger (`'bottom' | 'bottom-span' | 'bottom-center' | 'bottom-end' | 'top' | 'left' | 'right'`, or `'point'` to position the panel yourself, e.g. at pointer coordinates). Logical, not physical: under `dir="rtl"` the horizontal placements and the start/end alignments mirror automatically.
+- `floatingPlacementClasses` — x-class entries placing a panel element relative to its trigger, per engine tier — for consumers composing their own panel instead of using `FloatingPanel`.
+- `placeFloatingPanel` — Imperatively place a fixed panel from the trigger's rect (the JS-positioned tier). Re-run on scroll/resize — or use `useFloatingPosition`, which wires that up.
+- `useFloatingPosition` — Hook that keeps a floating panel positioned on the JS-assisted tiers: tier-2 fixed placement and the tier-1 cross-axis nudge, re-run on scroll and resize.
+- `FloatingPanel` — The panel half of a floating pair: applies the popover attribute, the anchor custom property and the tier/placement classes, mirrors the animated lifecycle as `data-state`, and runs the JS-assisted position effect. Your visual skin goes in `visualClass`; everything else passes through to the underlying div.
+- `FloatingPanelProps` (type) — Props accepted by `FloatingPanel` — behavior record, optional placement/collision overrides, `visualClass` skin, plus native div attributes.
+
+### Presence / exit animations
+
+- `Presence` — Keeps a single child mounted while its exit animation runs: the child receives `data-state="open" | "closed"` (render your enter/exit transitions on it) and unmounts only after the exit settles — or, with `keepMounted`, stays mounted dormant behind `hidden` + `inert`. This is the engine behind haze-ui's animated panels, modals and collapsibles.
+- `PresenceProps` (type) — Props accepted by `Presence`: `present`, a single-element `children`, an optional `onExited` callback, and `keepMounted` to keep the child mounted (dormant behind `hidden` + `inert`) after the exit settles.
+- `whenExitSettles` — Wait for an element's exit animation/transition to finish. Resolves immediately when no positive duration is declared, `null` for an element outside the document; repeated calls share the in-flight settle. The imperative companion to `Presence`.
+
+### Portal
+
+- `Portal` — Renders children into a DOM container outside the current React tree position — `document.body` by default, so overlays escape ancestor `overflow`, `transform` and stacking contexts. SSR-safe: nothing renders until the client mounts (no `document` access during render), and `disabled` renders the children in place instead. The primitive behind haze-ui's overlay families, exported for composing your own.
+- `PortalProps` (type) — Props accepted by `Portal`: `children`, an optional `container` (element or lazy getter, default `document.body`), and `disabled` to render in place.
+
+### Focus
+
+- `useFocusScope` — Focus-domain hook for overlays: attach the returned ref callback to a container and flip `enabled` to get initial focus, focus restoration and optional Tab trapping — a simplified Radix-style FocusScope with no CSS dependency.
+- `FocusScopeOptions` (type) — Options accepted by `useFocusScope`: `enabled`, `trapped`, `autoFocus`, `returnFocus`, and the mount/unmount auto-focus event callbacks (preventable via `event.preventDefault()`).
+- `TABBABLE_SELECTOR` — Tab-order candidate selector (structural filter only; runtime state — disabled, hidden, visibility — is filtered by `isTabbable`).
+- `isTabbable` — Whether an element is in the Tab order: matches `TABBABLE_SELECTOR` and is not disabled, hidden or invisible.
+- `getTabbables` — All tabbable elements inside a container, in DOM order (the container itself excluded).
+- `focusFirst` — Focus the first tabbable element in a container, or the container itself when none exists. Returns whether focus actually transferred — guarding against `focus()` silently no-op-ing on disabled or detached elements.
+
+### Collision geometry
+
+- `computeFloatingPosition` — Pure floating-panel collision math over literal rects — no DOM, no React: baseline coordinates, then flip on the primary axis, shift on the cross axis, primary-axis clamp. The deterministic core of the JS-positioned tiers.
+- `ComputeFloatingPositionOptions` (type) — Arguments accepted by `computeFloatingPosition`: trigger rect, panel and viewport sizes, placement, per-direction gap, and the resolved strategy record.
+- `FloatingPosition` (type) — Position resolved by `computeFloatingPosition`: panel `top`/ `left` and the (possibly flipped) placement side.
+- `resolvePadding` — Normalize a `CollisionPadding` into a full per-side record — the padding shape `computeFloatingPosition`'s strategy expects.
+- `CollisionSide` (type) — Viewport edge a collision measurement applies to.
+- `CollisionPadding` (type) — Viewport inset for collision checks: a number applies to all four sides, an object per side.
+- `CollisionStrategy` (type) — Collision knobs: `flip` to the opposite side and `shift` along the cross axis when the panel overflows the padded viewport (both default on), plus `collisionPadding`. Consumers may pass any subset.
+
+### Menu keyboard
+
+- `getEnabledMenuItems` — Enabled menu items inside a container, in DOM order. `role="menu"` containers scope each item to its nearest menu ancestor, so a nested submenu's items belong to their own level — the same query the haze-ui menu families' traversal, typeahead and roving tabindex run on. The item selector is customizable for non-menu containers (listboxes, command palettes).
+- `useMenuKeyboard` — Keyboard behavior for a roving-tabindex item container (WAI-ARIA menu button pattern): the orientation's main-axis arrows move focus wrapping and skipping disabled items (mirrored under `dir="rtl"` for horizontal layouts), Home/End jump to the ends, Escape and Tab close, printable characters run typeahead. Returns the `onKeyDown` handler to spread on the container — the engine DropdownMenu, ContextMenu and Command run on.
+- `UseMenuKeyboardOptions` (type) — Options accepted by `useMenuKeyboard`: the container ref, the close callback, an optional custom item selector, the submenu-level `onCloseToStart` callback and the layout `orientation`.
+- `useRovingTabindex` — Roving tabindex for a menu/listbox container: exactly one item is a tab stop at any time — kept on activation, moved with focus, and re-synced by a MutationObserver when the item set changes (e.g. a filtered list). While `active` is false the effect is inert.
+- `UseRovingTabindexOptions` (type) — Options accepted by `useRovingTabindex`: the container ref, the `active` flag and an optional custom item selector.
+
+### Submenu mechanism
+
+- `useSubmenu` — The nested-submenu mechanism behind `MenuSub*` / `DropdownMenuSub*`: owns the open state (controllable through the `open` option), drives the floating pair, wires hover intent (rest-delayed open, graceful close) and the level-scoped keyboard contract — the inline-end arrow opens focusing the first item, Escape and the inline-start arrow close only this level, Tab closes the whole stack. Returns the behavior record the family components skin.
+- `UseSubmenuOptions` (type) — Options accepted by `useSubmenu`: the `open` state (controlled control or uncontrolled initial value) and `onOpenChange`, fired on every open transition whatever drove it.
+- `SubmenuBehavior` (type) — Behavior record returned by `useSubmenu`: the open state, the trigger/content refs, the panel id, the floating behavior, and the handlers to spread on the trigger (`onPointerEnter`, `onKeyDown`) and the panel (`onKeyDown`).
+- `SubmenuProvider` — Context provider carrying a `SubmenuBehavior` from a Sub container to its trigger/content parts — for authors composing their own submenu skins. Nesting works naturally: each Sub re-provides for its own parts.
+- `useSubmenuContext` — Read the nearest `SubmenuBehavior` provided by an enclosing `SubmenuProvider`. Throws outside one.
+- `SUBMENU_OPEN_DELAY_MS` — Pointer rest time before a submenu opens on hover (intent, not rest), in milliseconds.
+- `SUBMENU_CLOSE_GRACE_MS` — Grace before a hover-opened submenu closes after the pointer settled outside it, in milliseconds.
+
+### Direction / RTL
+
+- `Direction` (type) — Writing direction of a subtree: `'ltr'` or `'rtl'`.
+- `localeDirection` — Direction implied by a BCP 47 tag — RTL primary language subtags (`ar`, `fa`, `he`, `ur`, …) resolve to `'rtl'`, everything else to `'ltr'`; `undefined` when no tag is given.
+- `getDirection` — Rendered direction of an element: the nearest ancestor carrying a `dir` attribute, `'ltr'` when none does. The layout truth that arrow-key mirroring and JS placement math must follow — read it at event/measure time, never from React state.
+- `useDirection` — Declared direction for the current tree: the LocaleProvider chain's explicit `direction` prop or locale-derived direction, falling back to the document's rendered direction when no provider is mounted. Prefer `getDirection` on the concrete element whenever the value must match the painted layout.
+
+### Ref composition
+
+- `mergeRefs` — Compose several refs (object and/or callback) into one callback ref — the pattern for merging a behavior record's `triggerRef`/`panelRef` with your own element handle on the same node.
+
+### View transitions
+
+- `useViewTransitionFlip` — Wrap a boolean open-state flip in a View Transition — the same outlet the Dialog/Drawer/BottomSheet `viewTransition` prop runs on. Every write executes inside `document.startViewTransition(() => flushSync(...))`; the full guard chain (disabled, `prefers-reduced-motion: reduce`, unsupported engine) degrades to a direct write. Pass the flag and the `useControl` setter, and use the returned writer wherever the state flips.
+
+### Document-level interaction hooks
+
+- `useClickOutside` — Call back on `pointerdown` outside an element: attach the returned stable callback ref to the target, optionally ignore refs (e.g. the trigger), and toggle `enabled` with the panel's open state so a closed overlay costs no listener. Shadow-DOM retargeted clicks are attributed correctly via `event.composedPath()`.
+- `UseClickOutsideOptions` (type) — Options accepted by `useClickOutside`: `enabled` (default `true`) and the `ignore` ref list — elements whose hits do not count as outside.
+- `useHotkeys` — Declarative keyboard shortcuts: a map of spec strings (`'mod+k'`, `'ctrl+shift+p'`, `'?'`, named keys, whitespace-joined sequences like `'g h'`) to handlers, listened on the window (or a ref target). `mod` normalizes per platform (⌘ on macOS, Ctrl elsewhere), editable focus suppresses fires unless `allowInInput`, sequences reset on a wrong key or after `sequenceTimeout` (default 1000ms), and the map may be an inline literal — a latest-ref keeps the listener mounted once.
+- `hotkey` — Combine several hotkey specs into one comma-joined alias binding so a single handler catches any of them: `useHotkeys({ [hotkey('mod+k', 'mod+j')]: cycle })`.
+- `HotkeyHandler` (type) — Handler signature `useHotkeys` calls with the raw KeyboardEvent (already `preventDefault`-ed and stopped when it fires).
+- `UseHotkeysOptions` (type) — Options accepted by `useHotkeys`: `enabled`, `target` (element ref or `window`), `eventName`, `allowInInput` and `sequenceTimeout`.
+- `useInView` — Observe whether an element is in the viewport: attach the returned callback ref and read the `inView` flag. `once: true` freezes after the first intersection (lazy-load style); engines without IntersectionObserver (SSR, jsdom) stay `false` without throwing.
+- `UseInViewOptions` (type) — Options accepted by `useInView`: the IntersectionObserver init members plus the `once` freeze flag.
+- `useMediaQuery` — Subscribe to a CSS media query and return whether it currently matches; the query can change per render. SSR and hydration snapshots are `false` (no `window` access), and engines without `matchMedia` get a stable `false` instead of a throw.
+
+### Busy pressable
+
+- `useBusyPressable` — Props bag for a pressable that can enter a busy/loading state — `disabled` forced while busy, `aria-busy` mirrored. The behavior half of `Button`'s/`ButtonLink`'s `loading` prop, for consumers composing their own trigger. Anchors translate `disabled` to `aria-disabled` (see ButtonLink).
+
+### Persistent state hooks
+
+- `usePrevious` — The value from the previous render; `undefined` on the first. Compared by identity per render — no deep equality.
+- `useLocalStorage` — localStorage-persisted controllable state: initial-value resolution is persisted value > uncontrolled prop > `initial`, uncontrolled writes persist as JSON, cross-tab updates arrive via `storage` events, and a controlled `control` stays the single source of truth (no write-back). Unavailable storage (private mode) degrades silently to in-memory state.
+- `useSessionStorage` — sessionStorage-persisted controllable state — exactly the semantics of `useLocalStorage`, scoped to the tab session.
+
+## Hooks
+
+`haze-ui/hooks` is the standalone hooks entry — 23 value exports
+(plus 13 options/result type clauses) with no component code:
+clipboard, dark mode, debounce, fullscreen, hotkeys, viewport and element
+observation, idle, network, orientation, reduced motion, storage-persisted
+state (`useLocalStorage`/`useSessionStorage` over the shared
+`useStorageState` kernel: JSON persisted, cross-tab `storage` events,
+Control-friendly) and the tab title. The overlay-relevant subset is also
+re-exported from `haze-ui/headless`; a curated selection ships on the main
+barrel.
+
+`useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useTitle`
+
+## Icons
+
+`haze-ui/icons` re-exports 100 curated [lucide-react](https://lucide.dev)
+glyphs — the common UI vocabulary (navigation chevrons, form feedback, media,
+communication, files, commerce) as individual named exports in alphabetical
+order. `lucide-react` is a regular dependency with `sideEffects: false` and
+stays external in the lib build: an icon never imported costs zero bytes, and
+consumers who import none of them tree-shake the package out entirely. The full
+1800+ lucide catalog stays one direct `lucide-react` import away.
+
+Pair with the `Icon` component — `<Icon icon={Check} size='sm' />` — and use
+the frozen `hazeIconSize` map (`{ sm: 16, md: 20, lg: 24 }`, the `Icon`
+size scale) when a lucide glyph renders outside `<Icon>` so both paths agree
+on the size scale.
 ## Locale packs
 
 `haze-ui/locales` re-exports the string packs standalone — `enUS` (the same
@@ -377,6 +506,9 @@ interruption tiers, async option loading and lazy trees).
 
 The Components section above is generated from the demo sidebar contract
 (`src/views/Layout/component-groups.ts`) plus the blurb table in
-`scripts/generate-llms.mjs` — regenerate with `node scripts/generate-llms.mjs`
-when the component set changes. The preamble and the closing sections are
-maintained by hand.
+`scripts/generate-llms.mjs`; the Headless / Hooks / Icons sections are
+generated from the subpath barrels (`src/lib/headless/index.ts`,
+`src/lib/hooks/index.ts`, `src/lib/icons/index.ts`) — every export is
+enumerated with the JSDoc blurb written next to it in source. Regenerate with
+`node scripts/generate-llms.mjs` when any of those change. The preamble and
+the remaining closing sections are maintained by hand.
