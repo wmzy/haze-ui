@@ -35,8 +35,11 @@ npx shadcn@latest add wmzy/haze-ui/button wmzy/haze-ui/dialog wmzy/haze-ui/toast
 
 # full-page blocks — vendored page source you own (see "Blocks" below)
 npx shadcn@latest add wmzy/haze-ui/login-block
-npx shadcn@latest add wmzy/haze-ui/dashboard-block
-npx shadcn@latest add wmzy/haze-ui/crud-block
+npx shadcn@latest add wmzy/haze-ui/dashboard-block wmzy/haze-ui/crud-block
+npx shadcn@latest add wmzy/haze-ui/settings-block wmzy/haze-ui/form-wizard-block
+npx shadcn@latest add wmzy/haze-ui/filter-list-block wmzy/haze-ui/profile-block
+npx shadcn@latest add wmzy/haze-ui/data-table-block wmzy/haze-ui/kanban-block
+npx shadcn@latest add wmzy/haze-ui/chat-block wmzy/haze-ui/ai-workbench-block
 
 # browse the catalog / inspect an item payload
 npx shadcn@latest list wmzy/haze-ui
@@ -53,8 +56,8 @@ with your own components. To pin a release, append a tag or commit SHA:
 
 Generated coverage: **every styled export of the main barrel** — 149 css
 families in the current build, one item per family — plus the `base` meta
-item, the hand-curated `haze-tokens` doc and 3 vendored full-page blocks
-(154 items total). Multi-export families
+item, the hand-curated `haze-tokens` doc and 8 vendored full-page blocks
+(165 items total). Multi-export families
 ship together (e.g. `tabs` → `Tabs`/`TabList`/`Tab`/`TabPanel`,
 `resizable` → `Resizable*` plus the `Splitter*` aliases, `toast` →
 `Toast`, `ToastContainer`, `useToast`, `toast()`), and the `tokens` item
@@ -71,6 +74,14 @@ A few examples:
 | `login-block` | Vendored login page (see "Blocks" below) |
 | `dashboard-block` | Vendored SaaS dashboard page (see "Blocks" below) |
 | `crud-block` | Vendored master–detail CRUD page (see "Blocks" below) |
+| `settings-block` | Vendored workspace settings page (see "Blocks" below) |
+| `form-wizard-block` | Vendored multi-step setup wizard (see "Blocks" below) |
+| `filter-list-block` | Vendored filterable catalog page (see "Blocks" below) |
+| `profile-block` | Vendored member profile page (see "Blocks" below) |
+| `data-table-block` | Vendored data-table console page (see "Blocks" below) |
+| `kanban-block` | Vendored kanban board page (see "Blocks" below) |
+| `chat-block` | Vendored AI chat workspace page (see "Blocks" below) |
+| `ai-workbench-block` | Vendored AI review workbench page (see "Blocks" below) |
 | `button` | `Button`, `ButtonLink` re-exports |
 | `input` | `Input`, `InputCore` (form-bindable core) |
 | `dialog` | `Dialog` (native `<dialog>`, controllable `open`) |
@@ -85,7 +96,8 @@ A few examples:
 
 Each item declares `dependencies: ["haze-ui"]`, so the CLI installs the npm
 package automatically; blocks additionally declare the npm packages their
-vendored source imports (`zod`, `react-use-control`).
+vendored source imports (`zod`, `react-use-control`, `lucide-react`,
+`@tanstack/react-table`).
 
 Skipped on purpose (no css of their own — import from `haze-ui` directly):
 hooks (`useMediaQuery`, `useClipboard`, …), `TOKEN_REGISTRY` /
@@ -140,11 +152,19 @@ tokens, so the vendored file builds and themes in a plain consumer project.
 | `login-block` | Login page: brand panel + Card form loop, zod-validated (`useForm`/`Form`/`FormItem` over `InputCore`/`PasswordInputCore`/`CheckboxCore`) |
 | `dashboard-block` | SaaS admin starter: `AppShell` + `Sidebar` nav, `Breadcrumb`, `Stat` row, `DataTable` with density toggle and CSV export |
 | `crud-block` | Master–detail CRUD: `Tree` team picker, `DataTable`, zod-validated `Dialog` form, `ConfirmDialog`, `useToast` |
+| `settings-block` | Workspace settings: card-variant `Tabs` over live `Switch` / `RadioGroup` / `Select` / multiple `Combobox` rows |
+| `chat-block` | AI chat workspace: `ChatContainer` message log, scripted thinking → tool call → streaming turn, `ChatInput`, `ConversationList` rail |
+| `ai-workbench-block` | AI review desk: `Workbench` shell with `ActivityRail` sidebar, scripted review turn, docked `Sources` panel, `PromptInput` + `ModelPicker` composer |
+| `data-table-block` | Data-table console: filterable/sortable `DataTable` with column visibility, density, CSV export and a batch-selection action bar |
+| `kanban-block` | Sprint board: four columns of issue cards with priority badges, assignee avatars and progress bars; moves via the ⋯ menu |
+| `form-wizard-block` | Multi-step setup: `Stepper` over one zod-validated `Form`, gated by per-step `trigger()`, closing in an `Alert` receipt |
+| `filter-list-block` | Filterable catalog: filter rail (`Input` / `Checkbox` / `Select`) + card results with `Rating`, closable `Chip` facets, `Empty` and `Pagination` |
+| `profile-block` | Member profile: identity header with `Avatar` / `Badge`s and a follow toggle, `Descriptions` facts, `TagGroup` skills, `AvatarGroup`, `Timeline` |
 
 ```bash
 npx shadcn@latest add wmzy/haze-ui/login-block
 # or
-npx shadcn@latest add wmzy/haze-ui/dashboard-block wmzy/haze-ui/crud-block
+npx shadcn@latest add wmzy/haze-ui/dashboard-block wmzy/haze-ui/crud-block wmzy/haze-ui/form-wizard-block
 ```
 
 What the generator does to each block source:
@@ -155,7 +175,8 @@ What the generator does to each block source:
   (`haze-ui/css/tokens.css` + every family it renders) so the file is
   self-contained;
 - declares the npm deps the page needs beyond `haze-ui` (`zod`,
-  `react-use-control`) in the item's `dependencies`;
+  `react-use-control`, `lucide-react`, `@tanstack/react-table`) in the
+  item's `dependencies`;
 - pulls in every rendered component's wrapper item through
   `registryDependencies` (full `wmzy/haze-ui/<item>` addresses), so the
   page's css closure and customization seams arrive with it.

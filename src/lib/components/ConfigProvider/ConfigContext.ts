@@ -3,6 +3,7 @@ import type { SelectClassNames } from '../Select/Select';
 import type { ComboboxClassNames } from '../Combobox/Combobox';
 import type { TagGroupClassNames } from '../TagGroup/TagGroup';
 import type { MenuClassNames } from '../Menu/MenuContext';
+import type { NotificationCenterClassNames } from '../NotificationCenter/NotificationCenter';
 import type { ToastPlacement } from '../Toast/ToastContainer';
 import type { CalendarPickerMode } from '../Calendar/Calendar';
 import type { TimePickerFormat } from '../TimePicker/time';
@@ -105,6 +106,9 @@ type ComponentDefaultsSections = {
   };
   /** `Menu` slot classes — merged under an explicit `classNames` prop. */
   Menu: { classNames?: MenuClassNames };
+  /** `NotificationCenter` slot classes — merged under an explicit
+   *  `classNames` prop. */
+  NotificationCenter: { classNames?: NotificationCenterClassNames };
   /** `Pagination` prop defaults. */
   Pagination: {
     /** Default `size` when the prop is omitted (built-in `'md'`). */

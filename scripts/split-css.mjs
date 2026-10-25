@@ -72,6 +72,7 @@ const sharedLayers = {
     'dropdown-menu',
     'menu',
     'navigation-menu',
+    'notification-center',
     'popconfirm',
     'popover',
     'select',

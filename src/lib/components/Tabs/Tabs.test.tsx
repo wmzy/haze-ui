@@ -912,3 +912,75 @@ describe('tabVariants / listVariants exports', () => {
     );
   });
 });
+
+describe('Tab as polymorphism', () => {
+  it("as='a' renders a link-shaped tab: href/rest land on <a>, tablist wiring kept", async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(
+      <Tabs value="one">
+        <TabList>
+          <Tab as="a" href="/one" value="one" data-track="tab" onClick={onClick}>
+            Tab 1
+          </Tab>
+          <Tab as="a" href="/two" value="two">
+            Tab 2
+          </Tab>
+        </TabList>
+        <TabPanel value="one">Panel 1</TabPanel>
+        <TabPanel value="two">Panel 2</TabPanel>
+      </Tabs>
+    );
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
+    // role="tab" wins over the link role — the tablist contract first
+    expect(tab1.tagName).toBe('A');
+    expect(tab1).toHaveAttribute('href', '/one');
+    expect(tab1).toHaveAttribute('data-track', 'tab');
+    // the button-only default is gated — anchors don't carry it
+    expect(tab1).not.toHaveAttribute('type');
+    // roving tabindex wiring follows the rendered element
+    expect(tab1).toHaveAttribute('aria-selected', 'true');
+    expect(tab1).toHaveAttribute('tabindex', '0');
+    expect(tab2).toHaveAttribute('tabindex', '-1');
+
+    // selection wiring + consumer click both fire on the anchor shape
+    await user.click(tab2);
+    expect(tab2).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('tab', { name: 'Tab 1' }));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(
+      <Tabs value="one">
+        <TabList>
+          <Tab as="a" href="/one" value="one" ref={ref}>
+            Tab 1
+          </Tab>
+        </TabList>
+      </Tabs>
+    );
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native buttons with type="button"; closable tabs keep the div promotion', () => {
+    render(
+      <Tabs value="one">
+        <TabList>
+          <Tab value="one">Tab 1</Tab>
+          <Tab value="two" closable>
+            Tab 2
+          </Tab>
+        </TabList>
+      </Tabs>
+    );
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
+    expect(tab1.tagName).toBe('BUTTON');
+    expect(tab1).toHaveAttribute('type', 'button');
+    // closable tabs keep the div[role="tab"] shape regardless of `as`
+    expect(tab2.tagName).toBe('DIV');
+  });
+});

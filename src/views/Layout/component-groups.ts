@@ -109,6 +109,7 @@ export const COMPONENT_GROUPS: ComponentGroup[] = [
       { name: 'DropdownMenu', route: 'dropdown-menu' },
       { name: 'HoverCard', route: 'hover-card' },
       { name: 'Menu', route: 'menu' },
+      { name: 'NotificationCenter', route: 'notification-center' },
       { name: 'Popconfirm', route: 'popconfirm' },
       { name: 'Popover', route: 'popover' },
       { name: 'Tooltip', route: 'tooltip' },

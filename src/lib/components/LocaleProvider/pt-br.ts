@@ -194,6 +194,15 @@ const ptBR: HazeStrings = {
   modelPicker: {
     label: 'Modelo',
   },
+  notificationCenter: {
+    triggerLabel: 'Notificações',
+    triggerLabelUnread: 'Notificações ({count} não lidas)',
+    panelTitle: 'Notificações',
+    markAllRead: 'Marcar todas como lidas',
+    clearAll: 'Limpar tudo',
+    empty: 'Nenhuma notificação',
+    unreadLabel: 'Não lida',
+  },
   numberInput: {
     decrease: 'Diminuir',
     increase: 'Aumentar',

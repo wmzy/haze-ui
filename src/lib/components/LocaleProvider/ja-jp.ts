@@ -191,6 +191,15 @@ const jaJP: HazeStrings = {
   modelPicker: {
     label: 'モデル',
   },
+  notificationCenter: {
+    triggerLabel: '通知',
+    triggerLabelUnread: '通知（未読 {count} 件）',
+    panelTitle: '通知',
+    markAllRead: 'すべて既読にする',
+    clearAll: 'すべて消去',
+    empty: '通知はありません',
+    unreadLabel: '未読',
+  },
   numberInput: {
     decrease: '減らす',
     increase: '増やす',

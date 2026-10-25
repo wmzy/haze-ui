@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 import { expect } from 'vitest';
@@ -199,5 +200,34 @@ describe('FloatButtonGroup', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('FloatButton as polymorphism', () => {
+  it("as='a' renders a real anchor: href/rest land on <a>, no type attr, FAB wiring kept", () => {
+    render(<FloatButton as='a' href='/new' data-track='fab' aria-label="New" />);
+    const link = screen.getByRole('link', { name: 'New' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/new');
+    expect(link).toHaveAttribute('data-track', 'fab');
+    // the button-only default is gated — anchors don't carry it
+    expect(link).not.toHaveAttribute('type');
+    expect(link).toHaveAttribute('data-slot', 'float-button');
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<FloatButton as='a' href='/new' ref={ref} aria-label="New" />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('href duality and default shape unchanged: href alone still renders an anchor, plain renders type="button"', () => {
+    const { rerender } = render(<FloatButton href="/docs" aria-label="Docs" />);
+    expect(screen.getByRole('link', { name: 'Docs' })).not.toHaveAttribute('type');
+
+    rerender(<FloatButton aria-label="Docs" />);
+    const button = screen.getByRole('button', { name: 'Docs' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
   });
 });

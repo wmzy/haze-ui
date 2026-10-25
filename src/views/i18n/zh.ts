@@ -117,6 +117,21 @@ export const zh: DeepPartial<SiteStrings> = {
       description:
         '四列 issue 卡片带优先级徽标、标签、负责人头像与进度条。卡片经 ⋯ 菜单流转 —— haze-ui 只提供单容器排序、无跨列拖拽，看板因此有意做成静态。',
     },
+    formWizard: {
+      title: '多步设置向导',
+      description:
+        'Stepper 驱动一张 zod 校验的表单 —— 值跨步骤保留，Next 只有当前步骤通过 trigger() 校验才前进，最终提交落地为 Alert 回执。',
+    },
+    filterList: {
+      title: '可筛选模板目录',
+      description:
+        '筛选栏（搜索 Input、分类 Checkbox、地区与排序 Select）驱动一张卡片列表（Avatar、Badge、Rating）—— 激活条件渲染为可关闭的 Chip，无结果时 Empty，底部 Pagination 分页。',
+    },
+    profile: {
+      title: '成员主页',
+      description:
+        '身份头部（大号 Avatar、状态 Badge、可控的关注切换）之下是 Descriptions 事实清单、TagGroup 技能行、AvatarGroup 队友条与 Timeline 动态流。',
+    },
   },
   componentGroups: {
     General: '通用',
@@ -237,6 +252,7 @@ export const zh: DeepPartial<SiteStrings> = {
     DropdownMenu: '点击触发的浮动菜单。',
     HoverCard: '非模态悬浮预览（头像卡片、链接摘要），锚定于触发器。',
     Menu: '轻量切换菜单：触发器 + 静态定位面板（MenuItem、MenuDivider）。',
+    NotificationCenter: '铃铛入口的持久通知中心：未读角标、severity/kind 行、全部已读与清空。',
     Popconfirm: '锚定于触发元素的确认气泡，含确认/取消操作。',
     Popover: '锚定于触发元素的浮动气泡。',
     Tooltip: '悬停/聚焦提示气泡。',

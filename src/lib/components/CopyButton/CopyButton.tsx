@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from 'react';
+import type { ElementType, MouseEvent, ReactNode, SVGProps } from 'react';
 
 import type { ButtonProps } from '../Button';
 
@@ -33,16 +33,28 @@ type CopyButtonOwnProps = {
   copiedLabel?: string;
   /** Slot classes (see {@link CopyButtonClassNames}). */
   classNames?: CopyButtonClassNames;
+  /**
+   * Element-agnostic click: whatever element `as` rendered, the
+   * consumer's handler fires first — the copy wiring rides after it.
+   */
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
 };
 
-type CopyButtonProps = CopyButtonOwnProps & {
+type CopyButtonProps<T extends ElementType = 'button'> = CopyButtonOwnProps & {
   /**
    * Icon or label. Defaults to the copy/check glyph pair; a function
    * receives the copied state so text labels can switch their own
    * wording (`(copied) => copied ? 'Copied!' : 'Copy'`).
    */
   children?: ReactNode | ((copied: boolean) => ReactNode);
-} & Omit<ButtonProps, keyof CopyButtonOwnProps | 'children'>;
+  /**
+   * Render element, delegated to the underlying `Button`'s polymorphism:
+   * `as='a'` renders a real anchor wearing the copy skin (`href` and the
+   * rest of the anchor surface type-check), any component works as long
+   * as it forwards props and ref to a DOM element.
+   */
+  as?: T;
+} & Omit<ButtonProps<T>, keyof CopyButtonOwnProps | 'children' | 'as'>;
 
 /** Explicit width/height: a viewBox-only inline svg contributes zero
  * content size in flex containers and collapses to 0×0 (the sizing
@@ -109,7 +121,7 @@ function CheckGlyph(props: SVGProps<SVGSVGElement>) {
  * `aria-label` passed through the rest props overrides the swapped
  * `copyLabel`/`copiedLabel` naming (statically, for both states).
  */
-export default function CopyButton({
+export default function CopyButton<T extends ElementType = 'button'>({
   value,
   getValue,
   copiedTimeout = 2000,
@@ -120,10 +132,11 @@ export default function CopyButton({
   size,
   classNames,
   className,
+  as,
   children,
   onClick,
   ...rest
-}: CopyButtonProps) {
+}: CopyButtonProps<T>) {
   const { copied, copy } = useClipboard(copiedTimeout);
   // Same resolution tiers as Button (explicit prop → Button's
   // ConfigProvider section → built-in 'md') so the icon step always
@@ -132,18 +145,25 @@ export default function CopyButton({
   const resolvedSize = size ?? config.size ?? 'md';
   const iconClass = iconSizes[resolvedSize];
 
-  function handleClick(event: Parameters<NonNullable<ButtonProps['onClick']>>[0]) {
+  function handleClick(event: MouseEvent<HTMLElement>) {
     const text = getValue?.() ?? value;
     if (text !== undefined) void copy(text);
+    // Element-agnostic event: whatever element `as` rendered, the
+    // consumer's handler sees it, typed element-agnostic above.
     onClick?.(event);
   }
 
   const Glyph = copied ? CheckGlyph : CopyGlyph;
+  // The generic Omit arms are opaque to the type checker; at runtime
+  // rest is exactly Button's remainder — CopyButton owns or redeclares
+  // every other key (an explicit consumer aria-label still overrides the
+  // swapped copy/copied naming, per the documented precedence).
   return (
     <Button
       variant={variant}
       size={size}
       square={square}
+      as={as}
       data-copied={copied || undefined}
       aria-label={copied ? copiedLabel : copyLabel}
       className={
@@ -156,7 +176,7 @@ export default function CopyButton({
           .join(' ') || undefined
       }
       onClick={handleClick}
-      {...rest}
+      {...(rest as unknown as ButtonProps<T>)}
     >
       {typeof children === 'function' ? (
         children(copied)

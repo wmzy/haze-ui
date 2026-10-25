@@ -1,5 +1,8 @@
 import type {
+  ComponentPropsWithRef,
+  ElementType,
   KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent,
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from 'react';
@@ -14,7 +17,7 @@ import { tabVariants } from './tabs-styles';
 /** Document-tab status flavors — each maps to a dot color (see `TabStatusDot`). */
 type TabStatus = 'dirty' | 'error' | 'syncing';
 
-type TabProps = {
+type TabOwnProps = {
   value: string;
   /**
    * Inline-start icon slot, decorative (`aria-hidden`) — pair it with a
@@ -45,6 +48,12 @@ type TabProps = {
    */
   disabled?: boolean;
   /**
+   * Element-agnostic click: whatever element the plain (non-closable)
+   * tab rendered — `button` by default, any `as` element otherwise —
+   * the consumer's handler fires first, selection wiring after it.
+   */
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+  /**
    * Renders the × close affordance. Purely notifying: activating it
    * calls `onClose` and nothing else — removing the tab from the
    * (controlled) tabs array and picking the next active tab are the
@@ -70,6 +79,23 @@ type TabProps = {
   className?: string;
   children: ReactNode;
 };
+
+/**
+ * Polymorphic like Button's `as`: the tab skin and the tablist wiring
+ * (`role='tab'`, `aria-selected`, the roving `tabIndex`, selection on
+ * click) always land on the rendered element — `as='a'` renders a
+ * link-shaped tab (tabs-as-routes) that keeps the strip's roving
+ * keyboard model. `type='button'` and the `disabled` attribute are
+ * gated to the native-button shape (anchors report through
+ * `aria-disabled`). Closable tabs keep their `div[role='tab']`
+ * promotion regardless — the nested × constraint dictates that shape.
+ */
+type TabProps<T extends ElementType = 'button'> = TabOwnProps & {
+  /** Render element for the plain (non-closable) tab — 'button'
+   * (default), 'a', or any component that forwards props and ref to a
+   * DOM element (a router Link). */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof TabOwnProps | 'as' | 'type'>;
 
 const base = css`
   box-sizing: border-box;
@@ -300,7 +326,7 @@ export function TabStatusDot({ status }: { status: TabStatus }) {
   );
 }
 
-export default function Tab({
+export default function Tab<T extends ElementType = 'button'>({
   value,
   icon,
   status,
@@ -309,13 +335,21 @@ export default function Tab({
   closeLabel,
   onClose,
   disabled = false,
+  as,
   className,
   children,
-}: TabProps) {
+  onClick,
+  ...rest
+}: TabProps<T>) {
   const { value: current, setValue, variant, classNames } = useTabsContext();
   const strings = useStrings('tabs');
   const isActive = current === value;
   const skin = tabVariants[variant];
+
+  // `as` applies to the plain tab only; closable tabs keep the div
+  // promotion (see the type doc above).
+  const Tag = (as ?? 'button');
+  const isNativeButton = as === undefined || as === 'button';
 
   const handleClose = (event: ReactMouseEvent<HTMLSpanElement>) => {
     // Notify only: the click must never select the tab. Stopping
@@ -327,6 +361,12 @@ export default function Tab({
 
   const select = () => {
     if (!disabled) setValue(value);
+  };
+
+  // Consumer click rides first, selection wiring wins last — both fire.
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    onClick?.(event);
+    select();
   };
 
   const content = (
@@ -357,8 +397,10 @@ export default function Tab({
   // arrows, and Delete is the ×'s keyboard equivalent.
   if (!closable) {
     return (
-      <button
-        type='button'
+      <Tag
+        {...(isNativeButton
+          ? { type: 'button' as const, disabled }
+          : { 'aria-disabled': disabled || undefined })}
         data-slot='tab'
         data-variant={variant}
         role='tab'
@@ -369,7 +411,6 @@ export default function Tab({
         // page tab order.
         tabIndex={isActive ? 0 : -1}
         data-haze-tab-value={value}
-        disabled={disabled}
         x-class={[
           base,
           skin.idle,
@@ -379,10 +420,11 @@ export default function Tab({
           className,
           classNames?.tab,
         ]}
-        onClick={select}
+        {...rest}
+        onClick={handleClick}
       >
         {content}
-      </button>
+      </Tag>
     );
   }
 
@@ -421,10 +463,11 @@ export default function Tab({
         className,
         classNames?.tab,
       ]}
+      {...rest}
       onKeyDown={handleTabKeyDown}
       // The × stops its own propagation, so everything else on the tab
       // (label, chrome padding) selects.
-      onClick={select}
+      onClick={handleClick}
     >
       <span data-slot='tab-label' x-class={labelContent}>
         {content}
@@ -442,4 +485,4 @@ export default function Tab({
   );
 }
 
-export type { TabProps, TabStatus };
+export type { TabOwnProps, TabProps, TabStatus };

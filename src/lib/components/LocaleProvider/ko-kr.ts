@@ -193,6 +193,15 @@ const koKR: HazeStrings = {
   modelPicker: {
     label: '모델',
   },
+  notificationCenter: {
+    triggerLabel: '알림',
+    triggerLabelUnread: '알림 ({count}개 읽지 않음)',
+    panelTitle: '알림',
+    markAllRead: '모두 읽음으로 표시',
+    clearAll: '모두 지우기',
+    empty: '알림이 없습니다',
+    unreadLabel: '읽지 않음',
+  },
   numberInput: {
     decrease: '감소',
     increase: '증가',

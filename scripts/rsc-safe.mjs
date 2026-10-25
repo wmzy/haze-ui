@@ -43,6 +43,10 @@ export const RSC_SAFE_MODULES = new Set([
   'tokens/oklch.ts',
   'tokens/registry.ts',
   'tokens/index.ts',
+  // The haze-ui/icons subpath barrel: pure named re-exports of the
+  // external lucide-react (bare import, outside the in-package closure)
+  // plus the frozen hazeIconSize constant — no hooks, no DOM access.
+  'icons/index.ts',
   // Pure presentational components (verified hook-free, react/linaria
   // imports only). Directories are atomic: a dir joins the list only when
   // every module its barrel re-exports is safe.

@@ -464,6 +464,8 @@ const descriptions = {
     'GitHub-style activity calendar: week × weekday grid of squares, intensity-binned by value (levels prop), theme-aware color-mix scale, label props for all i18n.',
   'time-grid':
     "Single-select 'HH:mm' slot grid from a from/to window and minute step; radiogroup semantics with roving-tabindex arrow selection, controllable value, disabled slots.",
+  'notification-center':
+    'Persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows, mark-all-read and clear-all — declarative `items`, not an imperative open() API.',
   'number-input': 'Numeric input with `min`/`max`/`step`.',
   'otp-input': 'One-time-password input of `length` segmented character boxes.',
   'pagination': 'Page navigation with controllable `page` and ellipsis windows.',
@@ -610,7 +612,7 @@ const CATEGORY_GROUPS = {
   ],
   overlay: [
     'bottom-sheet', 'confirm-dialog', 'context-menu', 'dialog', 'drawer',
-    'dropdown-menu', 'hover-card', 'menu', 'popconfirm', 'popover', 'tooltip',
+    'dropdown-menu', 'hover-card', 'menu', 'notification-center', 'popconfirm', 'popover', 'tooltip',
   ],
   'data-display': [
     'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
@@ -925,6 +927,116 @@ const BLOCKS = [
     ],
     npmDependencies: ['zod', 'react-use-control'],
     categories: ['blocks', 'data-display', 'form'],
+  },
+  {
+    name: 'settings-block',
+    source: 'SettingsBlock.tsx',
+    title: 'Settings block (card Tabs over Switch/RadioGroup/Select/Combobox rows)',
+    description:
+      'Workspace preferences page: a card-variant `Tabs` hosting Notifications / Appearance / Security sections, every row a live control — `Switch`, `RadioGroup`, `Select` and a multiple `Combobox`, all through the controllable-state pattern.',
+    cssFamilies: [
+      'tabs', 'switch', 'radio', 'select', 'combobox', 'chip', 'spinner',
+      'virtual-list', 'button', 'card',
+    ],
+    npmDependencies: ['react-use-control'],
+    categories: ['blocks', 'settings', 'form'],
+  },
+  {
+    name: 'chat-block',
+    source: 'ChatBlock.tsx',
+    title: 'Chat block (ChatContainer + scripted AI turn + ConversationList rail)',
+    description:
+      'AI chat in one screen: a role="log" `ChatContainer` of `ChatMessage`s, a scripted `ThinkingIndicator` → `ToolCallCard` → `StreamingText` turn, a `ChatInput` whose send flips to stop, and a `ConversationList` rail.',
+    cssFamilies: [
+      'chat-container', 'chat-message', 'streaming-text', 'thinking-indicator',
+      'tool-call-card', 'chat-input', 'conversation-list', 'avatar', 'badge',
+      'button', 'empty', 'spinner',
+    ],
+    npmDependencies: ['react-use-control'],
+    categories: ['blocks', 'agent'],
+  },
+  {
+    name: 'ai-workbench-block',
+    source: 'AiWorkbenchBlock.tsx',
+    title: 'AI workbench block (Workbench shell + activity rail + Sources dock)',
+    description:
+      'The `Workbench` shell as a double-column AI desk — an `ActivityRail` + `ConversationList` sidebar, a scripted `ThinkingIndicator` → `ToolCallCard` → `StreamingText` review turn, a docked `Sources` citations panel, and `PromptInput` + `ModelPicker` as the composer.',
+    cssFamilies: [
+      'workbench', 'resizable', 'activity-rail', 'status-bar', 'tab-bar',
+      'conversation-list', 'chat-container', 'chat-message', 'streaming-text',
+      'thinking-indicator', 'tool-call-card', 'prompt-input', 'model-picker',
+      'sources', 'avatar', 'badge', 'button', 'empty', 'spinner', 'tooltip',
+    ],
+    npmDependencies: ['lucide-react', 'react-use-control'],
+    categories: ['blocks', 'agent', 'layout'],
+  },
+  {
+    name: 'data-table-block',
+    source: 'DataTableBlock.tsx',
+    title: 'Data table block (filterable DataTable console with batch actions)',
+    description:
+      'The TanStack-backed `DataTable` as a full fleet page — sortable, resizable columns, a per-column filter row, pagination, column visibility, density, `dataTableToCsv` export and checkbox batch selection driving a bulk-action bar.',
+    cssFamilies: [
+      'data-table', 'checkbox', 'dropdown-menu', 'empty', 'input',
+      'pagination', 'progress', 'segmented', 'select', 'skeleton', 'spinner',
+      'table', 'virtual-list', 'visually-hidden', 'avatar', 'badge', 'button',
+      'chip',
+    ],
+    npmDependencies: ['@tanstack/react-table', 'react-use-control'],
+    categories: ['blocks', 'data-display'],
+  },
+  {
+    name: 'kanban-block',
+    source: 'KanbanBlock.tsx',
+    title: 'Kanban block (four-column board with priority badges and progress)',
+    description:
+      'Four columns of issue cards with priority `Badge`s, labels, assignee `Avatar`s and `Progress` bars; cards move through the `DropdownMenu` ⋯ menu — haze-ui ships single-container sorting, not cross-column drag, so the board is static by design.',
+    cssFamilies: [
+      'avatar', 'avatar-group', 'badge', 'button', 'chip', 'dropdown-menu',
+      'empty', 'input', 'progress', 'select', 'spinner', 'tooltip',
+      'virtual-list', 'visually-hidden',
+    ],
+    npmDependencies: ['lucide-react', 'react-use-control'],
+    categories: ['blocks', 'data-display'],
+  },
+  {
+    name: 'form-wizard-block',
+    source: 'FormWizardBlock.tsx',
+    title: 'Form wizard block (Stepper over one zod Form, gated steps)',
+    description:
+      'Three-step workspace setup in a centered `Card`: a `Stepper` whose activeStep is a Control rides one react-f0rm `Form` so values survive step changes, `Next` awaits `trigger()` on the current step fields before advancing, and the final submit lands in an `Alert` receipt.',
+    cssFamilies: [
+      'stepper', 'card', 'form', 'input', 'select', 'checkbox', 'button',
+      'alert', 'chip', 'spinner', 'virtual-list',
+    ],
+    npmDependencies: ['zod', 'react-use-control'],
+    categories: ['blocks', 'form'],
+  },
+  {
+    name: 'filter-list-block',
+    source: 'FilterListBlock.tsx',
+    title: 'Filter list block (filter rail + card catalog + Pagination)',
+    description:
+      'A browsing page, not a table page: search `Input`, category `Checkbox`es, region and sort `Select`s drive a stack of result `Card`s with `Avatar`, status `Badge` and `Rating`; active facets render as closable `Chip`s, `Empty` covers no-match and `Pagination` slices the list.',
+    cssFamilies: [
+      'card', 'input', 'checkbox', 'select', 'chip', 'badge', 'avatar',
+      'rating', 'empty', 'pagination', 'button', 'spinner', 'virtual-list',
+    ],
+    npmDependencies: ['react-use-control'],
+    categories: ['blocks', 'data-display', 'form'],
+  },
+  {
+    name: 'profile-block',
+    source: 'ProfileBlock.tsx',
+    title: 'Profile block (identity header + Descriptions + Timeline)',
+    description:
+      'A member detail page: a large `Avatar` header with status `Badge`s and a controllable follow toggle, a `Descriptions` fact sheet, a `TagGroup` skill row, an `AvatarGroup` teammates strip and a `Timeline` activity feed.',
+    cssFamilies: [
+      'card', 'avatar', 'avatar-group', 'badge', 'button', 'descriptions',
+      'timeline', 'tag-group', 'spinner',
+    ],
+    npmDependencies: ['react-use-control'],
+    categories: ['blocks', 'data-display'],
   },
 ];
 

@@ -133,3 +133,53 @@ describe('NavigationBar', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('NavLink as polymorphism', () => {
+  it("as='a' keeps the anchor: rest lands on <a> and ref forwards", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(
+      <NavLink as="a" href="https://example.com" target="_blank" rel="noopener" ref={ref}>
+        External
+      </NavLink>
+    );
+    const anchor = screen.getByRole('link', { name: 'External' });
+    expect(anchor.tagName).toBe('A');
+    expect(anchor).toHaveAttribute('target', '_blank');
+    expect(anchor).toHaveAttribute('rel', 'noopener');
+    expect(ref.current).toBe(anchor);
+  });
+
+  it('as with a component: skin and aria-current wiring reach the rendered element', () => {
+    function RouterLink({
+      to,
+      children,
+      ...rest
+    }: { to: string; children: React.ReactNode } & Record<string, unknown>) {
+      return (
+        // A router Link derives href from `to` last — its own routing
+        // state always wins over a passthrough href.
+        <a {...rest} href={to}>
+          {children}
+        </a>
+      );
+    }
+    render(
+      <NavLink as={RouterLink} to="/dashboard" active>
+        Dashboard
+      </NavLink>
+    );
+    const link = screen.getByRole('link', { name: 'Dashboard' });
+    expect(link).toHaveAttribute('href', '/dashboard');
+    expect(link).toHaveAttribute('data-slot', 'nav-link');
+    // the active wiring follows the rendered element
+    expect(link).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('default shape unchanged: native anchor with placeholder-href click suppression', async () => {
+    const user = userEvent.setup();
+    const seen: boolean[] = [];
+    render(<NavLink onClick={(event) => seen.push(event.defaultPrevented)}>Logout</NavLink>);
+    await user.click(screen.getByRole('link', { name: 'Logout' }));
+    expect(seen[0]).toBe(true);
+  });
+});

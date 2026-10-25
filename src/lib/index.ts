@@ -62,6 +62,8 @@ export { Popconfirm } from './components/Popconfirm';
 export type { PopconfirmProps, PopconfirmHandle, PopconfirmPlacement } from './components/Popconfirm';
 export { Popover } from './components/Popover';
 export type { PopoverProps, PopoverHandle, PopoverClassNames } from './components/Popover';
+export { NotificationCenter } from './components/NotificationCenter';
+export type { NotificationCenterProps, NotificationCenterClassNames, NotificationCenterItem, NotificationCenterSeverity, NotificationCenterKind } from './components/NotificationCenter';
 export { Card, cardVariants } from './components/Card';
 export type { CardProps } from './components/Card';
 export { Radio, RadioGroup, RadioGroupCore } from './components/Radio';

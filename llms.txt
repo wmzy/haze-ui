@@ -7,9 +7,9 @@
 - [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
   defaults and descriptions in one generated file.
 
-162 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+163 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 90 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 91 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -139,6 +139,7 @@ re-deriving file names.
 - **DropdownMenu** — click-triggered floating menu.
 - **HoverCard** — non-modal floating preview (avatar card, link summary) anchored to its trigger.
 - **Menu** — lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).
+- **NotificationCenter** — persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows (`task`/`agent`/`system`), mark-all-read and clear-all — declarative `items`, not an imperative open() API.
 - **Popconfirm** — anchored confirmation bubble with confirm/cancel actions and async busy support.
 - **Popover** — floating popover anchored to a trigger element.
 - **Tooltip** — hover/focus hint bubble.

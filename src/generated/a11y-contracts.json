@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T18:37:18.065Z",
+  "generatedAt": "2026-10-25T05:08:13.504Z",
   "components": [
     {
       "component": "Accordion",
@@ -120,11 +120,12 @@
     {
       "component": "BackToTop",
       "roles": [
-        "button"
+        "button",
+        "link"
       ],
       "aria": [],
       "keys": [],
-      "testCount": 5
+      "testCount": 8
     },
     {
       "component": "Badge",
@@ -494,11 +495,12 @@
       "component": "CopyButton",
       "roles": [
         "button",
+        "link",
         "status"
       ],
       "aria": [],
       "keys": [],
-      "testCount": 20
+      "testCount": 23
     },
     {
       "component": "Countdown",
@@ -784,7 +786,7 @@
       "keys": [
         "Escape"
       ],
-      "testCount": 17
+      "testCount": 20
     },
     {
       "component": "FollowUpSuggestions",
@@ -1134,12 +1136,14 @@
     },
     {
       "component": "NavigationBar",
-      "roles": [],
+      "roles": [
+        "link"
+      ],
       "aria": [
         "aria-current"
       ],
       "keys": [],
-      "testCount": 13
+      "testCount": 16
     },
     {
       "component": "NavigationMenu",
@@ -1161,6 +1165,26 @@
         "Home"
       ],
       "testCount": 22
+    },
+    {
+      "component": "NotificationCenter",
+      "roles": [
+        "button",
+        "dialog",
+        "img",
+        "list"
+      ],
+      "aria": [
+        "aria-expanded"
+      ],
+      "keys": [
+        "ArrowDown",
+        "End",
+        "Escape",
+        "Home",
+        "Tab"
+      ],
+      "testCount": 23
     },
     {
       "component": "NumberFormatter",
@@ -1748,7 +1772,7 @@
         "Escape",
         "Home"
       ],
-      "testCount": 68
+      "testCount": 71
     },
     {
       "component": "Tag",
@@ -1913,13 +1937,14 @@
     {
       "component": "Toggle",
       "roles": [
-        "button"
+        "button",
+        "link"
       ],
       "aria": [
         "aria-pressed"
       ],
       "keys": [],
-      "testCount": 14
+      "testCount": 20
     },
     {
       "component": "TokenCounter",
@@ -1932,6 +1957,7 @@
       "component": "Toolbar",
       "roles": [
         "button",
+        "link",
         "separator",
         "toolbar"
       ],
@@ -1949,7 +1975,7 @@
         "End",
         "Home"
       ],
-      "testCount": 18
+      "testCount": 24
     },
     {
       "component": "ToolCallCard",

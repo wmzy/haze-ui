@@ -97,6 +97,11 @@ with no polyfills or fallbacks — the same four engines are the hard CSS floor.
   powered by [react-use-control](https://github.com/wmzy/react-use-control);
   no `defaultXxx`/`xxx` dual API to keep in sync.
   → [Getting started](https://wmzy.github.io/haze-ui/getting-started)
+- **Curated icons, zero cost** — `haze-ui/icons` re-exports the ~100 most
+  common [lucide-react](https://lucide.dev) glyphs to pair with the `Icon`
+  component, plus the matching `hazeIconSize` scale; `lucide-react` is a
+  regular dependency with `sideEffects: false`, so unused icons — or the
+  whole set — tree-shake away.
 - **AI / chat component family** — `ChatContainer`, `ChatMessage`,
   `StreamingText`, `ToolCallCard`, `ThinkingIndicator` and `ChatInput` cover
   the agent chat surface; `Plan`, `Queue`, `InlineCitation` and the

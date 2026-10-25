@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithRef, ElementType } from 'react';
 
 import { css } from '@linaria/core';
 
@@ -16,11 +16,24 @@ import { base, sizes, squareSizes, variants } from '../Button/styles';
  * look is keyed off that state attribute, so no extra prop can drift
  * out of sync with what assistive tech announces.
  */
-type ToolbarButtonProps = {
+type ToolbarButtonOwnProps = {
   variant?: 'solid' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   square?: boolean;
-} & Omit<ComponentPropsWithoutRef<'button'>, 'type'>;
+};
+
+/**
+ * Polymorphic like Button's `as`: the skin and the toolbar wiring
+ * (`data-haze-toolbar-item`, the roving `tabIndex={-1}`) always land on
+ * the rendered element — `as='a'` renders a link-shaped toolbar item
+ * that still joins the roving model. `type='button'` is gated to the
+ * native-button shape.
+ */
+type ToolbarButtonProps<T extends ElementType = 'button'> = ToolbarButtonOwnProps & {
+  /** Render element — 'button' (default), 'a', or any component that
+   * forwards props and ref to a DOM element (a router Link). */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof ToolbarButtonOwnProps | 'as' | 'type'>;
 
 const toolbarItem = css`
   /* Most meaningful on the default ghost: a pressed item reads as
@@ -39,17 +52,22 @@ const toolbarItem = css`
   }
 `;
 
-export default function ToolbarButton({
+export default function ToolbarButton<T extends ElementType = 'button'>({
   variant = 'ghost',
   size = 'md',
   square = false,
+  as,
   className,
   ...rest
-}: ToolbarButtonProps) {
+}: ToolbarButtonProps<T>) {
   const sizeClass = square ? squareSizes[size] : sizes[size];
+  const Tag = (as ?? 'button');
+  // Only the native button shape carries type; anchors and custom
+  // components keep their own element semantics.
+  const isNativeButton = as === undefined || as === 'button';
   return (
-    <button
-      type="button"
+    <Tag
+      {...(isNativeButton ? { type: 'button' as const } : {})}
       data-slot="toolbar-button"
       data-haze-toolbar-item=""
       tabIndex={-1}
@@ -59,4 +77,4 @@ export default function ToolbarButton({
   );
 }
 
-export type { ToolbarButtonProps };
+export type { ToolbarButtonOwnProps, ToolbarButtonProps };

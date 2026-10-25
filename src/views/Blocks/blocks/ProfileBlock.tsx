@@ -1,0 +1,239 @@
+import type { ReactNode } from 'react';
+
+import { useControl } from 'react-use-control';
+
+import {
+  Avatar,
+  AvatarGroup,
+  Badge,
+  Button,
+  Card,
+  Descriptions,
+  TagGroup,
+  TagGroupItem,
+  Timeline,
+  TimelineItem,
+} from '@/lib';
+
+/*
+ * Profile block: a member detail page — identity header (large Avatar,
+ * status Badges, action Buttons with a controllable follow toggle) over a
+ * Descriptions fact sheet, a TagGroup skill row, an AvatarGroup teammates
+ * strip and a Timeline activity feed. Where the Settings block is a
+ * control surface, this is a read-mostly detail page that still keeps its
+ * one piece of user state (following) behind a Control.
+ */
+
+function ProfileSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Card data-slot='profile-section' variant='outlined'>
+      <h3
+        style={{
+          margin: '0 0 var(--haze-space-3)',
+          fontSize: 'var(--haze-text-sm)',
+          fontWeight: 'var(--haze-weight-semibold)',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: 'var(--haze-color-text-muted)',
+        }}
+      >
+        {title}
+      </h3>
+      {children}
+    </Card>
+  );
+}
+
+const TEAMMATES = ['AK', 'JD', 'RS', 'TW', 'YN', 'MZ'];
+
+export default function ProfileBlock() {
+  // Follow state is user-facing — a Control, so the host app can seed it
+  // from its social graph and observe the toggle.
+  const [following, setFollowing] = useControl(undefined, false);
+
+  return (
+    <div
+      data-slot='profile-block'
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--haze-space-5)',
+        padding: 'var(--haze-space-5)',
+        fontFamily: 'var(--haze-font-sans)',
+        color: 'var(--haze-color-text)',
+        background: 'var(--haze-color-bg)',
+      }}
+    >
+      <Card data-slot='profile-header'>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 'var(--haze-space-4)',
+            flexWrap: 'wrap',
+          }}
+        >
+          <Avatar size='lg' fallback='ML' />
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--haze-space-2)',
+                flexWrap: 'wrap',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 'var(--haze-text-xl)',
+                  fontWeight: 'var(--haze-weight-semibold)',
+                }}
+              >
+                Mira Lindqvist
+              </span>
+              <Badge color='primary'>Admin</Badge>
+              <Badge color='success'>Online</Badge>
+            </div>
+            <p
+              style={{
+                margin: 'var(--haze-space-1) 0 0',
+                fontSize: 'var(--haze-text-sm)',
+                color: 'var(--haze-color-text-secondary)',
+              }}
+            >
+              Staff engineer · Platform infrastructure · @mira
+            </p>
+            <p
+              style={{
+                margin: 'var(--haze-space-2) 0 0',
+                fontSize: 'var(--haze-text-xs)',
+                color: 'var(--haze-color-text-muted)',
+              }}
+            >
+              1,284 commits this year · 5,930 reviews · 42 on-call weeks
+            </p>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--haze-space-2)',
+            }}
+          >
+            <Button size='sm'>Message</Button>
+            <Button
+              size='sm'
+              variant='outline'
+              aria-pressed={following}
+              onClick={() => setFollowing(!following)}
+            >
+              {following ? 'Following' : 'Follow'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <div
+        data-slot='profile-columns'
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 'var(--haze-space-5)',
+          alignItems: 'start',
+        }}
+      >
+        <div
+          data-slot='profile-left'
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--haze-space-5)',
+          }}
+        >
+          <ProfileSection title='Details'>
+            <Descriptions
+              size='sm'
+              columns={1}
+              items={[
+                { key: 'email', label: 'Email', children: 'mira@nimbus.dev' },
+                { key: 'team', label: 'Team', children: 'Platform infrastructure' },
+                { key: 'location', label: 'Location', children: 'Stockholm, SE' },
+                { key: 'timezone', label: 'Timezone', children: 'CET (UTC+1)' },
+                { key: 'joined', label: 'Joined', children: 'March 2021' },
+                { key: 'manager', label: 'Reports to', children: 'Jonas Ekström' },
+              ]}
+            />
+          </ProfileSection>
+
+          <ProfileSection title='Skills'>
+            <TagGroup>
+              <TagGroupItem>TypeScript</TagGroupItem>
+              <TagGroupItem>React</TagGroupItem>
+              <TagGroupItem>Rust</TagGroupItem>
+              <TagGroupItem>Kubernetes</TagGroupItem>
+              <TagGroupItem>Observability</TagGroupItem>
+              <TagGroupItem>Design systems</TagGroupItem>
+            </TagGroup>
+          </ProfileSection>
+
+          <ProfileSection title='Also in Platform infrastructure'>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--haze-space-3)',
+              }}
+            >
+              <AvatarGroup max={5} total={TEAMMATES.length}>
+                {TEAMMATES.map((initials) => (
+                  <Avatar key={initials} fallback={initials} />
+                ))}
+              </AvatarGroup>
+              <span
+                style={{
+                  fontSize: 'var(--haze-text-xs)',
+                  color: 'var(--haze-color-text-muted)',
+                }}
+              >
+                6 engineers · 2 open seats
+              </span>
+            </div>
+          </ProfileSection>
+        </div>
+
+        <ProfileSection title='Recent activity'>
+          <Timeline>
+            <TimelineItem
+              color='success'
+              title='Shipped token pipeline v3'
+              description='Migrated the OKLCH palette build to the new generator.'
+              time='Today, 09:41'
+            />
+            <TimelineItem
+              color='primary'
+              title='Reviewed #4821'
+              description='Streaming table virtualization — approved with notes.'
+              time='Yesterday, 17:02'
+            />
+            <TimelineItem
+              color='warning'
+              title='On-call handover'
+              description='Flagged a rising p99 on the ingest path for the next rotation.'
+              time='Mon, 08:15'
+            />
+            <TimelineItem
+              title='Joined the a11y guild'
+              description='Sponsoring the forced-colors audit across the library.'
+              time='Last week'
+            />
+            <TimelineItem
+              color='danger'
+              title='Rolled back 2.14.1'
+              description='A regression in the dark theme focus ring; patched within the hour.'
+              time='Last week'
+            />
+          </Timeline>
+        </ProfileSection>
+      </div>
+    </div>
+  );
+}

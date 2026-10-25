@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { createRef } from 'react';
 
 import BackToTop from './BackToTop';
 
@@ -33,5 +34,35 @@ describe('BackToTop', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('BackToTop as polymorphism', () => {
+  it("as='a' renders a real anchor: href/rest land on <a>, no type attr, scroll wiring kept", () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(window, 'scrollTo', { value: scrollTo, writable: true });
+    render(<BackToTop as="a" href="#top" data-track="btt" />);
+    const link = screen.getByRole('link', { name: 'Back to top' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '#top');
+    expect(link).toHaveAttribute('data-track', 'btt');
+    // the button-only default is gated — anchors don't carry it
+    expect(link).not.toHaveAttribute('type');
+    // clicking still scrolls (the wiring wins on any element)
+    fireEvent.click(link);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<BackToTop as="a" href="#top" ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native button with type="button"', () => {
+    render(<BackToTop />);
+    const button = screen.getByRole('button', { name: 'Back to top' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
   });
 });

@@ -511,6 +511,18 @@
         "BackToTop"
       ],
       "propsTypes": {
+        "BackToTopOwnProps": [
+          {
+            "name": "threshold",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          }
+        ],
         "BackToTopProps": [
           {
             "name": "threshold",
@@ -518,13 +530,13 @@
             "required": false
           },
           {
-            "name": "children",
-            "type": "ReactNode",
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
             "required": false
           },
           {
-            "name": "className",
-            "type": "string",
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]
@@ -2474,6 +2486,11 @@
             "required": false
           },
           {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          },
+          {
             "name": "children",
             "type": "ReactNode | ((copied: boolean) => ReactNode)",
             "required": false
@@ -4288,6 +4305,38 @@
             "required": true
           }
         ],
+        "FloatButtonOwnProps": [
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "description",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "shape",
+            "type": "'circle' | 'square'",
+            "required": false
+          },
+          {
+            "name": "variant",
+            "type": "'solid' | 'outline' | 'ghost'",
+            "required": false
+          },
+          {
+            "name": "href",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          }
+        ],
         "FloatButtonProps": [
           {
             "name": "icon",
@@ -4312,6 +4361,16 @@
           {
             "name": "href",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          },
+          {
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]
@@ -6109,6 +6168,23 @@
         "NavLink"
       ],
       "propsTypes": {
+        "NavLinkOwnProps": [
+          {
+            "name": "href",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          }
+        ],
         "NavLinkProps": [
           {
             "name": "href",
@@ -6121,18 +6197,13 @@
             "required": false
           },
           {
-            "name": "children",
-            "type": "ReactNode",
-            "required": true
-          },
-          {
             "name": "onClick",
-            "type": "(event: MouseEvent<HTMLAnchorElement, MouseEvent>) => void",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
             "required": false
           },
           {
-            "name": "className",
-            "type": "string",
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ],
@@ -6269,6 +6340,58 @@
           {
             "name": "children",
             "type": "ReactNode",
+            "required": false
+          }
+        ]
+      },
+      "otherTypes": {}
+    },
+    "NotificationCenter": {
+      "routeKey": "notification-center",
+      "cssFamily": "notification-center",
+      "imports": [
+        "NotificationCenter"
+      ],
+      "propsTypes": {
+        "NotificationCenterProps": [
+          {
+            "name": "items",
+            "type": "NotificationCenterItem[]",
+            "required": false
+          },
+          {
+            "name": "open",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "maxBadgeCount",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "onMarkAllRead",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "onClearAll",
+            "type": "() => void",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "NotificationCenterClassNames",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLSpanElement>",
             "required": false
           }
         ]
@@ -9214,6 +9337,63 @@
             "required": false
           }
         ],
+        "TabOwnProps": [
+          {
+            "name": "value",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "status",
+            "type": "TabStatus",
+            "required": false
+          },
+          {
+            "name": "statusLabel",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          },
+          {
+            "name": "closable",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "closeLabel",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "onClose",
+            "type": "(event: MouseEvent<HTMLSpanElement, MouseEvent> | KeyboardEvent<HTMLDivElement>) => void",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": true
+          }
+        ],
         "TabPanelProps": [
           {
             "name": "value",
@@ -9258,6 +9438,11 @@
             "required": false
           },
           {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          },
+          {
             "name": "closable",
             "type": "boolean",
             "required": false
@@ -9281,6 +9466,11 @@
             "name": "children",
             "type": "ReactNode",
             "required": true
+          },
+          {
+            "name": "as",
+            "type": "T",
+            "required": false
           }
         ],
         "TabsProps": [
@@ -10282,6 +10472,38 @@
         "ToggleCore"
       ],
       "propsTypes": {
+        "ToggleCoreOwnProps": [
+          {
+            "name": "pressed",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "onPressedChange",
+            "type": "(pressed: boolean) => void",
+            "required": true
+          },
+          {
+            "name": "onNativeClick",
+            "type": "MouseEventHandler<HTMLButtonElement> | undefined",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "square",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
         "ToggleCoreProps": [
           {
             "name": "pressed",
@@ -10314,8 +10536,25 @@
             "required": false
           },
           {
-            "name": "ref",
-            "type": "Ref<HTMLButtonElement>",
+            "name": "as",
+            "type": "T",
+            "required": false
+          }
+        ],
+        "ToggleOwnProps": [
+          {
+            "name": "pressed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "square",
+            "type": "boolean",
             "required": false
           }
         ],
@@ -10336,8 +10575,8 @@
             "required": false
           },
           {
-            "name": "ref",
-            "type": "Ref<HTMLButtonElement>",
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]
@@ -10423,6 +10662,23 @@
         "ToolbarToggle"
       ],
       "propsTypes": {
+        "ToolbarButtonOwnProps": [
+          {
+            "name": "variant",
+            "type": "'solid' | 'outline' | 'ghost'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "square",
+            "type": "boolean",
+            "required": false
+          }
+        ],
         "ToolbarButtonProps": [
           {
             "name": "variant",
@@ -10437,6 +10693,11 @@
           {
             "name": "square",
             "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ],
@@ -10464,6 +10725,33 @@
             "required": false
           }
         ],
+        "ToolbarToggleOwnProps": [
+          {
+            "name": "pressed",
+            "type": "ControlOrValue<boolean>",
+            "required": false
+          },
+          {
+            "name": "variant",
+            "type": "'solid' | 'outline' | 'ghost'",
+            "required": false
+          },
+          {
+            "name": "size",
+            "type": "'sm' | 'md' | 'lg'",
+            "required": false
+          },
+          {
+            "name": "square",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          }
+        ],
         "ToolbarToggleProps": [
           {
             "name": "pressed",
@@ -10483,6 +10771,16 @@
           {
             "name": "square",
             "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "onClick",
+            "type": "(event: MouseEvent<HTMLElement, MouseEvent>) => void",
+            "required": false
+          },
+          {
+            "name": "as",
+            "type": "T",
             "required": false
           }
         ]

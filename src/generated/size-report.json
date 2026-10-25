@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T18:37:18.106Z",
+  "generatedAt": "2026-10-25T05:08:13.530Z",
   "distAvailable": true,
   "families": [
     {
@@ -443,6 +443,11 @@
       "cssGzipBytes": 1242
     },
     {
+      "family": "notification-center",
+      "cssBytes": 8997,
+      "cssGzipBytes": 1705
+    },
+    {
       "family": "number-input",
       "cssBytes": 2151,
       "cssGzipBytes": 646
@@ -780,7 +785,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 423707,
-    "cssGzipBytes": 44362
+    "cssBytes": 432619,
+    "cssGzipBytes": 44921
   }
 }

@@ -784,6 +784,12 @@
   },
   {
     "type": "component",
+    "label": "NotificationCenter",
+    "route": "/components/notification-center",
+    "keywords": []
+  },
+  {
+    "type": "component",
     "label": "Popconfirm",
     "route": "/components/popconfirm",
     "keywords": []
@@ -1899,6 +1905,13 @@
   },
   {
     "type": "api",
+    "label": "NotificationCenter API",
+    "sublabel": "Reference",
+    "route": "/api/notification-center",
+    "keywords": []
+  },
+  {
+    "type": "api",
     "label": "Popconfirm API",
     "sublabel": "Reference",
     "route": "/api/popconfirm",
@@ -2799,6 +2812,18 @@
     "label": "classNames slots",
     "sublabel": "Popover",
     "route": "/components/popover"
+  },
+  {
+    "type": "section",
+    "label": "Controlled open state",
+    "sublabel": "NotificationCenter",
+    "route": "/components/notification-center"
+  },
+  {
+    "type": "section",
+    "label": "Badge ceiling",
+    "sublabel": "NotificationCenter",
+    "route": "/components/notification-center"
   },
   {
     "type": "section",

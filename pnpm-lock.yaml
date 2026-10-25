@@ -41,6 +41,9 @@ importers:
       libphonenumber-js:
         specifier: ^1.13.15
         version: 1.13.15
+      lucide-react:
+        specifier: ^1.44.0
+        version: 1.44.0(react@19.3.0)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -183,9 +186,6 @@ importers:
       lint-staged:
         specifier: ^17.5.1
         version: 17.5.1
-      lucide-react:
-        specifier: ^1.44.0
-        version: 1.44.0(react@19.3.0)
       prettier:
         specifier: ^3.9.6
         version: 3.9.6

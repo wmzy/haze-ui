@@ -41,6 +41,7 @@ const PANEL_FAMILIES = [
   'command',
   'hover-card',
   'navigation-menu',
+  'notification-center',
   'sidebar',
   'app-shell',
 ] as const;

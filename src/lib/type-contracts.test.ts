@@ -21,29 +21,38 @@ import type {
   AccordionClassNames,
   AccordionProps,
   AlertProps,
+  BackToTopProps,
   BadgeProps,
   BannerProps,
   ButtonProps,
   CheckboxProps,
   ChipProps,
   ComboboxProps,
+  CopyButtonProps,
   DataTableFiltersState,
   DataTableProps,
   DialogClassNames,
   DialogProps,
   FileInputProps,
+  FloatButtonProps,
   InputProps,
   MarkProps,
   MeterThreshold,
+  NavLinkProps,
   NumberInputProps,
   ProgressProps,
   SelectClassNames,
   SelectProps,
   SparklineProps,
   SwitchProps,
+  TabProps,
   TagProps,
   TabsClassNames,
   TabsProps,
+  ToggleCoreProps,
+  ToggleProps,
+  ToolbarButtonProps,
+  ToolbarToggleProps,
 } from './index';
 
 import { expectTypeOf } from 'vitest';
@@ -120,6 +129,39 @@ describe('type contracts: native-prop Omit lists', () => {
 
   it('FileInputProps drops the native type attribute (file semantics are fixed)', () => {
     expectTypeOf<FileInputProps>().not.toHaveProperty('type');
+  });
+});
+
+describe('type contracts: as polymorphism', () => {
+  // The MUI-OverridableComponent shape every polymorphic component
+  // shares: own props first, `as?: T`, then the target element's props
+  // minus the colliding keys. Anchored per adopter — the anchor surface
+  // (`href` through `as='a'`) exists and the wiring-owned `type` is gone
+  // from the default button shape (NavLink's default element is the
+  // anchor itself, so it anchors on href only).
+  it('anchors the full adopter list on the anchor surface', () => {
+    expectTypeOf<ButtonProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<CopyButtonProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<FloatButtonProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<ToggleProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<ToggleCoreProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<TabProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<BackToTopProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<ToolbarButtonProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<ToolbarToggleProps<'a'>>().toHaveProperty('href');
+    expectTypeOf<NavLinkProps>().toHaveProperty('href');
+  });
+
+  it('drops the wiring-owned type attribute on every button-rooted surface', () => {
+    expectTypeOf<ButtonProps>().not.toHaveProperty('type');
+    expectTypeOf<CopyButtonProps>().not.toHaveProperty('type');
+    expectTypeOf<FloatButtonProps>().not.toHaveProperty('type');
+    expectTypeOf<ToggleProps>().not.toHaveProperty('type');
+    expectTypeOf<ToggleCoreProps>().not.toHaveProperty('type');
+    expectTypeOf<TabProps>().not.toHaveProperty('type');
+    expectTypeOf<BackToTopProps>().not.toHaveProperty('type');
+    expectTypeOf<ToolbarButtonProps>().not.toHaveProperty('type');
+    expectTypeOf<ToolbarToggleProps>().not.toHaveProperty('type');
   });
 });
 

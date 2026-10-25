@@ -191,6 +191,15 @@ const zhCN: HazeStrings = {
   modelPicker: {
     label: '模型',
   },
+  notificationCenter: {
+    triggerLabel: '通知',
+    triggerLabelUnread: '通知（{count} 条未读）',
+    panelTitle: '通知',
+    markAllRead: '全部标为已读',
+    clearAll: '清空全部',
+    empty: '暂无通知',
+    unreadLabel: '未读',
+  },
   numberInput: {
     decrease: '减少',
     increase: '增加',

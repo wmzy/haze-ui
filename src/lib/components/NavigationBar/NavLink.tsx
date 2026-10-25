@@ -1,31 +1,39 @@
-import type { ComponentPropsWithoutRef, MouseEvent, ReactNode } from 'react';
-
-import { forwardRef } from 'react';
+import type { ComponentPropsWithRef, ElementType, MouseEvent } from 'react';
 
 import { css } from '@linaria/core';
 
 /**
- * Extends the native `<a>` attributes. Everything not listed below is spread
- * onto the rendered anchor, so callers (and routers composing NavLink via
- * their `as` prop) can inject `target`, `rel`, `aria-*`, and friends.
+ * Extends the rendered element's native attributes (anchor by default):
+ * everything not listed below is spread onto it, so callers can inject
+ * `target`, `rel`, `aria-*`, and friends.
  */
-type NavLinkProps = {
+type NavLinkOwnProps = {
   href?: string;
   /**
    * Explicit active state. Falls back to `aria-current="page"` when omitted,
    * letting routers drive highlighting through the standard aria attribute.
    */
   active?: boolean;
-  children: ReactNode;
   /**
-   * Native click handler: receives the underlying mouse event. Whether to
-   * call `event.preventDefault()` is up to the caller (an SPA router Link
-   * does so itself), except for placeholder hrefs where NavLink keeps
-   * button semantics (see the onClick handler below).
+   * Element-agnostic click: whatever element `as` rendered, the
+   * consumer's handler sees the event first — the placeholder-href
+   * `preventDefault` rides after it.
    */
-  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
-  className?: string;
-} & Omit<ComponentPropsWithoutRef<'a'>, 'href' | 'children' | 'onClick' | 'className'>;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+};
+
+/**
+ * Polymorphic like Button's `as` (the anchor default mirrors NavLink's
+ * native root): the link skin, the `aria-current` wiring and the
+ * placeholder-href click handling always land on the rendered element —
+ * `as` with a router Link keeps NavLink's active styling while the
+ * router owns navigation.
+ */
+type NavLinkProps<T extends ElementType = 'a'> = NavLinkOwnProps & {
+  /** Render element — 'a' (default) or any component that forwards
+   * props and ref to a DOM element (a router Link). */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof NavLinkOwnProps | 'as'>;
 
 const link = css`
   font-size: var(--haze-text-sm);
@@ -48,20 +56,27 @@ const activeLink = css`
   font-weight: var(--haze-weight-medium);
 `;
 
-export default forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
-  { href = '#', active, children, onClick, className, 'aria-current': ariaCurrent, ...rest },
-  ref,
-) {
+export default function NavLink<T extends ElementType = 'a'>({
+  href = '#',
+  active,
+  as,
+  className,
+  'aria-current': ariaCurrent,
+  onClick,
+  children,
+  ...rest
+}: NavLinkProps<T>) {
+  const Tag = (as ?? 'a');
   const isActive = active ?? ariaCurrent === 'page';
 
   return (
-    <a
-      ref={ref}
+    <Tag
       data-slot='nav-link'
       x-class={[link, isActive && activeLink, className]}
       href={href}
       aria-current={isActive ? 'page' : ariaCurrent}
-      onClick={(event) => {
+      {...rest}
+      onClick={(event: MouseEvent<HTMLElement>) => {
         // A missing or '#' href means button semantics (e.g. a Logout
         // action): keep suppressing the default so the page does not jump
         // to '#'. Real hrefs pass through untouched and the caller decides
@@ -69,13 +84,14 @@ export default forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
         if (href === '#') {
           event.preventDefault();
         }
+        // Element-agnostic event: whatever element `as` rendered, the
+        // consumer's handler sees it, typed element-agnostic above.
         onClick?.(event);
       }}
-      {...rest}
     >
       {children}
-    </a>
+    </Tag>
   );
-});
+}
 
-export type { NavLinkProps };
+export type { NavLinkOwnProps, NavLinkProps };

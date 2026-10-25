@@ -316,3 +316,42 @@ describe('Snippet', () => {
     unmount();
   });
 });
+
+describe('CopyButton as polymorphism', () => {
+  it("as='a' renders a real anchor: href/rest land on <a>, no type attr, copy wiring kept", async () => {
+    const user = userEvent.setup();
+    const clipboard = stubClipboard(() => Promise.resolve());
+    try {
+      render(
+        <CopyButton as='a' href='/copy-link' value='secret' data-track='copy'>
+          Copy
+        </CopyButton>
+      );
+      const link = screen.getByRole('link', { name: 'Copy' });
+      expect(link.tagName).toBe('A');
+      expect(link).toHaveAttribute('href', '/copy-link');
+      expect(link).toHaveAttribute('data-track', 'copy');
+      // the button-only default is gated — anchors don't carry it
+      expect(link).not.toHaveAttribute('type');
+      // the copy wiring follows the rendered element
+      await user.click(link);
+      expect(clipboard.fn).toHaveBeenCalledWith('secret');
+      expect(link).toHaveAttribute('data-copied', 'true');
+    } finally {
+      clipboard.restore();
+    }
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<CopyButton as='a' href='/copy-link' value='x' ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native button with type="button"', () => {
+    render(<CopyButton value='x' aria-label='Copy me' />);
+    const button = screen.getByRole('button', { name: 'Copy me' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+  });
+});

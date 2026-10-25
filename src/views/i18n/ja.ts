@@ -119,6 +119,21 @@ export const ja: DeepPartial<SiteStrings> = {
       description:
         '優先度バッジ・ラベル・担当者アバター・進捗バー付きの issue カード 4 列。カードは ⋯ メニューで移動 —— haze-ui は単一コンテナのソートのみで列間ドラッグはないため、ボードは意図的に静的。',
     },
+    formWizard: {
+      title: 'マルチステップ・セットアップ',
+      description:
+        '1 枚の zod バリデーション Form を Stepper が案内 —— 値はステップ間で保持され、Next は trigger() で現在ステップが合格した時だけ進み、最終送信は Alert レシートになる。',
+    },
+    filterList: {
+      title: '絞り込み可能なテンプレート一覧',
+      description:
+        '検索 Input・カテゴリ Checkbox・地域と並び替えの Select からなるフィルターレールが、Avatar・Badge・Rating 入りのカード一覧を駆動。有効な条件は閉じられる Chip、無一致は Empty、下部は Pagination。',
+    },
+    profile: {
+      title: 'メンバープロフィール',
+      description:
+        '大きな Avatar と状態 Badge、制御可能なフォロートグルを備えたヘッダーの下に、Descriptions のプロフィール表、TagGroup のスキル、AvatarGroup のチームメイト、Timeline のアクティビティを配置。',
+    },
   },
   componentGroups: {
     General: '全般',
@@ -250,6 +265,7 @@ export const ja: DeepPartial<SiteStrings> = {
     HoverCard:
       'トリガーにアンカーされた非モーダルのフローティングプレビュー（アバターカード、リンク要約）。',
     Menu: '軽量トグルメニュー：トリガーと静的配置パネル（MenuItem、MenuDivider）。',
+    NotificationCenter: 'ベルトリガーで開く常設通知センター：未読バッジ、重大度/種別行、すべて既読・すべて消去。',
     Popconfirm: 'トリガー要素にアンカーされた確認バブル（確認/キャンセル操作付き）。',
     Popover: 'トリガー要素にアンカーされたフローティングポップオーバー。',
     Tooltip: 'ホバー/フォーカス時のヒントバブル。',

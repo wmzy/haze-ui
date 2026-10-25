@@ -135,3 +135,74 @@ describe('Toggle ref forwarding', () => {
     expect(document.activeElement).toBe(ref.current);
   });
 });
+
+describe('Toggle as polymorphism', () => {
+  it("as='a' renders a real anchor: href/rest land on <a>, no type attr, aria-pressed wiring kept", () => {
+    render(
+      <Toggle as='a' href='/bold' data-order='first' aria-label='Bold'>
+        Bold
+      </Toggle>
+    );
+    const link = screen.getByRole('link', { name: 'Bold' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/bold');
+    expect(link).toHaveAttribute('data-order', 'first');
+    // the button-only default is gated — anchors don't carry it
+    expect(link).not.toHaveAttribute('type');
+    // the pressed-state wiring follows the rendered element
+    expect(link).toHaveAttribute('aria-pressed', 'false');
+    expect(link).toHaveAttribute('data-slot', 'toggle');
+  });
+
+  it("as='a' keeps toggling on click and still reports the consumer onClick", async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(
+      <Toggle as='a' href='/bold' onClick={onClick} aria-label='Bold'>
+        Bold
+      </Toggle>
+    );
+    await user.click(screen.getByRole('link', { name: 'Bold' }));
+    expect(screen.getByRole('link', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<Toggle as='a' href='/bold' ref={ref} aria-label='Bold' />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native button with type="button"', () => {
+    render(<Toggle aria-label='Bold' />);
+    const button = screen.getByRole('button', { name: 'Bold' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
+describe('ToggleCore as polymorphism', () => {
+  it("as='a' renders an anchor with the pressed wiring, no type attr", () => {
+    render(
+      <ToggleCore
+        as='a'
+        href='/mute'
+        pressed
+        onPressedChange={() => undefined}
+        aria-label='Mute'
+      />
+    );
+    const link = screen.getByRole('link', { name: 'Mute' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('aria-pressed', 'true');
+    expect(link).not.toHaveAttribute('type');
+  });
+
+  it('default shape unchanged: native button with type="button"', () => {
+    render(<ToggleCore pressed={false} onPressedChange={() => undefined} aria-label='Mute' />);
+    const button = screen.getByRole('button', { name: 'Mute' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+  });
+});

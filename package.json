@@ -27,6 +27,16 @@
       "import": "./dist/headless/index.js",
       "default": "./dist/headless/index.js"
     },
+    "./hooks": {
+      "types": "./dist/types/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js"
+    },
+    "./icons": {
+      "types": "./dist/types/icons/index.d.ts",
+      "import": "./dist/icons/index.js",
+      "default": "./dist/icons/index.js"
+    },
     "./locales": {
       "types": "./dist/types/locales/index.d.ts",
       "import": "./dist/locales/index.js",
@@ -133,6 +143,7 @@
     "@tiptap/react": "^3.32.0",
     "@tiptap/starter-kit": "^3.32.0",
     "libphonenumber-js": "^1.13.15",
+    "lucide-react": "^1.44.0",
     "qrcode": "^1.5.4",
     "react-f0rm": "^1.4.0",
     "react-use-control": "^1.6.0",
@@ -182,7 +193,6 @@
     "jscodeshift": "^17.4.0",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.5.1",
-    "lucide-react": "^1.44.0",
     "prettier": "^3.9.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -202,7 +212,7 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "6.5 KB"
+      "limit": "6.6 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
@@ -226,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "21.5 KB"
+      "limit": "21.6 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
@@ -518,6 +528,12 @@
       "name": "CSS family ratchet: time-grid",
       "path": "dist/css/time-grid.css",
       "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "CSS family ratchet: notification-center",
+      "path": "dist/css/notification-center.css",
+      "limit": "1.7 KB",
       "gzip": true
     }
   ]

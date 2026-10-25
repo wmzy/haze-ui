@@ -53,6 +53,7 @@ import {
   useRovingTabindex,
 } from '../utils/menuKeyboard';
 import { Presence, whenExitSettles } from '../utils/presence';
+import { Portal } from '../utils/portal';
 import { mergeRefs } from '../utils/refs';
 import {
   SUBMENU_CLOSE_GRACE_MS,
@@ -178,6 +179,27 @@ export type { PresenceProps } from '../utils/presence';
  * settle. The imperative companion to {@link Presence}.
  */
 export { whenExitSettles };
+
+// ---------------------------------------------------------------------------
+// Portal (../utils/portal)
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders children into a DOM container outside the current React tree
+ * position — `document.body` by default, so overlays escape ancestor
+ * `overflow`, `transform` and stacking contexts. SSR-safe: nothing
+ * renders until the client mounts (no `document` access during render),
+ * and `disabled` renders the children in place instead. The primitive
+ * behind haze-ui's overlay families, exported for composing your own.
+ */
+export { Portal };
+
+/**
+ * Props accepted by {@link Portal}: `children`, an optional `container`
+ * (element or lazy getter, default `document.body`), and `disabled` to
+ * render in place.
+ */
+export type { PortalProps } from '../utils/portal';
 
 // ---------------------------------------------------------------------------
 // Focus (../utils/focus-scope, ../utils/focus)

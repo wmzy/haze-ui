@@ -124,6 +124,21 @@ export const fr: DeepPartial<SiteStrings> = {
       description:
         'Quatre colonnes de cartes d’issues avec badges de priorité, labels, avatars d’assignés et barres de progression. Les cartes bougent via le menu ⋯ — haze-ui n’offre que le tri mono-conteneur, pas le glisser entre colonnes ; le plateau est donc statique par design.',
     },
+    formWizard: {
+      title: 'Assistant de configuration pas à pas',
+      description:
+        'Un Stepper au-dessus d’un Form validé par zod — les valeurs survivent au changement d’étape, Next n’avance qu’une fois l’étape validée par trigger(), et la soumission finale aboutit à un récapitulatif Alert.',
+    },
+    filterList: {
+      title: 'Catalogue de modèles filtrable',
+      description:
+        'Un rail de filtres (Input de recherche, Checkbox de catégories, Select de région et de tri) pilote une liste de cartes avec Avatar, Badge et Rating — filtres actifs en Chip fermables, Empty sans résultat, Pagination en pied.',
+    },
+    profile: {
+      title: 'Profil de membre',
+      description:
+        'Une en-tête d’identité avec grand Avatar, Badges de statut et bouton Suivre contrôlable, puis une fiche Descriptions, les compétences en TagGroup, une bande AvatarGroup et un flux Timeline.',
+    },
   },
   componentGroups: {
     General: 'Général',
@@ -260,6 +275,7 @@ export const fr: DeepPartial<SiteStrings> = {
     HoverCard:
       'Aperçu flottant non modal (carte d’avatar, résumé de lien) ancré à son déclencheur.',
     Menu: 'Menu à bascule léger avec déclencheur et panneau positionné statiquement (MenuItem, MenuDivider).',
+    NotificationCenter: 'Centre de notifications persistant derrière une cloche : badge de non-lues, lignes sévérité/type, tout marquer lu / tout effacer.',
     Popconfirm: 'Bulle de confirmation ancrée au déclencheur, avec actions confirmer/annuler.',
     Popover: 'Popover flottant ancré à un élément déclencheur.',
     Tooltip: 'Bulle d’indice au survol/focus.',

@@ -175,6 +175,8 @@ const DESCRIPTIONS = {
     'non-modal floating preview (avatar card, link summary) anchored to its trigger.',
   Menu:
     'lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).',
+  NotificationCenter:
+    'persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows (`task`/`agent`/`system`), mark-all-read and clear-all — declarative `items`, not an imperative open() API.',
   Popconfirm: 'anchored confirmation bubble with confirm/cancel actions and async busy support.',
   Popover: 'floating popover anchored to a trigger element.',
   Tooltip: 'hover/focus hint bubble.',

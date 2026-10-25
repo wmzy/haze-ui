@@ -193,6 +193,15 @@ const ruRU: HazeStrings = {
   modelPicker: {
     label: 'Модель',
   },
+  notificationCenter: {
+    triggerLabel: 'Уведомления',
+    triggerLabelUnread: 'Уведомления ({count} непрочитанных)',
+    panelTitle: 'Уведомления',
+    markAllRead: 'Отметить все как прочитанные',
+    clearAll: 'Очистить все',
+    empty: 'Нет уведомлений',
+    unreadLabel: 'Непрочитано',
+  },
   numberInput: {
     decrease: 'Уменьшить',
     increase: 'Увеличить',

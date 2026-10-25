@@ -161,6 +161,7 @@ const COMPONENT_BLURBS = {
   HoverCard:
     'Non-modal floating preview (avatar card, link summary) anchored to its trigger.',
   Menu: 'Lightweight toggle menu with a trigger and statically positioned panel (MenuItem, MenuDivider).',
+  NotificationCenter: 'Persistent notification feed behind a bell trigger: unread badge, severity/kind rows, mark-all-read and clear-all.',
   Popconfirm: 'Anchored confirmation bubble with confirm/cancel actions.',
   Popover: 'Floating popover anchored to a trigger element.',
   Tooltip: 'Hover/focus hint bubble.',
@@ -422,6 +423,21 @@ export const en = {
       title: 'Sprint kanban board',
       description:
         'Four columns of issue cards with priority badges, labels, assignee avatars and progress bars. Cards move through the ⋯ menu — haze-ui ships single-container sorting, not cross-column drag, so the board is static by design.',
+    },
+    formWizard: {
+      title: 'Multi-step setup wizard',
+      description:
+        'A Stepper over one zod-validated Form — values persist across steps, Next only advances a step that passes trigger(), and the final submit lands in an Alert receipt.',
+    },
+    filterList: {
+      title: 'Filterable template catalog',
+      description:
+        'A filter rail (search Input, category Checkboxes, region and sort Selects) driving a card list with Avatar, Badge and Rating — active facets as closable Chips, Empty on no match, Pagination at the bottom.',
+    },
+    profile: {
+      title: 'Member profile',
+      description:
+        'An identity header with a large Avatar, status Badges and a controllable follow toggle, over a Descriptions fact sheet, TagGroup skills, an AvatarGroup teammates strip and a Timeline activity feed.',
     },
   },
   /* Sidebar component-group display names; keys mirror component-groups.ts. */

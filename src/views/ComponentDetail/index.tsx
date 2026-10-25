@@ -25,6 +25,7 @@ import AvatarGroupDemo from './demos/AvatarGroupDemo';
 import CalendarDemo from './demos/CalendarDemo';
 
 import HoverCardDemo from './demos/HoverCardDemo';
+import NotificationCenterDemo from './demos/NotificationCenterDemo';
 
 import ToolbarDemo from './demos/ToolbarDemo';
 
@@ -313,6 +314,7 @@ const demos: Record<string, () => ReactNode> = {
   tooltip: TooltipDemo,
   popconfirm: PopconfirmDemo,
   popover: PopoverDemo,
+  'notification-center': NotificationCenterDemo,
   card: CardDemo,
   radio: RadioDemo,
   textarea: TextareaDemo,

@@ -1,7 +1,7 @@
 # Haze UI — Full API Reference
 
-> Complete props reference for all 161 Haze UI components in one
-> file (296 type tables), generated from the library source. Do not
+> Complete props reference for all 162 Haze UI components in one
+> file (305 type tables), generated from the library source. Do not
 > edit by hand — regenerate with `node scripts/generate-llms-full.mjs`. For the
 > curated index with overviews, design tokens and architecture notes, see
 > [llms.txt](llms.txt).
@@ -260,11 +260,20 @@ import { AvatarGroup } from 'haze-ui';
 import { BackToTop } from 'haze-ui';
 ```
 
+### BackToTopOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `threshold` | `number` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+
 ### BackToTopProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `threshold` | `number` | `300` | Scroll distance before showing (px) |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+| `as` | `T` | — |  |
 | `children` | `ReactNode` | `'↑'` | Button content |
 | `className` | `string` | — | Additional CSS class |
 
@@ -1007,6 +1016,7 @@ import { CopyButton, Snippet, iconSizes } from 'haze-ui';
 | `copyLabel` | `string` | — |  |
 | `copiedLabel` | `string` | — |  |
 | `classNames` | `CopyButtonClassNames` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
 | `children` | `ReactNode \| ((copied: boolean) => ReactNode)` | — |  |
 | `as` | `T` | — |  |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
@@ -1642,6 +1652,17 @@ import { FloatButton, FloatButtonGroup } from 'haze-ui';
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `children` | `ReactNode` | — |  |
 
+### FloatButtonOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `icon` | `ReactNode` | — |  |
+| `description` | `ReactNode` | — |  |
+| `shape` | `'circle' \| 'square'` | — |  |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
+| `href` | `string` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+
 ### FloatButtonProps
 
 | Prop | Type | Default | Description |
@@ -1651,6 +1672,8 @@ import { FloatButton, FloatButtonGroup } from 'haze-ui';
 | `shape` | `'circle' \| 'square'` | — |  |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `href` | `string` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+| `as` | `T` | — |  |
 
 ## FollowUpSuggestions
 
@@ -2348,15 +2371,24 @@ import { ModelPicker } from 'haze-ui';
 import { NavigationBar, NavLink } from 'haze-ui';
 ```
 
+### NavLinkOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `href` | `string` | — |  |
+| `active` | `boolean` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+
 ### NavLinkProps
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `href` | `string` | `'#'` | Link URL |
 | `active` | `boolean` | `false` | Mark as active |
-| `children` | `ReactNode` | — | Link text |
-| `onClick` | `(event: MouseEvent<HTMLAnchorElement, MouseEvent>) => void` | — | Click handler (prevents default) |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — | Click handler (prevents default) |
+| `as` | `T` | — |  |
 | `className` | `string` | — | Additional CSS class |
+| `children` | `ReactNode` | — | Link text |
 
 ### NavigationBarProps
 
@@ -2415,6 +2447,25 @@ import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuT
 | --- | --- | --- | --- |
 | `className` | `string` | — |  |
 | `children` | `ReactNode` | — |  |
+
+## NotificationCenter
+
+```jsx
+import { NotificationCenter } from 'haze-ui';
+```
+
+### NotificationCenterProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `NotificationCenterItem[]` | — |  |
+| `open` | `ControlOrValue<boolean>` | — |  |
+| `maxBadgeCount` | `number` | — |  |
+| `onMarkAllRead` | `() => void` | — |  |
+| `onClearAll` | `() => void` | — |  |
+| `classNames` | `NotificationCenterClassNames` | — |  |
+| `className` | `string` | — |  |
+| `ref` | `Ref<HTMLSpanElement>` | — |  |
 
 ## NumberFormatter
 
@@ -3540,6 +3591,22 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariant
 | `children` | `ReactNode` | — | Tab elements; overflowing tabs stay reachable through the ⋯ menu, and the strip scrolls horizontally as the fallback |
 | `tabMetas` | `TabMeta[]` | — |  |
 
+### TabOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — |  |
+| `icon` | `ReactNode` | — |  |
+| `status` | `TabStatus` | — |  |
+| `statusLabel` | `ReactNode` | — |  |
+| `disabled` | `boolean` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+| `closable` | `boolean` | — |  |
+| `closeLabel` | `string` | — |  |
+| `onClose` | `(event: MouseEvent<HTMLSpanElement, MouseEvent> \| KeyboardEvent<HTMLDivElement>) => void` | — |  |
+| `className` | `string` | — |  |
+| `children` | `ReactNode` | — |  |
+
 ### TabPanelProps
 
 | Prop | Type | Default | Description |
@@ -3557,11 +3624,13 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList, tabVariants, listVariant
 | `status` | `TabStatus` | — | Status dot: dirty=neutral, error=danger, syncing=primary; the SR status word comes from the tabs locale pack unless statusLabel overrides it |
 | `statusLabel` | `ReactNode` | — | Overrides the status word appended to the accessible name (the i18n hook for SR users) |
 | `disabled` | `boolean` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
 | `closable` | `boolean` | `false` | Renders a close × (aria-label from the tabs locale pack, overridable via closeLabel); clicking or pressing Delete closes — unmounting the tab is the owner's job via onClose |
 | `closeLabel` | `string` | — | Overrides the close button's accessible label |
 | `onClose` | `(event: MouseEvent<HTMLSpanElement, MouseEvent> \| KeyboardEvent<HTMLDivElement>) => void` | — | Close notification — pure notification, the controlled tabs array is the owner's to mutate |
 | `className` | `string` | — | Additional CSS class |
 | `children` | `ReactNode` | — | Tab label |
+| `as` | `T` | — |  |
 
 ### TabsProps
 
@@ -3925,6 +3994,17 @@ import { Toast, ToastContainer, useToast, toast } from 'haze-ui';
 import { Toggle, ToggleCore } from 'haze-ui';
 ```
 
+### ToggleCoreOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `pressed` | `boolean` | — |  |
+| `onPressedChange` | `(pressed: boolean) => void` | — |  |
+| `onNativeClick` | `MouseEventHandler<HTMLButtonElement> \| undefined` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `square` | `boolean` | — |  |
+| `className` | `string` | — |  |
+
 ### ToggleCoreProps
 
 | Prop | Type | Default | Description |
@@ -3935,7 +4015,15 @@ import { Toggle, ToggleCore } from 'haze-ui';
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
 | `className` | `string` | — |  |
-| `ref` | `Ref<HTMLButtonElement>` | — |  |
+| `as` | `T` | — |  |
+
+### ToggleOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `pressed` | `ControlOrValue<boolean>` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `square` | `boolean` | — |  |
 
 ### ToggleProps
 
@@ -3944,7 +4032,7 @@ import { Toggle, ToggleCore } from 'haze-ui';
 | `pressed` | `ControlOrValue<boolean>` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
-| `ref` | `Ref<HTMLButtonElement>` | — |  |
+| `as` | `T` | — |  |
 
 ## TokenCounter
 
@@ -3983,6 +4071,14 @@ import { ToolCallCard } from 'haze-ui';
 import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui';
 ```
 
+### ToolbarButtonOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `square` | `boolean` | — |  |
+
 ### ToolbarButtonProps
 
 | Prop | Type | Default | Description |
@@ -3990,6 +4086,7 @@ import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
+| `as` | `T` | — |  |
 
 ### ToolbarProps
 
@@ -4005,6 +4102,16 @@ import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui
 | --- | --- | --- | --- |
 | `className` | `string` | — |  |
 
+### ToolbarToggleOwnProps
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `pressed` | `ControlOrValue<boolean>` | — |  |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | — |  |
+| `square` | `boolean` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+
 ### ToolbarToggleProps
 
 | Prop | Type | Default | Description |
@@ -4013,6 +4120,8 @@ import { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarToggle } from 'haze-ui
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | — |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | — |  |
 | `square` | `boolean` | — |  |
+| `onClick` | `(event: MouseEvent<HTMLElement, MouseEvent>) => void` | — |  |
+| `as` | `T` | — |  |
 
 ## Tooltip
 

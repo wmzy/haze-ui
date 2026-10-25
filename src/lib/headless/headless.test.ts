@@ -29,6 +29,7 @@ import {
   localeDirection,
   mergeRefs,
   placeFloatingPanel,
+  Portal,
   resolvePadding,
   SubmenuProvider,
   supportsAnchorPositioning,
@@ -74,6 +75,7 @@ const functionSurface: Record<string, unknown> = {
   FloatingPanel,
   Presence,
   whenExitSettles,
+  Portal,
   useFocusScope,
   isTabbable,
   getTabbables,
@@ -177,6 +179,69 @@ describe('Presence', () => {
       })
     );
     expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+  });
+});
+
+describe('Portal', () => {
+  it('renders children into document.body after mount (outside the React tree position)', () => {
+    const { container } = render(
+      createElement(Portal, {
+        children: createElement('div', { 'data-testid': 'ported' }),
+      })
+    );
+    const ported = screen.getByTestId('ported');
+    expect(ported).toBeInTheDocument();
+    // Ported to the top-level body, not the render container subtree.
+    expect(ported.closest('[data-testid="ported"]')).toBe(ported);
+    expect(container.contains(ported)).toBe(false);
+    expect(document.body.contains(ported)).toBe(true);
+  });
+
+  it('renders into a custom container (element or lazy getter)', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const lazy = document.createElement('div');
+    document.body.appendChild(lazy);
+
+    const { rerender } = render(
+      createElement(Portal, {
+        container: host,
+        children: createElement('span', { 'data-testid': 'in-host' }),
+      })
+    );
+    expect(host.contains(screen.getByTestId('in-host'))).toBe(true);
+
+    // A lazy getter resolves after mount — query-based lookups are safe.
+    rerender(
+      createElement(Portal, {
+        container: () => lazy,
+        children: createElement('span', { 'data-testid': 'in-host' }),
+      })
+    );
+    expect(lazy.contains(screen.getByTestId('in-host'))).toBe(true);
+    expect(host.contains(screen.getByTestId('in-host'))).toBe(false);
+  });
+
+  it('renders children in place when disabled', () => {
+    const { container } = render(
+      createElement(Portal, {
+        disabled: true,
+        children: createElement('div', { 'data-testid': 'inline' }),
+      })
+    );
+    // No portal: the child stays inside the render container subtree.
+    expect(container.contains(screen.getByTestId('inline'))).toBe(true);
+  });
+
+  it('renders nothing on the server (no document access, no throw)', async () => {
+    const { renderToStaticMarkup } = await import('react-dom/server');
+    const markup = renderToStaticMarkup(
+      createElement(Portal, {
+        children: createElement('div', { 'data-testid': 'server' }),
+      })
+    );
+    // SSR produces no output — hydration (also empty) cannot mismatch.
+    expect(markup).toBe('');
   });
 });
 

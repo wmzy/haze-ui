@@ -1,5 +1,6 @@
 import { expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 
 import Toolbar from './Toolbar';
@@ -242,5 +243,63 @@ describe('ToolbarToggle', () => {
     expect(italic).toHaveAttribute('aria-pressed', 'true');
     expect(italic).toHaveFocus();
     expect(italic).toHaveAttribute('tabindex', '0');
+  });
+});
+
+describe('ToolbarButton as polymorphism', () => {
+  it("as='a' renders a real anchor wearing the roving wiring, no type attr", () => {
+    render(<ToolbarButton as="a" href="/docs" data-track="tb" aria-label="Docs" />);
+    const link = screen.getByRole('link', { name: 'Docs' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/docs');
+    expect(link).toHaveAttribute('data-track', 'tb');
+    // the button-only default is gated — anchors don't carry it
+    expect(link).not.toHaveAttribute('type');
+    // the toolbar wiring follows the rendered element
+    expect(link).toHaveAttribute('data-haze-toolbar-item', '');
+    expect(link).toHaveAttribute('tabindex', '-1');
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<ToolbarButton as="a" href="/docs" ref={ref} aria-label="Docs" />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native button with type="button" and roving wiring', () => {
+    render(<ToolbarButton aria-label="Docs" />);
+    const button = screen.getByRole('button', { name: 'Docs' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).toHaveAttribute('tabindex', '-1');
+  });
+});
+
+describe('ToolbarToggle as polymorphism', () => {
+  it("as='a' renders a real anchor: href/rest land on <a>, no type attr, pressed wiring kept", async () => {
+    const user = userEvent.setup();
+    render(<ToolbarToggle as="a" href="/grid" data-track="tt" aria-label="Grid view" />);
+    const link = screen.getByRole('link', { name: 'Grid view' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/grid');
+    expect(link).toHaveAttribute('data-track', 'tt');
+    expect(link).not.toHaveAttribute('type');
+    expect(link).toHaveAttribute('aria-pressed', 'false');
+    // clicking still toggles on the anchor shape
+    await user.click(link);
+    expect(link).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it("as='a' forwards ref to the anchor element", () => {
+    const ref = createRef<HTMLAnchorElement>();
+    render(<ToolbarToggle as="a" href="/grid" ref={ref} aria-label="Grid view" />);
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('default shape unchanged: native button with type="button"', () => {
+    render(<ToolbarToggle aria-label="Grid view" />);
+    const button = screen.getByRole('button', { name: 'Grid view' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
   });
 });

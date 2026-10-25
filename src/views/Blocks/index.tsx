@@ -22,8 +22,11 @@ import ChatBlock from './blocks/ChatBlock';
 import CrudBlock from './blocks/CrudBlock';
 import DashboardBlock from './blocks/DashboardBlock';
 import DataTableBlock from './blocks/DataTableBlock';
+import FilterListBlock from './blocks/FilterListBlock';
+import FormWizardBlock from './blocks/FormWizardBlock';
 import KanbanBlock from './blocks/KanbanBlock';
 import LoginBlock from './blocks/LoginBlock';
+import ProfileBlock from './blocks/ProfileBlock';
 import SettingsBlock from './blocks/SettingsBlock';
 import { resolveBlockSource } from './block-sources';
 
@@ -43,7 +46,10 @@ type BlockId =
   | 'crud'
   | 'aiWorkbench'
   | 'dataTable'
-  | 'kanban';
+  | 'kanban'
+  | 'formWizard'
+  | 'filterList'
+  | 'profile';
 
 type BlockDef = {
   id: BlockId;
@@ -132,6 +138,33 @@ const BLOCKS: BlockDef[] = [
       'avatar', 'avatar-group', 'badge', 'button', 'chip', 'dropdown-menu',
       'empty', 'input', 'progress', 'select', 'spinner', 'tooltip',
       'virtual-list', 'visually-hidden',
+    ],
+  },
+  {
+    id: 'formWizard',
+    Component: FormWizardBlock,
+    overflow: 'auto',
+    cssFamilies: [
+      'stepper', 'card', 'form', 'input', 'select', 'checkbox', 'button',
+      'alert', 'chip', 'spinner', 'virtual-list',
+    ],
+  },
+  {
+    id: 'filterList',
+    Component: FilterListBlock,
+    overflow: 'auto',
+    cssFamilies: [
+      'card', 'input', 'checkbox', 'select', 'chip', 'badge', 'avatar',
+      'rating', 'empty', 'pagination', 'button', 'spinner', 'virtual-list',
+    ],
+  },
+  {
+    id: 'profile',
+    Component: ProfileBlock,
+    overflow: 'auto',
+    cssFamilies: [
+      'card', 'avatar', 'avatar-group', 'badge', 'button', 'descriptions',
+      'timeline', 'tag-group', 'spinner',
     ],
   },
 ];

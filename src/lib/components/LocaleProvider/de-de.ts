@@ -193,6 +193,15 @@ const deDE: HazeStrings = {
   modelPicker: {
     label: 'Modell',
   },
+  notificationCenter: {
+    triggerLabel: 'Benachrichtigungen',
+    triggerLabelUnread: 'Benachrichtigungen ({count} ungelesen)',
+    panelTitle: 'Benachrichtigungen',
+    markAllRead: 'Alle als gelesen markieren',
+    clearAll: 'Alle löschen',
+    empty: 'Keine Benachrichtigungen',
+    unreadLabel: 'Ungelesen',
+  },
   numberInput: {
     decrease: 'Verringern',
     increase: 'Erhöhen',

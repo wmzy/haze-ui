@@ -24,13 +24,13 @@ const isDemoBuild = process.env.BUILD_DEMO === 'true';
 const isDocsApp = isDemoBuild || (!isLibBuild && !process.env.VITEST);
 
 // Lib entries: the root barrel plus every per-directory barrel that the
-// package's `exports` subpaths (./components/*, ./form, ./headless, ./locales, ./tokens) point
+// package's `exports` subpaths (./components/*, ./form, ./headless, ./hooks, ./icons, ./locales, ./tokens) point
 // at. preserveModules tree-shakes re-export-only modules that are not
 // entries — without listing them, dist/components/*/index.js would not
 // exist and the subpaths would not resolve.
 const libEntries = [
   path.resolve(__dirname, 'src/lib/index.ts'),
-  ...['components', 'form', 'headless', 'locales', 'tokens'].flatMap((group) =>
+  ...['components', 'form', 'headless', 'hooks', 'icons', 'locales', 'tokens'].flatMap((group) =>
     readdirSync(path.resolve(__dirname, `src/lib/${group}`), {
       withFileTypes: true,
     })
@@ -207,6 +207,11 @@ const buildConfig = (() => {
           // require() call into the pure-ESM dist (caught by the
           // bare-node ESM contract test)
           'libphonenumber-js',
+          // regular dependency (the haze-ui/icons subpath's engine) — same
+          // rule: kept external so lucide-react's `sideEffects: false`
+          // tree-shaking stays between the consumer's bundler and the
+          // curated re-exports (an icon never imported costs zero bytes)
+          'lucide-react',
         ],
         output: {
           preserveModules: true,

@@ -41,4 +41,8 @@ export type {
 export { usePrefersReducedMotion } from './usePrefersReducedMotion';
 export { usePrevious } from './usePrevious';
 export { useSessionStorage } from './useSessionStorage';
+// Shared ControlOrValue kernel behind useLocalStorage/useSessionStorage —
+// exported for custom storage areas / hydration strategies.
+export { useStorageState } from './useStorageState';
+export type { StorageKind } from './useStorageState';
 export { useTitle } from './useTitle';

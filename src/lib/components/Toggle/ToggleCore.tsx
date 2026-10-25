@@ -1,10 +1,15 @@
-import type { ComponentPropsWithoutRef, Ref } from 'react';
+import type {
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  ElementType,
+  MouseEvent,
+} from 'react';
 
 import { css } from '@linaria/core';
 
 import { base, sizes, squareSizes } from '../Button/styles';
 
-type ToggleCoreProps = {
+type ToggleCoreOwnProps = {
   pressed: boolean;
   onPressedChange: (pressed: boolean) => void;
   /** Native click event passthrough — invoked with the DOM event after
@@ -14,9 +19,19 @@ type ToggleCoreProps = {
   /** Equal padding on all sides — for icon-only square toggles. */
   square?: boolean;
   className?: string;
-  /** Forwarded to the `<button>` element. */
-  ref?: Ref<HTMLButtonElement>;
-} & Omit<ComponentPropsWithoutRef<'button'>, 'type' | 'aria-pressed'>;
+};
+
+/**
+ * Polymorphic like Button's `as`: the toggle skin and the pressed wiring
+ * (`aria-pressed`, click → `onPressedChange`) always land on the rendered
+ * element. `as='a'` renders a pressed-state anchor — `type='button'` is
+ * gated to the native-button shape.
+ */
+type ToggleCoreProps<T extends ElementType = 'button'> = ToggleCoreOwnProps & {
+  /** Render element — 'button' (default), 'a', or any component that
+   * forwards props and ref to a DOM element (a router Link). */
+  as?: T;
+} & Omit<ComponentPropsWithRef<T>, keyof ToggleCoreOwnProps | 'as' | 'type' | 'aria-pressed'>;
 
 /**
  * Surface keyed on pressed state — mutually exclusive like Button's
@@ -74,31 +89,36 @@ const surfaces = {
  * lives here: it renders `pressed` and reports clicks through
  * `onPressedChange`, so the sugar (or any owner) owns the truth.
  */
-export default function ToggleCore({
+export default function ToggleCore<T extends ElementType = 'button'>({
   pressed,
   onPressedChange,
   onNativeClick,
   size = 'md',
   square = false,
+  as,
   className,
-  ref,
   ...rest
-}: ToggleCoreProps) {
+}: ToggleCoreProps<T>) {
   const sizeClass = square ? squareSizes[size] : sizes[size];
+  const Tag = (as ?? 'button');
+  // Only the native button shape carries type; anchors and custom
+  // components keep their own element semantics.
+  const isNativeButton = as === undefined || as === 'button';
   return (
-    <button
-      ref={ref}
-      type='button'
+    <Tag
+      {...(isNativeButton ? { type: 'button' as const } : {})}
       aria-pressed={pressed}
       data-slot='toggle'
       x-class={[base, surfaces[pressed ? 'pressed' : 'rest'], sizeClass, className]}
-      onClick={(e) => {
+      onClick={(event: MouseEvent<HTMLButtonElement>) => {
+        // The historical onNativeClick signature stays button-typed; the
+        // event itself is whatever element `as` rendered.
         onPressedChange(!pressed);
-        onNativeClick?.(e);
+        onNativeClick?.(event);
       }}
       {...rest}
     />
   );
 }
 
-export type { ToggleCoreProps };
+export type { ToggleCoreOwnProps, ToggleCoreProps };

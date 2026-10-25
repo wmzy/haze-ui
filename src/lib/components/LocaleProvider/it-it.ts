@@ -193,6 +193,15 @@ const itIT: HazeStrings = {
   modelPicker: {
     label: 'Modello',
   },
+  notificationCenter: {
+    triggerLabel: 'Notifiche',
+    triggerLabelUnread: 'Notifiche ({count} non lette)',
+    panelTitle: 'Notifiche',
+    markAllRead: 'Segna tutte come lette',
+    clearAll: 'Cancella tutto',
+    empty: 'Nessuna notifica',
+    unreadLabel: 'Non letta',
+  },
   numberInput: {
     decrease: 'Diminuisci',
     increase: 'Aumenta',

@@ -123,6 +123,21 @@ export const de: DeepPartial<SiteStrings> = {
       description:
         'Vier Spalten mit Issue-Karten samt Prioritäts-Badges, Labels, Assignee-Avataren und Fortschrittsbalken. Karten wandern über das ⋯-Menü — haze-ui liefert nur Single-Container-Sorting, kein spaltenübergreifendes Ziehen; das Board ist bewusst statisch.',
     },
+    formWizard: {
+      title: 'Mehrstufiger Setup-Assistent',
+      description:
+        'Ein Stepper über einem zod-validierten Form — Werte überleben den Schrittwechsel, Next advanced erst, wenn trigger() den aktuellen Schritt freigibt, und der Abschluss landet in einer Alert-Bestätigung.',
+    },
+    filterList: {
+      title: 'Filterbarer Vorlagen-Katalog',
+      description:
+        'Eine Filterleiste (Such-Input, Kategorie-Checkboxes, Regions- und Sortier-Select) treibt eine Kartenliste mit Avatar, Badge und Rating — aktive Filter als schließbare Chips, Empty ohne Treffer, Pagination unten.',
+    },
+    profile: {
+      title: 'Mitgliederprofil',
+      description:
+        'Eine Identitäts-Kopfzeile mit großem Avatar, Status-Badges und steuerbarem Folgen-Schalter, darunter eine Descriptions-Übersicht, TagGroup-Skills, eine AvatarGroup-Zeile und ein Timeline-Aktivitätsfeed.',
+    },
   },
   componentGroups: {
     General: 'Allgemein',
@@ -259,6 +274,7 @@ export const de: DeepPartial<SiteStrings> = {
     HoverCard:
       'Nicht-modale schwebende Vorschau (Avatar-Karte, Link-Zusammenfassung), verankert am Trigger.',
     Menu: 'Leichtgewichtiges Toggle-Menü mit Trigger und statisch positioniertem Panel (MenuItem, MenuDivider).',
+    NotificationCenter: 'Persistierendes Benachrichtigungszentrum hinter Glocken-Trigger: Ungelesen-Badge, Severity/Kind-Zeilen, Alle-gelesen/Alle-löschen.',
     Popconfirm: 'Bestätigungs-Blase, verankert am Trigger, mit Bestätigen/Abbrechen-Aktionen.',
     Popover: 'Schwebendes Popover, verankert an einem Trigger-Element.',
     Tooltip: 'Hover-/Fokus-Hinweisblase.',

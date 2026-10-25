@@ -190,6 +190,15 @@ const defaultStrings = {
   modelPicker: {
     label: 'Model',
   },
+  notificationCenter: {
+    triggerLabel: 'Notifications',
+    triggerLabelUnread: 'Notifications ({count} unread)',
+    panelTitle: 'Notifications',
+    markAllRead: 'Mark all as read',
+    clearAll: 'Clear all',
+    empty: 'No notifications',
+    unreadLabel: 'Unread',
+  },
   numberInput: {
     decrease: 'Decrease',
     increase: 'Increase',

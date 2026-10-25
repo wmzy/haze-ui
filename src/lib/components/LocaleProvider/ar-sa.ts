@@ -200,6 +200,15 @@ const arSA: HazeStrings = {
   modelPicker: {
     label: 'النموذج',
   },
+  notificationCenter: {
+    triggerLabel: 'الإشعارات',
+    triggerLabelUnread: 'الإشعارات ({count} غير مقروءة)',
+    panelTitle: 'الإشعارات',
+    markAllRead: 'وضع علامة مقروء على الكل',
+    clearAll: 'مسح الكل',
+    empty: 'لا توجد إشعارات',
+    unreadLabel: 'غير مقروء',
+  },
   numberInput: {
     decrease: 'إنقاص',
     increase: 'زيادة',
