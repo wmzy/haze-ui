@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.35.0](https://github.com/wmzy/haze-ui/compare/v1.34.1...v1.35.0) (2026-10-26)
+
+
+### Features
+
+* add useTree/useAnchorSpy hooks, Combobox limits, nested Anchor ([184165d](https://github.com/wmzy/haze-ui/commit/184165da610656f3fe744056fa9f09bb1a95c8f4))
+* benchmark/parity wave — AI elements, ACR, rem zoom, benchmarks, codemods ([e6b27b4](https://github.com/wmzy/haze-ui/commit/e6b27b4e004e443dddb1d66a8172a6b04dbc9b84))
+
 ## [1.34.1](https://github.com/wmzy/haze-ui/compare/v1.34.0...v1.34.1) (2026-10-24)
 
 
