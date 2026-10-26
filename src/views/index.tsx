@@ -59,6 +59,10 @@ export default function App() {
             component: () => import('./Guides/Migration'),
           },
           {
+            path: '/guides/deprecation-policy',
+            component: () => import('./Guides/DeprecationPolicy'),
+          },
+          {
             path: '/guides/streaming-a11y',
             component: () => import('./Guides/StreamingA11y'),
           },

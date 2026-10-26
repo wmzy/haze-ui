@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T05:08:13.530Z",
+  "generatedAt": "2026-10-26T05:55:13.531Z",
   "distAvailable": true,
   "families": [
     {
@@ -29,8 +29,8 @@
     },
     {
       "family": "anchor",
-      "cssBytes": 1000,
-      "cssGzipBytes": 392
+      "cssBytes": 1907,
+      "cssGzipBytes": 560
     },
     {
       "family": "app-shell",
@@ -164,8 +164,8 @@
     },
     {
       "family": "combobox",
-      "cssBytes": 8100,
-      "cssGzipBytes": 1473
+      "cssBytes": 8482,
+      "cssGzipBytes": 1534
     },
     {
       "family": "command",
@@ -209,8 +209,8 @@
     },
     {
       "family": "data-table",
-      "cssBytes": 7782,
-      "cssGzipBytes": 1642
+      "cssBytes": 7788,
+      "cssGzipBytes": 1650
     },
     {
       "family": "date-field",
@@ -785,7 +785,7 @@
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 432619,
-    "cssGzipBytes": 44921
+    "cssBytes": 433914,
+    "cssGzipBytes": 45061
   }
 }

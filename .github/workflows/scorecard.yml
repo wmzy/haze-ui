@@ -1,0 +1,47 @@
+# OSSF Scorecard supply-chain security scan: weekly Monday schedule, manual
+# dispatch, and pushes that edit this workflow file itself (so config changes
+# can be validated immediately). Scans the default branch of a public repo —
+# SARIF is produced even without branch protection configured (missing
+# protection only lowers those check scores, it never blocks the scan).
+# publish_results also pushes results to the public Scorecard API, which
+# needs id-token: write on top of the SARIF upload permissions.
+name: Scorecard
+
+on:
+  schedule:
+    # Mondays 03:41 UTC — off the top of the hour to dodge scheduling spikes,
+    # and clear of CodeQL's 03:17 slot.
+    - cron: "41 3 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/scorecard.yml
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

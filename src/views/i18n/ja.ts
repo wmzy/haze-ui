@@ -14,6 +14,7 @@ export const ja: DeepPartial<SiteStrings> = {
     dark: 'ダーク',
     auto: '自動',
     language: '言語を切り替える',
+    version: 'バージョン',
     noCustomTheme: 'カスタムテーマなし',
     themeEditor: 'テーマエディター',
     viewSourceAt: '{version}（{commit}）のソースを見る',
@@ -52,6 +53,7 @@ export const ja: DeepPartial<SiteStrings> = {
     a11yContracts: 'アクセシビリティ契約',
     a11yStatement: 'WCAG 2.2 適合性',
     migration: 'AntD / shadcn からの移行',
+    deprecationPolicy: '非推奨ポリシー',
     streamingA11y: 'ストリーミングのアクセシビリティ',
     motion: 'モーションプリセット',
     figmaTokens: 'Figma のデザイントークン',
@@ -65,6 +67,8 @@ export const ja: DeepPartial<SiteStrings> = {
     a11yContracts: 'テストスイートから抽出したコンポーネント別のキーボード・ARIA 契約。',
     a11yStatement: 'アクセシビリティ適合性レポート：WCAG 2.2 A/AA を条項ごとに、テストマトリクスを根拠に判定。',
     migration: 'AntD や shadcn/ui から haze-ui への移行手順。',
+    deprecationPolicy:
+      '非推奨 prop のライフサイクル：開発時の警告、2 マイナーの猶予、codemod 付きのメジャーでの削除。',
     streamingA11y:
       'ストリーミング AI 出力のアクセシビリティ：ライブリージョン、アナウンス、モーションの抑制。',
     motion: 'モーショントークンの上に築いた data-state 駆動の登場/退場アニメーションプリセット。',

@@ -7,6 +7,7 @@ English | [简体中文](./README-zh_CN.md)
 [![npm](https://img.shields.io/npm/v/haze-ui)](https://www.npmjs.com/package/haze-ui)
 [![downloads](https://img.shields.io/npm/dm/haze-ui.svg)](https://www.npmjs.com/package/haze-ui)
 [![CI](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/wmzy/haze-ui/actions/workflows/ci.yml)
+[![Scorecard](https://api.scorecard.dev/projects/github.com/wmzy/haze-ui/badge)](https://scorecard.dev/viewer/?uri=github.com/wmzy/haze-ui)
 
 haze-ui is a React 19 component library styled with Linaria (zero-runtime
 CSS-in-JS) against `--haze-*` design tokens: 148 components in 9 groups,
@@ -151,12 +152,24 @@ with no polyfills or fallbacks — the same four engines are the hard CSS floor.
 Every styled export is also installable through the shadcn CLI as a thin
 wrapper over the npm package — see [registry/README.md](./registry/README.md).
 
+## Release channels
+
+| Channel | Install | Version shape | Who it's for |
+| --- | --- | --- | --- |
+| stable (`latest`) | `npm i haze-ui` | `1.34.1` | Production. Cut from `main` by semantic-release whenever a relevant commit (feat/fix/perf…) lands. |
+| beta | `npm i haze-ui@beta` | `1.35.0-beta.1` | Trying upcoming changes early. Cut from the `beta` branch through semantic-release's prerelease flow — same commit analysis, changelog and GitHub Release as stable, published to the `beta` dist-tag so `latest` never moves. |
+| canary | `npm i haze-ui@canary` | `0.0.0-canary.a1b2c3d4.123` | Verifying a fix against one exact commit. Manually dispatched from any ref, stamped with the commit SHA + run number, and fully bypasses semantic-release — no commit analysis, no changelog, no git tag. |
+
+Beta vs canary in one line: **beta** is an ordered prerelease line (`x.y.z-beta.n`) that graduates to stable when its commits merge into `main`; **canary** is a disposable per-commit snapshot (`0.0.0-canary.<sha>.<run>`) that the next dispatch supersedes and nothing ever promotes.
+
 ## Community
 
 - 🐛 [Report a bug](https://github.com/wmzy/haze-ui/issues/new?template=bug_report.yml)
 - ✨ [Request a feature](https://github.com/wmzy/haze-ui/issues/new?template=feature_request.yml)
 - 📖 [Contribute to the project](./CONTRIBUTING.md)
 - 🔒 [Security policy](./SECURITY.md)
+- 🤝 [Code of Conduct](./CODE_OF_CONDUCT.md)
+- 💬 [Discussions & Q&A](https://github.com/wmzy/haze-ui/discussions)
 
 **Building with haze-ui?** We would love to feature you. Open an issue
 titled `used by: <your project>` with the project name, a link and (optionally)

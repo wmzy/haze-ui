@@ -419,6 +419,82 @@ describe('DataTable', () => {
     );
   });
 
+  it('pins the scroll corner when fixed columns meet a sticky header', () => {
+    const cornerColumns: DataTableColumnDef<Person>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        meta: { width: 120, fixed: 'left' },
+      },
+      { accessorKey: 'age', header: 'Age' },
+      { accessorKey: 'id', header: 'ID', meta: { width: 90, fixed: 'right' } },
+    ];
+    render(
+      <DataTable
+        columns={cornerColumns}
+        data={people}
+        stickyHeader
+        getRowId={rowId}
+      />
+    );
+
+    // The corner cells stack every mechanism at once: the header row's
+    // sticky top, the fixed cell's sticky edge and the fixedHeadCell
+    // z-index whose `thead &` form outranks the header row itself — a
+    // bare class would lose `.stickyHead th`'s class+type specificity,
+    // letting scrolled header cells paint over the corner.
+    const [nameHeader, ageHeader, idHeader] =
+      screen.getAllByRole('columnheader');
+    expect(document.querySelector('thead')?.className).toContain('stickyHead');
+    expect(nameHeader!.className).toContain('fixedCell');
+    expect(nameHeader!.className).toContain('fixedHeadCell');
+    expect(nameHeader!.style.left).toBe('0px');
+    expect(idHeader!.className).toContain('fixedCell');
+    expect(idHeader!.className).toContain('fixedHeadCell');
+    expect(idHeader!.style.right).toBe('0px');
+    // The unpinned middle column carries neither mechanism.
+    expect(ageHeader!.className).not.toContain('fixedCell');
+    expect(ageHeader!.style.left).toBe('');
+    expect(ageHeader!.style.right).toBe('');
+
+    // Body cells keep the plain fixed stacking (z-local-1) — below both
+    // the header row and the corner.
+    const rowCells = Array.from(bodyRows()[0]!.querySelectorAll('td'));
+    expect(rowCells[0]!.className).toContain('fixedCell');
+    expect(rowCells[0]!.className).not.toContain('fixedHeadCell');
+    expect(rowCells[0]!.style.left).toBe('0px');
+    expect(rowCells[2]!.style.right).toBe('0px');
+  });
+
+  it('keeps fixed header cells sticky while resizable', () => {
+    const fixedColumns: DataTableColumnDef<Person>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        meta: { width: 120, fixed: 'left' },
+      },
+      { accessorKey: 'age', header: 'Age' },
+    ];
+    render(
+      <DataTable columns={fixedColumns} data={people} resizable getRowId={rowId} />
+    );
+
+    // Both classes land on the pinned header cell: fixedCell is defined
+    // after resizableHead, so its position: sticky wins over the handle's
+    // position: relative at equal specificity — the pinned header keeps
+    // sticking while the absolutely positioned handle anchors to the
+    // sticky box just as well. The unpinned column anchors through
+    // relative alone.
+    const [nameHeader, ageHeader] = screen.getAllByRole('columnheader');
+    expect(nameHeader!.className).toContain('fixedCell');
+    expect(nameHeader!.className).toContain('resizableHead');
+    expect(ageHeader!.className).toContain('resizableHead');
+    expect(ageHeader!.className).not.toContain('fixedCell');
+    // Every column grows a resize handle; the pinned one sits inside the
+    // sticky box.
+    expect(screen.getAllByRole('separator')).toHaveLength(2);
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     const { container } = render(

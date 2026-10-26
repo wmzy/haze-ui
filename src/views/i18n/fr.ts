@@ -15,6 +15,7 @@ export const fr: DeepPartial<SiteStrings> = {
     dark: 'Sombre',
     auto: 'Automatique',
     language: 'Changer de langue',
+    version: 'Version',
     noCustomTheme: 'Aucun thème personnalisé',
     themeEditor: 'Éditeur de thème',
     viewSourceAt: 'Voir la source de {version} ({commit})',
@@ -53,6 +54,7 @@ export const fr: DeepPartial<SiteStrings> = {
     a11yContracts: 'Contrats d’accessibilité',
     a11yStatement: 'Conformité WCAG 2.2',
     migration: 'Migrer depuis AntD / shadcn',
+    deprecationPolicy: 'Politique de dépréciation',
     streamingA11y: 'Accessibilité du streaming',
     motion: 'Préréglages d’animation',
     figmaTokens: 'Tokens dans Figma',
@@ -69,6 +71,8 @@ export const fr: DeepPartial<SiteStrings> = {
     a11yStatement:
       'Le rapport de conformité d’accessibilité : WCAG 2.2 A/AA critère par critère, preuves issues de la matrice de tests.',
     migration: 'Recettes de portage d’AntD ou shadcn/ui vers haze-ui.',
+    deprecationPolicy:
+      'Le cycle de vie d’une prop dépréciée : avertissement en dev, deux minors de sursis, suppression au major avec codemod.',
     streamingA11y:
       'Sorties IA en streaming accessibles : live regions, annonces et mouvement réduit.',
     motion:

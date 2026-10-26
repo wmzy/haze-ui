@@ -80,7 +80,7 @@
   "scripts": {
     "start": "vite",
     "build": "BUILD_LIB=true vite build && node scripts/split-css.mjs && node scripts/generate-registry.mjs && node scripts/generate-design-tokens.mjs && node scripts/generate-mcp-docs.mjs && tsc -p tsconfig.lib.json && tsc-alias -p tsconfig.lib.json && node scripts/fix-dts-extensions.mjs && node scripts/generate-licenses.mjs",
-    "build:demo": "node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/ && cp src/generated/version.json dist/version.json",
+    "build:demo": "node scripts/generate-versions.mjs && node scripts/write-version.mjs && node scripts/generate-llms.mjs && BABEL_ENV=development BUILD_DEMO=true vite build && cp dist/index.html dist/404.html && cp llms.txt dist/ && cp llms-full.txt dist/ && cp src/generated/version.json dist/version.json",
     "commit": "lint-staged && git-cz -n",
     "coverage": "vitest run --coverage",
     "lint": "eslint --fix src *.mjs",
@@ -245,7 +245,7 @@
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "44.7 KB",
+      "limit": "44.9 KB",
       "gzip": true
     },
     {

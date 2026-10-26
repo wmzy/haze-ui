@@ -15,6 +15,7 @@ export const de: DeepPartial<SiteStrings> = {
     dark: 'Dunkel',
     auto: 'Automatisch',
     language: 'Sprache wechseln',
+    version: 'Version',
     noCustomTheme: 'Kein benutzerdefiniertes Theme',
     themeEditor: 'Theme-Editor',
     viewSourceAt: 'Quelltext von {version} ({commit}) ansehen',
@@ -53,6 +54,7 @@ export const de: DeepPartial<SiteStrings> = {
     a11yContracts: 'A11y-Verträge',
     a11yStatement: 'WCAG 2.2-Konformität',
     migration: 'Migration von AntD / shadcn',
+    deprecationPolicy: 'Deprecation-Policy',
     streamingA11y: 'Barrierefreiheit beim Streaming',
     motion: 'Motion-Presets',
     figmaTokens: 'Tokens in Figma',
@@ -69,6 +71,8 @@ export const de: DeepPartial<SiteStrings> = {
     a11yStatement:
       'Der Barrierefreiheits-Konformitätsbericht: WCAG 2.2 A/AA je Kriterium, belegt durch die Test-Matrix.',
     migration: 'Rezepte für die Portierung von AntD oder shadcn/ui zu haze-ui.',
+    deprecationPolicy:
+      'Der Lebenszyklus einer deprecated Prop: Dev-Warnung, zwei Minors Gnadenfrist, Entfernung im Major mit Codemod.',
     streamingA11y:
       'Barrierefreie KI-Ausgaben: Live-Regions, Ansagen und reduzierte Bewegung.',
     motion: 'data-state-gesteuerte Ein-/Aus-Animationspresets auf den Motion-Tokens.',

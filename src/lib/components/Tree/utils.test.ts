@@ -4,6 +4,7 @@ import {
   flattenVisibleTree,
   findNodeByKey,
   getChildKeys,
+  getNodePath,
   getParentKey,
   getAllLeafKeys,
   matchRanges,
@@ -72,6 +73,27 @@ describe('Tree utils', () => {
 
   it('getParentKey returns null for missing key', () => {
     expect(getParentKey(tree, 'zzz')).toBeNull();
+  });
+
+  it('getNodePath returns the root-first chain including the node', () => {
+    expect(getNodePath(tree, 'a-1-x').map((n) => n.key)).toEqual([
+      'a',
+      'a-1',
+      'a-1-x',
+    ]);
+    expect(getNodePath(tree, 'a-1-x').map((n) => n.title)).toEqual([
+      'A',
+      'A1',
+      'A1X',
+    ]);
+  });
+
+  it('getNodePath returns a single-entry path for roots', () => {
+    expect(getNodePath(tree, 'b').map((n) => n.key)).toEqual(['b']);
+  });
+
+  it('getNodePath returns empty for a missing key', () => {
+    expect(getNodePath(tree, 'zzz')).toEqual([]);
   });
 
   it('getAllLeafKeys collects deepest leaves', () => {

@@ -157,6 +157,51 @@ jobs:
           cp llms.txt llms-full.txt "dist/v/$VERSION/"
           echo "Archived /v/$VERSION/."
 
+      - name: Publish site-level versions.json (exact archive manifest)
+        if: steps.cfg.outputs.channel == 'stable'
+        run: |
+          set -euo pipefail
+          # 与 scripts/generate-versions.mjs 同构的版本清单，但数据源是
+          # dist/v 的实际目录（carry-forward + 本次快照后的权威状态）：
+          # 根 versions.json 是线上已归档版本的准确账目（构建期清单靠
+          # API + 探测，只做到尽力而为）。dev 通道部署从账本原样取回
+          # 根目录，不会覆写本文件。
+          node --input-type=module <<'EOF'
+          import { existsSync, readdirSync, writeFileSync } from 'node:fs';
+          import { createRequire } from 'node:module';
+
+          const SITE_BASE = '/haze-ui/';
+          const require = createRequire(import.meta.url);
+          const latest = require('./dist/version.json').version;
+          if (latest === 'dev') {
+            throw new Error(
+              'stable deploy has no version tag — refusing to publish versions.json'
+            );
+          }
+          const archived = existsSync('dist/v')
+            ? readdirSync('dist/v', { withFileTypes: true })
+                .filter((entry) => entry.isDirectory())
+                .map((entry) => entry.name)
+                .filter((name) => name !== latest)
+                .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+            : [];
+          const entries = [
+            { version: latest, url: SITE_BASE },
+            ...archived.map((version) => ({
+              version,
+              url: `${SITE_BASE}v/${version}/`,
+            })),
+            { version: 'dev', url: `${SITE_BASE}dev/` },
+          ];
+          writeFileSync(
+            'dist/versions.json',
+            `${JSON.stringify({ latest, entries }, null, 2)}\n`
+          );
+          console.log(
+            `versions.json: latest ${latest}, ${archived.length} archived, +dev`
+          );
+          EOF
+
       - name: Assemble full site (stable root from ledger + fresh dev subtree)
         if: steps.cfg.outputs.channel == 'dev'
         run: |

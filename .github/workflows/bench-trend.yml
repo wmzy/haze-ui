@@ -1,0 +1,80 @@
+name: Bench Trend
+
+# Performance trend tracking for the runtime benchmarks (DataTable 1000
+# rows / Select panel open-close / VirtualList 5000 items, `pnpm bench`).
+# Unlike the informational bench job in ci.yml (continue-on-error, tables
+# only in the job log), this workflow persists results to git history and
+# alerts on regressions:
+#   - weekly snapshot on Mondays + every push to main touching src/lib/**
+#   - vitest bench JSON → scripts/bench-report.mjs → customSmallerIsBetter
+#   - benchmark-action charts the trend, posts an alert comment at >130%
+#     of the recorded baseline, and never blocks the merge (fail-on-alert
+#     false — absolute numbers swing with runner load).
+
+on:
+  schedule:
+    # Mondays 04:05 UTC — off the top of the hour to dodge GitHub's cron
+    # congestion window.
+    - cron: '5 4 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - 'src/lib/**'
+      - '.github/workflows/bench-trend.yml'
+  workflow_dispatch:
+
+# A scheduled run and a push run must not append to the benchmark history
+# concurrently — serialize instead of cancel (same rationale as deploy.yml's
+# pages group: a cancelled push loses the data point it was recording).
+concurrency:
+  group: bench-trend
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Same install shape as ci.yml / deploy.yml — pnpm 10 defaults to
+      # frozen-lockfile under CI.
+      - run: pnpm install
+
+      # NB: `pnpm bench -- --reporter=json` silently drops the flags (pnpm
+      # swallows the separator), so invoke vitest directly — this exact form
+      # is verified locally: exit 0, complete JSON despite the benign
+      # "close timed out" teardown warning vitest prints after the run.
+      - name: Run benchmarks (JSON reporter)
+        run: pnpm exec vitest bench --run --reporter=json --outputFile=bench.json
+
+      - name: Transform to github-action-benchmark entries
+        run: node scripts/bench-report.mjs bench.json bench-report.json
+
+      - name: Record result and alert on regression
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: bench-report.json
+          # Not gh-pages: deploy.yml force-pushes gh-pages as its site
+          # ledger on every docs deploy, which would wipe benchmark-data/
+          # and reset the alert baselines. A dedicated branch survives.
+          gh-pages-branch: benchmarks
+          benchmark-data-dir-path: benchmark-data
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '130%'
+          comment-on-alert: true
+          fail-on-alert: false

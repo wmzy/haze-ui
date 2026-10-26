@@ -608,6 +608,258 @@ describe('Combobox', () => {
     });
   });
 
+  describe('maxTagCount', () => {
+    it('collapses overflow chips into a +N badge listing the hidden labels', () => {
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={1}
+          value={['apple', 'banana', 'cherry']}
+        />
+      );
+      const box = screen.getByRole('combobox').parentElement!;
+      expect(within(box).getByText('Apple')).toBeInTheDocument();
+      expect(within(box).queryByText('Banana')).not.toBeInTheDocument();
+      expect(within(box).queryByText('Cherry')).not.toBeInTheDocument();
+      const badge = within(box).getByText('+2');
+      expect(badge).toHaveAttribute('title', 'Banana, Cherry');
+    });
+
+    it('renders no badge while the selection fits the cap', () => {
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={3}
+          value={['apple', 'banana']}
+        />
+      );
+      const box = screen.getByRole('combobox').parentElement!;
+      expect(within(box).getByText('Apple')).toBeInTheDocument();
+      expect(within(box).getByText('Banana')).toBeInTheDocument();
+      expect(
+        document.querySelector('[data-slot="overflow-badge"]')
+      ).toBeNull();
+    });
+
+    it('collapses everything at maxTagCount 0', () => {
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={0}
+          value={['apple', 'banana']}
+        />
+      );
+      const box = screen.getByRole('combobox').parentElement!;
+      expect(within(box).queryByText('Apple')).not.toBeInTheDocument();
+      const badge = within(box).getByText('+2');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveAttribute('title', 'Apple, Banana');
+    });
+
+    it('updates the badge as Backspace removes the last selection', async () => {
+      const user = userEvent.setup();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={1}
+          value={['apple', 'banana', 'cherry']}
+        />
+      );
+      const input = screen.getByRole('combobox');
+      input.focus();
+      await user.keyboard('{Backspace}');
+      const box = input.parentElement!;
+      expect(within(box).getByText('Apple')).toBeInTheDocument();
+      const badge = within(box).getByText('+1');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveAttribute('title', 'Banana');
+    });
+
+    it('converges the badge as a visible chip is removed through its ×', async () => {
+      const user = userEvent.setup();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={1}
+          value={['apple', 'banana', 'cherry']}
+        />
+      );
+      const box = screen.getByRole('combobox').parentElement!;
+      await user.click(within(box).getByRole('button', { name: 'Remove' }));
+      // The overflow promotes into view: Banana becomes the chip, the
+      // badge narrows to +1.
+      expect(within(box).getByText('Banana')).toBeInTheDocument();
+      expect(within(box).getByText('+1')).toHaveAttribute('title', 'Cherry');
+    });
+
+    it('has no axe violations with collapsed chips', async () => {
+      const { axe } = await import('jest-axe');
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxTagCount={1}
+          value={['apple', 'banana', 'cherry']}
+          placeholder="Pick fruit"
+        />
+      );
+      const results = await axe(document.body, {
+        rules: { region: { enabled: false } },
+      });
+      expect(results.violations).toEqual([]);
+    });
+  });
+
+  describe('maxCount', () => {
+    it('locks unselected options at the cap, rejecting clicks, and unlocks on deselect', async () => {
+      const user = userEvent.setup();
+      const onValuesChange = vi.fn();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxCount={2}
+          onValuesChange={onValuesChange}
+        />
+      );
+      const input = screen.getByRole('combobox');
+      const box = input.parentElement!;
+      await user.click(input);
+      await user.click(screen.getByRole('option', { name: 'Apple' }));
+      await user.click(screen.getByRole('option', { name: 'Banana' }));
+      expect(onValuesChange).toHaveBeenCalledTimes(2);
+
+      const cherry = screen.getByRole('option', { name: 'Cherry' });
+      expect(cherry).toHaveAttribute('aria-disabled', 'true');
+      expect(cherry).toHaveAttribute('data-disabled', 'true');
+      // The click is rejected — no third call, no chip.
+      await user.click(cherry);
+      expect(onValuesChange).toHaveBeenCalledTimes(2);
+      expect(within(box).queryByText('Cherry')).not.toBeInTheDocument();
+
+      // Selected options stay removable at the cap…
+      await user.click(screen.getByRole('option', { name: 'Apple' }));
+      expect(onValuesChange).toHaveBeenLastCalledWith(['banana']);
+      // …which unlocks the locked option again.
+      expect(cherry).not.toHaveAttribute('aria-disabled');
+      await user.click(cherry);
+      expect(onValuesChange).toHaveBeenLastCalledWith(['banana', 'cherry']);
+    });
+
+    it('rejects the keyboard path too: Enter on the disabled row is inert', async () => {
+      const user = userEvent.setup();
+      const onValuesChange = vi.fn();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxCount={1}
+          value={['apple']}
+          onValuesChange={onValuesChange}
+        />
+      );
+      const input = screen.getByRole('combobox');
+      input.focus();
+      await user.keyboard('{ArrowDown}');
+      expect(
+        screen.getByRole('option', { name: 'Banana' })
+      ).toHaveAttribute('aria-disabled', 'true');
+      // Highlight may traverse the locked row…
+      await user.keyboard('{ArrowDown}');
+      // …but Enter on it commits nothing.
+      await user.keyboard('{Enter}');
+      expect(onValuesChange).not.toHaveBeenCalled();
+      expect(
+        within(input.parentElement!).queryByText('Banana')
+      ).not.toBeInTheDocument();
+    });
+
+    it('suppresses the creatable row at the cap', async () => {
+      const user = userEvent.setup();
+      const onValuesChange = vi.fn();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          creatable
+          maxCount={1}
+          onValuesChange={onValuesChange}
+        />
+      );
+      const input = screen.getByRole('combobox');
+      await user.click(input);
+      await user.keyboard('{ArrowDown}{Enter}');
+      expect(onValuesChange).toHaveBeenCalledWith(['apple']);
+
+      // At the cap, a fresh unmatched query offers no creation.
+      await user.type(input, 'kiwi');
+      expect(screen.queryByText(/^Create/)).not.toBeInTheDocument();
+      expect(screen.getByText('No results')).toBeInTheDocument();
+      await user.keyboard('{Enter}');
+      expect(onValuesChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('combines with maxTagCount: the cap locks new picks while the badge keeps the collapsed view', async () => {
+      const user = userEvent.setup();
+      const onValuesChange = vi.fn();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxCount={2}
+          maxTagCount={1}
+          onValuesChange={onValuesChange}
+        />
+      );
+      const input = screen.getByRole('combobox');
+      const box = input.parentElement!;
+      await user.click(input);
+      await user.click(screen.getByRole('option', { name: 'Apple' }));
+      await user.click(screen.getByRole('option', { name: 'Banana' }));
+      // maxTagCount 1: one chip, the +1 badge holding Banana.
+      expect(within(box).getByText('Apple')).toBeInTheDocument();
+      expect(within(box).getByText('+1')).toHaveAttribute('title', 'Banana');
+      // maxCount 2 reached: the remaining options are locked…
+      const cherry = screen.getByRole('option', { name: 'Cherry' });
+      expect(cherry).toHaveAttribute('aria-disabled', 'true');
+      await user.click(cherry);
+      expect(onValuesChange).toHaveBeenCalledTimes(2);
+      // …and Backspace on the hidden chip both converges the badge and
+      // re-opens the cap. (The rejected click left focus on body —
+      // nothing refocuses the input when the guard returns early.)
+      input.focus();
+      await user.keyboard('{Backspace}');
+      expect(
+        within(box).queryByText('+1')
+      ).not.toBeInTheDocument();
+      expect(cherry).not.toHaveAttribute('aria-disabled');
+    });
+
+    it('has no axe violations with capped options', async () => {
+      const { axe } = await import('jest-axe');
+      const user = userEvent.setup();
+      render(
+        <Combobox
+          multiple
+          options={OPTIONS}
+          maxCount={1}
+          value={['apple']}
+          placeholder="Pick fruit"
+        />
+      );
+      await user.click(screen.getByRole('combobox'));
+      const results = await axe(document.body, {
+        rules: { region: { enabled: false } },
+      });
+      expect(results.violations).toEqual([]);
+    });
+  });
+
   describe('creatable', () => {
     it('offers the query as a create row when nothing matches', async () => {
       const user = userEvent.setup();

@@ -37,19 +37,21 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      // The mobile spec pins phone-viewport contracts (412×915, touch);
-      // it runs on the dedicated chromium-mobile project instead.
-      testIgnore: /mobile\.spec\.ts$/,
+      // The mobile specs pin phone-viewport contracts (412×839, touch);
+      // they run on the dedicated chromium-mobile project instead.
+      testIgnore: /mobile(-overlays)?\.spec\.ts$/,
     },
     {
       // Mobile: Pixel 7 phone emulation (412×839 viewport, touch,
       // isMobile) — chromium only (the descriptor's default browser
       // type; the other engines have no mobile project). The mobile
-      // spec is the whole scope: BottomSheet drag-dismiss, Drawer
-      // coverage, small-screen Dialog width, tap-opened Popover.
+      // specs are the whole scope: mobile.spec.ts (BottomSheet
+      // drag-dismiss, Drawer coverage, small-screen Dialog width,
+      // tap-opened Popover) and mobile-overlays.spec.ts (floating-panel
+      // containment on the phone viewport).
       name: 'chromium-mobile',
       use: { ...devices['Pixel 7'] },
-      testMatch: /mobile\.spec\.ts$/,
+      testMatch: /mobile(-overlays)?\.spec\.ts$/,
     },
     {
       // Firefox runs the engine-sensitive behavioral specs (pinned via

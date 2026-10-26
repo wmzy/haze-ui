@@ -155,6 +155,13 @@ const PAGES = [
     zh: '从 AntD / shadcn 迁移',
   },
   {
+    label: 'Deprecation policy',
+    sublabel: 'Guide',
+    route: '/guides/deprecation-policy',
+    keywords: ['deprecated', 'deprecation', 'removal', 'codemod', 'breaking change'],
+    zh: '弃用政策',
+  },
+  {
     label: 'Streaming a11y',
     sublabel: 'Guide',
     route: '/guides/streaming-a11y',

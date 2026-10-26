@@ -21,6 +21,7 @@ import type {
 } from '@tanstack/react-table';
 
 import type { DataTableCellEditorProps, DataTableColumnMeta } from './features';
+
 import type { VirtualListHandle } from '../VirtualList';
 
 import type { DataTableFiltersState } from './filters';
@@ -29,6 +30,7 @@ import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } fr
 import { useTable } from '@tanstack/react-table';
 import { css } from '@linaria/core';
 import { useControl, useThru, watch, isControl } from 'react-use-control';
+
 
 import { getDirection, useDirection } from '../../utils/direction';
 import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
@@ -797,6 +799,16 @@ const checkCellCol = css`
   white-space: nowrap;
 `;
 
+/* Resizable header cells anchor the absolutely positioned drag handle.
+ * `position: relative` only wins where the header cell is neither sticky
+ * nor fixed — under `stickyHeader` the `.stickyHead th` rule (class + type
+ * specificity) keeps `position: sticky`, and on a fixed column the
+ * later-defined `fixedCell` rule below keeps it too; sticky positioning
+ * anchors the handle exactly as well, being a positioned box either way. */
+const resizableHead = css`
+  position: relative;
+`;
+
 /* Sticky fixed columns (normal mode). Opaque background so scrolled cells
  * slide beneath. The row hover/selected backgrounds live on the `tr` and
  * would be covered by the cell's own background, so they are re-created on
@@ -823,9 +835,13 @@ const fixedCellSelected = css`
 
 /* A fixed cell inside a sticky header is the scroll corner — it must
  * outrank both the header row (--haze-z-local-2) and fixed body cells
- * (--haze-z-local-1). */
+ * (--haze-z-local-1). A bare class would lose to `.stickyHead th`'s
+ * class+type specificity, so the `thead &` form ties it and wins by later
+ * definition — the `fixedCellSelected` order precedent below. */
 const fixedHeadCell = css`
-  z-index: var(--haze-z-local-3);
+  thead & {
+    z-index: var(--haze-z-local-3);
+  }
 `;
 
 /* Scroll-hint shadow on the inner edge of the outermost pinned column;
@@ -902,14 +918,6 @@ const toggleRow = css`
   &:hover {
     background: var(--haze-color-bg-subtle);
   }
-`;
-
-/* Resizable header cells anchor the absolutely positioned drag handle.
- * `position: relative` only wins where the header is not sticky — under
- * `stickyHeader` the `.stickyHead th` rule (class + type specificity)
- * keeps `position: sticky`, which anchors the handle just as well. */
-const resizableHead = css`
-  position: relative;
 `;
 
 /* Drag handle straddling the header cell's inline-end edge: a focusable

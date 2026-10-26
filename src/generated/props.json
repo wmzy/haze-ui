@@ -254,6 +254,11 @@
             "required": false
           },
           {
+            "name": "indicator",
+            "type": "boolean",
+            "required": false
+          },
+          {
             "name": "className",
             "type": "string",
             "required": false
@@ -1908,6 +1913,16 @@
           {
             "name": "multiple",
             "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "maxCount",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "maxTagCount",
+            "type": "number",
             "required": false
           },
           {
@@ -11042,7 +11057,8 @@
       "cssFamily": "tree",
       "imports": [
         "Tree",
-        "SortableTree"
+        "SortableTree",
+        "useTree"
       ],
       "propsTypes": {
         "SortableTreeProps": [
@@ -11149,6 +11165,11 @@
           {
             "name": "searchValue",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "scrollHandleRef",
+            "type": "Ref<TreeScrollHandle>",
             "required": false
           },
           {
@@ -11266,6 +11287,11 @@
           {
             "name": "keyboardNavigation",
             "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "scrollHandleRef",
+            "type": "Ref<TreeScrollHandle>",
             "required": false
           },
           {

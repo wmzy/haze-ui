@@ -1,0 +1,17 @@
+{
+  "latest": "v1.34.1",
+  "entries": [
+    {
+      "version": "v1.34.1",
+      "url": "/haze-ui/"
+    },
+    {
+      "version": "v1.33.0",
+      "url": "/haze-ui/v/v1.33.0/"
+    },
+    {
+      "version": "dev",
+      "url": "/haze-ui/dev/"
+    }
+  ]
+}

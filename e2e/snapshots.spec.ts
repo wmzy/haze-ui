@@ -45,6 +45,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * CopyButton, Snippet, Heatmap, TimeGrid, the closed NavigationMenu
  * bar, the refactored Accordion (controlled + disabled + classNames,
  * in light and dark), and the NavigationMenu's hover-opened mega panel.
+ *
+ * The wave6 group captures the complex composite surfaces from
+ * e2e/app/snapshots-wave6.html: the DataTable with sticky header +
+ * selection + pinned columns (scrolled before capture), the Workbench
+ * desktop shell, and the Datepicker's open calendar panel.
  */
 
 /** Waits until no enter animation is running and opacity is back to 1. */
@@ -205,6 +210,79 @@ test.describe('visual baselines — wave5 components', () => {
     // hovered trigger and its open mega panel (same approach as the
     // dropdown-submenu frame).
     await expect(page).toHaveScreenshot('navigationmenu-open.png');
+  });
+});
+
+/**
+ * Wave 6 group from e2e/app/snapshots-wave6.html: the DataTable in its
+ * enterprise combination — selection column (two rows preselected, so
+ * the header checkbox paints its indeterminate state) + sticky header +
+ * pinned left/right columns, with the shared scroller driven to its
+ * horizontal midpoint and 72px down so the stuck header and both opaque
+ * pinned runs paint over real content — plus the Workbench shell in its
+ * docked-sidebar desktop form (activity rail + file sidebar + editor +
+ * bottom panel + status bar + mobile tabBar slot; the 900px fixed
+ * wrapper keeps the shell above its own 768px container-query
+ * breakpoint, and its inline height 520 bounds the frame), and the
+ * Datepicker's open calendar panel (value pinned to 2026-09-01, so the
+ * captured frame is always September 2026; the panel is a top-layer
+ * popover painting outside the section subtree, so it is captured
+ * directly like the other overlay baselines).
+ */
+const WAVE6_SECTIONS = ['workbench'] as const;
+
+test.describe('visual baselines — wave6 components', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/snapshots-wave6');
+  });
+
+  for (const name of WAVE6_SECTIONS) {
+    test(`${name} baseline frame`, async ({ page }) => {
+      const section = page.locator(`[data-snap="${name}"]`);
+      await expect(section).toBeVisible();
+      await expect(section).toHaveScreenshot(`${name}.png`);
+    });
+  }
+
+  test('datatable selection frame (sticky header, fixed columns, scrolled)', async ({
+    page,
+  }) => {
+    const section = page.locator('[data-snap="datatablesel"]');
+    await expect(section).toBeVisible();
+    // Same scroller-driving contract as the static datatable frame: the
+    // only overflowing element in the section is the table's shared
+    // scrollport. Horizontal midpoint puts content beneath both pinned
+    // runs; 72px of vertical scroll proves the header (and the pinned
+    // header corners) stick above real scrolled rows.
+    const scrolled = await section.evaluate((root) => {
+      const scroller = Array.from(
+        root.querySelectorAll<HTMLElement>('*')
+      ).find((el) => el.scrollWidth > el.clientWidth + 1);
+      if (!scroller) return { x: -1, y: -1 };
+      scroller.scrollLeft = Math.round(
+        (scroller.scrollWidth - scroller.clientWidth) / 2
+      );
+      scroller.scrollTop = 72;
+      return { x: scroller.scrollLeft, y: scroller.scrollTop };
+    });
+    expect(scrolled.x).toBeGreaterThan(0);
+    expect(scrolled.y).toBeGreaterThan(0);
+    await expect(section).toHaveScreenshot('datatable-selection.png');
+  });
+
+  test('datepicker open panel (September 2026 calendar)', async ({ page }) => {
+    const section = page.locator('[data-snap="datepickeropen"]');
+    const input = section.locator('input');
+    await input.click();
+    const panel = section.locator('[popover]');
+    await expect(panel).toBeVisible();
+    // The pinned value keeps the month deterministic — the frame must
+    // never depend on when the suite runs.
+    await expect(
+      panel.getByRole('grid', { name: /September 2026/ })
+    ).toBeVisible();
+    await waitForOpenAnimationToSettle(panel);
+    await expect(panel).toHaveScreenshot('datepicker-open.png');
   });
 });
 

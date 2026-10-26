@@ -16,11 +16,11 @@
 // 'use client' directive, so imports resolve cleanly from RSC; the
 // wrapper inherits client semantics either way.
 
-import { Tree, SortableTree } from 'haze-ui';
+import { Tree, SortableTree, useTree } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tree.css';
 import 'haze-ui/css/virtual-list.css';
 
-export { Tree, SortableTree };
-export type { TreeProps, TreeNodeData, SortableTreeProps, SortableTreeMoveInfo } from 'haze-ui';
+export { Tree, SortableTree, useTree };
+export type { TreeProps, TreeNodeData, TreeScrollHandle, SortableTreeProps, SortableTreeMoveInfo, UseTreeOptions, UseTreeResult, TreeScrollToOptions, VisibleTreeRow } from 'haze-ui';

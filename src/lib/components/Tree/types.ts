@@ -1,6 +1,8 @@
 import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
+import type { VirtualListAlign } from '../VirtualList';
+
 /**
  * Tree 节点数据接口
  */
@@ -48,6 +50,26 @@ export type TreeVirtualizedConfig = {
    * `VirtualList`'s `5`.
    */
   overscan?: number;
+};
+
+/**
+ * Imperative scroll surface the tree reports through the internal
+ * `scrollHandleRef` seam (`useTree` wires it via `treeProps`;
+ * `SortableTree` forwards it with its `...rest`).
+ */
+export type TreeScrollHandle = {
+  /**
+   * Bring the row for `key` into view — `align` defaults to `'auto'`
+   * (VirtualList semantics: no-op while fully visible, entering from
+   * below pins to the start edge, from above to the end edge).
+   * Virtualized trees window-shift through `VirtualListHandle
+   * .scrollToIndex`; nested trees `scrollIntoView` the row. The request
+   * is durable: a `key` that is not currently visible (its ancestors
+   * are still collapsing into view — e.g. `useTree`'s `autoExpand`
+   * write has not committed yet) stays pending and resolves on the next
+   * rows change. It never expands anything by itself.
+   */
+  scrollToKey: (key: string, align?: VirtualListAlign) => void;
 };
 
 /**
@@ -135,6 +157,12 @@ export type TreeProps = {
    * checkboxes mid-drag.
    */
   keyboardNavigation?: boolean;
+  /**
+   * Receives the tree's imperative scroll handle (`TreeScrollHandle`).
+   * @internal — wiring seam for `useTree`, whose `treeProps` carries it;
+   * consumers reach the same surface as `useTree().scrollTo`.
+   */
+  scrollHandleRef?: Ref<TreeScrollHandle>;
   /** （受控）展开的节点 */
   expandedKeys?: ControlOrValue<string[]>;
   /** （受控）选中的节点 */

@@ -125,6 +125,26 @@ export function getParentKey(
   return null;
 }
 
+/**
+ * Ancestor chain of `key`: root first, the node itself last — `[]` when
+ * the key is unknown. One DFS pass (`getParentKey` re-walked per level
+ * would be O(depth · n)); the caller drops the last entry for the strict
+ * ancestors.
+ */
+export function getNodePath(
+  data: TreeNodeData[],
+  key: string
+): TreeNodeData[] {
+  for (const node of data) {
+    if (node.key === key) return [node];
+    if (node.children?.length) {
+      const path = getNodePath(node.children, key);
+      if (path.length > 0) return [node, ...path];
+    }
+  }
+  return [];
+}
+
 export function getAllLeafKeys(data: TreeNodeData[]): string[] {
   const keys: string[] = [];
   const walk = (nodes: TreeNodeData[]) => {

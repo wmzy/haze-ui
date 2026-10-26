@@ -68,6 +68,7 @@ export type GuideId =
   | 'composition'
   | 'darkMode'
   | 'density'
+  | 'deprecationPolicy'
   | 'migration'
   | 'motion'
   | 'serverActions'
@@ -7136,6 +7137,344 @@ const brand = createBrandTheme({
   },
 };
 
+/* ---------------------------------------------------------------------------
+ * Deprecation policy guide. Pure prose/tables/code blocks — no slots,
+ * no ui strings; the page shell (DeprecationPolicy/index.tsx) is the h1
+ * plus GuideDocView. Every fact is anchored: ButtonLink is the live
+ * @deprecated alias, scripts/codemods/ + variant-to-color are the codemod
+ * precedent (v1.34.0), warnDeprecated is src/lib/utils/deprecate.ts.
+ * ------------------------------------------------------------------------- */
+
+const deprecationPolicyEn: GuideDoc = {
+  title: 'Deprecation policy',
+  intro: [
+    'haze-ui moves, but it does not yank: a prop that falls out of the design is deprecated in a minor, warns in dev builds, keeps working through a defined grace window, and is only ever removed in a major — which ships with a codemod that migrates call sites mechanically. This page is the contract: what ',
+    code('deprecated'),
+    ' means here, how long the old surface stays, and how to silence the warnings while you migrate.',
+  ],
+  sections: [
+    sec(
+      'lifecycle',
+      'The lifecycle',
+      p([
+        'Deprecation is announced in a minor release, and three things change at once: the JSDoc grows an ',
+        code('@deprecated'),
+        ' tag naming the replacement, the changelog gains a Deprecated entry, and every use starts warning in dev (next section). The deprecated surface itself keeps working unchanged — same props, same types, same behavior — through the whole window:',
+      ]),
+      table(
+        ['Stage', 'Release', 'What you see'],
+        [
+          [
+            'Deprecation',
+            'minor N',
+            [
+              code('@deprecated'),
+              ' JSDoc naming the replacement, a changelog entry, and a dev-only console warning.',
+            ],
+          ],
+          [
+            'Grace window',
+            'minor N+1 and N+2',
+            'Nothing new: the prop keeps working exactly as before, and the warning keeps firing once per key.',
+          ],
+          [
+            'Removal',
+            'next major',
+            'The prop is deleted; that major ships a codemod covering every removal it contains.',
+          ],
+        ]
+      ),
+      note([
+        strong('Removals never land in a minor.'),
+        ' Deleting a public prop is a breaking change, so it ships in the next major — the two-minor rule is the minimum grace window, not permission for a minor to break. If the major is further out, the deprecated surface simply stays, still warning, until it ships.',
+      ]),
+      p([
+        'The scope is the public API surface: props and prop values, exported aliases, exported types. The live example is ',
+        code('ButtonLink'),
+        " — a deprecated alias for <Button as='a'> that already delegates its rendering to Button (one code path per family); it carries the @deprecated JSDoc today and is removed in the next major.",
+      ])
+    ),
+    sec(
+      'dev-warning',
+      'The dev warning',
+      p([
+        'Every deprecation warns through one shared helper — ',
+        code('warnDeprecated'),
+        ' in ',
+        code('src/lib/utils/deprecate.ts'),
+        ' — so the whole library warns the same way: a ',
+        code('[haze-ui]'),
+        ' prefix, the deprecated surface, the replacement and the removal window:',
+      ]),
+      codeBlock(
+        'bash',
+        `# the dev console, first use of a deprecated surface
+[haze-ui] ButtonLink is deprecated — use <Button as='a'> instead; the alias is removed in the next major.`
+      ),
+      list(
+        [
+          strong('Once per key.'),
+          ' A module-level Set dedups by deprecation key — a deprecated prop re-read on every render warns exactly once per page load, never once per render.',
+        ],
+        [
+          strong('Dev only.'),
+          ' When ',
+          code('process.env.NODE_ENV'),
+          " is 'production' the helper no-ops, and bundlers that define the constant statically strip the call from the output.",
+        ],
+        [
+          strong('Safe without a process global.'),
+          ' The guard reads ',
+          code('typeof process'),
+          ', so the same code runs in browsers and other process-less runtimes — there the warning simply stays on.',
+        ]
+      ),
+      caption([
+        'The shared prefix keeps the warnings greppable and filterable — every haze-ui deprecation lines up under one ',
+        code('[haze-ui]'),
+        ' search.',
+      ])
+    ),
+    sec(
+      'codemods',
+      'Codemods with every major',
+      p([
+        'Every removal in a major ships with a codemod, and mechanical renames ship one with the release that introduces them. The transforms live in ',
+        code('scripts/codemods/'),
+        ' and run through the repo runner — ',
+        code('variant-to-color'),
+        ' was the first, migrating the v1.34.0 ',
+        code('variant'),
+        '/',
+        code('tone'),
+        ' → ',
+        code('color'),
+        ' unification:',
+      ]),
+      codeBlock(
+        'bash',
+        `# preview the diff without touching files
+pnpm codemod variant-to-color src --dry --print
+
+# apply
+pnpm codemod variant-to-color src`
+      ),
+      p([
+        'Transforms never guess: when a rename cannot be proven safe (opaque expression values, elements already carrying both the old and the new prop), they skip the node and print a ',
+        code('REP'),
+        ' line naming the file and the reason — grep the output for ',
+        code('REP'),
+        ' after a run and resolve those by hand.',
+      ])
+    ),
+    sec(
+      'silencing',
+      'Silencing the warnings',
+      p([
+        'The warnings are development-only by design, so production never needs silencing. While you migrate, three levers cover the rest:',
+      ]),
+      list(
+        [
+          strong('Nothing to do in production.'),
+          ' The helper no-ops when ',
+          code('NODE_ENV'),
+          ' is production — the warning never reaches a bundle that defines the constant.',
+        ],
+        [
+          strong('Filter the browser console.'),
+          ' Every warning starts with ',
+          code('[haze-ui]'),
+          ' — type ',
+          code('-haze-ui'),
+          ' into the DevTools console filter box and they drop out of view.',
+        ],
+        [
+          strong('Mock the call in tests.'),
+          ' The repo convention for intentional warnings:',
+        ]
+      ),
+      codeBlock(
+        'tsx',
+        `const warn = vi
+  .spyOn(console, 'warn')
+  .mockImplementation(() => undefined);
+// ...render the deprecated usage...
+expect(warn).toHaveBeenCalledWith(
+  "[haze-ui] ButtonLink is deprecated — use <Button as='a'> instead; ..."
+);`
+      ),
+      note([
+        strong('The real fix is migration.'),
+        ' The warning names the replacement, and the major that removes the surface ships a codemod for it — the grace window is exactly as long as the silence you actually need.',
+      ])
+    ),
+  ],
+};
+
+const deprecationPolicyZh: GuideDoc = {
+  title: '弃用政策',
+  intro: [
+    'haze-ui 会前进，但不会生拉硬拽：一个退出设计的 prop 在某个 minor 里宣布弃用，在 dev 构建中警告，在明确的宽限期内照常工作，并且只会在 major 版本里移除——major 随附 codemod，机械化地迁移调用点。本页就是这份契约：这里的「弃用」意味着什么、旧接口保留多久、迁移期间如何让警告静默。',
+  ],
+  sections: [
+    sec(
+      'lifecycle',
+      '生命周期',
+      p([
+        '弃用在一个 minor 版本中宣布，三件事同时生效：JSDoc 长出指名替代方案的 ',
+        code('@deprecated'),
+        ' 标签，changelog 增加一条 Deprecated 记录，每一次使用都开始在 dev 中告警（见下一节）。被弃用的接口本身在整个窗口内照常工作——同样的 props、同样的类型、同样的行为：',
+      ]),
+      table(
+        ['阶段', '版本', '你会看到什么'],
+        [
+          [
+            '宣布弃用',
+            'minor N',
+            [
+              code('@deprecated'),
+              ' JSDoc 指名替代方案、changelog 记录，以及一条仅 dev 生效的 console 警告。',
+            ],
+          ],
+          [
+            '宽限窗口',
+            'minor N+1 与 N+2',
+            '没有任何新变化：prop 与从前完全一样地工作，警告按 key 只响一次。',
+          ],
+          [
+            '移除',
+            '下一个 major',
+            'prop 被删除；该 major 为它包含的每一项移除随附 codemod。',
+          ],
+        ]
+      ),
+      note([
+        strong('移除绝不落在 minor 里。'),
+        ' 删除一个公开 prop 是破坏性变更，所以一定随下一个 major 发布——「两个 minor」是最短宽限期，而不是允许 minor 破坏的许可。若 major 更晚才来，被弃用的接口就一直保留（持续警告）到它发布为止。',
+      ]),
+      p([
+        '适用范围是公开 API 面：props 与 prop 取值、导出的别名、导出的类型。现役示例是 ',
+        code('ButtonLink'),
+        "——<Button as='a'> 的弃用别名，渲染早已委托给 Button（每族一条代码路径）；它今天带着 @deprecated JSDoc，将在下一个 major 移除。",
+      ])
+    ),
+    sec(
+      'dev-warning',
+      '开发期警告',
+      p([
+        '所有弃用都经由同一个共享助手发出警告——',
+        code('src/lib/utils/deprecate.ts'),
+        ' 中的 ',
+        code('warnDeprecated'),
+        '——因此整个库以同一方式告警：',
+        code('[haze-ui]'),
+        ' 前缀、被弃用的接口、替代方案与移除窗口：',
+      ]),
+      codeBlock(
+        'bash',
+        `# the dev console, first use of a deprecated surface
+[haze-ui] ButtonLink is deprecated — use <Button as='a'> instead; the alias is removed in the next major.`
+      ),
+      list(
+        [
+          strong('每个 key 只警告一次。'),
+          ' 模块级 Set 按 key 去重——每次渲染都重读的弃用 prop，每个页面加载只警告一次，而非每次渲染一条。',
+        ],
+        [
+          strong('仅 dev 生效。'),
+          ' 当 ',
+          code('process.env.NODE_ENV'),
+          " 为 'production' 时助手是 no-op，静态定义了该常量的打包器会把调用从产物中整体剥除。",
+        ],
+        [
+          strong('无 process 环境也安全。'),
+          ' 守卫读取的是 ',
+          code('typeof process'),
+          '，同一份代码可在浏览器等无 process 的运行时中运行——在那里警告只是保持开启。',
+        ]
+      ),
+      caption([
+        '统一的前缀让警告可检索、可过滤——所有 haze-ui 弃用都归拢在同一个 ',
+        code('[haze-ui]'),
+        ' 检索词之下。',
+      ])
+    ),
+    sec(
+      'codemods',
+      '每个 major 随发 codemod',
+      p([
+        'major 中的每一项移除都随附 codemod，机械性改名则在引入它的那个版本随附。transforms 位于 ',
+        code('scripts/codemods/'),
+        '，经仓库 runner 运行——',
+        code('variant-to-color'),
+        ' 是第一个，迁移 v1.34.0 的 ',
+        code('variant'),
+        '/',
+        code('tone'),
+        ' → ',
+        code('color'),
+        ' 统一：',
+      ]),
+      codeBlock(
+        'bash',
+        `# preview the diff without touching files
+pnpm codemod variant-to-color src --dry --print
+
+# apply
+pnpm codemod variant-to-color src`
+      ),
+      p([
+        'transform 从不猜测：当改名无法被证明安全（不透明的表达式值、已同时携带新旧 prop 的元素），它会跳过该节点并打印一行 ',
+        code('REP'),
+        '，指名文件与原因——跑完后在输出里检索 ',
+        code('REP'),
+        '，手工处理这些残留。',
+      ])
+    ),
+    sec(
+      'silencing',
+      '让警告静默',
+      p([
+        '警告按设计只在开发期出现，生产环境从不需要静默。迁移期间，三个手段覆盖其余场景：',
+      ]),
+      list(
+        [
+          strong('生产环境无需任何操作。'),
+          ' 当 ',
+          code('NODE_ENV'),
+          ' 为 production 时助手是 no-op——警告永远不会到达定义了该常量的发布产物。',
+        ],
+        [
+          strong('过滤浏览器控制台。'),
+          ' 每条警告都以 ',
+          code('[haze-ui]'),
+          ' 开头——在 DevTools 控制台过滤框输入 ',
+          code('-haze-ui'),
+          '，它们就从视野里消失。',
+        ],
+        [
+          strong('测试中 mock 该调用。'),
+          ' 仓库对预期警告的惯例：',
+        ]
+      ),
+      codeBlock(
+        'tsx',
+        `const warn = vi
+  .spyOn(console, 'warn')
+  .mockImplementation(() => undefined);
+// ...render the deprecated usage...
+expect(warn).toHaveBeenCalledWith(
+  "[haze-ui] ButtonLink is deprecated — use <Button as='a'> instead; ..."
+);`
+      ),
+      note([
+        strong('真正的修复是迁移。'),
+        ' 警告指名了替代方案，移除该接口的 major 会随附 codemod——宽限期的长度，恰好等于你真正需要的静默时长。',
+      ])
+    ),
+  ],
+};
+
 /** All migrated guide bodies, keyed by guide id then locale. */
 export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   a11y: { en: a11yEn, zh: a11yZh },
@@ -7144,6 +7483,7 @@ export const GUIDE_CONTENT: Record<GuideId, GuideLocaleDocs> = {
   composition: { en: compositionEn, zh: compositionZh },
   darkMode: { en: darkModeEn, zh: darkModeZh },
   density: { en: densityEn, zh: densityZh },
+  deprecationPolicy: { en: deprecationPolicyEn, zh: deprecationPolicyZh },
   migration: { en: migrationEn, zh: migrationZh },
   motion: { en: motionEn, zh: motionZh },
   serverActions: { en: serverActionsEn, zh: serverActionsZh },

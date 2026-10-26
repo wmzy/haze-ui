@@ -144,6 +144,20 @@
   },
   {
     "type": "page",
+    "label": "Deprecation policy",
+    "sublabel": "Guide",
+    "route": "/guides/deprecation-policy",
+    "keywords": [
+      "deprecated",
+      "deprecation",
+      "removal",
+      "codemod",
+      "breaking change",
+      "弃用政策"
+    ]
+  },
+  {
+    "type": "page",
     "label": "Streaming a11y",
     "sublabel": "Guide",
     "route": "/guides/streaming-a11y",
@@ -3223,6 +3237,12 @@
   },
   {
     "type": "section",
+    "label": "maxTagCount & maxCount (multiple)",
+    "sublabel": "Combobox",
+    "route": "/components/combobox"
+  },
+  {
+    "type": "section",
     "label": "Groups",
     "sublabel": "Combobox",
     "route": "/components/combobox"
@@ -3470,6 +3490,12 @@
   {
     "type": "section",
     "label": "Virtualized (1200 nodes)",
+    "sublabel": "Tree",
+    "route": "/components/tree"
+  },
+  {
+    "type": "section",
+    "label": "useTree (path queries + scrollTo)",
     "sublabel": "Tree",
     "route": "/components/tree"
   },

@@ -35,6 +35,7 @@ import {
 import SidebarSearch, { MatchText } from './SidebarSearch';
 import CommandPalette from './CommandPalette';
 import VersionBadge from './VersionBadge';
+import VersionSwitcher from './VersionSwitcher';
 import DevDocsBanner from './DevDocsBanner';
 import {
   ALIASES,
@@ -423,6 +424,16 @@ function SidebarNav({ search, onSearchChange, onNavigate }: SidebarNavProps) {
             <ListItem>
               <Link
                 className={navLink}
+                to='/guides/deprecation-policy'
+                onClick={onNavigate}
+              >
+                {t.guides.deprecationPolicy}
+              </Link>
+              {guideSummary(t.guideSummaries.deprecationPolicy)}
+            </ListItem>
+            <ListItem>
+              <Link
+                className={navLink}
                 to='/guides/streaming-a11y'
                 onClick={onNavigate}
               >
@@ -683,6 +694,7 @@ export default function Layout() {
         </Tooltip>
         <div className={headerSpacer} />
         <CommandPalette />
+        <VersionSwitcher />
         <a
           className={versionTag}
           href={sourceUrl}

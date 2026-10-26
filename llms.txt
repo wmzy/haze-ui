@@ -384,8 +384,8 @@ API with the same semver commitment. The full export surface (60 entries):
 
 ## Hooks
 
-`haze-ui/hooks` is the standalone hooks entry — 23 value exports
-(plus 13 options/result type clauses) with no component code:
+`haze-ui/hooks` is the standalone hooks entry — 24 value exports
+(plus 14 options/result type clauses) with no component code:
 clipboard, dark mode, debounce, fullscreen, hotkeys, viewport and element
 observation, idle, network, orientation, reduced motion, storage-persisted
 state (`useLocalStorage`/`useSessionStorage` over the shared
@@ -394,7 +394,7 @@ Control-friendly) and the tab title. The overlay-relevant subset is also
 re-exported from `haze-ui/headless`; a curated selection ships on the main
 barrel.
 
-`useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useTitle`
+`useAnchorSpy`, `useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useTitle`
 
 ## Icons
 

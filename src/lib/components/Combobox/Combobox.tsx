@@ -9,6 +9,7 @@ import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
+
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
@@ -77,6 +78,22 @@ type ComboboxProps<T extends string | number = string> = {
    * selected chip.
    */
   multiple?: boolean;
+  /**
+   * Multiple mode only: cap the selectable count. Once the selection
+   * reaches `maxCount`, options that are not selected are disabled —
+   * dimmed, `aria-disabled`, clicks and Enter rejected — until
+   * something is deselected (selected options stay removable, and the
+   * creatable row is suppressed at the cap). Works the same
+   * controlled and uncontrolled; single mode ignores it.
+   */
+  maxCount?: number;
+  /**
+   * Multiple mode only: cap the rendered chips; the rest collapse into
+   * a `+N` badge whose `title` tooltip lists the overflow labels.
+   * Selection semantics are unchanged — the badge is presentational
+   * (removal stays through the panel, a chip's ×, or Backspace).
+   */
+  maxTagCount?: number;
   /**
    * Value callback for both modes — `T` in single mode, `T[]` when
    * `multiple` is set — fired after the value updates.
@@ -239,6 +256,27 @@ const multiInput = css`
 `;
 
 /**
+ * The `+N` overflow badge of `maxTagCount`: presentational (selection
+ * lives in the value, removal through the panel/Backspace), with the
+ * full overflow label list in the native `title` tooltip — Select's
+ * badge, token for token.
+ */
+const overflowBadge = css`
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--haze-radius-full);
+  background: var(--haze-color-bg-muted);
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  font-weight: var(--haze-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  padding: var(--haze-space-1) var(--haze-space-2);
+  cursor: default;
+`;
+
+/**
  * Query-match highlight inside an option label. Only token colors —
  * the `mark` element's UA chrome (yellow/black) is fully replaced.
  */
@@ -373,6 +411,8 @@ export default function Combobox<T extends string | number = string>({
   options,
   children,
   multiple = false,
+  maxCount,
+  maxTagCount,
   onValuesChange,
   creatable = false,
   onCreate,
@@ -394,6 +434,11 @@ export default function Combobox<T extends string | number = string>({
     ? { ...comboboxConfig.classNames, ...classNames }
     : classNames;
   const strings = useStrings('combobox');
+  // The `+N` overflow badge shares Select's `moreTags` string —
+  // Combobox has no own key for it and layering a new one would
+  // ripple through every built-in locale pack for the same symbol
+  // (the mirror of Select's tags row reusing `combobox.create`).
+  const selectStrings = useStrings('select');
   const [value, setValue] = useControl(valueControl, multiple ? ([] as T[]) : ('' as T));
   // Locally created options (creatable) layered on top of `options` —
   // see the `creatable` prop doc for the lifetime contract.
@@ -429,6 +474,11 @@ export default function Combobox<T extends string | number = string>({
   // compares against the string value directly.
   const selected = Array.isArray(value) ? value : [];
 
+  // maxCount cap: unselected options are locked once the selection
+  // reaches it (selected entries stay removable) — Select's contract.
+  const maxCountReached =
+    multiple && maxCount !== undefined && selected.length >= maxCount;
+
   // The base option set: the data-driven `options` first, then the
   // declarative compound children flattened into the same shape — one
   // authoring pipeline, both forms composing (Select's contract).
@@ -462,10 +512,16 @@ export default function Combobox<T extends string | number = string>({
 
   // Creatable row: offered only when nothing matches a non-blank query
   // (an exact label match is itself an `includes` match, so it suppresses
-  // the row). It leads the navigable list, so keyboard and aria-set
-  // semantics treat it as a regular option.
+  // the row) and only below the maxCount cap (Select's contract: the
+  // create row is suppressed once the selection is full). It leads the
+  // navigable list, so keyboard and aria-set semantics treat it as a
+  // regular option.
   const showCreateItem =
-    creatable && !loading && query.trim() !== '' && filtered.length === 0;
+    creatable &&
+    !loading &&
+    !maxCountReached &&
+    query.trim() !== '' &&
+    filtered.length === 0;
   const trimmedQuery = query.trim();
   const createText = formatString(strings.create, { query: trimmedQuery });
   const listItems: ComboboxOptionData<T>[] = showCreateItem
@@ -575,9 +631,9 @@ export default function Combobox<T extends string | number = string>({
   const isSelected = (val: T) =>
     multiple ? selected.includes(val) : value === val;
 
-  const labelFor = (optionValue: T): ReactNode =>
+  const labelFor = (optionValue: T): string =>
     effectiveOptions.find((o) => o.value === optionValue)?.label ??
-    optionValue;
+    String(optionValue);
 
   const selectOption = (val: T, labelOverride?: string) => {
     const label =
@@ -585,6 +641,11 @@ export default function Combobox<T extends string | number = string>({
       effectiveOptions.find((o) => o.value === val)?.label ??
       String(val);
     if (multiple) {
+      // maxCount rejection: the row's aria-disabled state already
+      // stops the pointer path; this guard is what enforces the cap
+      // for the keyboard path and controlled values alike (Select's
+      // toggleOption contract).
+      if (maxCountReached && !selected.includes(val)) return;
       // Toggle in place; the panel stays open for the next pick and the
       // query clears so the full list is reachable again.
       const next = selected.includes(val)
@@ -668,7 +729,13 @@ export default function Combobox<T extends string | number = string>({
       key={o.value}
       ref={!virtual && i === highlightIndex ? activeRowRef : undefined}
       value={o.value}
-      disabled={o.disabled === true}
+      disabled={
+        o.disabled === true ||
+        // The maxCount lock joins the option-level disabled under the
+        // same inert-row contract (Select's renderOption); the create
+        // row is never locked — it is suppressed at the cap instead.
+        (multiple && maxCountReached && !isSelected(o.value))
+      }
       id={optionId(i)}
       setSize={listItems.length}
       posInSet={i + 1}
@@ -729,7 +796,10 @@ export default function Combobox<T extends string | number = string>({
             inputRef.current?.focus();
           }}
         >
-          {selected.map((v) => (
+          {(maxTagCount === undefined
+            ? selected
+            : selected.slice(0, Math.max(maxTagCount, 0))
+          ).map((v) => (
             <span
               key={v}
               data-slot='item'
@@ -748,6 +818,21 @@ export default function Combobox<T extends string | number = string>({
               </Chip>
             </span>
           ))}
+          {maxTagCount !== undefined &&
+            selected.length > Math.max(maxTagCount, 0) && (
+              <span
+                data-slot='overflow-badge'
+                x-class={overflowBadge}
+                title={selected
+                  .slice(Math.max(maxTagCount, 0))
+                  .map((v) => labelFor(v))
+                  .join(', ')}
+              >
+                {formatString(selectStrings.moreTags, {
+                  count: selected.length - Math.max(maxTagCount, 0),
+                })}
+              </span>
+            )}
           {triggerInput}
         </div>
       ) : (

@@ -312,6 +312,7 @@ export const en = {
     dark: 'Dark',
     auto: 'Auto',
     language: 'Language',
+    version: 'Version',
     noCustomTheme: 'No custom theme',
     themeEditor: 'Theme Editor',
     viewSourceAt: 'View source at {version} ({commit})',
@@ -350,6 +351,7 @@ export const en = {
     a11yContracts: 'A11y Contracts',
     a11yStatement: 'WCAG 2.2 conformance',
     migration: 'Migrating from AntD / shadcn',
+    deprecationPolicy: 'Deprecation policy',
     streamingA11y: 'Streaming a11y',
     motion: 'Motion presets',
     figmaTokens: 'Tokens in Figma',
@@ -368,6 +370,8 @@ export const en = {
     a11yStatement:
       'The accessibility conformance report: WCAG 2.2 A/AA by criterion, evidenced from the test matrix.',
     migration: 'Porting recipes from AntD or shadcn/ui to haze-ui.',
+    deprecationPolicy:
+      'The lifecycle of a deprecated prop: dev warning, two-minor grace, removal in a major with a codemod.',
     streamingA11y:
       'Accessible streamed AI output: live regions, announcements and reduced motion.',
     motion:

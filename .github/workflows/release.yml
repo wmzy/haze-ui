@@ -2,7 +2,11 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    # main → latest；beta → semantic-release 预发布通道（dist-tag beta，
+    # 版本号 x.y.z-beta.n，见 .releaserc.json 的 prerelease 分支配置）。
+    # PR 触发不在此列：pull_request 事件对 base 分支无过滤，指向 beta 的
+    # PR 同样会进入 preview 任务的 dry-run（伪装的 GITHUB_REF 会命中白名单）。
+    branches: [main, beta]
     paths:
       - "src/**"
       - "scripts/**"

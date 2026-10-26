@@ -1,3 +1,5 @@
+export { useAnchorSpy } from './useAnchorSpy';
+export type { UseAnchorSpyOptions, UseAnchorSpyResult } from './useAnchorSpy';
 export { useBusyPressable } from './useBusyPressable';
 // NOTE: also surfaced through `haze-ui/headless` (see its barrel).
 export { useClipboard } from './useClipboard';

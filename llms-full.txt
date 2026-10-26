@@ -150,6 +150,7 @@ import { Anchor } from 'haze-ui';
 | `offsetTop` | `number` | `0` | Gap kept between the container top and the section top when scrolling (sticky header height), px |
 | `bounds` | `number` | `5` | Scroll-spy trigger line, px from the container top (engines without IntersectionObserver) |
 | `getContainer` | `() => HTMLElement \| Window` | `() => window` | Scroll container the anchors navigate and observe |
+| `indicator` | `boolean` | — |  |
 | `className` | `string` | — | Additional CSS class |
 
 ## AppShell
@@ -793,6 +794,8 @@ import { Combobox, ComboboxOption, ComboboxGroup } from 'haze-ui';
 | `options` | `ComboboxOptionData<T>[]` | — | Data-driven option entries; optional when compound children supply the rows — options render first, children after. `disabled` rows stay visible but inert; `group` clusters consecutive options under a heading |
 | `children` | `ReactNode` | — | Compound <ComboboxOption> rows (optionally inside <ComboboxGroup> sections), flattening into the same option data as `options` |
 | `multiple` | `boolean` | — |  |
+| `maxCount` | `number` | — |  |
+| `maxTagCount` | `number` | — |  |
 | `onValuesChange` | `(value: T \| T[]) => void` | — |  |
 | `creatable` | `boolean` | — |  |
 | `onCreate` | `(query: string) => void` | — |  |
@@ -4228,7 +4231,7 @@ import { Transfer, TransferCore } from 'haze-ui';
 ## Tree
 
 ```jsx
-import { Tree, SortableTree } from 'haze-ui';
+import { Tree, SortableTree, useTree } from 'haze-ui';
 ```
 
 ### SortableTreeProps
@@ -4256,6 +4259,7 @@ import { Tree, SortableTree } from 'haze-ui';
 | `virtualized` | `boolean \| TreeVirtualizedConfig` | — |  |
 | `loadData` | `(node: TreeNodeData) => Promise<TreeNodeData[]>` | — |  |
 | `searchValue` | `string` | — |  |
+| `scrollHandleRef` | `Ref<TreeScrollHandle>` | — |  |
 | `expandedKeys` | `ControlOrValue<string[]>` | — |  |
 | `selectedKeys` | `ControlOrValue<string[]>` | — |  |
 | `checkedKeys` | `ControlOrValue<string[]>` | — |  |
@@ -4284,6 +4288,7 @@ import { Tree, SortableTree } from 'haze-ui';
 | `searchValue` | `string` | — |  |
 | `rowWrap` | `(row: ReactNode, node: TreeNodeData) => ReactNode` | — |  |
 | `keyboardNavigation` | `boolean` | — |  |
+| `scrollHandleRef` | `Ref<TreeScrollHandle>` | — |  |
 | `expandedKeys` | `ControlOrValue<string[]>` | — | Controlled expanded node keys |
 | `selectedKeys` | `ControlOrValue<string[]>` | — | Controlled selected node keys |
 | `checkedKeys` | `ControlOrValue<string[]>` | — | Controlled checked node keys |

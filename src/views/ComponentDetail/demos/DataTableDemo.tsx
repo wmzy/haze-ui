@@ -9,6 +9,8 @@ import type { DataTableFiltersState } from '@/lib/components/DataTable';
 
 import { useEffect, useState } from 'react';
 
+import { css } from '@linaria/core';
+
 import { useControl } from 'react-use-control';
 
 import { Badge, DataTable } from '@/lib';
@@ -93,6 +95,21 @@ const wideColumns: DataTableColumnDef<EmployeeRow>[] = [
   { accessorKey: 'score', header: 'Score', meta: { width: 90 } },
   { accessorKey: 'joined', header: 'Joined', meta: { width: 120, fixed: 'right' } },
 ];
+
+// Vertical bound for the wide demo's stickyHeader: `className` lands on
+// the DataTable root (a flex column), and only a height bound there makes
+// the scroll area actually scroll — a max-height wrapper div around the
+// table would leave the root content-sized and the header unstuck.
+const pinnedViewport = css`
+  max-height: 260px;
+`;
+
+// The same root bound for the other sticky-header sections: 220px keeps
+// even a single paginated page (rows + header + pagination footer)
+// overflowing enough for the sticky header and footer to visibly work.
+const stickyViewport = css`
+  max-height: 220px;
+`;
 
 // Enterprise combination — per-column switches on top of the table-level
 // ones: Status is pinned in the visibility menu (meta.hideable), Score
@@ -420,15 +437,14 @@ function InfiniteScrollTable() {
 
   return (
     <>
-      <div style={{ maxHeight: 260 }}>
-        <DataTable
-          columns={baseColumns.slice(0, 3)}
-          data={BIG_ROWS.slice(0, count)}
-          stickyHeader
-          onEndReached={loadMore}
-          getRowId={(employee) => String(employee.id)}
-        />
-      </div>
+      <DataTable
+        columns={baseColumns.slice(0, 3)}
+        data={BIG_ROWS.slice(0, count)}
+        stickyHeader
+        className={stickyViewport}
+        onEndReached={loadMore}
+        getRowId={(employee) => String(employee.id)}
+      />
       <p className={dataTableNote}>
         Loaded {count} of {BIG_ROWS.length}
         {fetching ? ' — fetching…' : ''}
@@ -502,6 +518,7 @@ export default function DataTableDemo() {
           getRowId={(employee) => String(employee.id)}
           loading={loading}
           stickyHeader
+          className={stickyViewport}
           empty={<>No employees found</>}
         />
       </div>
@@ -524,7 +541,12 @@ export default function DataTableDemo() {
           <code>size</code> field works as a px fallback). Pin columns with{' '}
           <code>meta.fixed</code> so they stay visible while the rest
           scrolls horizontally — here <em>Name</em> sticks left and{' '}
-          <em>Joined</em> right in a narrowed viewport. Normal mode only;
+          <em>Joined</em> right in a narrowed viewport. Paired with{' '}
+          <code>stickyHeader</code>, the pinned header cells become scroll
+          corners — sticky on both axes and stacked above the header row
+          and body cells alike; the vertical bound is a{' '}
+          <code>max-height</code> className on the root (the scroll area
+          only scrolls once the root is height-bounded). Normal mode only;
           virtualized tables ignore <code>fixed</code>.
         </p>
         <div style={{ maxWidth: 560 }}>
@@ -532,6 +554,8 @@ export default function DataTableDemo() {
             columns={wideColumns}
             data={PEOPLE}
             sortable
+            stickyHeader
+            className={pinnedViewport}
             getRowId={(employee) => String(employee.id)}
           />
         </div>
@@ -652,27 +676,29 @@ export default function DataTableDemo() {
           <code>dataTableCount</code> helpers cover numeric columns;{' '}
           <code>stickyFooter</code> pins the tfoot to the bottom of a
           height-bounded scroll area (here paired with{' '}
-          <code>stickyHeader</code>).
+          <code>stickyHeader</code>; the bound is the{' '}
+          <code>max-height</code> className on the table root — a
+          max-height wrapper div around it would leave the scroll area
+          unbounded and nothing sticking).
         </p>
-        <div style={{ maxHeight: 240 }}>
-          <DataTable
-            columns={baseColumns}
-            data={PEOPLE}
-            getRowId={(employee) => String(employee.id)}
-            stickyHeader
-            stickyFooter
-            summary={(rows) => [
-              {
-                label: 'Score totals',
-                cells: ['Sum', dataTableSum(rows, 'score')],
-              },
-              {
-                label: 'Score averages',
-                cells: ['Average', dataTableAvg(rows, 'score')],
-              },
-            ]}
-          />
-        </div>
+        <DataTable
+          columns={baseColumns}
+          data={PEOPLE}
+          getRowId={(employee) => String(employee.id)}
+          stickyHeader
+          stickyFooter
+          className={stickyViewport}
+          summary={(rows) => [
+            {
+              label: 'Score totals',
+              cells: ['Sum', dataTableSum(rows, 'score')],
+            },
+            {
+              label: 'Score averages',
+              cells: ['Average', dataTableAvg(rows, 'score')],
+            },
+          ]}
+        />
       </div>
 
       <div className={section}>
@@ -777,17 +803,16 @@ export default function DataTableDemo() {
           when navigation leaves the window. Click a cell below and use
           the arrows.
         </p>
-        <div style={{ maxHeight: 240 }}>
-          <DataTable
-            columns={editableColumns}
-            data={employees}
-            getRowId={(employee) => String(employee.id)}
-            sortable
-            stickyHeader
-            editable
-            onCellEdit={handleCellEdit}
-          />
-        </div>
+        <DataTable
+          columns={editableColumns}
+          data={employees}
+          getRowId={(employee) => String(employee.id)}
+          sortable
+          stickyHeader
+          className={stickyViewport}
+          editable
+          onCellEdit={handleCellEdit}
+        />
       </div>
 
       <div className={section}>

@@ -2,15 +2,26 @@ import type {
   FocusEvent as ReactFocusEvent,
   KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import type { VirtualListHandle } from '../VirtualList';
+import type { VirtualListAlign, VirtualListHandle } from '../VirtualList';
 
-import type { TreeNodeData, TreeProps, TreeVirtualizedConfig } from './types';
+import type {
+  TreeNodeData,
+  TreeProps,
+  TreeVirtualizedConfig,
+} from './types';
 import type { VisibleTreeRow } from './utils';
 
 import { useControl } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { getDirection } from '../../utils/direction';
 import { mergeRefs } from '../../utils/refs';
@@ -128,6 +139,7 @@ export default function Tree({
   searchValue,
   rowWrap,
   keyboardNavigation = true,
+  scrollHandleRef,
   expandedKeys: expandedKeysControl,
   selectedKeys: selectedKeysControl,
   checkedKeys: checkedKeysControl,
@@ -421,6 +433,56 @@ export default function Tree({
     el.focus();
     setPendingFocusKey(null);
   }, [pendingFocusKey, visibleRows]);
+
+  // ── Imperative scroll (useTree wiring) ──────────────────────────
+  // scrollToKey requests queue here and resolve exactly like keyboard
+  // focus moves above: the row may not exist in the current commit (its
+  // ancestors are still collapsed while useTree's autoExpand write is
+  // in flight), so the request stays pending and retries when the rows
+  // change — the autoExpand commit itself lands it.
+  const [pendingScroll, setPendingScroll] = useState<{
+    key: string;
+    align: VirtualListAlign;
+  } | null>(null);
+
+  const scrollToKey = useCallback(
+    (key: string, align: VirtualListAlign = 'auto') => {
+      setPendingScroll({ key, align });
+    },
+    []
+  );
+
+  useImperativeHandle(
+    scrollHandleRef,
+    () => ({ scrollToKey }),
+    [scrollToKey]
+  );
+
+  useEffect(() => {
+    if (!pendingScroll) return;
+    const index = visibleRows.findIndex(
+      (row) => row.key === pendingScroll.key
+    );
+    if (index < 0) return; // not visible (yet) — retried when the rows change
+    if (virtual) {
+      listRef.current?.scrollToIndex(index, pendingScroll.align);
+    } else {
+      const row = Array.from(
+        rootRef.current?.querySelectorAll<HTMLElement>('[role="treeitem"]') ??
+          []
+      ).find((item) => item.dataset.treeKey === pendingScroll.key);
+      const block: ScrollLogicalPosition =
+        pendingScroll.align === 'start'
+          ? 'start'
+          : pendingScroll.align === 'end'
+            ? 'end'
+            : pendingScroll.align === 'center'
+              ? 'center'
+              : 'nearest';
+      row?.scrollIntoView({ block });
+    }
+    setPendingScroll(null);
+  }, [pendingScroll, visibleRows, virtual]);
 
   function handleToggle(key: string) {
     const isExpanded = expandedKeys.includes(key);

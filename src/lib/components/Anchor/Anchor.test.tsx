@@ -303,4 +303,138 @@ describe('Anchor', () => {
     });
     expect(results.violations).toEqual([]);
   });
+
+  it('renders nested children as an indented sub-list with a flat highlight', async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi
+      .spyOn(window, 'scrollTo')
+      .mockImplementation(() => undefined);
+    try {
+      render(
+        <main>
+          <Anchor
+            aria-label="On this page"
+            items={[
+              { id: 'basics', label: 'Basics' },
+              {
+                id: 'usage',
+                label: 'Usage',
+                children: [
+                  { id: 'examples', label: 'Examples' },
+                  { id: 'recipes', label: 'Recipes' },
+                ],
+              },
+              { id: 'api', label: 'API' },
+            ]}
+          />
+          <section id="basics">Basics body</section>
+          <section id="usage">Usage body</section>
+          <section id="examples">Examples body</section>
+          <section id="recipes">Recipes body</section>
+          <section id="api">API body</section>
+        </main>
+      );
+      const nav = screen.getByRole('navigation');
+      // depth-first document order: nested links sit between parent and successor
+      const links = within(nav).getAllByRole('link');
+      expect(links.map((link) => link.getAttribute('href'))).toEqual([
+        '#basics',
+        '#usage',
+        '#examples',
+        '#recipes',
+        '#api',
+      ]);
+
+      // the sub-list is a second ul inside the parent li — native nested
+      // list semantics, no extra aria
+      const lists = within(nav).getAllByRole('list');
+      expect(lists).toHaveLength(2);
+      const [outerList, nestedList] = lists as [HTMLElement, HTMLElement];
+      expect(outerList.querySelector('ul')).toBe(nestedList);
+      const usageLi = nestedList.parentElement;
+      expect(usageLi?.tagName).toBe('LI');
+      expect(
+        within(usageLi!).getByRole('link', { name: 'Usage' })
+      ).toBeInTheDocument();
+      expect(within(nestedList).getAllByRole('listitem')).toHaveLength(2);
+
+      // activeId stays a flat id match across levels
+      await user.click(screen.getByRole('link', { name: 'Recipes' }));
+      expect(screen.getByRole('link', { name: 'Recipes' })).toHaveAttribute(
+        'aria-current',
+        'true'
+      );
+      expect(
+        screen.getByRole('link', { name: 'Usage' })
+      ).not.toHaveAttribute('aria-current');
+    } finally {
+      scrollTo.mockRestore();
+    }
+  });
+
+  it('does not render an indicator by default', () => {
+    renderPage();
+    expect(document.querySelector("[data-slot='indicator']")).toBeNull();
+  });
+
+  it('slides a decorative indicator to the active link', async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi
+      .spyOn(window, 'scrollTo')
+      .mockImplementation(() => undefined);
+    try {
+      renderPage({ indicator: true });
+      const indicator = document.querySelector<HTMLElement>(
+        "[data-slot='indicator']"
+      )!;
+      expect(indicator).toBeInstanceOf(HTMLElement);
+      // decorative — hidden from the a11y tree
+      expect(indicator).toHaveAttribute('aria-hidden', 'true');
+      // jsdom geometry: the initial active link (Basics) sits at 0
+      expect(indicator.style.transform).toBe('translateY(0px)');
+
+      // measured geometry drives the slide on highlight change
+      const usageLink = screen.getByRole('link', { name: 'Usage' });
+      Object.defineProperty(usageLink, 'offsetTop', {
+        configurable: true,
+        value: 40,
+      });
+      Object.defineProperty(usageLink, 'offsetHeight', {
+        configurable: true,
+        value: 24,
+      });
+      await user.click(usageLink);
+      expect(indicator.style.transform).toBe('translateY(40px)');
+      expect(indicator.style.height).toBe('24px');
+    } finally {
+      scrollTo.mockRestore();
+    }
+  });
+
+  it('has no axe violations with nesting and the indicator', async () => {
+    const { axe } = await import('jest-axe');
+    render(
+      <main>
+        <Anchor
+          indicator
+          aria-label="On this page"
+          items={[
+            { id: 'basics', label: 'Basics' },
+            {
+              id: 'usage',
+              label: 'Usage',
+              children: [{ id: 'examples', label: 'Examples' }],
+            },
+          ]}
+        />
+        <section id="basics">Basics body</section>
+        <section id="usage">Usage body</section>
+        <section id="examples">Examples body</section>
+      </main>
+    );
+    const results = await axe(document.body, {
+      rules: { region: { enabled: false } },
+    });
+    expect(results.violations).toEqual([]);
+  });
 });

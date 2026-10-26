@@ -11,7 +11,14 @@ import { intro, section } from '../styles';
 
 const ITEMS = [
   { id: 'anchor-basics', label: 'Basics' },
-  { id: 'anchor-scroll', label: 'Scroll spy' },
+  {
+    id: 'anchor-scroll',
+    label: 'Scroll spy',
+    children: [
+      { id: 'anchor-spy-engine', label: 'Engines' },
+      { id: 'anchor-spy-indicator', label: 'Sliding indicator' },
+    ],
+  },
   { id: 'anchor-control', label: 'Controlled highlight' },
 ];
 
@@ -68,8 +75,10 @@ export default function AnchorDemo() {
     <>
       <h1>Anchor</h1>
       <p className={intro}>
-        Sticky anchor navigation with IntersectionObserver scroll-spy. The
-        highlight is a controllable state: hand it a control and clicks,
+        Sticky anchor navigation with IntersectionObserver scroll-spy (the
+        engine is the `useAnchorSpy` hook). Items accept nested `children` for
+        a second level, `indicator` adds a sliding highlight line, and the
+        active id is a controllable state: hand it a control and clicks,
         scrolling and external writes all flow through the same state.
       </p>
 
@@ -80,6 +89,7 @@ export default function AnchorDemo() {
             <Anchor
               items={ITEMS}
               activeId={activeIdCtrl}
+              indicator
               offsetTop={16}
               getContainer={() => scrollRef.current ?? document.body}
             />
@@ -99,8 +109,27 @@ export default function AnchorDemo() {
               <p>
                 An IntersectionObserver tracks which sections intersect the
                 viewport band; the topmost visible one gets the highlight and
-                `aria-current`. Scroll this box to watch it move.
+                `aria-current`. Scroll this box to watch it move. The engine
+                ships as the `useAnchorSpy` hook (`haze-ui/hooks`).
               </p>
+              <section className={docSection} id="anchor-spy-engine">
+                <h3>Engines</h3>
+                <p>
+                  Engines without IntersectionObserver fall back to a scroll
+                  listener that activates the last section crossing the
+                  `bounds` trigger line.
+                </p>
+              </section>
+              <section className={docSection} id="anchor-spy-indicator">
+                <h3>Sliding indicator</h3>
+                <p>
+                  `indicator` adds the sliding line next to the active item —
+                  one measured bar animated with a transform transition,
+                  disabled under prefers-reduced-motion. Nested `children`
+                  render as an indented sub-list, exactly like these two
+                  sections.
+                </p>
+              </section>
             </section>
             <section className={docSection} id="anchor-control">
               <h3>Controlled highlight</h3>
@@ -132,6 +161,15 @@ export default function AnchorDemo() {
             <li>
               Real anchors — middle-click / copy-link still work, clicks just
               take over the scroll
+            </li>
+            <li>
+              Nested <strong>children</strong> render as a real nested list —
+              native semantics, no extra aria
+            </li>
+            <li>
+              The sliding indicator line is decorative
+              (<strong>aria-hidden</strong>) and its transition turns off
+              under prefers-reduced-motion
             </li>
           </ul>
         </A11yNote>

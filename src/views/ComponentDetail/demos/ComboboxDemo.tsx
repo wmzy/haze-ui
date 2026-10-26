@@ -57,6 +57,9 @@ export default function ComboboxDemo() {
   // never a bare value (a bare value is only the uncontrolled initial
   // value — later prop changes are ignored).
   const [, , tagsCtrl] = useControl<string[]>(undefined, []);
+  // maxTagCount/maxCount example: the badge collapses the chips while
+  // the cap keeps the selection itself bounded.
+  const [capped, , cappedCtrl] = useControl<string[]>(undefined, []);
   // Number-valued generic usage: the control and the chips stay
   // numbers end to end.
   const [years, , yearsCtrl] = useControl<number[]>(undefined, [2024]);
@@ -162,6 +165,44 @@ export default function ComboboxDemo() {
             value={tagsCtrl}
             placeholder="Pick fruits..."
           />
+        </div>
+      </div>
+
+      <div className={section}>
+        <h2>maxTagCount &amp; maxCount (multiple)</h2>
+        <p
+          style={{
+            fontSize: 'var(--haze-text-sm)',
+            color: 'var(--haze-color-text-secondary)',
+            margin: '0 0 var(--haze-space-3)',
+          }}
+        >
+          <code>maxTagCount</code> caps the rendered chips — the overflow
+          collapses into a <code>+N</code> badge whose tooltip lists the
+          hidden labels. <code>maxCount</code> caps the selection itself:
+          once filled, the remaining options dim and carry{' '}
+          <code>aria-disabled</code> — clicks and Enter are rejected until
+          something is deselected (selected options always stay removable,
+          and the creatable row is suppressed at the cap).
+        </p>
+        <div className={fieldRow}>
+          <Combobox
+            multiple
+            options={FRUITS}
+            maxTagCount={2}
+            maxCount={4}
+            value={cappedCtrl}
+            placeholder="Pick up to four..."
+          />{' '}
+          <span
+            style={{
+              fontSize: 'var(--haze-text-sm)',
+              color: 'var(--haze-color-text-secondary)',
+            }}
+          >
+            Selected: {capped.length}
+            {capped.length > 0 ? ` (${capped.join(', ')})` : ''}
+          </span>
         </div>
       </div>
 

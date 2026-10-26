@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import { SortableTree, Tree, type TreeNodeData } from '@/lib';
+import { SortableTree, Tree, useTree, type TreeNodeData } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
@@ -179,6 +179,57 @@ function SearchTreeDemo() {
   );
 }
 
+/** useTree demo: live path breadcrumb + imperative scroll with
+ *  autoExpand against the virtualized 1200-node dataset. */
+function UseTreeDemo({ data }: { data: TreeNodeData[] }) {
+  const tree = useTree({ treeData: data });
+  const [target, setTarget] = useState('group-120-3');
+  const path = tree.getPath(target);
+  return (
+    <>
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          flexWrap: 'wrap',
+          marginBottom: 12,
+        }}
+      >
+        <input
+          value={target}
+          aria-label='Target node key'
+          placeholder='group-120-3'
+          onChange={(event) => setTarget(event.target.value)}
+          style={{ padding: '6px 10px', width: 160 }}
+        />
+        <button
+          type='button'
+          onClick={() => tree.scrollTo(target, { autoExpand: true })}
+        >
+          Scroll to node
+        </button>
+      </div>
+      <p style={{ marginTop: 0 }}>
+        Path:{' '}
+        {path.length > 0 ? (
+          path.map((node: TreeNodeData, index: number) => (
+            <span key={node.key}>
+              {index > 0 && ' › '}
+              {node.title}
+            </span>
+          ))
+        ) : (
+          <em>unknown key</em>
+        )}{' '}
+        · {tree.flattenVisible().length} rows visible
+      </p>
+      <div style={{ maxWidth: 320 }}>
+        <Tree {...tree.treeProps} virtualized={{ height: 288 }} />
+      </div>
+    </>
+  );
+}
+
 export default function TreeDemo() {
   // 200 groups × 6 rows = 1200 nodes for the virtualized example.
   const virtualData: TreeNodeData[] = Array.from(
@@ -276,6 +327,24 @@ export default function TreeDemo() {
             checkable
           />
         </div>
+      </div>
+
+      <div className={section}>
+        <h2>useTree (path queries + scrollTo)</h2>
+        <p>
+          <code>useTree</code> is the companion hook: it owns{' '}
+          <code>expandedKeys</code> through the same control contract as the
+          tree (pass a control for controlled sharing, a plain array as the
+          uncontrolled initial), answers <code>getPath(key)</code> with the
+          root-first ancestor chain (breadcrumb-ready) and{' '}
+          <code>flattenVisible()</code> with the exact row order the
+          virtualized window pages over, and drives{' '}
+          <code>scrollTo(key, {'{ autoExpand }'})</code> — expanding the
+          ancestors first and landing the scroll on that commit. Spread{' '}
+          <code>{'{...tree.treeProps}'}</code> onto the tree so the hook and
+          the component share one state; an unknown key is a durable no-op.
+        </p>
+        <UseTreeDemo data={virtualData} />
       </div>
 
       <div className={section}>

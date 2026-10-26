@@ -149,8 +149,9 @@ export { Datepicker, DatepickerCore } from './components/Datepicker';
 export type { DatepickerProps, DatepickerCoreProps, DatepickerPreset } from './components/Datepicker';
 export { DateField, DateFieldCore } from './components/DateField';
 export type { DateFieldProps, DateFieldCoreProps, DatePlaceholder, DateLabels } from './components/DateField';
-export { Tree, SortableTree } from './components/Tree';
-export type { TreeProps, TreeNodeData, SortableTreeProps, SortableTreeMoveInfo } from './components/Tree';
+export { Tree, SortableTree, useTree } from './components/Tree';
+export type { TreeProps, TreeNodeData, TreeScrollHandle, SortableTreeProps, SortableTreeMoveInfo } from './components/Tree';
+export type { UseTreeOptions, UseTreeResult, TreeScrollToOptions, VisibleTreeRow } from './components/Tree';
 export { TreeSelect } from './components/TreeSelect';
 export type { TreeSelectProps } from './components/TreeSelect';
 

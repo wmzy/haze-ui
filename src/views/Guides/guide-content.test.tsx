@@ -11,6 +11,7 @@ import A11yGuide from '@/views/Guides/A11y';
 import CompositionGuide from '@/views/Guides/Composition';
 import DarkModeGuide from '@/views/Guides/DarkMode';
 import DensityGuide from '@/views/Guides/Density';
+import DeprecationPolicyGuide from '@/views/Guides/DeprecationPolicy';
 import MigrationGuide from '@/views/Guides/Migration';
 import MotionGuide from '@/views/Guides/Motion';
 import ServerActionsGuide from '@/views/Guides/ServerActions';
@@ -181,6 +182,36 @@ describe('guide pages locale smoke', () => {
       expect(screen.getByText(/compact：关/)).toBeInTheDocument();
       // Scale table is data-driven and locale-free.
       expect(screen.getByText('--haze-space-1')).toBeInTheDocument();
+    });
+  });
+
+  describe('DeprecationPolicy', () => {
+    it('renders the English source verbatim', () => {
+      renderAt(<DeprecationPolicyGuide />, 'en');
+      expect(screen.getByRole('heading', { level: 1, name: 'Deprecation policy' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'The lifecycle' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'The dev warning' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Codemods with every major' })).toBeInTheDocument();
+      // The warning samples render verbatim, prefix included — the console
+      // sample and the vitest mock snippet both carry it.
+      expect(
+        screen.getAllByText(/\[haze-ui\] ButtonLink is deprecated/).length
+      ).toBeGreaterThan(0);
+      // Policy bullets render as list items (multi-segment RichText items).
+      expect(screen.getByText('Once per key.')).toBeInTheDocument();
+      expect(screen.getByText(/Mock the call in tests/)).toBeInTheDocument();
+      expect(screen.getByText(/pnpm codemod/)).toBeInTheDocument();
+    });
+
+    it('renders the Chinese translation under zh', () => {
+      renderAt(<DeprecationPolicyGuide />, 'zh');
+      expect(screen.getByRole('heading', { level: 1, name: '弃用政策' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: '生命周期' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: '开发期警告' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: '每个 major 随发 codemod' })).toBeInTheDocument();
+      expect(screen.getByText(/最短宽限期/)).toBeInTheDocument();
+      // Code samples stay in English, verbatim across locales.
+      expect(screen.getByText(/pnpm codemod/)).toBeInTheDocument();
     });
   });
 

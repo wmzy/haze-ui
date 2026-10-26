@@ -13,6 +13,7 @@ export const zh: DeepPartial<SiteStrings> = {
     dark: '深色',
     auto: '自动',
     language: '切换语言',
+    version: '版本',
     noCustomTheme: '无自定义主题',
     themeEditor: '主题编辑器',
     viewSourceAt: '查看 {version}（{commit}）的源码',
@@ -51,6 +52,7 @@ export const zh: DeepPartial<SiteStrings> = {
     a11yContracts: '无障碍契约',
     a11yStatement: 'WCAG 2.2 一致性报告',
     migration: '从 AntD / shadcn 迁移',
+    deprecationPolicy: '弃用政策',
     streamingA11y: '流式无障碍',
     motion: '动效预设',
     figmaTokens: 'Figma 中的设计令牌',
@@ -64,6 +66,8 @@ export const zh: DeepPartial<SiteStrings> = {
     a11yContracts: '从测试套件同源提取的每组件键盘与 ARIA 契约。',
     a11yStatement: '无障碍一致性报告：逐条 WCAG 2.2 A/AA 判定，证据取自测试矩阵。',
     migration: '从 AntD / shadcn/ui 迁移到 haze-ui 的对照与步骤。',
+    deprecationPolicy:
+      '弃用 prop 的完整生命周期：开发期警告、两个 minor 宽限、major 版本随发 codemod 移除。',
     streamingA11y: '流式 AI 输出的无障碍：实时区域、播报与减少动效。',
     motion: '基于 data-state 的进出场动画预设，挂在动效 token 之上。',
     figmaTokens:
