@@ -21,12 +21,11 @@ import type {
 
 import { addMonths as shiftMonth } from '../components/Calendar/date';
 
-import { eraOfDate } from './adapter';
+import { DAY_MS, eraOfDate, sampleMonthNames } from './adapter';
 
 /** Mean synodic month in days — the linear estimate that seeds the
  * inverse-conversion search. */
 const SYNODIC_MONTH = 29.530588853;
-const DAY_MS = 86400000;
 
 const partsFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
   timeZone: 'UTC',
@@ -53,6 +52,13 @@ function partsFromMs(ms: number): CivilDateParts {
  * tabulated data. */
 const PROBE_MS = Date.UTC(2026, 0, 1);
 const PROBE_PARTS = partsFromMs(PROBE_MS);
+
+/** Month-name sampling anchors: day 15 of every month of the anchor
+ * year (day 15 exists in every 29/30-day lunar month), as UTC-civil
+ * milliseconds. */
+const MONTH_ANCHORS: readonly number[] = Array.from({ length: 12 }, (_, month) =>
+  msFromParts({ year: PROBE_PARTS.year, month, day: 15 })
+);
 
 /**
  * UTC-civil milliseconds of day 1 in a Hijri month (month assumed
@@ -150,17 +156,7 @@ export const islamicUmalquraAdapter: HazeDateAdapter = {
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    // Sample day 15 of every month of the anchor year (day 15 exists in
-    // every 29/30-day lunar month), converted back to Gregorian instants
-    // and formatted in the target locale.
-    const fmt = new Intl.DateTimeFormat(locale, {
-      calendar: 'islamic-umalqura',
-      month: style,
-      timeZone: 'UTC',
-    });
-    return Array.from({ length: 12 }, (_, month) =>
-      fmt.format(new Date(msFromParts({ year: PROBE_PARTS.year, month, day: 15 })))
-    );
+    return sampleMonthNames('islamic-umalqura', locale, style, MONTH_ANCHORS);
   },
 
   era(year, locale = 'en') {

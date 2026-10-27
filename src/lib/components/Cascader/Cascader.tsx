@@ -14,6 +14,7 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getDirection } from '../../utils/direction';
 import { useFocusScope } from '../../utils/focus-scope';
+import { ChevronRight, PickerTrigger, pickerCaret } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import Spinner from '../Spinner/Spinner';
@@ -139,25 +140,16 @@ const wrapper = css`
   box-sizing: border-box;
 `;
 
+/** Trigger deltas over the shared picker base
+ * (utils/picker-trigger): the wider path-row gap and the sm metrics.
+ * `text-align: start` re-declares the base's identical value — kept
+ * local for the rtl.test logical-properties sampling contract on this
+ * file. */
 const trigger = css`
-  display: flex;
-  align-items: center;
   gap: var(--haze-space-2);
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
   padding: var(--haze-space-2) var(--haze-space-3);
   text-align: start;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
 
   &:focus-visible {
     outline: none;
@@ -177,12 +169,6 @@ const triggerValue = css`
 `;
 
 const triggerPlaceholder = css`
-  color: var(--haze-color-text-muted);
-`;
-
-const triggerCaret = css`
-  display: inline-flex;
-  flex-shrink: 0;
   color: var(--haze-color-text-muted);
 `;
 
@@ -376,42 +362,6 @@ const itemLabel = css`
   white-space: nowrap;
   text-overflow: ellipsis;
 `;
-
-const chevron = css`
-  display: inline-flex;
-  flex-shrink: 0;
-  color: var(--haze-color-text-muted);
-`;
-
-const ChevronRight = () => (
-  <svg
-    viewBox='0 0 12 12'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M4 2l4 4-4 4' />
-  </svg>
-);
-
-const ChevronDown = () => (
-  <svg
-    viewBox='0 0 12 12'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M2 4l4 4 4-4' />
-  </svg>
-);
 
 // ---------------------------------------------------------------------------
 // Panel DOM helpers. Focus follows the menu items themselves (roving focus,
@@ -840,7 +790,7 @@ export default function Cascader({
       >
         <span data-slot='label' x-class={[itemLabel, classNames?.label]}>{option.label}</span>
         {hasChildren && (
-          <span role='img' data-slot='icon' x-class={[chevron, classNames?.icon]} aria-label={strings.expand}>
+          <span role='img' data-slot='icon' x-class={[pickerCaret, classNames?.icon]} aria-label={strings.expand}>
             <ChevronRight />
           </span>
         )}
@@ -892,18 +842,15 @@ export default function Cascader({
 
   return (
     <div x-class={[wrapper, className, classNames?.root]} {...rest}>
-      <button
+      <PickerTrigger
         ref={setTriggerRef}
-        data-slot='trigger'
-        type='button'
-        style={floating.triggerStyle}
-        aria-haspopup='menu'
-        aria-expanded={open}
-        aria-controls={id}
-        x-class={[trigger, classNames?.trigger]}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
+        behavior={floating}
+        popup='menu'
+        open={open}
+        controlsId={id}
         onKeyDown={handleTriggerKeyDown}
+        caretClassName={classNames?.icon}
+        x-class={[trigger, classNames?.trigger]}
       >
         <span data-slot='value' x-class={[triggerValue, classNames?.value]}>
           {selectedPath.length === 0 ? (
@@ -919,10 +866,7 @@ export default function Cascader({
             ))
           )}
         </span>
-        <span data-slot='icon' x-class={[triggerCaret, classNames?.icon]} aria-hidden='true'>
-          <ChevronDown />
-        </span>
-      </button>
+      </PickerTrigger>
       <FloatingPanel
         ref={setPanelRef}
         behavior={floating}

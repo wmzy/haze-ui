@@ -10,6 +10,8 @@ import { Fragment, useId, useRef, useState } from 'react';
 
 import { useStrings } from '../LocaleProvider';
 
+import { clamp } from '../../utils/math';
+
 import { cssColor, formatColor, hsvToRgb, parseColor, rgbHexKey, rgbToHsv } from './color-math';
 import { gradientFromColor, parseGradient, serializeGradient } from './gradient';
 
@@ -89,7 +91,7 @@ type ColorPickerPanelProps = {
 const BLACK: Rgb = {r: 0, g: 0, b: 0};
 
 function clamp01(value: number): number {
-  return Math.min(Math.max(value, 0), 1);
+  return clamp(value, 0, 1);
 }
 
 /** A laid-out rect, or null for the zero-size rects jsdom reports. */

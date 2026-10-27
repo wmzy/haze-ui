@@ -17,9 +17,14 @@
  */
 import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
 
-import { eraOfDate, localMidnightOf, utcCivilMs } from './adapter';
-
-const DAY_MS = 86400000;
+import {
+  assertCivilDate,
+  DAY_MS,
+  eraOfDate,
+  localMidnightOf,
+  sampleMonthNames,
+  utcCivilMs,
+} from './adapter';
 
 /** Mean lunar month in halakim (parts, 1080/hour): 29 days 12h 793p. */
 const LUNAR_MONTH_PARTS = 765433;
@@ -165,6 +170,14 @@ function fromDayNumber(dayNumber: number): CivilDateParts {
  * giving `monthNames` its twelve-month common-year shape. */
 const PROBE_YEAR = 5785;
 
+/** Month-name sampling anchors: day 15 of every month of the probe
+ * year (day 15 exists in every 29/30-day month), as UTC-civil
+ * milliseconds. */
+const MONTH_ANCHORS: readonly number[] = Array.from(
+  { length: 12 },
+  (_, month) => toDayNumber(PROBE_YEAR, month, 15) * DAY_MS
+);
+
 export const hebrewAdapter: HazeDateAdapter = {
   identifier: 'hebrew',
 
@@ -178,14 +191,7 @@ export const hebrewAdapter: HazeDateAdapter = {
 
   toGregorian(parts) {
     const normalized = normalizeMonth(parts.year, parts.month);
-    if (
-      parts.day < 1 ||
-      parts.day > monthLength(normalized.year, normalized.month)
-    ) {
-      throw new RangeError(
-        `Not a hebrew date: ${parts.year}-${parts.month + 1}-${parts.day}`
-      );
-    }
+    assertCivilDate(parts, normalized, monthLength, 'a hebrew');
     return localMidnightOf(
       toDayNumber(normalized.year, normalized.month, parts.day) * DAY_MS
     );
@@ -234,18 +240,10 @@ export const hebrewAdapter: HazeDateAdapter = {
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {
     // Twelve names in the common-year shape (Tishri…Elul, single Adar at
-    // index 5), sampled from the probe year via Intl. Leap years
-    // intercalate Adar I/II at indices 5/6 — consumers rendering a leap
-    // year differentiate them through Intl the same way ("Adar I" /
-    // "Adar II" in en).
-    const fmt = new Intl.DateTimeFormat(locale, {
-      calendar: 'hebrew',
-      month: style,
-      timeZone: 'UTC',
-    });
-    return Array.from({ length: 12 }, (_, month) =>
-      fmt.format(new Date(toDayNumber(PROBE_YEAR, month, 15) * DAY_MS))
-    );
+    // index 5). Leap years intercalate Adar I/II at indices 5/6 —
+    // consumers rendering a leap year differentiate them through Intl
+    // the same way ("Adar I" / "Adar II" in en).
+    return sampleMonthNames('hebrew', locale, style, MONTH_ANCHORS);
   },
 
   era(year, locale = 'en') {

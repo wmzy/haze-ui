@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-10-26T05:55:13.531Z",
+  "generatedAt": "2026-10-26T21:09:29.139Z",
   "distAvailable": true,
   "families": [
     {
       "family": "tokens",
-      "cssBytes": 67315,
-      "cssGzipBytes": 4524
+      "cssBytes": 68435,
+      "cssGzipBytes": 4551
     },
     {
       "family": "accordion",
-      "cssBytes": 2496,
-      "cssGzipBytes": 791
+      "cssBytes": 2711,
+      "cssGzipBytes": 835
     },
     {
       "family": "activity-rail",
@@ -79,8 +79,8 @@
     },
     {
       "family": "bottom-sheet",
-      "cssBytes": 2450,
-      "cssGzipBytes": 716
+      "cssBytes": 2525,
+      "cssGzipBytes": 728
     },
     {
       "family": "breadcrumb",
@@ -114,8 +114,8 @@
     },
     {
       "family": "cascader",
-      "cssBytes": 4718,
-      "cssGzipBytes": 997
+      "cssBytes": 4866,
+      "cssGzipBytes": 1103
     },
     {
       "family": "chart",
@@ -134,18 +134,18 @@
     },
     {
       "family": "chat-message",
-      "cssBytes": 3102,
-      "cssGzipBytes": 875
+      "cssBytes": 3099,
+      "cssGzipBytes": 884
     },
     {
       "family": "checkbox",
-      "cssBytes": 1784,
-      "cssGzipBytes": 616
+      "cssBytes": 1959,
+      "cssGzipBytes": 647
     },
     {
       "family": "chip",
-      "cssBytes": 1527,
-      "cssGzipBytes": 515
+      "cssBytes": 1551,
+      "cssGzipBytes": 514
     },
     {
       "family": "code-block",
@@ -159,8 +159,8 @@
     },
     {
       "family": "color-picker",
-      "cssBytes": 9975,
-      "cssGzipBytes": 1627
+      "cssBytes": 9988,
+      "cssGzipBytes": 1637
     },
     {
       "family": "combobox",
@@ -169,13 +169,13 @@
     },
     {
       "family": "command",
-      "cssBytes": 2928,
-      "cssGzipBytes": 833
+      "cssBytes": 2964,
+      "cssGzipBytes": 841
     },
     {
       "family": "confirm-dialog",
-      "cssBytes": 3530,
-      "cssGzipBytes": 789
+      "cssBytes": 3548,
+      "cssGzipBytes": 786
     },
     {
       "family": "container",
@@ -184,8 +184,8 @@
     },
     {
       "family": "context-menu",
-      "cssBytes": 5166,
-      "cssGzipBytes": 1101
+      "cssBytes": 7619,
+      "cssGzipBytes": 1531
     },
     {
       "family": "conversation-list",
@@ -219,13 +219,13 @@
     },
     {
       "family": "date-range-picker",
-      "cssBytes": 2393,
-      "cssGzipBytes": 680
+      "cssBytes": 2379,
+      "cssGzipBytes": 692
     },
     {
       "family": "datepicker",
-      "cssBytes": 6678,
-      "cssGzipBytes": 1258
+      "cssBytes": 6689,
+      "cssGzipBytes": 1282
     },
     {
       "family": "descriptions",
@@ -234,8 +234,8 @@
     },
     {
       "family": "dialog",
-      "cssBytes": 2269,
-      "cssGzipBytes": 616
+      "cssBytes": 2287,
+      "cssGzipBytes": 615
     },
     {
       "family": "diff-viewer",
@@ -244,8 +244,8 @@
     },
     {
       "family": "disclosure",
-      "cssBytes": 1690,
-      "cssGzipBytes": 607
+      "cssBytes": 1807,
+      "cssGzipBytes": 625
     },
     {
       "family": "divider",
@@ -254,13 +254,13 @@
     },
     {
       "family": "drawer",
-      "cssBytes": 3387,
-      "cssGzipBytes": 717
+      "cssBytes": 3463,
+      "cssGzipBytes": 723
     },
     {
       "family": "dropdown-menu",
-      "cssBytes": 9239,
-      "cssGzipBytes": 1486
+      "cssBytes": 7762,
+      "cssGzipBytes": 1559
     },
     {
       "family": "ellipsis",
@@ -284,13 +284,13 @@
     },
     {
       "family": "file-input",
-      "cssBytes": 1066,
-      "cssGzipBytes": 464
+      "cssBytes": 2682,
+      "cssGzipBytes": 761
     },
     {
       "family": "file-preview",
-      "cssBytes": 2767,
-      "cssGzipBytes": 824
+      "cssBytes": 2785,
+      "cssGzipBytes": 848
     },
     {
       "family": "flex",
@@ -324,8 +324,8 @@
     },
     {
       "family": "hover-card",
-      "cssBytes": 592,
-      "cssGzipBytes": 346
+      "cssBytes": 656,
+      "cssGzipBytes": 359
     },
     {
       "family": "icon",
@@ -334,13 +334,13 @@
     },
     {
       "family": "image-crop",
-      "cssBytes": 2600,
-      "cssGzipBytes": 807
+      "cssBytes": 2628,
+      "cssGzipBytes": 806
     },
     {
       "family": "image",
-      "cssBytes": 5775,
-      "cssGzipBytes": 1206
+      "cssBytes": 5796,
+      "cssGzipBytes": 1210
     },
     {
       "family": "indicator",
@@ -354,8 +354,8 @@
     },
     {
       "family": "inline-completion",
-      "cssBytes": 1920,
-      "cssGzipBytes": 627
+      "cssBytes": 1933,
+      "cssGzipBytes": 649
     },
     {
       "family": "inline-edit",
@@ -369,8 +369,8 @@
     },
     {
       "family": "input",
-      "cssBytes": 2252,
-      "cssGzipBytes": 718
+      "cssBytes": 2566,
+      "cssGzipBytes": 743
     },
     {
       "family": "json-view",
@@ -394,8 +394,8 @@
     },
     {
       "family": "log-viewer",
-      "cssBytes": 1883,
-      "cssGzipBytes": 603
+      "cssBytes": 1948,
+      "cssGzipBytes": 614
     },
     {
       "family": "mark",
@@ -419,8 +419,8 @@
     },
     {
       "family": "menu",
-      "cssBytes": 10078,
-      "cssGzipBytes": 1662
+      "cssBytes": 7883,
+      "cssGzipBytes": 1603
     },
     {
       "family": "meter",
@@ -429,8 +429,8 @@
     },
     {
       "family": "model-picker",
-      "cssBytes": 1345,
-      "cssGzipBytes": 595
+      "cssBytes": 1802,
+      "cssGzipBytes": 601
     },
     {
       "family": "navigation-bar",
@@ -449,13 +449,13 @@
     },
     {
       "family": "number-input",
-      "cssBytes": 2151,
-      "cssGzipBytes": 646
+      "cssBytes": 3553,
+      "cssGzipBytes": 845
     },
     {
       "family": "otp-input",
-      "cssBytes": 948,
-      "cssGzipBytes": 463
+      "cssBytes": 2722,
+      "cssGzipBytes": 754
     },
     {
       "family": "pagination",
@@ -479,13 +479,13 @@
     },
     {
       "family": "popconfirm",
-      "cssBytes": 5464,
-      "cssGzipBytes": 1212
+      "cssBytes": 5530,
+      "cssGzipBytes": 1224
     },
     {
       "family": "popover",
-      "cssBytes": 4401,
-      "cssGzipBytes": 923
+      "cssBytes": 4431,
+      "cssGzipBytes": 929
     },
     {
       "family": "progress",
@@ -494,8 +494,8 @@
     },
     {
       "family": "prompt-input",
-      "cssBytes": 3529,
-      "cssGzipBytes": 836
+      "cssBytes": 5198,
+      "cssGzipBytes": 1038
     },
     {
       "family": "pull-to-refresh",
@@ -514,13 +514,13 @@
     },
     {
       "family": "radio",
-      "cssBytes": 1790,
-      "cssGzipBytes": 640
+      "cssBytes": 1914,
+      "cssGzipBytes": 666
     },
     {
       "family": "rating",
-      "cssBytes": 1072,
-      "cssGzipBytes": 516
+      "cssBytes": 1165,
+      "cssGzipBytes": 533
     },
     {
       "family": "resizable",
@@ -534,8 +534,8 @@
     },
     {
       "family": "rich-text-editor",
-      "cssBytes": 4331,
-      "cssGzipBytes": 1061
+      "cssBytes": 4344,
+      "cssGzipBytes": 1069
     },
     {
       "family": "schedule",
@@ -549,13 +549,13 @@
     },
     {
       "family": "segmented",
-      "cssBytes": 1950,
-      "cssGzipBytes": 688
+      "cssBytes": 1973,
+      "cssGzipBytes": 709
     },
     {
       "family": "select",
-      "cssBytes": 14501,
-      "cssGzipBytes": 2465
+      "cssBytes": 14271,
+      "cssGzipBytes": 2281
     },
     {
       "family": "sidebar",
@@ -579,8 +579,8 @@
     },
     {
       "family": "sources",
-      "cssBytes": 2748,
-      "cssGzipBytes": 782
+      "cssBytes": 2915,
+      "cssGzipBytes": 803
     },
     {
       "family": "sparkline",
@@ -614,8 +614,8 @@
     },
     {
       "family": "step-timeline",
-      "cssBytes": 3941,
-      "cssGzipBytes": 1143
+      "cssBytes": 4176,
+      "cssGzipBytes": 1190
     },
     {
       "family": "stepper",
@@ -624,8 +624,8 @@
     },
     {
       "family": "streaming-text",
-      "cssBytes": 885,
-      "cssGzipBytes": 484
+      "cssBytes": 880,
+      "cssGzipBytes": 490
     },
     {
       "family": "swipe-action",
@@ -634,8 +634,8 @@
     },
     {
       "family": "switch",
-      "cssBytes": 2197,
-      "cssGzipBytes": 727
+      "cssBytes": 2262,
+      "cssGzipBytes": 750
     },
     {
       "family": "tab-bar",
@@ -649,8 +649,8 @@
     },
     {
       "family": "tabs",
-      "cssBytes": 6344,
-      "cssGzipBytes": 1435
+      "cssBytes": 6349,
+      "cssGzipBytes": 1444
     },
     {
       "family": "tag-group",
@@ -659,8 +659,8 @@
     },
     {
       "family": "tag-input",
-      "cssBytes": 2079,
-      "cssGzipBytes": 718
+      "cssBytes": 3786,
+      "cssGzipBytes": 999
     },
     {
       "family": "tag",
@@ -674,8 +674,8 @@
     },
     {
       "family": "textarea",
-      "cssBytes": 1652,
-      "cssGzipBytes": 546
+      "cssBytes": 1954,
+      "cssGzipBytes": 582
     },
     {
       "family": "thinking-indicator",
@@ -694,8 +694,8 @@
     },
     {
       "family": "timeline",
-      "cssBytes": 1260,
-      "cssGzipBytes": 470
+      "cssBytes": 1419,
+      "cssGzipBytes": 509
     },
     {
       "family": "toast",
@@ -714,8 +714,8 @@
     },
     {
       "family": "tool-call-card",
-      "cssBytes": 1359,
-      "cssGzipBytes": 491
+      "cssBytes": 1477,
+      "cssGzipBytes": 517
     },
     {
       "family": "toolbar",
@@ -729,13 +729,13 @@
     },
     {
       "family": "tour",
-      "cssBytes": 3969,
-      "cssGzipBytes": 952
+      "cssBytes": 4005,
+      "cssGzipBytes": 951
     },
     {
       "family": "trace",
-      "cssBytes": 3357,
-      "cssGzipBytes": 1059
+      "cssBytes": 3360,
+      "cssGzipBytes": 1066
     },
     {
       "family": "transfer",
@@ -744,8 +744,8 @@
     },
     {
       "family": "tree-select",
-      "cssBytes": 7931,
-      "cssGzipBytes": 1545
+      "cssBytes": 8219,
+      "cssGzipBytes": 1604
     },
     {
       "family": "tree",
@@ -779,13 +779,13 @@
     },
     {
       "family": "workbench",
-      "cssBytes": 3550,
-      "cssGzipBytes": 893
+      "cssBytes": 3568,
+      "cssGzipBytes": 891
     }
   ],
   "aggregate": {
     "family": "haze-ui",
-    "cssBytes": 433914,
-    "cssGzipBytes": 45061
+    "cssBytes": 445382,
+    "cssGzipBytes": 45776
   }
 }

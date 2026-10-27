@@ -2,7 +2,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { getDirection } from './direction';
+import { getDirection, inlineAxisKeys } from './direction';
 
 /** How long typed characters keep accumulating before the buffer resets. */
 const TYPEAHEAD_WINDOW_MS = 500;
@@ -101,28 +101,14 @@ export function useMenuKeyboard({
       // Main-axis arrows for the orientation; horizontal mirrors under
       // RTL (direction read from the DOM at event time — the layout
       // truth the focus order must follow).
-      const forward =
-        orientation === 'horizontal'
-          ? getDirection(menuRef.current) === 'rtl'
-            ? 'ArrowLeft'
-            : 'ArrowRight'
-          : 'ArrowDown';
-      const backward =
-        orientation === 'horizontal'
-          ? getDirection(menuRef.current) === 'rtl'
-            ? 'ArrowRight'
-            : 'ArrowLeft'
-          : 'ArrowUp';
+      const dir = getDirection(menuRef.current);
+      const { next: forward, prev: backward } = inlineAxisKeys(orientation, dir);
 
       // Submenu level: the inline-start arrow closes this level (and the
       // caller returns focus to its trigger) before the switch — a
       // submenu is always vertical, so the key is otherwise inert.
       if (onCloseToStart) {
-        const startKey =
-          getDirection(menuRef.current) === 'rtl'
-            ? 'ArrowRight'
-            : 'ArrowLeft';
-        if (event.key === startKey) {
+        if (event.key === inlineAxisKeys('horizontal', dir).prev) {
           event.preventDefault();
           onCloseToStart();
           return;

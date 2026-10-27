@@ -1,23 +1,11 @@
-import {css} from '@linaria/core';
-
 /**
  * Shared Textarea size skin — the per-size padding/typography classes
- * the `TextareaCore` component wears (the `Textarea` sugar delegates to
- * it). Sibling styles module per the react-refresh boundary convention
- * (Input `input-styles` / NumberInput `number-input-styles` precedent);
- * split-css groups the module with the Textarea family's css.
+ * the `TextareaCore` component wears (the `Textarea` sugar delegates
+ * to it). The map was byte-identical to Input's and now lives once in
+ * `utils/field-skin.ts` (`fieldSizes`); this module re-exports it so
+ * ConfigProvider's size-tier assertions and any consumer importing the
+ * Textarea-side name keep pointing at the one map. No css is emitted
+ * from this file — split-css groups `fieldSizes` with every consuming
+ * family via sharedLayers.
  */
-export const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-4);
-    font-size: var(--haze-text-base);
-  `,
-} as const;
+export { fieldSizes as sizes } from '../../utils/field-skin';

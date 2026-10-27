@@ -3953,7 +3953,7 @@ import { Timeline, TimelineItem } from 'haze-ui';
 | `title` | `string` | — | Event title |
 | `description` | `string` | — | Event description |
 | `time` | `string` | — | Timestamp text |
-| `color` | `'default' \| 'primary' \| 'success' \| 'warning' \| 'danger'` | `'default'` | Dot color |
+| `color` | `TimelineColor` | `'default'` | Dot color |
 | `className` | `string` | — | Additional CSS class |
 
 ### TimelineProps

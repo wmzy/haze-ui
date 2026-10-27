@@ -6,7 +6,7 @@ import { useId } from 'react';
 
 import { useMenuRadioGroup, MenuRadioGroupProvider } from '../../utils/menuRadio';
 
-import { menuGroupLabel } from './menu-item-styles';
+import { menuGroupLabel } from '../../utils/menu-skins';
 
 import { useMenuClassNames } from './MenuContext';
 

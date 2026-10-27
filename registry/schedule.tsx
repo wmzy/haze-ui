@@ -21,6 +21,7 @@ import { Schedule } from 'haze-ui';
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/schedule.css';
 import 'haze-ui/css/button.css';
+import 'haze-ui/css/calendar.css';
 import 'haze-ui/css/segmented.css';
 import 'haze-ui/css/spinner.css';
 

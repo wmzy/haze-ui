@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { css } from '@linaria/core';
 import { useId } from 'react';
 
-import { menuGroupLabel } from './menu-item-styles';
+import { menuGroupLabel } from '../../utils/menu-skins';
 
 import { useMenuClassNames } from './MenuContext';
 

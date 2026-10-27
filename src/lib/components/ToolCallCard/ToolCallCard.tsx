@@ -70,6 +70,13 @@ const content = css`
   color: var(--haze-color-text);
 `;
 
+/* Status label pinned to the header's trailing edge in the muted tone
+   (tokens only — the former inline style as a neighboring class). */
+const statusLabel = css`
+  margin-inline-start: auto;
+  color: var(--haze-color-text-muted);
+`;
+
 const statusClassMap: Record<ToolCallStatus, string> = {
   pending: statusPending,
   running: statusRunning,
@@ -97,7 +104,7 @@ export default function ToolCallCard({
       <div data-slot='header' x-class={[header]}>
         <span data-slot='indicator' x-class={[statusIcon, statusClassMap[status]]} />
         <span data-slot='tool-name'>{name}</span>
-        <span data-slot='status' style={{ marginInlineStart: 'auto', color: 'var(--haze-color-text-muted)' }}>
+        <span data-slot='status' x-class={[statusLabel]}>
           {statusLabelMap[status]}
         </span>
       </div>

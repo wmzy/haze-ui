@@ -4,30 +4,24 @@ import { css } from '@linaria/core';
 import { useRef } from 'react';
 
 import { useStrings } from '../LocaleProvider';
+import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
+import { srOnly } from '../../utils/sr-only';
 
 type FileInputProps = {
   children?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type'>;
 
-const hiddenInput = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-`;
-
+/* The trigger keeps its own transition/hover (the only field surface
+ * whose hover also paints a subtle fill — a button-feel affordance) and
+ * wears the shared surface chrome + :focus-within ring from
+ * utils/field-skin.ts; the hidden native input wears the shared
+ * sr-only clip class from utils/sr-only.ts. */
 const trigger = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--haze-space-2);
   padding: var(--haze-space-2) var(--haze-space-4);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
@@ -41,11 +35,6 @@ const trigger = css`
     border-color: var(--haze-color-border-hover);
     background: var(--haze-color-bg-subtle);
   }
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 export default function FileInput({
@@ -57,12 +46,12 @@ export default function FileInput({
   const strings = useStrings('fileInput');
 
   return (
-    <label data-slot='file-input' x-class={[trigger, className]}>
+    <label data-slot='file-input' x-class={[fieldChrome, focusWithinRing, trigger, className]}>
       <input
         ref={ref}
         data-slot='input'
         type='file'
-        className={hiddenInput}
+        x-class={[srOnly]}
         {...rest}
       />
       {children ?? strings.label}

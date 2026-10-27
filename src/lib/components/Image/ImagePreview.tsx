@@ -87,7 +87,7 @@ const overlay = css`
   }
 
   &::backdrop {
-    background: rgba(0, 0, 0, 0.72);
+    background: var(--haze-color-scrim-strong);
   }
 
   &[open][data-state='open'] {

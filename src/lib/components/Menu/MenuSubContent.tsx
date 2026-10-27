@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-
 import { FloatingPanel } from '../../utils/floating';
+import { menuPanelLg } from '../../utils/menu-skins';
 import { useSubmenuContext } from '../../utils/submenu';
 
 import { useMenuClassNames } from './MenuContext';
@@ -12,25 +11,9 @@ type MenuSubContentProps = {
   children: ReactNode;
 };
 
-// Same visual skin as the Menu panel; the placement classes put it at
-// the trigger's inline end (mirrored under dir='rtl' by the floating
-// placement layer).
-const panel = css`
-  /* min-width pairs with padding + border (panel-family box-sizing
-   * contract — same as the Menu panel). */
-  box-sizing: border-box;
-  min-width: 160px;
-  padding: var(--haze-space-1) 0;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Forced-colors: CanvasText boundary restated (see the Menu panel). */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
-`;
+// Same visual skin as the Menu panel (menuPanelLg, utils/menu-skins);
+// the placement classes put it at the trigger's inline end (mirrored
+// under dir='rtl' by the floating placement layer).
 
 /**
  * The panel of a MenuSub submenu. Resident like the Menu panel itself
@@ -50,7 +33,7 @@ export default function MenuSubContent({
       placement='right'
       id={sub.contentId}
       role='menu'
-      visualClass={panel}
+      visualClass={menuPanelLg}
       className={[className, classNames?.subContent].filter(Boolean).join(' ') || undefined}
       onKeyDown={sub.contentKeyDown}
     >

@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, Ref, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { choiceBase, choiceLabel } from '../../utils/choice-skin';
+
 type CheckboxCoreProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -14,33 +16,12 @@ type CheckboxCoreProps = {
   ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'checked' | 'onChange' | 'type'>;
 
-const base = css`
-  appearance: none;
-  /* 24px box (WCAG 2.5.8 target-size floor — the bare checkbox has no
-     label to lean on for hit area); the optical footprint stays 32px
-     via the space-1 margin, matching the old 18px+14px pairing. */
-  width: var(--haze-space-6);
-  height: var(--haze-space-6);
-  border: 1px solid var(--haze-color-border);
+/* Checkbox-specific skin on top of the shared choice base
+ * (utils/choice-skin.ts): the square radius and every :checked
+ * decoration — the primary fill + drawn checkmark and their
+ * forced-colors arms. */
+const checkboxSkin = css`
   border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  cursor: pointer;
-  margin: var(--haze-space-1);
-  transition:
-    background var(--haze-duration-fast),
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-  flex-shrink: 0;
-  position: relative;
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   &:checked {
     background: var(--haze-color-primary);
@@ -62,20 +43,11 @@ const base = css`
     transform: rotate(45deg);
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
   /* Forced-colors: the UA flattens the checked fill onto Canvas, so
-     the on/off signal would vanish. The box keeps a CanvasText
-     boundary and goes Highlight + HighlightText checkmark when
-     checked (the Windows-native checkbox rendering); disabled boxes
-     drop the dim and render GrayText instead. The box-shadow focus
-     ring is dropped by the UA — a Highlight outline replaces it. */
+     the on/off signal would vanish. The checked box goes Highlight +
+     HighlightText checkmark (the Windows-native checkbox rendering);
+     disabled checked boxes render GrayText. */
   @media (forced-colors: active) {
-    border-color: CanvasText;
-
     &:checked {
       background: Highlight;
       border-color: Highlight;
@@ -85,16 +57,6 @@ const base = css`
       }
     }
 
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: 2px;
-    }
-
-    &:disabled {
-      opacity: 1;
-      border-color: GrayText;
-    }
-
     &:disabled:checked {
       background: GrayText;
       border-color: GrayText;
@@ -102,11 +64,8 @@ const base = css`
   }
 `;
 
-const labelText = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-2);
-  cursor: pointer;
+/* CheckboxCore label extra on top of the shared choice label base. */
+const checkboxLabel = css`
   user-select: none;
 `;
 
@@ -124,7 +83,7 @@ export default function CheckboxCore({
       ref={ref}
       type='checkbox'
       data-slot='checkbox'
-      x-class={[base, className]}
+      x-class={[choiceBase, checkboxSkin, className]}
       checked={checked}
       onChange={(e) => {
         onChange(e.target.checked);
@@ -139,7 +98,7 @@ export default function CheckboxCore({
   }
 
   return (
-    <label data-slot='label' x-class={labelText}>
+    <label data-slot='label' x-class={[choiceLabel, checkboxLabel]}>
       {input}
       {label}
     </label>

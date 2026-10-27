@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { PickerCaret, PickerTrigger, pickerTrigger } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
@@ -148,33 +149,21 @@ const wrapper = css`
   width: 100%;
 `;
 
+/** Trigger deltas over the shared picker base
+ * (utils/picker-trigger): the chip-wrapping flex row and the dual
+ * focus arm — `:focus` for the button, `:focus-within` for the tags
+ * box whose inline input owns focus (on the button trigger the two
+ * pseudo-classes coincide — it has no focusable descendants). The
+ * font-size/padding metrics ride the `sizes` variants. */
 const trigger = css`
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--haze-space-1);
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  line-height: var(--haze-leading-normal);
   appearance: none;
-  text-align: start;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
 
   &:hover {
     border-color: var(--haze-color-border-hover);
   }
 
-  /* :focus-within serves the tags-mode box (focus lands on its inline
-     input, never on the box itself); on the button trigger the two
-     pseudo-classes coincide — it has no focusable descendants. */
   &:focus,
   &:focus-within {
     outline: none;
@@ -355,13 +344,13 @@ const clearBtn = css`
   }
 `;
 
+/** Caret deltas over the shared caret base (utils/picker-trigger): a
+ * centered box pushed to the trigger's inline end, inert to pointers
+ * (the open toggle belongs to the trigger, not the glyph). */
 const caret = css`
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   margin-inline-start: auto;
-  color: var(--haze-color-text-muted);
   pointer-events: none;
 `;
 
@@ -590,23 +579,6 @@ const checkboxChecked = css`
     display: block;
   }
 `;
-
-const ChevronDown = () => (
-  <svg
-    viewBox='0 0 12 12'
-    width='12'
-    height='12'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M2 4l4 4 4-4' />
-  </svg>
-);
 
 export default function SelectFloating<T extends string | number = string>({
   value,
@@ -1295,42 +1267,35 @@ export default function SelectFloating<T extends string | number = string>({
             setOpen(true);
             searchRef.current?.focus();
           }}
-          x-class={[trigger, sizes[size], className, classNames?.trigger]}
+          x-class={[pickerTrigger, trigger, sizes[size], className, classNames?.trigger]}
         >
           {triggerBody}
           {tagsInput}
           {clearAffordance}
-          <span data-slot='icon' x-class={caret} aria-hidden='true'>
-            <ChevronDown />
-          </span>
+          <PickerCaret x-class={caret} />
         </div>
       ) : (
-        <button
-          // Spread first — the floating handlers below must win over a
-          // spread, or a stray onClick could disable the open toggle
-          // entirely (same rationale as SelectCore's onChange ordering).
+        <PickerTrigger
+          // Spread first — the wiring inside PickerTrigger must win
+          // over a spread, or a stray onClick could disable the open
+          // toggle entirely (same rationale as SelectCore's onChange
+          // ordering).
           {...rest}
           ref={setTriggerRef}
-          data-slot='trigger'
-          type='button'
-          style={floating.triggerStyle}
+          behavior={floating}
           role='combobox'
-          aria-haspopup='listbox'
-          aria-expanded={open}
-          aria-controls={searchable ? listboxId : id}
-          aria-activedescendant={activeDescendant}
+          popup='listbox'
+          open={open}
+          controlsId={searchable ? listboxId : id}
+          activeDescendant={activeDescendant}
           data-clearable={clearable || undefined}
-          onPointerDown={floating.onTriggerPointerDown}
-          onClick={floating.onTriggerClick}
           onKeyDown={handleKeyDown}
+          caretClassName={caret}
           x-class={[trigger, sizes[size], className, classNames?.trigger]}
         >
           {triggerBody}
           {clearAffordance}
-          <span data-slot='icon' x-class={caret} aria-hidden='true'>
-            <ChevronDown />
-          </span>
-        </button>
+        </PickerTrigger>
       )}
       {showPanelSearch ? (
         <FloatingPanel

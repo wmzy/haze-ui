@@ -17,8 +17,9 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { COMPACT_OVERRIDES } from './density';
+import { COMPACT_OVERRIDES, compactDeclarations } from './density';
 import { SPACING_DEFAULTS, spacingDeclarations } from './spacing';
+import { textSizeDeclarations } from './typography';
 
 const SPACE_TOKENS = Object.keys(SPACING_DEFAULTS);
 
@@ -105,5 +106,47 @@ describe('spacing.ts source (css template wiring)', () => {
     // only matches a hand-written `--haze-space-N: <px>;` in the template.
     // --haze-space-0 stays direct on purpose: zero needs no density form.
     expect(source).not.toMatch(/--haze-space-\d+:\s*[1-9][\d.]*px/);
+  });
+});
+
+describe('compactDeclarations (density overrides)', () => {
+  it('emits exactly one declaration per compact override', () => {
+    expect(compactDeclarations().split('\n')).toHaveLength(
+      Object.keys(COMPACT_OVERRIDES).length
+    );
+  });
+});
+
+describe('density.ts source (css template wiring)', () => {
+  const source = readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), 'density.ts'),
+    'utf8'
+  );
+
+  it('interpolates compactDeclarations() inside the compact css template', () => {
+    expect(source).toMatch(
+      /export const compact = css`[^`]*\$\{compactDeclarations\(\)\}/
+    );
+  });
+});
+
+describe('typography.ts source (css template wiring)', () => {
+  const source = readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), 'typography.ts'),
+    'utf8'
+  );
+
+  it('interpolates textSizeDeclarations() inside the typography css template', () => {
+    expect(source).toMatch(
+      /export const typography = css`[^`]*\$\{textSizeDeclarations\(\)\}/
+    );
+  });
+
+  it('emits one indented `--haze-text-N: <n>px;` line per size step', () => {
+    const declarations = textSizeDeclarations().split('\n');
+    expect(declarations).toHaveLength(7);
+    for (const declaration of declarations) {
+      expect(declaration).toMatch(/^ {2}--haze-text-[a-z0-9]+: \d+px;$/);
+    }
   });
 });

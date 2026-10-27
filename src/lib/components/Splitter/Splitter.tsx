@@ -19,6 +19,7 @@ import {
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { getDirection } from '../../utils/direction';
+import { clamp } from '../../utils/math';
 import { useStrings } from '../LocaleProvider';
 
 /** Membership marker only — per-pane data (size, index) is injected by the
@@ -45,7 +46,7 @@ const PARK_DELTA = Number.MAX_SAFE_INTEGER;
 const round2 = (value: number): number => Math.round(value * 100) / 100;
 
 function clampRange(value: number, lo: number, hi: number): number {
-  return Math.min(Math.max(value, lo), hi);
+  return clamp(value, lo, hi);
 }
 
 /** A pane's resize contract, read from its declaration props. */

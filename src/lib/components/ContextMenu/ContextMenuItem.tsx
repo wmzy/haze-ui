@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
+import { menuItemBase, menuPopupItem } from '../../utils/menu-skins';
 
 import { useContextMenuContext } from './ContextMenuContext';
 
@@ -10,35 +10,6 @@ type ContextMenuItemProps = {
   disabled?: boolean;
   className?: string;
 };
-
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-  border-radius: var(--haze-radius-sm);
-  text-align: start;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
 export default function ContextMenuItem({ children, onClick, disabled, className }: ContextMenuItemProps) {
   const { setOpen, classNames } = useContextMenuContext();
@@ -52,7 +23,7 @@ export default function ContextMenuItem({ children, onClick, disabled, className
   return (
     <button
       data-slot='menu-item'
-      x-class={[item, classNames?.item, className]}
+      x-class={[menuItemBase, menuPopupItem, classNames?.item, className]}
       type="button"
       role="menuitem"
       tabIndex={-1}

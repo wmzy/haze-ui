@@ -4,8 +4,10 @@ import type {AccordionClassNames} from './AccordionContext';
 import type {AccordionItemProps} from './AccordionItem';
 
 import {css} from '@linaria/core';
-import {Children, Fragment, cloneElement, isValidElement, useCallback} from 'react';
+import {cloneElement, useCallback} from 'react';
 import {useControl} from 'react-use-control';
+
+import {walkChildren} from '../../utils/walk-children';
 
 import {AccordionProvider} from './AccordionContext';
 import AccordionItem from './AccordionItem';
@@ -48,36 +50,27 @@ const base = css`
 `;
 
 /**
- * tab-metas-style walk (see Tabs): flatten arrays/Fragments in DOM
- * order and inject each `<AccordionItem>` with its position — the
- * default key source for items without an explicit `itemKey`. Other
- * nodes pass through untouched, so wrappers and stray elements keep
- * their place. Runs every render; cloneElement preserves consumer
- * props and refs.
+ * Child walk over utils/walk-children (see Tabs' tab-metas): flatten
+ * arrays/Fragments in DOM order and inject each `<AccordionItem>` with
+ * its position — the default key source for items without an explicit
+ * `itemKey`. Other nodes pass through untouched, so wrappers and stray
+ * elements keep their place. Runs every render; cloneElement preserves
+ * consumer props and refs.
  */
 const injectItemIndexes = (
   nodes: ReactNode,
   counter: {index: number}
 ): ReactNode =>
-  Children.map(nodes, (node) => {
-    if (!isValidElement(node)) return node;
-    if (node.type === AccordionItem) {
+  walkChildren(
+    nodes,
+    (node) => {
+      if (node.type !== AccordionItem) return;
       const {index} = counter;
       counter.index += 1;
       return cloneElement(node as ReactElement<AccordionItemProps>, {index});
-    }
-    if (node.type === Fragment) {
-      return cloneElement(
-        node,
-        undefined,
-        injectItemIndexes(
-          (node.props as {children?: ReactNode}).children,
-          counter
-        )
-      );
-    }
-    return node;
-  });
+    },
+    {flattenFragments: true}
+  );
 
 export default function Accordion({
   open: openControl,

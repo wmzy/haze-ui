@@ -26,7 +26,7 @@ import type { ControlOrValue } from 'react-use-control';
 import { createContext, useCallback, useContext, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import { getDirection } from './direction';
+import { getDirection, inlineAxisKeys } from './direction';
 import { useFloating, type FloatingBehavior } from './floating';
 import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from './menuKeyboard';
 
@@ -193,9 +193,12 @@ export function useSubmenu({
   const handleTriggerKeyDown = useCallback(
     (event: ReactKeyboardEvent) => {
       if (triggerRef.current?.disabled) return;
-      const dir = getDirection(triggerRef.current);
-      const openKey = dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-      const closeKey = dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+      // Inline-end opens the submenu, inline-start closes it — mirrored
+      // under dir="rtl" (read from the DOM at event time).
+      const { next: openKey, prev: closeKey } = inlineAxisKeys(
+        'horizontal',
+        getDirection(triggerRef.current)
+      );
       if (event.key === openKey) {
         event.preventDefault();
         event.stopPropagation();

@@ -460,6 +460,7 @@ export type { CropRect } from './components/ImageCrop';
 
 // hooks
 export {
+  useAutosizeTextarea,
   useTitle,
   useMediaQuery,
   usePrefersReducedMotion,
@@ -469,11 +470,13 @@ export {
   useClipboard,
   useFullscreen,
 } from './hooks';
+export type { UseAutosizeTextareaOptions, UseAutosizeTextareaResult } from './hooks';
 export type { UseClipboardResult } from './hooks';
 export type { FullscreenTarget, UseFullscreenHandle } from './hooks';
 export type { ColorMode, UseDarkModeOptions, UseDarkModeResult } from './hooks';
-export { useHotkeys, hotkey, useInView, useLocalStorage, useSessionStorage } from './hooks';
+export { useHotkeys, hotkey, useInView, useLocalStorage, useSessionStorage, useStreamingAnnouncements } from './hooks';
 export type { HotkeyHandler, UseHotkeysOptions, UseInViewOptions } from './hooks';
+export type { UseStreamingAnnouncementsOptions } from './hooks';
 export { useClickOutside } from './hooks';
 export type { UseClickOutsideOptions } from './hooks';
 export { usePrevious } from './hooks';

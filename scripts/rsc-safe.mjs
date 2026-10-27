@@ -28,9 +28,46 @@ export const RSC_SAFE_MODULES = new Set([
   // function with zero imports. Must be banner-free because every safe
   // component's dist output imports it.
   'utils/classnames.ts',
+  // The shared numeric clamp: zero imports, no hooks, no DOM access —
+  // the same purity class as classnames above.
+  'utils/math.ts',
+  // Menu-family shared skins: pure Linaria class constants — no hooks,
+  // no DOM access; the @linaria/core import is elided at build time, so
+  // the dist module is a bare constant list.
+  'utils/menu-skins.ts',
+  // The shared visually-hidden clip class (utils/sr-only.ts): a single
+  // Linaria class whose only import is the bare @linaria/core
+  // (externalized) — no hooks, no DOM access. Its css rides with the
+  // consuming component groups (sharedLayers in split-css.mjs).
+  'utils/sr-only.ts',
+  // Shared field skin: pure Linaria class constants (surface chrome,
+  // :focus-within ring, native input/textarea chrome, size map) — no
+  // hooks, no DOM access, only the externalized @linaria/core import.
+  'utils/field-skin.ts',
+  // Shared tag skin (tag list/chip/remove button): the same purity
+  // class as menu-skins above.
+  'utils/tag-skin.ts',
+  // Child-walk helper (utils/walk-children.ts): pure React.Children
+  // traversal — no hooks, no DOM access, only react imports.
+  'utils/walk-children.ts',
+  // Shared disclosure skins (utils/disclosure-skin.ts): pure Linaria
+  // class constants — same purity class as menu-skins above.
+  'utils/disclosure-skin.ts',
+  // Shared timeline skeleton (utils/timeline-skin.ts): pure Linaria
+  // class constants. Required for the RSC-safe closure: Timeline.tsx
+  // (safe-listed) imports this module.
+  'utils/timeline-skin.ts',
+  // Shared preset rows (utils/preset-list-skin.ts): pure Linaria class
+  // constants.
+  'utils/preset-list-skin.ts',
+  // Shared choice-input skin (utils/choice-skin.ts): the Checkbox/Radio
+  // box + label bases — same purity class as menu-skins above.
+  'utils/choice-skin.ts',
   // Design tokens: pure constants plus OKLCH math. In-package imports stay
   // within the group (palette -> oklch, registry -> oklch + palette,
-  // brands -> palette, density -> spacing types only, erased at emit).
+  // brands -> palette; density/zoom import spacing's SPACE_PX and zoom
+  // imports typography's TEXT_SIZE_PX — pure integer records, closure
+  // stays in-group).
   'tokens/colors.ts',
   'tokens/brands.ts',
   'tokens/spacing.ts',

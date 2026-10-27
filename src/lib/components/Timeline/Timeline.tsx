@@ -2,44 +2,43 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import {
+  timelineDescription,
+  timelineDot,
+  timelineLabel,
+  timelineList,
+  timelineRow,
+} from '../../utils/timeline-skin';
+
 // Timeline
 type TimelineProps = {
   children: ReactNode;
   className?: string;
 };
 
-const base = css`
-  display: flex;
-  flex-direction: column;
-  font-family: var(--haze-font-sans);
-`;
-
 export function Timeline({ children, className }: TimelineProps) {
   return (
-    <div data-slot="timeline" x-class={[base, className]} role="list">
+    <div data-slot="timeline" x-class={[timelineList, className]} role="list">
       {children}
     </div>
   );
 }
 
 // TimelineItem
+type TimelineColor = 'primary' | 'success' | 'warning' | 'danger' | 'default';
+
 type TimelineItemProps = {
   title: string;
   description?: string;
   time?: string;
-  color?: 'primary' | 'success' | 'warning' | 'danger' | 'default';
+  color?: TimelineColor;
   className?: string;
 };
 
-const item = css`
-  display: flex;
-  gap: var(--haze-space-3);
-  position: relative;
-  padding-bottom: var(--haze-space-6);
-
-  &:last-child {
-    padding-bottom: 0;
-  }
+/* Block spacing between rows — Timeline breathes wider than
+   StepTimeline's space-4 (its rows carry no panel content). */
+const itemEnd = css`
+  padding-block-end: var(--haze-space-6);
 `;
 
 const dotWrapper = css`
@@ -49,26 +48,30 @@ const dotWrapper = css`
   flex-shrink: 0;
 `;
 
-const dot = css`
-  width: 12px;
-  height: 12px;
-  border-radius: var(--haze-radius-full);
+/* Local half of the shared dot geometry: the default dot's size and
+   fill. space-3 = 12px, the scale slot for the dot's shipped size. */
+const dotStyle = css`
+  width: var(--haze-space-3);
+  height: var(--haze-space-3);
   background: var(--haze-color-border);
-  flex-shrink: 0;
-  z-index: var(--haze-z-local-1);
 `;
 
-const dotColors = {
+/* Colored variants swap the fill; `default` maps to no entry so the
+   base background above shows through. */
+const dotColors: Partial<Record<TimelineColor, string>> = {
   primary: css`background: var(--haze-color-primary);`,
   success: css`background: var(--haze-color-success);`,
   warning: css`background: var(--haze-color-warning);`,
   danger: css`background: var(--haze-color-danger);`,
-  default: css``,
-} as const;
+};
 
+/* The connector as an in-flow flex child of the dot column (unlike
+   StepTimeline's absolutely positioned pseudo-connector): it stretches
+   the row's height. Hairline width via the space scale (space-1 halved
+   — TabBar's hairline precedent). */
 const line = css`
   flex: 1;
-  width: 2px;
+  width: calc(var(--haze-space-1) / 2);
   background: var(--haze-color-border);
   margin-top: var(--haze-space-1);
 `;
@@ -76,24 +79,6 @@ const line = css`
 const content = css`
   flex: 1;
   min-width: 0;
-`;
-
-const titleStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
-const descStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-top: var(--haze-space-1);
-`;
-
-const timeStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-top: var(--haze-space-1);
 `;
 
 export function TimelineItem({
@@ -104,15 +89,15 @@ export function TimelineItem({
   className,
 }: TimelineItemProps) {
   return (
-    <div data-slot="item" x-class={[item, className]} role="listitem">
+    <div data-slot="item" x-class={[timelineRow, itemEnd, className]} role="listitem">
       <div data-slot="separator" x-class={[dotWrapper]}>
-        <div data-slot="dot" x-class={[dot, dotColors[color]]} />
+        <div data-slot="dot" x-class={[timelineDot, dotStyle, dotColors[color]]} />
         <div data-slot="line" x-class={[line]} />
       </div>
       <div data-slot="content" x-class={[content]}>
-        <div data-slot="title" x-class={[titleStyle]}>{title}</div>
-        {description && <div data-slot="description" x-class={[descStyle]}>{description}</div>}
-        {time && <div data-slot="time" x-class={[timeStyle]}>{time}</div>}
+        <div data-slot="title" x-class={[timelineLabel]}>{title}</div>
+        {description && <div data-slot="description" x-class={[timelineDescription]}>{description}</div>}
+        {time && <div data-slot="time" x-class={[timelineDescription]}>{time}</div>}
       </div>
     </div>
   );

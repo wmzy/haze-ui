@@ -105,6 +105,12 @@ const messageStyle = css`
   color: var(--haze-color-text);
 `;
 
+/* Empty-state message: messageStyle's layout with the muted tone —
+   declared after it so the later rule wins the color cascade. */
+const emptyMessage = css`
+  color: var(--haze-color-text-muted);
+`;
+
 const levelClassMap: Record<LogLevel, string> = {
   debug: levelDebug,
   info: levelInfo,
@@ -167,7 +173,7 @@ export default function LogViewer({ logs, filter: filterControl, onLoadMore, cla
         ))}
         {filtered.length === 0 && (
           <div data-slot="entry" x-class={[entry]}>
-            <span data-slot="message" x-class={[messageStyle]} style={{ color: 'var(--haze-color-text-muted)' }}>{strings.noLogs}</span>
+            <span data-slot="message" x-class={[messageStyle, emptyMessage]}>{strings.noLogs}</span>
           </div>
         )}
       </div>

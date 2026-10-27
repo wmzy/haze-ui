@@ -13,13 +13,15 @@
  */
 import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
 
-import { eraOfDate, localMidnightOf, utcCivilMs } from './adapter';
-
-const DAY_MS = 86400000;
-
-/** Julian Day Number of 1970-01-01 — the JDN ↔ days-since-epoch offset
- * every conversion here rides on. */
-const UNIX_EPOCH_JDN = 2440588;
+import {
+  assertCivilDate,
+  DAY_MS,
+  eraOfDate,
+  localMidnightOf,
+  sampleMonthNames,
+  UNIX_EPOCH_JDN,
+  utcCivilMs,
+} from './adapter';
 
 /** Days-since-epoch of 1 Maskaram 1 AME (Amete Mihret epoch). */
 const EPOCH_DAY = 1724221 - UNIX_EPOCH_JDN;
@@ -89,6 +91,15 @@ function fromDayNumber(dayNumber: number): CivilDateParts {
  * 2024-09-12 → 2025-09-10, sitting in the era's dense-use range. */
 const PROBE_YEAR = 2017;
 
+/** Month-name sampling anchors: thirteen names — the contract's
+ * full-cycle shape for calendars with a permanent thirteenth month.
+ * Day 15 of the 30-day months, day 3 of Pagume. */
+const MONTH_ANCHORS: readonly number[] = Array.from(
+  { length: MONTHS },
+  (_, month) =>
+    toDayNumber(PROBE_YEAR, month, month === PAGUME ? 3 : 15) * DAY_MS
+);
+
 export const ethiopicAdapter: HazeDateAdapter = {
   identifier: 'ethiopic',
 
@@ -102,14 +113,7 @@ export const ethiopicAdapter: HazeDateAdapter = {
 
   toGregorian(parts) {
     const normalized = normalizeMonth(parts.year, parts.month);
-    if (
-      parts.day < 1 ||
-      parts.day > monthLength(normalized.year, normalized.month)
-    ) {
-      throw new RangeError(
-        `Not an ethiopic date: ${parts.year}-${parts.month + 1}-${parts.day}`
-      );
-    }
+    assertCivilDate(parts, normalized, monthLength, 'an ethiopic');
     // utcCivilMs (inside localMidnightOf's argument) sidesteps the
     // constructor's two-digit-year remap for pre-100 CE years —
     // ethiopic year 1 maps to 8 CE.
@@ -138,25 +142,7 @@ export const ethiopicAdapter: HazeDateAdapter = {
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    // Thirteen names — the contract's full-cycle shape for calendars
-    // with a permanent thirteenth month. Sampled from the probe year:
-    // day 15 of the 30-day months, day 3 of Pagume.
-    const fmt = new Intl.DateTimeFormat(locale, {
-      calendar: 'ethiopic',
-      month: style,
-      timeZone: 'UTC',
-    });
-    return Array.from({ length: MONTHS }, (_, month) =>
-      fmt.format(
-        new Date(
-          toDayNumber(
-            PROBE_YEAR,
-            month,
-            month === PAGUME ? 3 : 15
-          ) * DAY_MS
-        )
-      )
-    );
+    return sampleMonthNames('ethiopic', locale, style, MONTH_ANCHORS);
   },
 
   era(year, locale = 'en') {

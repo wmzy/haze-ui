@@ -6,6 +6,7 @@ import { useControl } from 'react-use-control';
 
 import { NativeHiddenFields } from '../../utils/native-form';
 import { mergeRefs } from '../../utils/refs';
+import { formatTimeValue, parseTimeValue } from '../TimePicker/time';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
 // the file basename, and a shared `styles` basename collides with
@@ -74,23 +75,25 @@ const DEFAULT_TO = '23:00';
 const DEFAULT_STEP = 60;
 const DEFAULT_COLUMNS = 4;
 
-/** `'HH:mm'` → minutes since midnight; null for malformed input. */
+/** `'HH:mm'` → minutes since midnight; null for malformed input.
+ * Reuses TimePicker's parseTimeValue for the field range checks; the
+ * shape guard stays local and stricter on purpose — a slot window's
+ * minutes are always two digits and never carry a seconds field, so
+ * `'9:5'` / `'09:00:00'` stay malformed here rather than parsing as
+ * loose as a panel value. */
 function parseTimeMinutes(value: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
-  if (!match) return null;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (Number.isNaN(hours) || Number.isNaN(minutes) || hours > 23 || minutes > 59) {
-    return null;
-  }
-  return hours * 60 + minutes;
+  const trimmed = value.trim();
+  if (!/^\d{1,2}:\d{2}$/.test(trimmed)) return null;
+  const parts = parseTimeValue(trimmed);
+  return parts === null ? null : parts.hour * 60 + parts.minute;
 }
 
-/** Minutes since midnight → `'HH:mm'`. */
+/** Minutes since midnight → `'HH:mm'` (TimePicker's zero-padded serializer). */
 function formatMinutes(total: number): string {
-  const hours = Math.floor(total / 60);
-  const minutes = total % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return formatTimeValue(
+    {hour: Math.floor(total / 60), minute: total % 60, second: 0},
+    'HH:mm'
+  );
 }
 
 /** Inclusive from..to slot list; empty for a malformed or empty window. */

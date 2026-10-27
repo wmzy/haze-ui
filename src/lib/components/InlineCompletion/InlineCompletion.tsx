@@ -6,6 +6,7 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { mergeRefs } from '../../utils/refs';
+import { srOnly } from '../../utils/sr-only';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -108,18 +109,6 @@ const ghostMultiline = css`
    and only serves to push the suggestion suffix into position. */
 const ghostTyped = css`
   color: transparent;
-`;
-
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 `;
 
 export default function InlineCompletion({

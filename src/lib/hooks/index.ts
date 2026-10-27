@@ -1,5 +1,7 @@
 export { useAnchorSpy } from './useAnchorSpy';
 export type { UseAnchorSpyOptions, UseAnchorSpyResult } from './useAnchorSpy';
+export { useAutosizeTextarea } from './useAutosizeTextarea';
+export type { UseAutosizeTextareaOptions, UseAutosizeTextareaResult } from './useAutosizeTextarea';
 export { useBusyPressable } from './useBusyPressable';
 // NOTE: also surfaced through `haze-ui/headless` (see its barrel).
 export { useClipboard } from './useClipboard';
@@ -47,4 +49,6 @@ export { useSessionStorage } from './useSessionStorage';
 // exported for custom storage areas / hydration strategies.
 export { useStorageState } from './useStorageState';
 export type { StorageKind } from './useStorageState';
+export { useStreamingAnnouncements } from './useStreamingAnnouncements';
+export type { UseStreamingAnnouncementsOptions } from './useStreamingAnnouncements';
 export { useTitle } from './useTitle';

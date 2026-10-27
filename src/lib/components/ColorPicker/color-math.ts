@@ -10,6 +10,8 @@
  * rational form, so a value round-trips byte-identically.
  */
 
+import { clamp } from '../../utils/math';
+
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
 
 /** 8-bit sRGB channels (`r`/`g`/`b` are integers 0..255) plus a normalized alpha (0..1, optional). */
@@ -22,10 +24,6 @@ export type Hsv = {h: number; s: number; v: number; a?: number};
 export type Hsl = {h: number; s: number; l: number; a?: number};
 
 export type ParsedColor = {format: ColorFormat; rgb: Rgb};
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
 
 function clamp01(value: number): number {
   return clamp(value, 0, 1);

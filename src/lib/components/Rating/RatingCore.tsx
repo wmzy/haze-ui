@@ -31,8 +31,12 @@ const star = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  /* 28px hit box (the old 1.75rem). The scale skips a 7 step, so the
+     box is the exact space-6 + space-1 sum — 28px at defaults and
+     1.75rem under remScale, same math as the literal it replaces, and
+     density-aware like every other token-ful geometry. */
+  width: calc(var(--haze-space-6) + var(--haze-space-1));
+  height: calc(var(--haze-space-6) + var(--haze-space-1));
   cursor: pointer;
   color: var(--haze-color-border);
   transition: color var(--haze-duration-fast), transform var(--haze-duration-fast);
@@ -173,6 +177,9 @@ export default function RatingCore({
             onMouseEnter={() => setHoverValue(i + 1)}
             onMouseLeave={() => setHoverValue(null)}
           >
+            {/* 18px is deliberately off the space scale — no step or
+                step-sum lands on 18 (space-4 + 2 would just wrap a
+                literal), so the attribute stays a documented literal. */}
             <svg
               data-slot="icon"
               width="18"

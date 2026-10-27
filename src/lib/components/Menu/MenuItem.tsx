@@ -1,8 +1,6 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-
-import { menuItemDanger, menuItemIcon, menuItemKbd } from './menu-item-styles';
+import { menuItemBase, menuItemDanger, menuItemIcon, menuItemKbd, menuItemStates } from '../../utils/menu-skins';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -31,62 +29,6 @@ type MenuItemProps<T extends ElementType = 'button'> = MenuItemOwnProps & {
   as?: T;
 } & Omit<ComponentPropsWithRef<T>, keyof MenuItemOwnProps | 'as'>;
 
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: transparent;
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  text-align: start;
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    background: var(--haze-color-bg-subtle);
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
-
-  /* anchor menuitems (as='a') bring a UA underline; the item skin owns
-   * text/underline. aria-disabled is the anchor-shaped disabled (an
-   * <a> has no [disabled]). */
-  text-decoration: none;
-
-  &[aria-disabled='true'] {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  /* Forced-colors: the inset focus ring is a box-shadow — dropped by
-     the UA — and the subtle background flattens onto Canvas, so the
-     keyboard-focused item would vanish. An inset Highlight outline
-     restores the focus indication. */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
 export default function MenuItem<T extends ElementType = 'button'>({
   onSelect,
   disabled = false,
@@ -107,7 +49,7 @@ export default function MenuItem<T extends ElementType = 'button'>({
       role='menuitem'
       data-slot='menu-item'
       tabIndex={-1}
-      x-class={[item, danger && menuItemDanger, classNames?.item, className]}
+      x-class={[menuItemBase, menuItemStates, danger && menuItemDanger, classNames?.item, className]}
       {...(isNativeButton
         ? { disabled }
         : { 'aria-disabled': disabled || undefined })}

@@ -21,6 +21,7 @@ import { Datepicker, DatepickerCore } from 'haze-ui';
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/datepicker.css';
 import 'haze-ui/css/calendar.css';
+import 'haze-ui/css/time-picker.css';
 
 export { Datepicker, DatepickerCore };
 export type { DatepickerProps, DatepickerCoreProps, DatepickerPreset } from 'haze-ui';

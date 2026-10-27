@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
+import { choiceBase, choiceLabel } from '../../utils/choice-skin';
+
 import { useRadioContext } from './RadioContext';
 
 type RadioProps = {
@@ -14,33 +16,11 @@ type RadioProps = {
   'type' | 'value' | 'name' | 'checked' | 'onChange'
 >;
 
-const radioInput = css`
-  appearance: none;
-  /* 24px box (WCAG 2.5.8 target-size floor); the optical footprint
-     stays 32px via the space-1 margin, matching the old 18px+14px
-     pairing (Checkbox's convention). */
-  width: var(--haze-space-6);
-  height: var(--haze-space-6);
-  border: 1px solid var(--haze-color-border);
+/* Radio-specific skin on top of the shared choice base
+ * (utils/choice-skin.ts): the round radius and every :checked
+ * decoration — the primary ring + dot and their forced-colors arms. */
+const radioSkin = css`
   border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg);
-  cursor: pointer;
-  margin: var(--haze-space-1);
-  transition:
-    background var(--haze-duration-fast),
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-  flex-shrink: 0;
-  position: relative;
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   &:checked {
     border-color: var(--haze-color-primary);
@@ -57,47 +37,26 @@ const radioInput = css`
     background: var(--haze-color-primary);
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
   /* Forced-colors: the UA flattens the checked dot onto Canvas — the
-     selection would vanish. The ring keeps a CanvasText boundary and
-     the dot renders CanvasText when checked (Windows-native radio
-     rendering); disabled radios render GrayText. The box-shadow focus
-     ring is dropped by the UA — a Highlight outline replaces it. */
+     selection would vanish. The checked dot renders CanvasText and the
+     disabled dot GrayText (Windows-native radio rendering). */
   @media (forced-colors: active) {
-    border-color: CanvasText;
-
     &:checked::after {
       background: CanvasText;
     }
 
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: 2px;
-    }
-
-    &:disabled {
-      opacity: 1;
-      border-color: GrayText;
-
-      &::after {
-        background: GrayText;
-      }
+    &:disabled::after {
+      background: GrayText;
     }
   }
 `;
 
-const labelStyle = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-2);
+/* Radio label extra on top of the shared choice label base: the sm
+ * text chrome. */
+const radioLabel = css`
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
-  cursor: pointer;
 `;
 
 export default function Radio({
@@ -110,12 +69,12 @@ export default function Radio({
   const ctx = useRadioContext();
 
   return (
-    <label data-slot='label' x-class={[labelStyle, className]}>
+    <label data-slot='label' x-class={[choiceLabel, radioLabel, className]}>
       <input
         ref={ref}
         type='radio'
         data-slot='radio'
-        className={radioInput}
+        x-class={[choiceBase, radioSkin]}
         name={ctx?.name}
         value={value}
         checked={ctx ? ctx.value === value : undefined}

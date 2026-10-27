@@ -76,7 +76,7 @@ type BottomSheetProps = {
 const overlay = css`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--haze-color-scrim);
   z-index: var(--haze-z-overlay);
   display: flex;
   align-items: flex-end;
@@ -115,9 +115,9 @@ const sheet = css`
      直取物理值，因此不造 --haze token。 */
   padding: var(--haze-space-4) var(--haze-space-6)
     calc(var(--haze-space-4) + env(safe-area-inset-bottom));
-  max-width: 640px;
+  max-width: var(--haze-sheet-max-width, 640px);
   width: 100%;
-  max-height: 80vh;
+  max-height: var(--haze-sheet-max-height, 80vh);
   overflow-y: auto;
   font-family: var(--haze-font-sans);
   color: var(--haze-color-text);

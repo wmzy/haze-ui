@@ -3,9 +3,11 @@ import { css } from '@linaria/core';
 import { zIndexDeclarations } from './z-index';
 
 /*
- * Spacing defaults live in SPACING_DEFAULTS so the css template below, the
- * compact density class (./density) and the token tests all read one source
- * of truth (same pattern as colors.ts deriving its themes from palette.ts).
+ * Spacing defaults live in SPACING_DEFAULTS (derived from the SPACE_PX
+ * integers below) so the css template here, the compact density class
+ * (./density), the text-zoom rem scale (./zoom) and the token tests all
+ * read one source of truth (same pattern as colors.ts deriving its
+ * themes from palette.ts).
  *
  * Indirect addressing: every --haze-space-N the spacing class declares
  * resolves through a --haze-density-space-N reference with the default as
@@ -26,18 +28,30 @@ export type SpaceStep = (typeof SPACE_STEPS)[number];
 export type SpaceTokenName = `--haze-space-${SpaceStep}`;
 export type DensitySpaceTokenName = `--haze-density-space-${SpaceStep}`;
 
-export const SPACING_DEFAULTS: Record<SpaceTokenName, string> = {
-  '--haze-space-1': '4px',
-  '--haze-space-2': '8px',
-  '--haze-space-3': '12px',
-  '--haze-space-4': '16px',
-  '--haze-space-5': '20px',
-  '--haze-space-6': '24px',
-  '--haze-space-8': '32px',
-  '--haze-space-10': '40px',
-  '--haze-space-12': '48px',
-  '--haze-space-16': '64px',
+/**
+ * The spacing scale's numeric source of truth (px per overridable step).
+ * Everything the scale becomes is derived from these integers: the
+ * SPACING_DEFAULTS declarations right below, compact density (./density,
+ * ×0.75) and the 16px = 1rem text-zoom scale (./zoom).
+ */
+export const SPACE_PX: Record<SpaceTokenName, number> = {
+  '--haze-space-1': 4,
+  '--haze-space-2': 8,
+  '--haze-space-3': 12,
+  '--haze-space-4': 16,
+  '--haze-space-5': 20,
+  '--haze-space-6': 24,
+  '--haze-space-8': 32,
+  '--haze-space-10': 40,
+  '--haze-space-12': 48,
+  '--haze-space-16': 64,
 };
+
+/** `<n>px` string per step — the fallback values the spacing class declares. */
+export const SPACING_DEFAULTS: Record<SpaceTokenName, string> =
+  Object.fromEntries(
+    Object.entries(SPACE_PX).map(([token, px]) => [token, `${px}px`])
+  ) as Record<SpaceTokenName, string>;
 
 /**
  * The space declarations the spacing class emits, one per overridable step:

@@ -84,8 +84,8 @@ const panelVisuals = css`
    * bounds covering the padding too (panel-family box-sizing
    * contract). */
   box-sizing: border-box;
-  min-width: 240px;
-  max-width: 320px;
+  min-width: var(--haze-hovercard-min-width, 240px);
+  max-width: var(--haze-hovercard-max-width, 320px);
   padding: var(--haze-space-4);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);

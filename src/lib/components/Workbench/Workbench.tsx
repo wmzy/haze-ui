@@ -242,7 +242,7 @@ const scrim = css`
     position: absolute;
     inset: 0;
     z-index: calc(var(--haze-z-overlay) - 10);
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--haze-color-scrim);
 
     &[data-open] {
       display: block;

@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-
 import { FloatingPanel } from '../../utils/floating';
+import { menuPanel } from '../../utils/menu-skins';
 import { useSubmenuContext } from '../../utils/submenu';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
@@ -12,26 +11,9 @@ type DropdownMenuSubContentProps = {
   children: ReactNode;
 };
 
-// Same visual skin as DropdownMenuContent; the placement classes put it
-// at the trigger's inline end (mirrored under dir='rtl' by the floating
-// placement layer).
-const content = css`
-  /* min-width pairs with padding + border (panel-family box-sizing
-   * contract — same as DropdownMenuContent). */
-  box-sizing: border-box;
-  min-width: 10rem;
-  padding: var(--haze-space-1);
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  box-shadow: var(--haze-shadow-md);
-
-  /* Forced-colors: CanvasText boundary restated (see
-     DropdownMenuContent). */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
-`;
+// Same visual skin as DropdownMenuContent (menuPanel, utils/menu-skins);
+// the placement classes put it at the trigger's inline end (mirrored
+// under dir='rtl' by the floating placement layer).
 
 /**
  * The panel of a DropdownMenuSub submenu. Unmounts once closed, like
@@ -53,7 +35,7 @@ export default function DropdownMenuSubContent({
       placement='right'
       id={sub.contentId}
       role='menu'
-      visualClass={content}
+      visualClass={menuPanel}
       className={
         [className, classNames?.subContent].filter(Boolean).join(' ') || undefined
       }

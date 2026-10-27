@@ -22,6 +22,8 @@
  * position mirrors: logical progress 0 parks it at the right edge.
  */
 
+import { clamp } from '../../utils/math';
+
 /** Axis a scrollbar/thumb operates on. */
 export type Orientation = 'vertical' | 'horizontal';
 
@@ -45,9 +47,12 @@ type ScrollElementLike = {
   scrollLeft: number;
 };
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
+/**
+ * The shared clamp (utils/math), kept on this module's public surface —
+ * the geometry below calls it pervasively and the family's tests reach
+ * for it through scroll-math.
+ */
+export { clamp };
 
 export type AxisGeometryInput = {
   viewportSize: number;

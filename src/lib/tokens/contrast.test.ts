@@ -286,6 +286,8 @@ describe('default theme regression guard (brand parameterization)', () => {
     '--haze-color-info-active',
     '--haze-color-info-subtle',
     '--haze-color-focus-ring',
+    '--haze-color-scrim',
+    '--haze-color-scrim-strong',
   ];
 
   it('token order and names are unchanged', () => {

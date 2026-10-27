@@ -12,6 +12,7 @@
  */
 
 import { parseCivilDate } from '../Calendar/date';
+import { pad2 } from '../TimePicker/time';
 
 /** `"YYYY-MM-DD HH:mm"` / `"YYYY-MM-DD HH:mm:ss"` — one to 23 hours and
  * two-digit padded minutes, seconds only when the pattern carries them. */
@@ -67,12 +68,12 @@ export function normalizeTime(time: string, seconds: boolean): string {
 /**
  * Serialize a Date's wall-clock time as the `"HH:mm"` (or
  * `"HH:mm:ss"` with `seconds`) string the combined value and the time
- * input use. Inverse of {@link applyTimeToCivilDate} for the time part.
+ * input use. Inverse of {@link applyTimeToCivilDate} for the time
+ * part. Padding is TimePicker's shared `pad2`.
  */
 export function timeOf(date: Date, seconds: boolean): string {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  const base = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  return seconds ? `${base}:${pad(date.getSeconds())}` : base;
+  const base = `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  return seconds ? `${base}:${pad2(date.getSeconds())}` : base;
 }
 
 /**

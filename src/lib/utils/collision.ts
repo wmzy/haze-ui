@@ -4,6 +4,8 @@
 // over literal rects only. Public surface curated behind the
 // `haze-ui/headless` subpath; not part of the main library barrel.
 
+import { clamp as clampToRange } from './math';
+
 /** Viewport edge a collision measurement applies to. */
 export type CollisionSide = 'top' | 'right' | 'bottom' | 'left';
 
@@ -70,7 +72,7 @@ export function resolvePadding(
 
 /** Clamp into [min, max]; an inverted range (viewport smaller than panel) pins to min. */
 function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), Math.max(min, max));
+  return clampToRange(value, min, Math.max(min, max));
 }
 
 // The original placement's axes: flips only swap the primary side.

@@ -12,7 +12,19 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { getDirection, useDirection } from '../../utils/direction';
+import { clamp } from '../../utils/math';
 import Button from '../Button/Button';
+import {
+  addDays,
+  addMinutes,
+  addMonthsToDate,
+  formatDate,
+  getLeadingDays,
+  getWeekdayLabels,
+  isSameDay,
+  resolveWeekStart,
+  startOfDay,
+} from '../Calendar/date';
 import { LocaleContext } from '../LocaleProvider/LocaleContext';
 import Segmented from '../Segmented/Segmented';
 
@@ -155,15 +167,8 @@ const MAX_MONTH_CHIPS = 3;
 const DRAG_THRESHOLD_PX = 4;
 const NOW_TICK_MS = 60_000;
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
-
 function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(value);
-}
-
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function endOfDay(date: Date): Date {
@@ -171,52 +176,8 @@ function endOfDay(date: Date): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
 }
 
-function addDays(date: Date, amount: number): Date {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate() + amount,
-    date.getHours(),
-    date.getMinutes()
-  );
-}
-
-function addMinutes(date: Date, amount: number): Date {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    date.getHours(),
-    date.getMinutes() + amount
-  );
-}
-
-function addMonths(date: Date, amount: number): Date {
-  const target = new Date(date.getFullYear(), date.getMonth() + amount, 1);
-  const lastDay = new Date(
-    target.getFullYear(),
-    target.getMonth() + 1,
-    0
-  ).getDate();
-  target.setDate(Math.min(date.getDate(), lastDay));
-  return target;
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
 function minutesOfDay(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
-}
-
-function dateKey(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** Plain-text projection of a ReactNode title, for aria-labels. */
@@ -732,39 +693,35 @@ export default function Schedule({
   const anchorDay = startOfDay(anchor);
   const anchorKey = anchorDay.getTime();
   const slotStep = slotMinutes !== undefined && slotMinutes > 0 ? slotMinutes : 60;
+  // Locale-aware first column (Date#getDay semantics), shared with
+  // Calendar's grids — the legacy hard-wired Sunday-first grid applies
+  // whenever no locale resolves (Calendar's resolveWeekStart default).
+  const weekStart = resolveWeekStart(resolvedLocale, undefined);
 
   const days = useMemo<Date[]>(() => {
     if (view === 'month') return [];
     const day = new Date(anchorKey);
     if (view === 'day') return [day];
-    const weekStart = addDays(day, -day.getDay());
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  }, [view, anchorKey]);
+    const weekStartDate = addDays(day, -((day.getDay() - weekStart + 7) % 7));
+    return Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
+  }, [view, anchorKey, weekStart]);
 
   const monthCells = useMemo<Date[]>(() => {
     const anchorDate = new Date(anchorKey);
-    const first = new Date(
-      anchorDate.getFullYear(),
-      anchorDate.getMonth(),
-      1
-    );
-    const gridStart = addDays(first, -first.getDay());
+    const year = anchorDate.getFullYear();
+    const month = anchorDate.getMonth();
+    // Calendar's leading-days math anchors the grid start (locale-aware
+    // week start); the grid itself stays the fixed six rows (42 cells)
+    // Schedule has always rendered.
+    const first = new Date(year, month, 1);
+    const gridStart = addDays(first, -getLeadingDays(year, month, weekStart));
     return Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));
-  }, [anchorKey]);
+  }, [anchorKey, weekStart]);
 
-  const weekdayLabels = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(resolvedLocale ?? 'default', {
-      weekday: 'short',
-    });
-    const anchorDate = new Date(anchorKey);
-    const first = new Date(
-      anchorDate.getFullYear(),
-      anchorDate.getMonth(),
-      1
-    );
-    const gridStart = addDays(first, -first.getDay());
-    return Array.from({ length: 7 }, (_, i) => fmt.format(addDays(gridStart, i)));
-  }, [resolvedLocale, anchorKey]);
+  const weekdayLabels = useMemo(
+    () => getWeekdayLabels(resolvedLocale, weekStart),
+    [resolvedLocale, weekStart]
+  );
 
   const placements = useMemo(
     () => (view === 'month' ? [] : layoutTimed(events, days)),
@@ -825,7 +782,7 @@ export default function Schedule({
         ? addDays(anchor, direction)
         : view === 'week'
           ? addDays(anchor, direction * 7)
-          : addMonths(anchor, direction);
+          : addMonthsToDate(anchor, direction);
     setDate(next);
     onDateChange?.(next);
   };
@@ -1041,21 +998,24 @@ export default function Schedule({
       data-slot='time-grid'
       x-class={[timeGrid, classNames?.timeGrid]}
     >
-      <div data-slot='day-header' className={headerRow}>
-        <div className={headerGutter} aria-hidden />
+      <div data-slot='day-header' x-class={[headerRow]}>
+        <div x-class={[headerGutter]} aria-hidden />
         <div
-          className={headerColumns}
+          x-class={[headerColumns]}
           style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
         >
           {days.map((day) => {
             const today = isSameDay(day, now);
+            // The labels run weekStart-first, so a day's label sits at
+            // its column offset from the week start.
+            const weekdayIndex = (day.getDay() - weekStart + 7) % 7;
             return (
               <div
                 key={day.getTime()}
                 data-slot='day-header-cell'
-                className={dayHeaderCell}
+                x-class={[dayHeaderCell]}
               >
-                <span>{weekdayLabels[day.getDay()] ?? ''}</span>
+                <span>{weekdayLabels[weekdayIndex] ?? ''}</span>
                 <span
                   x-class={[dayHeaderNum, today && dayHeaderNumToday]}
                 >
@@ -1067,10 +1027,10 @@ export default function Schedule({
         </div>
       </div>
       {allDayPlacements.length > 0 && (
-        <div data-slot='all-day-row' className={headerRow}>
-          <div className={headerGutter} aria-hidden />
+        <div data-slot='all-day-row' x-class={[headerRow]}>
+          <div x-class={[headerGutter]} aria-hidden />
           <div
-            className={allDayColumns}
+            x-class={[allDayColumns]}
             style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
           >
             {allDayPlacements.map((placement) => (
@@ -1095,11 +1055,11 @@ export default function Schedule({
           </div>
         </div>
       )}
-      <div data-slot='grid-scroll' className={gridScroll}>
-        <div className={bodyRow}>
+      <div data-slot='grid-scroll' x-class={[gridScroll]}>
+        <div x-class={[bodyRow]}>
           <div
             data-slot='time-gutter'
-            className={gutter}
+            x-class={[gutter]}
             style={{ blockSize: DAY_HEIGHT }}
             aria-hidden
           >
@@ -1107,7 +1067,7 @@ export default function Schedule({
               <span
                 key={h}
                 data-slot='gutter-label'
-                className={gutterLabel}
+                x-class={[gutterLabel]}
                 style={{ top: h * HOUR_HEIGHT }}
               >
                 {timeFormatters.hour.format(new Date(2026, 0, 1, h))}
@@ -1117,7 +1077,7 @@ export default function Schedule({
           <div
             data-slot='grid-body'
             ref={gridRef}
-            className={gridBody}
+            x-class={[gridBody]}
             style={{ blockSize: DAY_HEIGHT }}
           >
             {hours.map((h) => {
@@ -1188,10 +1148,10 @@ export default function Schedule({
                   }
                   onClick={() => handleChipClick(placement.event)}
                 >
-                  <span data-slot='event-time' className={eventTime}>
+                  <span data-slot='event-time' x-class={[eventTime]}>
                     {timeFormatters.time.format(start)}
                   </span>
-                  <span data-slot='event-title' className={eventTitle}>
+                  <span data-slot='event-title' x-class={[eventTitle]}>
                     {placement.event.title}
                   </span>
                 </button>
@@ -1200,7 +1160,7 @@ export default function Schedule({
             {nowVisible && (
               <div
                 data-slot='now-indicator'
-                className={nowLine}
+                x-class={[nowLine]}
                 style={{
                   top: (minutesOfDay(now) / 60) * HOUR_HEIGHT,
                   left: `${columnLeft(nowDayIndex, 0, 1)}%`,
@@ -1208,7 +1168,7 @@ export default function Schedule({
                 }}
                 aria-hidden
               >
-                <span data-slot='now-indicator-dot' className={nowDot} />
+                <span data-slot='now-indicator-dot' x-class={[nowDot]} />
               </div>
             )}
           </div>
@@ -1223,7 +1183,12 @@ export default function Schedule({
       : anchorDay;
     const eventsByDay = new Map<string, ScheduleEvent[]>();
     events.forEach((event) => {
-      const key = dateKey(startOfDay(toDate(event.start)));
+      const start = startOfDay(toDate(event.start));
+      const key = formatDate(
+        start.getFullYear(),
+        start.getMonth(),
+        start.getDate()
+      );
       const list = eventsByDay.get(key);
       if (list) {
         list.push(event);
@@ -1240,25 +1205,30 @@ export default function Schedule({
         ref={monthGridRef}
         onKeyDown={handleMonthKeyDown}
       >
-        <div role='row' className={monthWeekdays}>
+        <div role='row' x-class={[monthWeekdays]}>
           {weekdayLabels.map((label) => (
             <div
               key={label}
               role='columnheader'
               data-slot='month-weekday'
-              className={monthWeekday}
+              x-class={[monthWeekday]}
             >
               {label}
             </div>
           ))}
         </div>
         {Array.from({ length: monthCells.length / 7 }, (_, week) => (
-          <div key={week} role='row' className={monthRow}>
+          <div key={week} role='row' x-class={[monthRow]}>
             {monthCells.slice(week * 7, week * 7 + 7).map((day, i) => {
               const index = week * 7 + i;
               const outside = day.getMonth() !== anchor.getMonth();
               const today = isSameDay(day, now);
-              const dayEvents = eventsByDay.get(dateKey(day)) ?? [];
+              const dayKey = formatDate(
+                day.getFullYear(),
+                day.getMonth(),
+                day.getDate()
+              );
+              const dayEvents = eventsByDay.get(dayKey) ?? [];
               const visible = dayEvents.slice(0, MAX_MONTH_CHIPS);
               const hiddenCount = dayEvents.length - visible.length;
               return (
@@ -1267,7 +1237,7 @@ export default function Schedule({
                   role='gridcell'
                   data-slot='month-cell'
                   data-index={index}
-                  data-date={dateKey(day)}
+                  data-date={dayKey}
                   data-outside={outside ? '' : undefined}
                   x-class={[monthCell, outside && monthCellOutside]}
                   tabIndex={isSameDay(day, focusDate) ? 0 : -1}
@@ -1318,7 +1288,7 @@ export default function Schedule({
                     <button
                       type='button'
                       data-slot='overflow-chip'
-                      className={overflowChip}
+                      x-class={[overflowChip]}
                       onClick={(ce) => {
                         ce.stopPropagation();
                         onDayClick?.(day);
@@ -1367,7 +1337,7 @@ export default function Schedule({
         >
           ›
         </Button>
-        <div data-slot='title' className={toolbarTitle}>
+        <div data-slot='title' x-class={[toolbarTitle]}>
           {titleText}
         </div>
         <Segmented

@@ -13,6 +13,7 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
+import { PickerTrigger } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
@@ -125,26 +126,14 @@ const wrapper = css`
   box-sizing: border-box;
 `;
 
+/** Trigger deltas over the shared picker base
+ * (utils/picker-trigger): the chip-wrapping flex row and the sm
+ * metrics. */
 const trigger = css`
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--haze-space-1);
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
   padding: var(--haze-space-2) var(--haze-space-3);
-  text-align: start;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
 
   &:hover {
     border-color: var(--haze-color-border-hover);
@@ -268,11 +257,10 @@ const clearBtn = css`
   }
 `;
 
+/** Caret deltas over the shared caret base (utils/picker-trigger):
+ * pushed to the trigger's inline end, inert to pointers. */
 const triggerCaret = css`
-  display: inline-flex;
-  flex-shrink: 0;
   margin-inline-start: auto;
-  color: var(--haze-color-text-muted);
   pointer-events: none;
 `;
 
@@ -335,21 +323,6 @@ const treeHost = css`
   min-width: 180px;
   max-height: 280px;
 `;
-
-const ChevronDown = () => (
-  <svg
-    viewBox='0 0 12 12'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M2 4l4 4 4-4' />
-  </svg>
-);
 
 /** Every parent (non-leaf) key of the tree, for treeDefaultExpandAll. */
 function parentKeysOf(data: TreeNodeData[]): string[] {
@@ -731,32 +704,26 @@ export default function TreeSelect({
 
   return (
     <div x-class={wrapper}>
-      <button
-        // Spread first — the floating handlers below must win over a
-        // spread, or a stray onClick could disable the open toggle
+      <PickerTrigger
+        // Spread first — the wiring inside PickerTrigger must win over
+        // a spread, or a stray onClick could disable the open toggle
         // entirely (the SelectFloating ordering rationale).
         {...rest}
         ref={setTriggerRef}
-        data-slot='trigger'
-        type='button'
-        disabled={disabled}
-        style={floating.triggerStyle}
+        behavior={floating}
         role='combobox'
-        aria-haspopup='tree'
-        aria-expanded={open}
-        aria-controls={id}
+        popup='tree'
+        open={open}
+        controlsId={id}
+        disabled={disabled}
         data-clearable={allowClear || undefined}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
         onKeyDown={handleTriggerKeyDown}
+        caretClassName={triggerCaret}
         x-class={[trigger, className]}
       >
         {triggerBody}
         {clearAffordance}
-        <span data-slot='icon' x-class={triggerCaret} aria-hidden='true'>
-          <ChevronDown />
-        </span>
-      </button>
+      </PickerTrigger>
       <FloatingPanel
         ref={setPanelRef}
         behavior={floating}

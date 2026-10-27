@@ -23,7 +23,7 @@ import {
   useState,
 } from 'react';
 
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { VirtualList } from '../VirtualList';
@@ -359,9 +359,10 @@ export default function Tree({
       (!current.node.children?.length && !loadable);
     // Inward/outward arrows mirror under dir="rtl", read from the DOM at
     // event time — the layout truth (Calendar's day-grid precedent).
-    const rtl = getDirection(event.currentTarget) === 'rtl';
-    const expandKey = rtl ? 'ArrowLeft' : 'ArrowRight';
-    const collapseKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+    const { next: expandKey, prev: collapseKey } = inlineAxisKeys(
+      'horizontal',
+      getDirection(event.currentTarget)
+    );
 
     switch (event.key) {
       case 'ArrowDown':

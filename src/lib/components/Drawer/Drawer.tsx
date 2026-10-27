@@ -2,12 +2,9 @@ import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { useFocusScope } from '../../utils/focus-scope';
-import { whenExitSettles } from '../../utils/presence';
-import { useViewTransitionFlip } from '../../utils/view-transition';
+import { useNativeDialogShell } from '../../utils/native-dialog';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
@@ -109,7 +106,7 @@ const overlay = css`
   }
 
   &::backdrop {
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--haze-color-scrim);
   }
 
   &[open][data-state='open']::backdrop {
@@ -180,7 +177,7 @@ const placements = {
   left: css`
     height: 100vh;
     width: var(--haze-drawer-width, 320px);
-    min-width: 280px;
+    min-width: var(--haze-drawer-min-width, 280px);
     max-width: 85vw;
     /* physical: pins the left drawer to the physical left edge.
        UA dialog:modal margin is auto — both sides must be explicit,
@@ -194,7 +191,7 @@ const placements = {
   right: css`
     height: 100vh;
     width: var(--haze-drawer-width, 320px);
-    min-width: 280px;
+    min-width: var(--haze-drawer-min-width, 280px);
     max-width: 85vw;
     /* physical: pins the right drawer to the physical right edge. */
     margin-left: auto;
@@ -253,127 +250,29 @@ export default function Drawer({
   ref,
 }: DrawerProps) {
   const [open, setOpen] = useControl(openControl, false);
-  // keepMounted 的休眠标记：镜像原生 open 属性的缺席——退场动画播完、
-  // el.close() 真正落地后才置 true（提前挂 hidden 会用 display:none
-  // 掐断正在播放的退场动画）。重开的清除走 render-time 调整：与
-  // data-state 翻回 open 同一次提交清除，effect 里清会先画一帧 hidden。
-  const [panelDormant, setPanelDormant] = useState(!open);
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (open !== prevOpen) {
-    setPrevOpen(open);
-    if (open) setPanelDormant(false);
-  }
   // ConfigProvider defaults merge under the prop — per-key: an explicit
   // classNames key on the component wins over the provider's.
   const config = useConfigDefaults('Drawer');
   const resolvedClassNames = config.classNames
     ? { ...config.classNames, ...classNames }
     : classNames;
-  // open/close 翻转的统一出口：viewTransition 开启时每次翻转包在
-  // document.startViewTransition(() => flushSync(...)) 里（不支持或
-  // reduce 偏好时退化为直接 setOpen）。
-  const flipOpen = useViewTransitionFlip(viewTransition, setOpen);
-  const openerRef = useRef<HTMLElement | null>(null);
-  // Opener capture for the imperative handle's focusTrigger(). Declared
-  // BEFORE useFocusScope on purpose: effects run in declaration order,
-  // and the scope's effect is what moves focus into the drawer —
-  // capturing later would record the drawer itself. This mirrors the
-  // element the scope restores focus to on close.
-  useEffect(() => {
-    if (!open) return;
-    const active = document.activeElement;
-    openerRef.current = active instanceof HTMLElement ? active : null;
-  }, [open]);
-  const internalRef = useRef<HTMLDialogElement | null>(null);
-  // 声明在 showModal effect 之前：scope 激活时先记录 opener（此时的
-  // activeElement 还没被 showModal 转进 drawer），关闭时由 scope 归还。
-  // 原生 modal 已锁定 Tab，无需 trapped。
-  const setScope = useFocusScope({ enabled: open, trapped: false });
-
-  // Imperative surface: `ref.current?.open()/close()/focusTrigger()`.
-  // open/close only write the state — the showModal/close effect and the
-  // native close-event callback chain do the rest, keeping every exit
-  // path single-sourced.
-  useImperativeHandle(
+  // 面板生命周期（showModal/退场动画→close、keepMounted 休眠、命令式
+  // handle、Esc/背景点击关闭三件套）与 Dialog 共用同一原语。
+  const {setDialogRef, dialogProps} = useNativeDialogShell({
+    open,
+    setOpen,
+    viewTransition,
+    onClose,
+    keepMounted,
     ref,
-    () => ({
-      open: () => {
-        flipOpen(true);
-      },
-      close: () => {
-        flipOpen(false);
-      },
-      focusTrigger: () => {
-        const target = openerRef.current;
-        if (target?.isConnected) target.focus();
-      },
-    }),
-    [flipOpen]
-  );
-
-  const setDialogRef = useCallback(
-    (node: HTMLDialogElement | null) => {
-      internalRef.current = node;
-      setScope(node);
-    },
-    [setScope]
-  );
-
-  useEffect(() => {
-    const el = internalRef.current;
-    if (!el) return;
-    if (open && !el.open) {
-      el.showModal();
-    } else if (!open && el.open) {
-      // 退场动画（data-state=closed 驱动滑动）结束后再真正 close()，
-      // 原生 close 事件（onClose 回调链路）保持由 close 触发。
-      const settle = whenExitSettles(el);
-      const finish = () => {
-        // settle 期间被重新打开时 data-state 已翻回 open，本退场流作废
-        if (el.getAttribute('data-state') === 'closed') {
-          el.close();
-          setPanelDormant(true);
-        }
-      };
-      if (settle) void settle.then(finish);
-      else finish();
-    }
-  }, [open]);
-
-  // keepMounted 休眠态：关闭且原生面板已落地 close() 后，hidden + inert
-  // 把子树排除出 AT 树与 Tab 序（焦点 scope 随 open 停用，无困焦/归还）。
-  // 不传 keepMounted 时两个属性恒为 undefined，渲染输出与现有行为一致。
-  const dormant = keepMounted && panelDormant;
+  });
 
   return (
     <dialog
       ref={setDialogRef}
       data-slot='content'
-      data-state={open ? 'open' : 'closed'}
-      hidden={dormant || undefined}
-      inert={dormant || undefined}
+      {...dialogProps}
       x-class={[overlay, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
-      onClose={() => {
-        // 原生 close 事件到达时 DOM 已关闭（el.close() 已生效），这里
-        // 的 setOpen(false) 只是把 React 状态同步回事实——发起关闭的
-        // 交互路径已经拥有那次 view transition，这里再包会捕获两张
-        // 相同的（已关闭）快照，因此保持直接写入。
-        setOpen(false);
-        onClose?.();
-      }}
-      onCancel={(e) => {
-        // 原生 Esc/backdrop 的关闭请求会绕过退场动画立即关闭 drawer：
-        // 阻止默认行为，统一改走 React 状态 → 退场动画 → el.close()。
-        e.preventDefault();
-        flipOpen(false);
-      }}
-      onClick={(e) => {
-        if (e.target === internalRef.current) {
-          // 只改状态：onClose 由 effect 中 el.close() 触发的原生 close
-          // 事件统一发出，这里再调一次会双触发。
-          flipOpen(false);
-        }
-      }}
     >
       {children}
     </dialog>

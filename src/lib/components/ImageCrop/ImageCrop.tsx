@@ -137,14 +137,14 @@ const cropBox = css`
   box-sizing: border-box;
   border: 1px solid var(--haze-color-primary);
   border-radius: var(--haze-radius-sm);
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 9999px var(--haze-color-scrim);
   cursor: move;
   touch-action: none;
 
   &:focus-visible {
     outline: none;
     box-shadow:
-      0 0 0 9999px rgba(0, 0, 0, 0.45),
+      0 0 0 9999px var(--haze-color-scrim),
       inset 0 0 0 var(--haze-space-1) var(--haze-color-focus-ring);
   }
 

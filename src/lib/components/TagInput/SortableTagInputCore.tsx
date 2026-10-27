@@ -5,8 +5,10 @@ import { rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { SortableRegion } from '../../utils/sortable';
 import { sortableItemStyle } from '../../utils/sortable-shared';
 
+import { tag, removeBtn } from '../../utils/tag-skin';
+
 import TagInputCore from './TagInputCore';
-import { tag, removeBtn, tagHandle, tagDragging } from './tag-input-styles';
+import { tagHandle, tagDragging } from './tag-input-styles';
 
 /**
  * Props for `SortableTagInputCore` — the full `TagInputCoreProps` field

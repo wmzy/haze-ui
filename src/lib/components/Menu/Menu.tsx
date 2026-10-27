@@ -12,6 +12,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
+import { menuPanelLg } from '../../utils/menu-skins';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { VirtualList } from '../VirtualList';
 
@@ -82,25 +83,6 @@ type MenuProps = {
 const container = css`
   position: relative;
   display: inline-flex;
-`;
-
-const panel = css`
-  /* min-width pairs with padding + border: border-box keeps the floor
-   * covering the padding too (panel-family box-sizing contract). */
-  box-sizing: border-box;
-  min-width: 160px;
-  padding: var(--haze-space-1) 0;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 /** The family record the data-driven `items` renderer composes from. */
@@ -470,7 +452,7 @@ export default function Menu({
           behavior={floating}
           placement="bottom"
           role="menu"
-          visualClass={panel}
+          visualClass={menuPanelLg}
           className={panelClassName(className, resolvedClassNames?.panel)}
           onKeyDown={virtual ? handleVirtualKeyDown : handleKeyDown}
         >

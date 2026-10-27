@@ -6,7 +6,8 @@ import { useId } from 'react';
 
 import { useMenuRadioGroup, MenuRadioGroupProvider } from '../../utils/menuRadio';
 
-import { dropdownMenuGroupLabel } from './dropdown-menu-item-styles';
+import { menuGroupLabel } from '../../utils/menu-skins';
+
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuRadioGroupProps = {
@@ -50,7 +51,7 @@ export default function DropdownMenuRadioGroup({
         x-class={[group, classNames?.group, className]}
       >
         {label !== undefined && (
-          <div id={labelId} data-slot='group-label' x-class={dropdownMenuGroupLabel}>
+          <div id={labelId} data-slot='group-label' x-class={menuGroupLabel}>
             {label}
           </div>
         )}

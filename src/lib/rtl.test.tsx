@@ -538,7 +538,7 @@ describe('CSS logical-properties codemod guard', () => {
   it('keeps logical properties in the flow-axis hot spots (sampling)', () => {
     const samples: Record<string, RegExp> = {
       'components/Carousel/Carousel.tsx': /inset-inline-start:/,
-      'components/Menu/MenuItem.tsx': /text-align:\s*start/,
+      'utils/menu-skins.ts': /text-align:\s*start/,
       'components/Cascader/Cascader.tsx': /text-align:\s*start/,
     };
     for (const [file, pattern] of Object.entries(samples)) {

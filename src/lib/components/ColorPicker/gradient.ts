@@ -12,6 +12,8 @@
 
 import type { Rgb } from './color-math';
 
+import { clamp } from '../../utils/math';
+
 import { formatColor, parseColor, rgbHexKey } from './color-math';
 
 /** One gradient stop: a canonical CSS color string and its position on the 0..100% scale. */
@@ -29,10 +31,6 @@ export type ColorPickerPreset =
   | string
   | { label?: string; colors: string[] }
   | { label?: string; gradient: string };
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
 
 /** Numbers serialize without floating-point noise: 2 decimals max, trailing zeros trimmed. */
 function fmtNum(value: number): string {

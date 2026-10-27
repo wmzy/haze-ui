@@ -18,13 +18,15 @@ import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter'
 
 import { addMonths as shiftMonth } from '../components/Calendar/date';
 
-import { eraOfDate, localMidnightOf, utcCivilMs } from './adapter';
-
-const DAY_MS = 86400000;
-
-/** Julian Day Number of 1970-01-01 — the JDN ↔ days-since-epoch offset
- * every conversion here rides on. */
-const UNIX_EPOCH_JDN = 2440588;
+import {
+  assertCivilDate,
+  DAY_MS,
+  eraOfDate,
+  localMidnightOf,
+  sampleMonthNames,
+  UNIX_EPOCH_JDN,
+  utcCivilMs,
+} from './adapter';
 
 /** Break years of the Borkowski table (verbatim from jalaali-js): at
  * each break the 33-year leap pattern restarts to re-sync with the
@@ -144,6 +146,14 @@ function monthLength(jy: number, month: number): number {
  * Nowruz 1404 = 2025-03-21 is one of persian.test.ts's fixed pairs). */
 const PROBE_YEAR = 1404;
 
+/** Month-name sampling anchors: day 15 of every month of the probe
+ * year (day 15 exists in every 29/30-day month), as UTC-civil
+ * milliseconds. */
+const MONTH_ANCHORS: readonly number[] = Array.from(
+  { length: 12 },
+  (_, month) => (jalaliToJdn(PROBE_YEAR, month + 1, 15) - UNIX_EPOCH_JDN) * DAY_MS
+);
+
 export const persianAdapter: HazeDateAdapter = {
   identifier: 'persian',
 
@@ -157,14 +167,7 @@ export const persianAdapter: HazeDateAdapter = {
 
   toGregorian(parts) {
     const shifted = shiftMonth(parts.year, parts.month, 0);
-    if (
-      parts.day < 1 ||
-      parts.day > monthLength(shifted.year, shifted.month)
-    ) {
-      throw new RangeError(
-        `Not a persian date: ${parts.year}-${parts.month + 1}-${parts.day}`
-      );
-    }
+    assertCivilDate(parts, shifted, monthLength, 'a persian');
     const g = jdnToGregorian(
       jalaliToJdn(shifted.year, shifted.month + 1, parts.day)
     );
@@ -186,21 +189,7 @@ export const persianAdapter: HazeDateAdapter = {
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    // Sample day 15 of every month of the probe year (day 15 exists in
-    // every 29/30-day month), converted back to Gregorian instants and
-    // formatted in the target locale.
-    const fmt = new Intl.DateTimeFormat(locale, {
-      calendar: 'persian',
-      month: style,
-      timeZone: 'UTC',
-    });
-    return Array.from({ length: 12 }, (_, month) =>
-      fmt.format(
-        new Date(
-          (jalaliToJdn(PROBE_YEAR, month + 1, 15) - UNIX_EPOCH_JDN) * DAY_MS
-        )
-      )
-    );
+    return sampleMonthNames('persian', locale, style, MONTH_ANCHORS);
   },
 
   era(year, locale = 'en') {

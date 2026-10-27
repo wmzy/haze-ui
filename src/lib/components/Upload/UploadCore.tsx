@@ -14,6 +14,7 @@ import { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'r
 
 import { useStrings } from '../LocaleProvider';
 import { formatFileSize } from '../FilePreview/file-preview-format';
+import { clamp } from '../../utils/math';
 
 import UploadList from './UploadList';
 import { createXhrRequest } from './xhr-upload';
@@ -261,7 +262,7 @@ function matchesAccept(file: File, accept: string): boolean {
 }
 
 function clampPercent(percent: number): number {
-  return Math.max(0, Math.min(100, Math.round(percent)));
+  return clamp(Math.round(percent), 0, 100);
 }
 
 /** `maxSize` sanitation, mirroring `resolveConcurrency`: only positive

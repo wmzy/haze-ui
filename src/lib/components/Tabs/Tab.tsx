@@ -9,6 +9,8 @@ import type {
 
 import { css } from '@linaria/core';
 
+import { srOnly } from '../../utils/sr-only';
+
 import { useStrings } from '../LocaleProvider';
 
 import { useTabsContext } from './TabsContext';
@@ -219,19 +221,6 @@ const statusDotVariants = {
     background: var(--haze-color-primary);
   `,
 } as const;
-
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-`;
 
 /**
  * The label side of a closable tab. The × must be a real control for

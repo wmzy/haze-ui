@@ -7,6 +7,8 @@ import { useControl } from 'react-use-control';
 
 import { SUBMENU_CLOSE_GRACE_MS, SUBMENU_OPEN_DELAY_MS } from '../../utils/submenu';
 
+import { menuItemDanger } from '../../utils/menu-skins';
+
 import DropdownMenu from './DropdownMenu';
 import DropdownMenuTrigger from './DropdownMenuTrigger';
 import DropdownMenuContent from './DropdownMenuContent';
@@ -19,7 +21,6 @@ import DropdownMenuSeparator from './DropdownMenuSeparator';
 import DropdownMenuSub from './DropdownMenuSub';
 import DropdownMenuSubTrigger from './DropdownMenuSubTrigger';
 import DropdownMenuSubContent from './DropdownMenuSubContent';
-import { dropdownMenuItemDanger } from './dropdown-menu-item-styles';
 
 function renderMenu(props?: { itemDisabled?: boolean }) {
   render(
@@ -1393,9 +1394,9 @@ describe('DropdownMenu danger variant', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveClass(dropdownMenuItemDanger);
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Wipe cache' })).toHaveClass(dropdownMenuItemDanger);
-    expect(screen.getByRole('menuitemradio', { name: 'Nuke' })).toHaveClass(dropdownMenuItemDanger);
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveClass(menuItemDanger);
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Wipe cache' })).toHaveClass(menuItemDanger);
+    expect(screen.getByRole('menuitemradio', { name: 'Nuke' })).toHaveClass(menuItemDanger);
   });
 
   it('omits the danger class by default', () => {
@@ -1406,7 +1407,7 @@ describe('DropdownMenu danger variant', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(screen.getByRole('menuitem', { name: 'Delete' })).not.toHaveClass(dropdownMenuItemDanger);
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).not.toHaveClass(menuItemDanger);
   });
 });
 

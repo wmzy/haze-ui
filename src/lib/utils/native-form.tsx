@@ -1,4 +1,4 @@
-import { css } from '@linaria/core';
+import { srOnly } from './sr-only';
 
 /**
  * Native form participation for value-holding components that render no
@@ -20,20 +20,9 @@ import { css } from '@linaria/core';
  * removed from layout and the tab order while staying a successful
  * form control — an unchecked checkbox must NOT submit, which a
  * `type='hidden'` stand-in can only fake by unmounting, losing the
- * native semantics.
+ * native semantics. The shared `utils/sr-only.ts` class provides the
+ * clip; nothing native-form-specific is layered on top.
  */
-const hiddenField = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-`;
-
 type NativeBooleanFieldProps = {
   /** Form field name; absent → nothing renders. */
   name?: string;
@@ -66,7 +55,7 @@ export function NativeBooleanField({
       tabIndex={-1}
       aria-hidden='true'
       data-slot='native-input'
-      x-class={hiddenField}
+      x-class={[srOnly]}
     />
   );
 }
@@ -77,8 +66,13 @@ type NativeHiddenFieldsProps = {
   /** One entry per submitted value — a scalar is a one-entry array, an
    * array field repeats the name (native repeated-field semantics).
    * Empty entries are the caller's call: skip them at the call site
-   * when emptiness means “no value”. */
+   * when emptiness means “no value”, or set `skipEmpty`. */
   values: readonly (string | number)[];
+  /** Drop empty-string entries instead of submitting them — opt-in so
+   * existing callers keep the literal `values` contract (an explicit
+   * `''` still submits). Numbers pass through untouched (`0` is a
+   * value). Default `false`. */
+  skipEmpty?: boolean;
 };
 
 /**
@@ -87,11 +81,16 @@ type NativeHiddenFieldsProps = {
  * native repeated-field contract array-valued fields (Select multiple,
  * TagInput) are expected to speak.
  */
-export function NativeHiddenFields({ name, values }: NativeHiddenFieldsProps) {
+export function NativeHiddenFields({
+  name,
+  values,
+  skipEmpty = false,
+}: NativeHiddenFieldsProps) {
   if (!name) return null;
+  const emitted = skipEmpty ? values.filter((entry) => entry !== '') : values;
   return (
     <>
-      {values.map((entry, index) => (
+      {emitted.map((entry, index) => (
         <input
           key={`${index}:${String(entry)}`}
           type='hidden'

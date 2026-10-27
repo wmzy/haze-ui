@@ -6,6 +6,7 @@ import type { SelectClassNames } from './Select';
 import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
 
+import { PickerCaret, pickerNativeCaret } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -128,16 +129,7 @@ const base = css`
   font-family: var(--haze-font-sans);
   line-height: var(--haze-leading-normal);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2.22 4.47a.75.75 0 0 1 1.06 0L6 7.19l2.72-2.72a.75.75 0 1 1 1.06 1.06L6.53 8.78a.75.75 0 0 1-1.06 0L2.22 5.53a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  /* physical: CSS has no logical background-position keywords — the
-     [dir='rtl'] rule below mirrors the caret to the inline end. */
-  background-position: right var(--haze-space-3) center;
   padding-inline-end: var(--haze-space-8);
-
-  [dir='rtl'] & {
-    background-position: left var(--haze-space-3) center;
-  }
 
   cursor: pointer;
   transition:
@@ -176,13 +168,29 @@ const sizes = {
 } as const;
 
 /**
- * Clearable single-select host: the native `<select>` keeps its element
- * and semantics, the × floats over the caret slot. The attribute
- * selector (the `[role='option']:hover &` pattern from the option rows)
- * reaches the descendant affordance from the hovering/focused wrapper;
- * `visibility`/`pointer-events` keep the hidden affordance from eating
- * clicks aimed at the select itself. The wrapper only renders while
- * `clearable` is set, so the default path's DOM stays untouched.
+ * Positioning host of the native single-select paths: the inline-svg
+ * caret (`pickerNativeCaret`) overlays the select's reserved inline-end
+ * padding from here, replacing the painted background-image caret (a
+ * `url()` cannot carry a token color). Deliberately width-less — a
+ * `width: 100%` here would hijack flex-item sizing from consumer
+ * classes on the select itself (PhoneInput's country select), while
+ * `display: block` auto width fills block parents exactly like the
+ * bare select did.
+ */
+const nativeWrap = css`
+  position: relative;
+  display: block;
+`;
+
+/**
+ * Clearable single-select host: same positioning contract plus the
+ * full-width lock — the × overlay and the caret anchor here. The
+ * attribute selector (the `[role='option']:hover &` pattern from the
+ * option rows) reaches the descendant affordance from the
+ * hovering/focused wrapper; `visibility`/`pointer-events` keep the
+ * hidden affordance from eating clicks aimed at the select itself.
+ * The wrapper only renders while `clearable` is set, so the default
+ * path's DOM stays untouched.
  */
 const nativeClearWrap = css`
   position: relative;
@@ -364,24 +372,28 @@ export default function SelectCore<T extends string | number = string>({
             ×
           </span>
         )}
+        <PickerCaret x-class={pickerNativeCaret} />
       </span>
     );
   }
 
   return (
-    <select
-      ref={ref as Ref<HTMLSelectElement> | undefined}
-      data-slot='trigger'
-      x-class={[base, sizes[size], className, classNames?.trigger]}
-      value={selectedValue}
-      onChange={(e) => {
-        onChange(valueFromDom(e.target.value));
-        onNativeChange?.(e);
-      }}
-      {...rest}
-    >
-      {children}
-    </select>
+    <span x-class={nativeWrap}>
+      <select
+        ref={ref as Ref<HTMLSelectElement> | undefined}
+        data-slot='trigger'
+        x-class={[base, sizes[size], className, classNames?.trigger]}
+        value={selectedValue}
+        onChange={(e) => {
+          onChange(valueFromDom(e.target.value));
+          onNativeChange?.(e);
+        }}
+        {...rest}
+      >
+        {children}
+      </select>
+      <PickerCaret x-class={pickerNativeCaret} />
+    </span>
   );
 }
 

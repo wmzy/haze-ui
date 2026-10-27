@@ -6,8 +6,8 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { mergeRefs } from '../../utils/refs';
-
-import { listWrap, tag, removeBtn } from './tag-input-styles';
+import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
+import { listWrap, tag, removeBtn } from '../../utils/tag-skin';
 
 /** One rendered tag, offered to `renderTag` injectors.
  * @internal */
@@ -61,28 +61,24 @@ type TagInputCoreProps = {
   ref?: Ref<HTMLInputElement>;
 };
 
+/* The field surface (border/radius/fill) and the :focus-within ring
+ * come from utils/field-skin.ts; the container keeps only its flex
+ * layout, padding and the always-2.25rem floor on the space scale
+ * (space-6 + space-3 = 36px). */
 const container = css`
   display: flex;
   flex-wrap: wrap;
   gap: var(--haze-space-1);
   padding: var(--haze-space-2) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   font-family: var(--haze-font-sans);
-  min-height: 2.25rem;
+  min-height: calc(var(--haze-space-6) + var(--haze-space-3));
   align-items: center;
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const inputEl = css`
   flex: 1;
-  min-width: 4rem;
+  min-width: var(--haze-space-16);
   border: none;
   outline: none;
   background: none;
@@ -230,7 +226,7 @@ export default function TagInputCore({
   );
 
   return (
-    <div ref={containerRef} data-slot="tag-input" x-class={[container, className]}>
+    <div ref={containerRef} data-slot="tag-input" x-class={[fieldChrome, focusWithinRing, container, className]}>
       {/* Tags form the list; the input is a sibling so the list's
           children are only listitems (axe aria-required-children) and
           screen readers hear one listitem per tag. */}

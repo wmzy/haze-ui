@@ -4,7 +4,7 @@ import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
 
 import { getEnabledMenuItems, useRovingTabindex } from '../../utils/menuKeyboard';
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 
 import { ToolbarProvider } from './ToolbarContext';
 
@@ -51,21 +51,10 @@ function useToolbarKeyboard(
   return useCallback(
     (event: ReactKeyboardEvent) => {
       // Horizontal main axis mirrors under RTL; vertical never does.
-      const rtl =
-        orientation === 'horizontal' &&
-        getDirection(toolbarRef.current) === 'rtl';
-      const nextKey =
-        orientation === 'horizontal'
-          ? rtl
-            ? 'ArrowLeft'
-            : 'ArrowRight'
-          : 'ArrowDown';
-      const prevKey =
-        orientation === 'horizontal'
-          ? rtl
-            ? 'ArrowRight'
-            : 'ArrowLeft'
-          : 'ArrowUp';
+      const { next: nextKey, prev: prevKey } = inlineAxisKeys(
+        orientation,
+        getDirection(toolbarRef.current)
+      );
       if (event.key !== nextKey && event.key !== prevKey && event.key !== 'Home' && event.key !== 'End') {
         return;
       }

@@ -3,6 +3,8 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
+import { pad2 } from '../TimePicker/time';
+
 /** Decomposed remaining time handed to `format`/`render`. */
 type CountdownParts = {
   /** Whole seconds left — `ceil` of the exact milliseconds so every
@@ -41,8 +43,6 @@ const base = css`
   font-size: inherit;
   color: inherit;
 `;
-
-const pad2 = (n: number) => String(n).padStart(2, '0');
 
 function defaultFormat({ days, hours, minutes, seconds }: CountdownParts): string {
   const clock = `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;

@@ -100,8 +100,8 @@ const panelVisuals = css`
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   box-shadow: var(--haze-shadow-lg);
-  min-width: 220px;
-  max-width: 320px;
+  min-width: var(--haze-popconfirm-min-width, 220px);
+  max-width: var(--haze-popconfirm-max-width, 320px);
 
   /* Forced-colors: the UA keeps the author border visible by forcing
      its color to CanvasText — restated so the panel stays separated

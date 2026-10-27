@@ -13,6 +13,10 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
+import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
+import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
+import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 
@@ -65,10 +69,13 @@ type PromptInputProps = {
   'value' | 'onChange' | 'placeholder' | 'className' | 'style' | 'rows'
 >;
 
-/* The field chrome lives on the container (TagInput pattern): tags and
-   the borderless textarea flow inside it, and :focus-within paints the
-   Input-style focus ring. position:relative anchors the fallback-tier
-   suggestion panel. */
+/* The field chrome (border/radius/fill, the :focus-within ring) and the
+ * tag list/chip/remove-button skin are shared with TagInput — see
+ * utils/field-skin.ts and utils/tag-skin.ts. The container below keeps
+ * only what is PromptInput's own: the panel-anchoring wrapper, its flex
+ * flow, typography and the disabled state. position:relative anchors
+ * the fallback-tier suggestion panel; the always-2.25rem floor rides
+ * the space scale (space-6 + space-3 = 36px). */
 const container = css`
   position: relative;
   display: flex;
@@ -77,11 +84,8 @@ const container = css`
   gap: var(--haze-space-1);
   width: 100%;
   box-sizing: border-box;
-  min-height: 2.25rem;
+  min-height: calc(var(--haze-space-6) + var(--haze-space-3));
   padding: var(--haze-space-2) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
@@ -92,11 +96,6 @@ const container = css`
   &:hover {
     border-color: var(--haze-color-border-hover);
   }
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const containerDisabled = css`
@@ -105,50 +104,6 @@ const containerDisabled = css`
 
   &:hover {
     border-color: var(--haze-color-border);
-  }
-`;
-
-/* Tags flow inline with the textarea; the ul wraps while staying a flex
-   participant of the container. */
-const tagList = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--haze-space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-`;
-
-const tag = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-1);
-  padding: var(--haze-space-0) var(--haze-space-2);
-  background: var(--haze-color-bg-muted);
-  border-radius: var(--haze-radius-sm);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  line-height: var(--haze-leading-relaxed);
-`;
-
-const removeBtn = css`
-  display: inline-flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-  padding: var(--haze-space-1);
-  min-width: 1.5rem;
-  min-height: 1.5rem;
-
-  &:hover:not(:disabled) {
-    color: var(--haze-color-text);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
   }
 `;
 
@@ -183,7 +138,7 @@ const listbox = css`
   box-sizing: border-box;
   min-width: 100%;
   min-width: anchor-size(width);
-  max-height: 200px;
+  max-height: var(--haze-prompt-input-list-max-height, 200px);
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
@@ -268,19 +223,6 @@ function findSuggestMarker(
   return null;
 }
 
-/** Computed px value as a positive number, 0 when unresolvable (jsdom). */
-function readablePx(value: string): number {
-  const parsed = parseFloat(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-}
-
-/** Line height in px; `normal`/unresolvable falls back to 1.5 × font. */
-function readableLineHeight(computed: CSSStyleDeclaration): number {
-  const line = readablePx(computed.lineHeight);
-  if (line > 0) return line;
-  return readablePx(computed.fontSize) * 1.5;
-}
-
 export default function PromptInput({
   value: valueControl,
   onChange,
@@ -362,22 +304,16 @@ export default function PromptInput({
   // (beyond it the textarea scrolls — overflow-y lives in its class).
   // External control writes land here too, so the height always tracks
   // the committed value.
+  const { ref: autosizeRef, resize } = useAutosizeTextarea({ maxRows });
+  // Stable merged ref: the autosize node plus every textareaRef consumer
+  // (floating trigger, caret restore, live-value reads).
+  const textareaRefs = useCallback(
+    (node: HTMLTextAreaElement | null) => mergeRefs(textareaRef, autosizeRef)(node),
+    [autosizeRef]
+  );
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    let height = el.scrollHeight;
-    if (maxRows) {
-      const computed = getComputedStyle(el);
-      const linePx = readableLineHeight(computed);
-      if (linePx > 0) {
-        const padY =
-          readablePx(computed.paddingTop) + readablePx(computed.paddingBottom);
-        height = Math.min(height, maxRows * linePx + padY);
-      }
-    }
-    el.style.height = `${height}px`;
-  }, [value, maxRows, disabled]);
+    resize();
+  }, [value, maxRows, disabled, resize]);
 
   useEffect(() => {
     const caret = pendingCaretRef.current;
@@ -544,17 +480,17 @@ export default function PromptInput({
       aria-haspopup={completionEnabled ? 'listbox' : undefined}
       aria-controls={completionEnabled ? id : undefined}
       aria-label={label}
-      x-class={[container, disabled && containerDisabled, className]}
+      x-class={[fieldChrome, focusWithinRing, container, disabled && containerDisabled, className]}
     >
       {tags.length > 0 && (
-        <ul data-slot='list' className={tagList}>
+        <ul data-slot='list' x-class={[listWrap]}>
           {tags.map((tag, i) => (
-            <li key={`${tag}:${i}`} data-slot='tag' className={tag}>
+            <li key={`${tag}:${i}`} data-slot='tag' x-class={[tagStyle]}>
               {tag}
               <button
                 type="button"
                 data-slot='remove-button'
-                className={removeBtn}
+                x-class={[removeBtn]}
                 aria-label={formatString(strings.removeTag, { tag })}
                 disabled={disabled}
                 onClick={() => updateTags(tags.filter((_, j) => j !== i))}
@@ -566,11 +502,11 @@ export default function PromptInput({
         </ul>
       )}
       <textarea
-        ref={textareaRef}
+        ref={textareaRefs}
         data-slot='input'
         rows={1}
         style={completionEnabled ? floating.triggerStyle : undefined}
-        className={textareaClass}
+        x-class={[textareaClass]}
         value={value}
         placeholder={placeholder}
         aria-label={label}
@@ -603,7 +539,7 @@ export default function PromptInput({
               data-slot='loading'
               aria-selected="false"
               aria-disabled="true"
-              className={hintRow}
+              x-class={[hintRow]}
             >
               {strings.loading}
             </div>
@@ -613,7 +549,7 @@ export default function PromptInput({
               data-slot='empty'
               aria-selected="false"
               aria-disabled="true"
-              className={hintRow}
+              x-class={[hintRow]}
             >
               {strings.noMatch}
             </div>

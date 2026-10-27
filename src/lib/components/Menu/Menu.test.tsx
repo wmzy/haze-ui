@@ -7,7 +7,7 @@ import { useControl } from 'react-use-control';
 
 import { SUBMENU_CLOSE_GRACE_MS, SUBMENU_OPEN_DELAY_MS } from '../../utils/submenu';
 
-import { menuItemDanger } from './menu-item-styles';
+import { menuItemDanger } from '../../utils/menu-skins';
 
 import Menu, { type MenuDataItem } from './Menu';
 import MenuItem from './MenuItem';

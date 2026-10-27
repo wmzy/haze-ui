@@ -290,6 +290,9 @@ function themeDeclarations(mode, name, brandScale) {
   statusGroup('danger');
   statusGroup('info');
   lines.push(`--haze-color-focus-ring: ${derivedCss(mode, 'var(--haze-color-primary)', 'focus-ring')};`);
+  // Scrims are family-independent fixed overlays — mirror of scrimToken in palette.ts.
+  lines.push('--haze-color-scrim: oklch(0 0 0 / 0.4);');
+  lines.push('--haze-color-scrim-strong: oklch(0 0 0 / 0.72);');
   return `${primitives}\n\n${lines.join('\n')}`;
 }
 

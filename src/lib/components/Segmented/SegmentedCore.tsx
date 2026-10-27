@@ -5,6 +5,8 @@ import { useCallback } from 'react';
 
 import { mergeRefs } from '../../utils/refs';
 
+import { sizes } from './segmented-styles';
+
 type SegmentedOption =
   | string
   | { value: string; label: ReactNode; disabled?: boolean };
@@ -31,12 +33,6 @@ const container = css`
   font-family: var(--haze-font-sans);
   overflow-x: auto;
 `;
-
-const sizes = {
-  sm: css`& button { padding: var(--haze-space-0) var(--haze-space-2); font-size: var(--haze-text-xs); }`,
-  md: css`& button { padding: var(--haze-space-1) var(--haze-space-3); font-size: var(--haze-text-sm); }`,
-  lg: css`& button { padding: var(--haze-space-2) var(--haze-space-4); font-size: var(--haze-text-base); }`,
-} as const;
 
 const btn = css`
   border: none;

@@ -13,11 +13,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { SPACING_DEFAULTS } from './spacing';
+import { TEXT_SIZE_PX } from './typography';
 import { REM_RADII, REM_SPACE_OVERRIDES, REM_TEXT_SIZES, remDeclarations } from './zoom';
 
 const tokenDir = path.dirname(fileURLToPath(import.meta.url));
 const spacingSource = readFileSync(path.join(tokenDir, 'spacing.ts'), 'utf8');
-const typographySource = readFileSync(path.join(tokenDir, 'typography.ts'), 'utf8');
 const zoomSource = readFileSync(path.join(tokenDir, 'zoom.ts'), 'utf8');
 
 const px = (value: string): number => Number.parseFloat(value);
@@ -44,11 +44,13 @@ describe('REM_SPACE_OVERRIDES', () => {
 
 describe('REM_TEXT_SIZES', () => {
   it('re-declares exactly the text-size tokens typography declares, in rem', () => {
-    const declared = [...typographySource.matchAll(/(--haze-text-[a-z0-9]+):\s*([\d.]+)px;/g)];
+    const declared = Object.entries(TEXT_SIZE_PX);
     expect(declared).toHaveLength(7);
-    expect(Object.keys(REM_TEXT_SIZES).sort()).toEqual(declared.map((m) => m[1]).sort());
-    for (const m of declared) {
-      expect(REM_TEXT_SIZES[m[1] as keyof typeof REM_TEXT_SIZES]).toBe(toRem(`${m[2]}px`));
+    expect(Object.keys(REM_TEXT_SIZES).sort()).toEqual(
+      declared.map(([token]) => token).sort()
+    );
+    for (const [token, px] of declared) {
+      expect(REM_TEXT_SIZES[token as keyof typeof REM_TEXT_SIZES]).toBe(toRem(`${px}px`));
     }
   });
 });

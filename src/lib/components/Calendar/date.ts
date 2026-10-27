@@ -108,6 +108,127 @@ export function buildMonthCells(
   return cells;
 }
 
+/* Legacy weekday headers, indexed 0 = Sunday … 6 = Saturday. Kept for the
+   no-locale default: Intl "short" weekday names differ ("Sun" vs "Su") and
+   the default rendering must stay unchanged. */
+const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+/* getWeekInfo is a recent Intl addition — treat it as optional so engines
+   without it fall back to the legacy Sunday-first grid. */
+type WeekInfoSource = { getWeekInfo?: () => { firstDay: number } };
+
+/**
+ * First day of the week (`Date#getDay` semantics: 0 = Sunday, 1 =
+ * Monday) for a locale: the explicit `weekStartsOn` when given, else
+ * the locale's CLDR week info via Intl, with the legacy Sunday-first
+ * grid whenever the locale is absent, unknown, or reports nothing.
+ */
+export function resolveWeekStart(
+  locale: string | undefined,
+  weekStartsOn: 0 | 1 | undefined
+) {
+  if (weekStartsOn !== undefined) return weekStartsOn;
+  // Without an explicit locale keep the legacy Sunday-first grid: Intl
+  // resolves the pseudo-tag 'default' to Monday-first, which would silently
+  // change the existing layout.
+  if (locale === undefined) return 0;
+  try {
+    const firstDay = (new Intl.Locale(locale) as WeekInfoSource).getWeekInfo?.()
+      .firstDay;
+    // Intl reports 7 for a Sunday start; the grid works on Date#getDay()
+    // semantics where 0 = Sunday.
+    return firstDay === undefined || firstDay === 7 ? 0 : firstDay;
+  } catch {
+    // Unknown locale tag — fall back to the legacy grid.
+    return 0;
+  }
+}
+
+/**
+ * Seven weekday header labels starting at `weekStart` — the legacy
+ * two-letter names when no locale is given (Intl "short" weekday names
+ * differ, "Sun" vs "Su", and the default rendering must stay
+ * unchanged), else the locale's Intl "short" names.
+ */
+export function getWeekdayLabels(locale: string | undefined, weekStart: number) {
+  if (locale === undefined) {
+    return Array.from({ length: 7 }, (_, i) => WEEKDAYS[(weekStart + i) % 7]!);
+  }
+  // 2024-01-07 is a Sunday; index 0…6 map to Sunday…Saturday.
+  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  const byDay = Array.from({ length: 7 }, (_, day) =>
+    fmt.format(new Date(2024, 0, 7 + day))
+  );
+  return Array.from({ length: 7 }, (_, i) => byDay[(weekStart + i) % 7]!);
+}
+
+/**
+ * Local-midnight Date of `date`'s civil date — the civil triple with
+ * the time-of-day dropped (DST never moves midnight, so the result
+ * always round-trips its civil date).
+ */
+export function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
+ * Shift a Date by whole civil days, keeping the hour and minute.
+ * Seconds and milliseconds drop — minute resolution, the schedule
+ * grids' own.
+ */
+export function addDays(date: Date, amount: number): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + amount,
+    date.getHours(),
+    date.getMinutes()
+  );
+}
+
+/**
+ * Shift a Date by whole minutes, crossing civil days as the wall clock
+ * rolls. Seconds and milliseconds drop — minute resolution, the
+ * schedule grids' own.
+ */
+export function addMinutes(date: Date, amount: number): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes() + amount
+  );
+}
+
+/**
+ * True when two Dates share the same local civil date — triple equality
+ * of year, month and day, never instant equality.
+ */
+export function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/**
+ * Shift a Date by whole calendar months with year carry, truncating the
+ * day to the target month's length (Jan 31 + 1 → Feb 28/29) and
+ * dropping the time-of-day — the Date-based counterpart of
+ * {@link addMonths}: the month carry rides that helper's pure integer
+ * arithmetic, never a Date rollover.
+ */
+export function addMonthsToDate(date: Date, amount: number): Date {
+  const shifted = addMonths(date.getFullYear(), date.getMonth(), amount);
+  const day = Math.min(
+    date.getDate(),
+    getDaysInMonth(shifted.year, shifted.month)
+  );
+  return new Date(shifted.year, shifted.month, day);
+}
+
 /** ISO 8601 week identity of a civil date: the week number together with
  * the ISO week-numbering **year** it belongs to. Days at the calendar
  * year's edges borrow the neighbor year's numbering, so `year` here is

@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { presetList, presetRow } from '../../utils/preset-list-skin';
+
 import { useStrings } from '../LocaleProvider';
 
 import Calendar from '../Calendar/Calendar';
@@ -101,43 +103,9 @@ const sep = css`
   font-size: var(--haze-text-sm);
 `;
 
-/* Shortcut rows heading the panel (SelectFloating's option-row style),
-   a hairline separating them from the calendars below. */
-const presetList = css`
-  display: flex;
-  flex-direction: column;
-  padding-block: var(--haze-space-1) 0;
-  margin-block-end: var(--haze-space-2);
-  border-block-end: 1px solid var(--haze-color-border);
-`;
-
-const presetRow = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  appearance: none;
-  border: none;
-  background: transparent;
-  padding: var(--haze-space-1) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  text-align: start;
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
+/* Shortcut rows heading the panel: the shared option-row skin from
+   utils/preset-list-skin (SelectFloating's option-row style) — a
+   hairline separating them from the calendars below. */
 
 export default function DateRangePickerCore({
   startDate,

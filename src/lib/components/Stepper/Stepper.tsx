@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { Children, cloneElement, isValidElement } from 'react';
+import { Children, cloneElement } from 'react';
 import { useControl } from 'react-use-control';
+
+import { walkChildren } from '../../utils/walk-children';
 
 import { StepperProvider } from './StepperContext';
 
@@ -32,8 +34,11 @@ export default function Stepper({
   return (
     <StepperProvider value={{ activeStep, setActiveStep, totalSteps }}>
       <div data-slot='stepper' x-class={[stepper, className]} role="list">
-        {Children.map(children, (child, index) =>
-          isValidElement(child) ? cloneElement(child as React.ReactElement<{ index?: number }>, { index }) : child
+        {/* Walk via utils/walk-children: no Fragment flattening — a
+            wrapped step keeps the shipped behavior of receiving no
+            injected index. */}
+        {walkChildren(children, (child, index) =>
+          cloneElement(child as ReactElement<{ index?: number }>, { index })
         )}
       </div>
     </StepperProvider>

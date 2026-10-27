@@ -59,6 +59,11 @@ const DERIVED_PARAMS: Record<Mode, ModeParams> = {
 
 const FOCUS_RING_ALPHA = 0.4;
 
+/** Standard modal scrim opacity (dialog/drawer/sheet backdrops, spotlights). */
+const SCRIM_ALPHA = 0.4;
+/** Heavy scrim for full-screen lightboxes (image preview). */
+const SCRIM_STRONG_ALPHA = 0.72;
+
 /**
  * Lightness nudge applied to the gray-9 anchor (= text-muted). Needed to
  * clear the 3.0:1 contrast floor on bg-muted in both modes; the resulting ΔE
@@ -339,9 +344,23 @@ const textInverseToken = (ctx: ThemeContext): SemanticColorToken => ({
 });
 
 /**
+ * Modal scrims (dialog/drawer ::backdrop, bottom-sheet and confirm
+ * overlays, tour/image-crop spotlights) sit ABOVE the page rather than
+ * inside it: both modes dim with the same black overlay, independent of
+ * any family scale — the historical rgba(0, 0, 0, …) values expressed as
+ * OKLCH. They carry no text pair, so the contrast gate does not apply.
+ */
+const scrimToken = (name: string, label: string, alpha: number): SemanticColorToken => ({
+  name,
+  label,
+  css: {light: `oklch(0 0 0 / ${alpha})`, dark: `oklch(0 0 0 / ${alpha})`},
+  resolved: {light: {l: 0, c: 0, h: 0, alpha}, dark: {l: 0, c: 0, h: 0, alpha}},
+});
+
+/**
  * Full semantic token set for one theme context: the primary group, the
  * neutral aliases, border + border-hover, the success/warning/danger/info
- * groups, and the primary-derived focus ring.
+ * groups, the primary-derived focus ring, and the fixed scrim overlays.
  */
 function buildSemanticTokens(ctx: ThemeContext): readonly SemanticColorToken[] {
   const primaryTokens = statusGroup(ctx, 'primary');
@@ -363,6 +382,8 @@ function buildSemanticTokens(ctx: ThemeContext): readonly SemanticColorToken[] {
     ...statusGroup(ctx, 'danger'),
     ...statusGroup(ctx, 'info'),
     derivedToken('--haze-color-focus-ring', 'Focus Ring', primaryBase.name, primaryBase.resolved, 'focus-ring'),
+    scrimToken('--haze-color-scrim', 'Scrim', SCRIM_ALPHA),
+    scrimToken('--haze-color-scrim-strong', 'Scrim Strong', SCRIM_STRONG_ALPHA),
   ];
 }
 

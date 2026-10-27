@@ -1,10 +1,11 @@
 import type { ControlOrValue } from 'react-use-control';
 
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 
 type ChatInputProps = {
   value?: ControlOrValue<string>;
@@ -108,10 +109,12 @@ export default function ChatInput({
   className,
 }: ChatInputProps) {
   const [value, setValue] = useControl(valueControl, '');
-  const ref = useRef<HTMLTextAreaElement>(null);
   const strings = useStrings('chatInput');
   const chatStrings = useStrings('chat');
   const placeholderLabel = placeholder ?? strings.placeholder;
+  // Auto-grow with the typed content (no maxRows — the shipped cap is
+  // the textarea class's CSS max-height, beyond which the box clips).
+  const { ref: textareaRef, resize, reset } = useAutosizeTextarea();
 
   const handleSend = useCallback(() => {
     if (generating) {
@@ -122,10 +125,9 @@ export default function ChatInput({
     if (!trimmed || disabled) return;
     onSend?.(trimmed);
     setValue('');
-    if (ref.current) {
-      ref.current.style.height = 'auto';
-    }
-  }, [generating, onStop, value, disabled, onSend, setValue]);
+    // collapse back to the single starting row for the next draft
+    reset();
+  }, [generating, onStop, value, disabled, onSend, setValue, reset]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -136,16 +138,13 @@ export default function ChatInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
-    if (ref.current) {
-      ref.current.style.height = 'auto';
-      ref.current.style.height = `${ref.current.scrollHeight}px`;
-    }
+    resize();
   };
 
   return (
     <div data-slot='chat-input' x-class={[wrapper, className]}>
       <textarea
-        ref={ref}
+        ref={textareaRef}
         data-slot='input'
         x-class={[textarea]}
         value={value}

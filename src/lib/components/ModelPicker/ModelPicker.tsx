@@ -3,6 +3,7 @@ import type { ControlOrValue } from 'react-use-control';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
+import { PickerCaret, pickerNativeCaret } from '../../utils/picker-trigger';
 import { useStrings } from '../LocaleProvider';
 
 type ModelOption = {
@@ -21,6 +22,7 @@ type ModelPickerProps = {
 };
 
 const wrapper = css`
+  position: relative;
   font-family: var(--haze-font-sans);
 `;
 
@@ -37,16 +39,7 @@ const select = css`
   cursor: pointer;
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  /* physical: CSS has no logical background-position keywords — the
-     [dir='rtl'] rule below mirrors the chevron to the inline end. */
-  background-position: right 0.75rem center;
   padding-inline-end: var(--haze-space-8);
-
-  [dir='rtl'] & {
-    background-position: left 0.75rem center;
-  }
 
   &:focus {
     border-color: var(--haze-color-primary);
@@ -83,6 +76,7 @@ export default function ModelPicker({
           </option>
         ))}
       </select>
+      <PickerCaret x-class={pickerNativeCaret} />
     </div>
   );
 }

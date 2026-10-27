@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
-import { menuItemDanger, menuItemIcon, menuItemIndicator, menuItemKbd } from './menu-item-styles';
+import { menuItemDanger, menuItemIcon, menuItemIndicator, menuItemKbd, menuItemBase, menuItemStates } from '../../utils/menu-skins';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -24,52 +23,9 @@ type MenuCheckboxItemProps = {
   children: ReactNode;
 };
 
-// MenuItem's skin; the leading slot is the fixed-size check indicator.
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: transparent;
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  text-align: start;
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    background: var(--haze-color-bg-subtle);
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the inset focus ring is a box-shadow — dropped by
-     the UA — and the subtle background flattens onto Canvas, so the
-     keyboard-focused item would vanish. An inset Highlight outline
-     restores the focus indication (the check glyph itself draws in
-     CanvasText through currentColor). */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+// MenuItem's skin (menuItemBase + menuItemStates, utils/menu-skins);
+// the leading slot is the fixed-size check indicator (its glyph draws
+// in CanvasText through currentColor under forced-colors).
 
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or
@@ -97,7 +53,7 @@ export default function MenuCheckboxItem({
       data-slot='menu-checkbox-item'
       aria-checked={checked}
       tabIndex={-1}
-      x-class={[item, danger && menuItemDanger, classNames?.checkboxItem, className]}
+      x-class={[menuItemBase, menuItemStates, danger && menuItemDanger, classNames?.checkboxItem, className]}
       disabled={disabled}
       onClick={() => {
         const next = !checked;

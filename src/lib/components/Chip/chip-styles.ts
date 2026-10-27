@@ -60,8 +60,9 @@ export const closeBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
+  /* 20px target on the space scale (space-5 = 1.25rem). */
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
   border: none;
   border-radius: var(--haze-radius-full);
   background: transparent;

@@ -6,6 +6,8 @@ import { useStrings } from '../LocaleProvider';
 
 import { Progress } from '../Progress';
 
+import { srOnly } from '../../utils/sr-only';
+
 import { formatFileSize, getFileExtension } from './file-preview-format';
 
 /** The attached file's descriptor — name plus optional metadata. */
@@ -125,18 +127,6 @@ const statusUploading = css`
 
 const statusError = css`
   color: var(--haze-color-danger);
-`;
-
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 `;
 
 const actions = css`

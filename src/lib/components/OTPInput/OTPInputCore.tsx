@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { mergeRefs } from '../../utils/refs';
+import { fieldChrome } from '../../utils/field-skin';
 
 type OTPInputCoreProps = {
   length?: number;
@@ -22,15 +23,17 @@ const container = css`
   font-family: var(--haze-font-sans);
 `;
 
+/* The cell surface (border/radius/fill) comes from utils/field-skin.ts;
+ * the cell keeps its own box (space-10 wide, space-10 + space-1 = 44px
+ * tall), mono typography and the :focus ring — as a leaf input it
+ * focuses under :focus, not :focus-within, and resets its outline
+ * unconditionally rather than inside the focus arm. */
 const cell = css`
-  width: 2.5rem;
-  height: 2.75rem;
+  width: var(--haze-space-10);
+  height: calc(var(--haze-space-10) + var(--haze-space-1));
   text-align: center;
   font-size: var(--haze-text-lg);
   font-family: var(--haze-font-mono);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   outline: none;
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
@@ -101,7 +104,7 @@ export default function OTPInputCore({
             refs.current[i] = el;
             if (i === 0) setFirstCellRef(el);
           }}
-          x-class={[cell]}
+          x-class={[fieldChrome, cell]}
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"

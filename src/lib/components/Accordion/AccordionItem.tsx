@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent, ReactNode
 
 import { css } from '@linaria/core';
 
+import { disclosureContent, disclosureSummary } from '../../utils/disclosure-skin';
+
 import { useAccordionContext } from './AccordionContext';
 
 type AccordionItemProps = {
@@ -65,31 +67,17 @@ const item = css`
   }
 `;
 
-const summary = css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--haze-space-3) var(--haze-space-4);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
+/* States riding on the shared disclosure summary skin
+   (utils/disclosure-skin): press feedback and the disabled dimming.
+   The compound press arm (`:hover:active`) and the `summary`-typed
+   disabled suppression outrank the shared `:hover` wash on
+   specificity, so they keep winning no matter which module's CSS
+   lands first in a consuming stylesheet (dev-server injection and dist
+   split-css order shared layers oppositely). */
+const summaryStates = css`
+  &:active,
+  &:hover:active {
     background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   /* Disabled headers dim and lose their press affordance (the click
@@ -100,41 +88,17 @@ const summary = css`
     cursor: not-allowed;
   }
 
-  &[aria-disabled='true']:hover,
-  &[aria-disabled='true']:active {
+  summary&[aria-disabled='true']:hover,
+  summary&[aria-disabled='true']:active {
     background: none;
-  }
-
-  &::marker,
-  &::-webkit-details-marker {
-    display: none;
-  }
-
-  &::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    /* physical: the chevron is a rotated glyph drawn from physical
-       borders — swapping them for logical ones would corrupt the shape
-       (rotation itself stays physical either way). */
-    border-right: 2px solid var(--haze-color-text-muted);
-    border-bottom: 2px solid var(--haze-color-text-muted);
-    transform: rotate(-45deg);
-    transition: transform var(--haze-duration-normal);
-    flex-shrink: 0;
-  }
-
-  details[open] > &::after {
-    transform: rotate(45deg);
   }
 `;
 
-const content = css`
+/* Only the block padding differs from the shared content typography:
+   the item borders already frame the row, so content opens flush with
+   the header's inline padding. */
+const contentPad = css`
   padding: 0 var(--haze-space-4) var(--haze-space-4);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-secondary);
-  line-height: var(--haze-leading-normal);
 `;
 
 export default function AccordionItem({
@@ -184,12 +148,15 @@ export default function AccordionItem({
       <summary
         data-slot='summary'
         aria-disabled={disabled || undefined}
-        x-class={[summary, ctx?.classNames?.summary]}
+        x-class={[disclosureSummary, summaryStates, ctx?.classNames?.summary]}
         onClick={handleActivate}
       >
         {title}
       </summary>
-      <div data-slot='content' x-class={[content, ctx?.classNames?.content]}>
+      <div
+        data-slot='content'
+        x-class={[disclosureContent, contentPad, ctx?.classNames?.content]}
+      >
         {children}
       </div>
     </details>

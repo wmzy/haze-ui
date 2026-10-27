@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { FloatingPanel } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { menuPanel } from '../../utils/menu-skins';
 
 import { useContextMenuContext } from './ContextMenuContext';
 
@@ -16,27 +17,13 @@ type ContextMenuContentProps = {
 
 /**
  * Point-positioned panel: fixed at the cursor coordinates recorded by the
- * trigger, so no anchor/JS placement runs (`placement` stays unset).
+ * trigger, so no anchor/JS placement runs (`placement` stays unset). The
+ * surface skin itself is the shared menuPanel; this class adds only the
+ * point-positioning chrome.
  */
-const content = css`
+const positioned = css`
   position: fixed;
-  /* min-width pairs with padding + border: border-box keeps the floor
-   * covering the padding too (panel-family box-sizing contract). */
-  box-sizing: border-box;
-  min-width: 10rem;
-  padding: var(--haze-space-1);
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  box-shadow: var(--haze-shadow-md);
   z-index: var(--haze-z-overlay);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 export default function ContextMenuContent({
@@ -85,7 +72,7 @@ export default function ContextMenuContent({
       ref={setPanelRef}
       behavior={floating}
       role="menu"
-      visualClass={content}
+      visualClass={`${menuPanel} ${positioned}`}
       className={
         [className, classNames?.content].filter(Boolean).join(' ') || undefined
       }

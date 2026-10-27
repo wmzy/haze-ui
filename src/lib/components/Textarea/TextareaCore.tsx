@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
-import {sizes} from './textarea-styles';
+import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
 
 type TextareaCoreProps = {
   value: string;
@@ -16,54 +16,11 @@ type TextareaCoreProps = {
   ref?: Ref<HTMLTextAreaElement>;
 } & Omit<ComponentPropsWithoutRef<'textarea'>, 'value' | 'onChange' | 'size'>;
 
-const base = css`
-  display: block;
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  line-height: var(--haze-leading-normal);
+/* The field base is the shared field skin (utils/field-skin.ts) —
+ * Input and Textarea wore identical chrome; the only Textarea delta is
+ * the drag handle. */
+const resizable = css`
   resize: vertical;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-
-  &::placeholder {
-    color: var(--haze-color-text-muted);
-  }
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Forced-colors: mirror of InputCore — CanvasText border restated,
-     box-shadow focus ring replaced by a Highlight outline, disabled
-     surfaces GrayText at full opacity. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-
-    &:focus {
-      outline: 2px solid Highlight;
-    }
-
-    &:disabled {
-      opacity: 1;
-      color: GrayText;
-    }
-  }
 `;
 
 export default function TextareaCore({
@@ -79,7 +36,7 @@ export default function TextareaCore({
     <textarea
       ref={ref}
       data-slot='textarea'
-      x-class={[base, sizes[size], className]}
+      x-class={[fieldChrome, nativeFieldChrome, resizable, fieldSizes[size], className]}
       value={value}
       onChange={(e) => {
         onChange(e.target.value);

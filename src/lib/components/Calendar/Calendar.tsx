@@ -26,11 +26,13 @@ import {
   getDaysInMonth,
   getISOWeek,
   getISOWeekStartDate,
+  getWeekdayLabels,
   parseCivilDate,
   parseMonthValue,
   parseQuarterValue,
   parseWeekValue,
   parseYearValue,
+  resolveWeekStart,
 } from './date';
 
 /** Granularity Calendar picks at. Each mode serializes its `value` and
@@ -446,45 +448,6 @@ const quarterGrid = css`
   gap: 1px;
   text-align: center;
 `;
-
-/* Legacy weekday headers, indexed 0 = Sunday … 6 = Saturday. Kept for the
-   no-locale default: Intl "short" weekday names differ ("Sun" vs "Su") and
-   the default rendering must stay unchanged. */
-const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
-/* getWeekInfo is a recent Intl addition — treat it as optional so engines
-   without it fall back to the legacy Sunday-first grid. */
-type WeekInfoSource = { getWeekInfo?: () => { firstDay: number } };
-
-function resolveWeekStart(locale: string | undefined, weekStartsOn: 0 | 1 | undefined) {
-  if (weekStartsOn !== undefined) return weekStartsOn;
-  // Without an explicit locale keep the legacy Sunday-first grid: Intl
-  // resolves the pseudo-tag 'default' to Monday-first, which would silently
-  // change the existing layout.
-  if (locale === undefined) return 0;
-  try {
-    const firstDay = (new Intl.Locale(locale) as WeekInfoSource).getWeekInfo?.()
-      .firstDay;
-    // Intl reports 7 for a Sunday start; the grid works on Date#getDay()
-    // semantics where 0 = Sunday.
-    return firstDay === undefined || firstDay === 7 ? 0 : firstDay;
-  } catch {
-    // Unknown locale tag — fall back to the legacy grid.
-    return 0;
-  }
-}
-
-function getWeekdayLabels(locale: string | undefined, weekStart: number) {
-  if (locale === undefined) {
-    return Array.from({ length: 7 }, (_, i) => WEEKDAYS[(weekStart + i) % 7]!);
-  }
-  // 2024-01-07 is a Sunday; index 0…6 map to Sunday…Saturday.
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  const byDay = Array.from({ length: 7 }, (_, day) =>
-    fmt.format(new Date(2024, 0, 7 + day))
-  );
-  return Array.from({ length: 7 }, (_, i) => byDay[(weekStart + i) % 7]!);
-}
 
 /** Day buttons of the rendered grid in DOM order (outside months and
  * disabled days included — `focusFrom` skips the disabled ones). */
@@ -1024,37 +987,52 @@ export default function Calendar({
     setViewMonth(now.getMonth());
   };
 
+  /** A picker cell spanning a period is disabled when the whole period
+   * sits out of the min/max range — its last day before `min`, or its
+   * first day past `max` — or its representative date (the period's
+   * day 1) is rejected by `disabledDate`. Day cells shrink the period
+   * to the single day itself. */
+  const periodDisabled = (
+    firstDay: string,
+    lastDay: string,
+    representative: Date
+  ) => {
+    if (min && lastDay < min) return true;
+    if (max && firstDay > max) return true;
+    return disabledDate?.(representative) ?? false;
+  };
+
   const isCellDisabled = (year: number, month: number, day: number) => {
     const dateStr = formatDate(year, month, day);
-    if (min && dateStr < min) return true;
-    if (max && dateStr > max) return true;
-    return disabledDate?.(new Date(year, month, day)) ?? false;
+    return periodDisabled(dateStr, dateStr, new Date(year, month, day));
   };
 
   // A month cell is disabled when its whole period is out of range (any
   // day could still be pickable inside) or its representative day —
   // day 1 — is rejected by `disabledDate`.
-  const isMonthCellDisabled = (year: number, month: number) => {
-    if (min && formatDate(year, month, getDaysInMonth(year, month)) < min)
-      return true;
-    if (max && formatDate(year, month, 1) > max) return true;
-    return disabledDate?.(new Date(year, month, 1)) ?? false;
-  };
+  const isMonthCellDisabled = (year: number, month: number) =>
+    periodDisabled(
+      formatDate(year, month, 1),
+      formatDate(year, month, getDaysInMonth(year, month)),
+      new Date(year, month, 1)
+    );
 
   const isQuarterCellDisabled = (year: number, quarter: number) => {
     const firstMonth = quarter * 3 - 3;
     const lastMonth = quarter * 3 - 1;
-    if (min && formatDate(year, lastMonth, getDaysInMonth(year, lastMonth)) < min)
-      return true;
-    if (max && formatDate(year, firstMonth, 1) > max) return true;
-    return disabledDate?.(new Date(year, firstMonth, 1)) ?? false;
+    return periodDisabled(
+      formatDate(year, firstMonth, 1),
+      formatDate(year, lastMonth, getDaysInMonth(year, lastMonth)),
+      new Date(year, firstMonth, 1)
+    );
   };
 
-  const isYearCellDisabled = (year: number) => {
-    if (min && formatDate(year, 11, 31) < min) return true;
-    if (max && formatDate(year, 0, 1) > max) return true;
-    return disabledDate?.(new Date(year, 0, 1)) ?? false;
-  };
+  const isYearCellDisabled = (year: number) =>
+    periodDisabled(
+      formatDate(year, 0, 1),
+      formatDate(year, 11, 31),
+      new Date(year, 0, 1)
+    );
 
   const pickModeValue = (next: string) => {
     setValue(next);

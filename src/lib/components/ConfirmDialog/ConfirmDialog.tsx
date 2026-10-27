@@ -28,7 +28,7 @@ const overlay = css`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--haze-color-scrim);
   z-index: var(--haze-z-overlay);
 
   /* Presence 注入的 data-state 驱动 backdrop 与内容各自的进退场 */

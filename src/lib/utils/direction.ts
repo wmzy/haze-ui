@@ -66,6 +66,39 @@ export function getDirection(el: Element | null): Direction {
   return 'ltr';
 }
 
+/** The four navigation arrows; the values `inlineAxisKeys` hands out. */
+type ArrowKey = 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown';
+
+const ARROWS_HORIZONTAL_LTR = { next: 'ArrowRight', prev: 'ArrowLeft' } as const;
+const ARROWS_HORIZONTAL_RTL = { next: 'ArrowLeft', prev: 'ArrowRight' } as const;
+const ARROWS_VERTICAL = { next: 'ArrowDown', prev: 'ArrowUp' } as const;
+
+/**
+ * The arrow keys that move along an orientation's main axis: `next`
+ * advances towards the end, `prev` retreats. Vertical layouts are
+ * direction-invariant (↓/↑); horizontal layouts mirror under RTL — in
+ * a `dir="rtl"` row the visually-forward arrow is ArrowLeft, because
+ * the keys must follow the painted reading order.
+ *
+ * `dir: 'auto'` resolves against the document's rendered direction
+ * (the same rule as {@link useDirection}'s provider-less fallback) for
+ * callers with no concrete element to read. Prefer passing {@link
+ * getDirection}'s result on the actual container whenever one exists —
+ * that is the layout truth the focus order must follow.
+ */
+export function inlineAxisKeys(
+  orientation: 'horizontal' | 'vertical',
+  dir: Direction | 'auto'
+): { next: ArrowKey; prev: ArrowKey } {
+  if (orientation === 'vertical') return ARROWS_VERTICAL;
+  const rtl =
+    dir === 'auto'
+      ? typeof document !== 'undefined' &&
+        getDirection(document.documentElement) === 'rtl'
+      : dir === 'rtl';
+  return rtl ? ARROWS_HORIZONTAL_RTL : ARROWS_HORIZONTAL_LTR;
+}
+
 /**
  * Declared direction for the current tree: the LocaleProvider chain's
  * explicit `direction` prop or locale-derived direction, falling back to

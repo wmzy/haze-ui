@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import {
-  dropdownMenuItemDanger,
-  dropdownMenuItemIcon,
-  dropdownMenuItemIndicator,
-  dropdownMenuItemKbd,
-} from './dropdown-menu-item-styles';
+  menuItemDanger,
+  menuItemIcon,
+  menuItemIndicator,
+  menuItemKbd,
+  menuItemBase,
+  menuPopupItem,
+} from '../../utils/menu-skins';
+
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuCheckboxItemProps = {
@@ -28,35 +30,8 @@ type DropdownMenuCheckboxItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's skin; the leading slot is the fixed-size check indicator.
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-  border-radius: var(--haze-radius-sm);
-  text-align: start;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
+// utils/menu-skins); the leading slot is the fixed-size check indicator.
 
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or
@@ -81,7 +56,7 @@ export default function DropdownMenuCheckboxItem({
   return (
     <button
       data-slot='menu-checkbox-item'
-      x-class={[item, danger && dropdownMenuItemDanger, classNames?.checkboxItem, className]}
+      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.checkboxItem, className]}
       type="button"
       role="menuitemcheckbox"
       aria-checked={checked}
@@ -93,7 +68,7 @@ export default function DropdownMenuCheckboxItem({
         onCheckedChange?.(next);
       }}
     >
-      <span data-slot='indicator' x-class={dropdownMenuItemIndicator} aria-hidden="true">
+      <span data-slot='indicator' x-class={menuItemIndicator} aria-hidden="true">
         {checked && (
           <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
             <path
@@ -106,10 +81,10 @@ export default function DropdownMenuCheckboxItem({
           </svg>
         )}
       </span>
-      {icon !== undefined && <span data-slot='icon' x-class={dropdownMenuItemIcon}>{icon}</span>}
+      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
       {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={dropdownMenuItemKbd} aria-hidden="true">{kbdLabel}</span>
+        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
       )}
     </button>
   );

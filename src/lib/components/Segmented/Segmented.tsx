@@ -55,10 +55,7 @@ export default function Segmented({
         size={size}
         className={className}
       />
-      <NativeHiddenFields
-        name={name}
-        values={value === '' ? [] : [value]}
-      />
+      <NativeHiddenFields name={name} values={[value]} skipEmpty />
     </>
   );
 }

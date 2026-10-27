@@ -1,8 +1,8 @@
 import type {ComponentPropsWithoutRef, ReactNode, Ref} from 'react';
 
-import {css} from '@linaria/core';
+import { css } from '@linaria/core';
 
-import {sizes} from './input-styles';
+import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
 
 type InputCoreProps = {
   value: string;
@@ -26,55 +26,10 @@ type InputCoreProps = {
   ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange' | 'size'>;
 
-const base = css`
-  display: block;
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  line-height: var(--haze-leading-normal);
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-
-  &::placeholder {
-    color: var(--haze-color-text-muted);
-  }
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated for determinism. The box-shadow
-     focus ring is dropped by the UA, so focus moves to a Highlight
-     outline. Disabled inputs render GrayText at full opacity. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-
-    &:focus {
-      outline: 2px solid Highlight;
-    }
-
-    &:disabled {
-      opacity: 1;
-      color: GrayText;
-    }
-  }
-`;
+/* The field base itself (border/fill, hover/:focus/:disabled arms,
+ * forced-colors, sizing) is the shared field skin — see
+ * utils/field-skin.ts. Only the section overlay layout below is
+ * Input-specific. */
 
 /* The wrapper only exists when sections are present (sections render
  * as absolute overlays inside it). Bare inputs match the pre-section
@@ -138,8 +93,9 @@ export default function InputCore({
       ref={ref}
       data-slot='input'
       x-class={[
-        base,
-        sizes[size],
+        fieldChrome,
+        nativeFieldChrome,
+        fieldSizes[size],
         leftSection !== undefined && padStart,
         rightSection !== undefined && padEnd,
         className,

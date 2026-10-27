@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 import { useCallback, useId, useRef, useState } from 'react';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { presetList, presetRow } from '../../utils/preset-list-skin';
 import { mergeRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
@@ -131,44 +132,10 @@ const dropdown = css`
   box-shadow: var(--haze-shadow-lg);
 `;
 
-/* Shortcut rows heading the panel (SelectFloating's option-row style:
-   full-width quiet rows on the list surface, a hairline separating them
-   from the calendar below). */
-const presetList = css`
-  display: flex;
-  flex-direction: column;
-  padding-block: var(--haze-space-1) 0;
-  margin-block-end: var(--haze-space-2);
-  border-block-end: 1px solid var(--haze-color-border);
-`;
-
-const presetRow = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  appearance: none;
-  border: none;
-  background: transparent;
-  padding: var(--haze-space-1) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  text-align: start;
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
+/* Shortcut rows heading the panel: the shared option-row skin from
+   utils/preset-list-skin (SelectFloating's option-row style) — full-
+   width quiet rows on the list surface, a hairline separating them
+   from the calendar below. */
 
 /* Time footer (showTime): a hairline-separated row anchoring the
    hour/minute input to the panel's bottom edge, mirroring the preset

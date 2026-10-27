@@ -87,6 +87,8 @@ type CommandProps = {
  *
  * - `--haze-command-width` — root max-width (fallback `400px`)
  * - `--haze-command-border` — root border (fallback `1px solid var(--haze-color-border)`)
+ * - `--haze-command-list-max-height` — CommandList scroll cap (fallback
+ *   `300px`; the virtualized path caps through its JS metrics instead)
  */
 const base = css`
   display: flex;
@@ -241,7 +243,7 @@ const ITEM_ROW_HEIGHT = 37;
 const LIST_MAX_HEIGHT = 300;
 
 const listStyle = css`
-  max-height: 300px;
+  max-height: var(--haze-command-list-max-height, 300px);
   overflow-y: auto;
   padding: var(--haze-space-1);
 `;

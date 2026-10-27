@@ -5,6 +5,9 @@ import { css } from '@linaria/core';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
+import { useStrings } from '../LocaleProvider';
+import { srOnly } from '../../utils/sr-only';
+
 /**
  * Line-by-line reasoning trace for agentic UIs (the shadcn Trace shape):
  * `<Trace>` lays out `<TraceItem>` steps, each carrying a status marker,
@@ -202,22 +205,6 @@ const detailsBody = css`
   word-break: break-all;
 `;
 
-// Visually hidden but exposed to assistive tech (the clip pattern from
-// the WCAG tutorials). Deliberately token-free: this is not a visual
-// surface, it only has to be removed from the layout entirely.
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-`;
-
 /** Glyphs inside the status marker; pending/running stay glyph-free. */
 const markerGlyphs: Partial<Record<TraceStatus, string>> = {
   done: '✓',
@@ -229,17 +216,6 @@ const markerMap: Record<TraceStatus, string> = {
   running: markerRunning,
   done: markerDone,
   error: markerError,
-};
-
-/** Screen-reader words for status announcements — the same English copy
- * the toolCallCard locale section ships. Trace itself carries no locale
- * strings; consumers word step titles (e.g. "Searching…") for visible
- * status copy, the shadcn Trace guidance. */
-const STATUS_WORDS: Record<TraceStatus, string> = {
-  pending: 'Pending',
-  running: 'Running...',
-  done: 'Done',
-  error: 'Error',
 };
 
 const ChevronGlyph = () => (
@@ -270,6 +246,12 @@ export function TraceItem({
   ...rest
 }: TraceItemProps) {
   const [open, setOpen] = useControl(openControl, false);
+  // Screen-reader status words come from the toolCallCard locale section
+  // — the same localized copy ToolCallCard's status label ships, so a
+  // localized app announces localized words. Trace itself carries no
+  // section of its own: consumers word step titles (e.g. "Searching…")
+  // for visible status copy, the shadcn Trace guidance.
+  const strings = useStrings('toolCallCard');
   const panelId = useId();
   // A toggle with nothing to reveal would be a dead button — only a
   // line carrying details becomes one.
@@ -296,10 +278,9 @@ export function TraceItem({
     // Prefix the announcement with the line's text so concurrent steps
     // stay distinguishable ("read_file: Done", not a bare "Done").
     const titleText = titleRef.current?.textContent.trim();
-    setAnnounced(
-      titleText ? `${titleText}: ${STATUS_WORDS[status]}` : STATUS_WORDS[status],
-    );
-  }, [status]);
+    const word = strings[status];
+    setAnnounced(titleText ? `${titleText}: ${word}` : word);
+  }, [status, strings]);
 
   /* Decorative marker: the glyph/icon duplicates what the live region
      announces on change; data-status on the line carries the state for

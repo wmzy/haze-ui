@@ -7,6 +7,15 @@ import { css } from '@linaria/core';
 
 import { useControl } from 'react-use-control';
 
+import { ChevronRight } from '../../icons';
+import {
+  timelineDescription,
+  timelineDot,
+  timelineLabel,
+  timelineList,
+  timelineRow,
+} from '../../utils/timeline-skin';
+
 type StepStatus = 'pending' | 'active' | 'running' | 'done' | 'error';
 
 type StepTimelineProps = {
@@ -35,27 +44,21 @@ type StepTimelineItemProps = {
   className?: string;
 };
 
-const list = css`
-  display: flex;
-  flex-direction: column;
-  font-family: var(--haze-font-sans);
-`;
-
-const item = css`
-  display: flex;
-  gap: var(--haze-space-3);
-  padding-bottom: var(--haze-space-4);
-  position: relative;
-
-  &:last-child {
-    padding-bottom: 0;
-  }
+/* Local half of the shared row skeleton: the tighter block spacing and
+   the connector — an absolutely positioned pseudo line in the marker
+   gutter (unlike Timeline's in-flow flex child). Marker is space-5
+   (20px); the connector starts one space-1 below it and is inset to
+   its center minus half the hairline so it hits the ring midline. All
+   geometry rides the space scale, so compact density scales marker and
+   connector together. */
+const connectorRow = css`
+  padding-block-end: var(--haze-space-4);
 
   &:not(:last-child)::before {
     content: '';
     position: absolute;
-    inset-inline-start: 0.5625rem;
-    top: 1.5rem;
+    inset-inline-start: calc(var(--haze-space-5) / 2 - 1px);
+    top: calc(var(--haze-space-5) + var(--haze-space-1));
     bottom: 0;
     width: 2px;
     background: var(--haze-color-border);
@@ -94,17 +97,19 @@ const headerButton = css`
   }
 `;
 
-const marker = css`
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: var(--haze-radius-full);
+/* Local half of the shared dot geometry (timelineDot carries the round
+   shape, shrink guard and z-lift): the status ring's size, border and
+   the centered glyph cell. The 0.5rem glyph size is a documented keep
+   — no type token that small exists (text-xs is the floor); the ✓/!
+   marks are intentionally sub-token. */
+const markerStyle = css`
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
   border: 2px solid var(--haze-color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.5rem;
-  z-index: var(--haze-z-local-1);
 `;
 
 const markerPending = css`
@@ -173,6 +178,8 @@ const markerError = css`
 const body = css`
   flex: 1;
   min-width: 0;
+  /* 1px optical nudge so the label's baseline sits on the marker's
+     midline — sub-token by design, documented keep. */
   padding-top: 0.0625rem;
 `;
 
@@ -182,12 +189,9 @@ const labelRow = css`
   gap: var(--haze-space-2);
 `;
 
-const labelStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
+/* The label and description ride the shared timeline text skins
+   (utils/timeline-skin); only the inline timestamp is StepTimeline's
+   own — it sits at the label row's inline end, not below it. */
 const timeStyle = css`
   margin-inline-start: auto;
   font-size: var(--haze-text-xs);
@@ -195,12 +199,6 @@ const timeStyle = css`
   color: var(--haze-color-text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-`;
-
-const descriptionStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-top: var(--haze-space-1);
 `;
 
 const chevron = css`
@@ -216,11 +214,11 @@ const chevronOpen = css`
   transform: rotate(90deg);
 `;
 
-/* Indent past the marker column (1.25rem marker + gap) so revealed
-   content aligns with the label; the item's own connector line stays in
-   the marker gutter beside it. */
+/* Indent past the marker column (space-5 marker + the row gap) so
+   revealed content aligns with the label; the item's own connector
+   line stays in the marker gutter beside it. */
 const panelStyle = css`
-  padding-inline-start: calc(1.25rem + var(--haze-space-3));
+  padding-inline-start: calc(var(--haze-space-5) + var(--haze-space-3));
   padding-block: var(--haze-space-1) var(--haze-space-2);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text-secondary);
@@ -230,23 +228,9 @@ const subSteps = css`
   margin-block-start: var(--haze-space-2);
 `;
 
-const ChevronGlyph = () => (
-  <svg
-    width='12'
-    height='12'
-    viewBox='0 0 16 16'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M6 4l4 4-4 4' />
-  </svg>
-);
-
+/* lucide ChevronRight at 12px with a compensating 3-unit stroke: the
+   24-unit viewBox renders at half the scale of the old 16-unit inline
+   glyph, so strokeWidth 3 keeps the shipped 1.5px rendered stroke. */
 const markerMap: Record<StepStatus, string> = {
   pending: markerPending,
   active: markerActive,
@@ -286,7 +270,7 @@ function StepTimelineItem({
     (status === 'done' ? '✓' : status === 'error' ? '!' : undefined);
 
   const indicator = (
-    <div data-slot='dot' x-class={[marker, markerMap[status]]}>
+    <div data-slot='dot' x-class={[timelineDot, markerStyle, markerMap[status]]}>
       {glyph}
     </div>
   );
@@ -294,13 +278,13 @@ function StepTimelineItem({
   const headerBody = (
     <div data-slot='content' x-class={[body]}>
       <div data-slot='label-row' x-class={[labelRow]}>
-        <div data-slot='label' x-class={[labelStyle]}>{label}</div>
+        <div data-slot='label' x-class={[timelineLabel]}>{label}</div>
         {time != null && (
           <span data-slot='time' x-class={[timeStyle]}>{time}</span>
         )}
       </div>
       {description && (
-        <div data-slot='description' x-class={[descriptionStyle]}>{description}</div>
+        <div data-slot='description' x-class={[timelineDescription]}>{description}</div>
       )}
     </div>
   );
@@ -309,7 +293,7 @@ function StepTimelineItem({
     <div
       data-slot='item'
       data-status={status}
-      x-class={[item, expandable && itemStacked, className]}
+      x-class={[timelineRow, connectorRow, expandable && itemStacked, className]}
     >
       {expandable ? (
         <button
@@ -327,7 +311,12 @@ function StepTimelineItem({
             aria-hidden='true'
             x-class={[chevron, open && chevronOpen]}
           >
-            <ChevronGlyph />
+            <ChevronRight
+              size={12}
+              strokeWidth={3}
+              aria-hidden='true'
+              focusable='false'
+            />
           </span>
         </button>
       ) : (
@@ -357,7 +346,7 @@ function StepTimelineItem({
 
 function StepTimeline({ children, className }: StepTimelineProps) {
   return (
-    <div data-slot='step-timeline' x-class={[list, className]}>
+    <div data-slot='step-timeline' x-class={[timelineList, className]}>
       {children}
     </div>
   );

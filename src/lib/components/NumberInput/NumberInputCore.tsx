@@ -3,8 +3,9 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { fieldSizes, focusWithinRing } from '../../utils/field-skin';
 
-import { inputSizes, btnSizes } from './number-input-styles';
+import { btnSizes } from './number-input-styles';
 
 type NumberInputCoreProps = {
   value: number;
@@ -21,6 +22,9 @@ type NumberInputCoreProps = {
   ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value' | 'onChange' | 'size'>;
 
+/* The wrapper keeps its own border/radius/fill delta (no background —
+ * the inner input and the step buttons paint their own surfaces) and
+ * wears the shared :focus-within ring from utils/field-skin.ts. */
 const wrapper = css`
   display: inline-flex;
   align-items: stretch;
@@ -30,11 +34,6 @@ const wrapper = css`
   transition:
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const input = css`
@@ -104,7 +103,7 @@ export default function NumberInputCore({
   };
 
   return (
-    <div data-slot='number-input' x-class={[wrapper, className]}>
+    <div data-slot='number-input' x-class={[focusWithinRing, wrapper, className]}>
       <button
         type='button'
         data-slot='step-down'
@@ -119,7 +118,7 @@ export default function NumberInputCore({
         ref={ref}
         type='number'
         data-slot='input'
-        x-class={[input, inputSizes[size]]}
+        x-class={[input, fieldSizes[size]]}
         value={value}
         min={min}
         max={max}

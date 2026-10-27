@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
 import { useCallback, useEffect } from 'react';
 
 import { FloatingPanel, type FloatingPlacement } from '../../utils/floating';
@@ -9,6 +8,7 @@ import {
   useMenuKeyboard,
   useRovingTabindex,
 } from '../../utils/menuKeyboard';
+import { menuPanel } from '../../utils/menu-skins';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -17,25 +17,6 @@ type DropdownMenuContentProps = {
   align?: 'start' | 'center' | 'end';
   className?: string;
 };
-
-const content = css`
-  /* min-width pairs with padding + border: border-box keeps the floor
-   * covering the padding too (panel-family box-sizing contract). */
-  box-sizing: border-box;
-  min-width: 10rem;
-  padding: var(--haze-space-1);
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  box-shadow: var(--haze-shadow-md);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
-`;
 
 /** `align` prop → floating placement under the trigger. */
 const alignments = {
@@ -102,7 +83,7 @@ export default function DropdownMenuContent({
       placement={alignments[align]}
       id={contentId}
       role="menu"
-      visualClass={content}
+      visualClass={menuPanel}
       className={
         [className, classNames?.content].filter(Boolean).join(' ') || undefined
       }

@@ -1,14 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
+import { menuItemBase, menuItemDanger, menuItemIcon, menuItemKbd, menuPopupItem } from '../../utils/menu-skins';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
-
-import {
-  dropdownMenuItemDanger,
-  dropdownMenuItemIcon,
-  dropdownMenuItemKbd,
-} from './dropdown-menu-item-styles';
 
 type DropdownMenuItemProps = {
   children: ReactNode;
@@ -22,35 +16,6 @@ type DropdownMenuItemProps = {
   kbdLabel?: ReactNode;
   className?: string;
 };
-
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-  border-radius: var(--haze-radius-sm);
-  text-align: start;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
 export default function DropdownMenuItem({
   children,
@@ -75,17 +40,17 @@ export default function DropdownMenuItem({
   return (
     <button
       data-slot='menu-item'
-      x-class={[item, danger && dropdownMenuItemDanger, classNames?.item, className]}
+      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.item, className]}
       type="button"
       role="menuitem"
       tabIndex={-1}
       onClick={handleClick}
       disabled={disabled}
     >
-      {icon !== undefined && <span data-slot='icon' x-class={dropdownMenuItemIcon}>{icon}</span>}
+      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
       {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={dropdownMenuItemKbd} aria-hidden="true">{kbdLabel}</span>
+        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
       )}
     </button>
   );

@@ -2,11 +2,16 @@ import type { DensitySpaceTokenName } from './spacing';
 
 import { css } from '@linaria/core';
 
+import { SPACE_PX } from './spacing';
+
 /*
- * Compact density: 75% of the default spacing scale (tokens/spacing.ts),
- * declared through the --haze-density-space-N indirection that the spacing
- * class resolves --haze-space-* through. The values below are exact — the
- * default scale is a 4px grid, so 75% of every step stays on an integer px.
+ * Compact density: 75% of the default spacing scale, computed from the
+ * SPACE_PX integers (tokens/spacing.ts) and declared through the
+ * --haze-density-space-N indirection that the spacing class resolves
+ * --haze-space-* through. The values are exact — the default scale is a
+ * 4px grid, so Math.round(px * 0.75) of every step stays on an integer
+ * px and the emitted table is byte-identical to the hand-written one it
+ * replaces.
  *
  * Why indirection instead of re-declaring --haze-space-* here: a density
  * class that wrote --haze-space-3 directly would collide with the spacing
@@ -23,26 +28,30 @@ import { css } from '@linaria/core';
  *   <div className={`${lightTheme} ${compact} ${spacing} ${typography}`}>
  *
  * Pure constants — no hooks, no DOM access (RSC-safe; see
- * scripts/rsc-safe.mjs). The type-only import from ./spacing is erased.
+ * scripts/rsc-safe.mjs). The ./spacing import is a pure integer record.
  */
 
-export const COMPACT_OVERRIDES: Record<DensitySpaceTokenName, string> = {
-  '--haze-density-space-1': '3px',
-  '--haze-density-space-2': '6px',
-  '--haze-density-space-3': '9px',
-  '--haze-density-space-4': '12px',
-  '--haze-density-space-5': '15px',
-  '--haze-density-space-6': '18px',
-  '--haze-density-space-8': '24px',
-  '--haze-density-space-10': '30px',
-  '--haze-density-space-12': '36px',
-  '--haze-density-space-16': '48px',
-};
+const toCompact = (px: number): string => `${Math.round(px * 0.75)}px`;
 
-const compactDeclarations = () =>
-  Object.entries(COMPACT_OVERRIDES)
+export const COMPACT_OVERRIDES: Record<DensitySpaceTokenName, string> =
+  Object.fromEntries(
+    Object.entries(SPACE_PX).map(([token, px]) => [
+      token.replace('--haze-space-', '--haze-density-space-'),
+      toCompact(px),
+    ] as const)
+  ) as Record<DensitySpaceTokenName, string>;
+
+/**
+ * The declarations the compact class emits, one per density override.
+ * Exported for the token tests — the css template interpolates this
+ * exact function and Linaria evaluates it at build time
+ * (spacingDeclarations / remDeclarations precedent).
+ */
+export function compactDeclarations(): string {
+  return Object.entries(COMPACT_OVERRIDES)
     .map(([token, value]) => `${token}: ${value};`)
     .join('\n');
+}
 
 export const compact = css`
 ${compactDeclarations()}

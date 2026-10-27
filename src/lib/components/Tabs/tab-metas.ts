@@ -2,7 +2,9 @@ import type { ReactNode } from 'react';
 
 import type { TabProps, TabStatus } from './Tab';
 
-import { Children, Fragment, isValidElement, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { walkChildren } from '../../utils/walk-children';
 
 import Tab from './Tab';
 
@@ -56,19 +58,17 @@ export function useActivatedTabs(
  */
 export function collectTabMetas(children: ReactNode): TabMeta[] {
   const metas: TabMeta[] = [];
-  const walk = (nodes: ReactNode) => {
-    Children.forEach(nodes, (node) => {
-      if (!isValidElement(node)) return;
-      if (node.type === Tab) {
-        const { value, icon, status, disabled, children: label } =
-          node.props as TabProps;
-        metas.push({ value, icon, status, disabled, label });
-      } else if (node.type === Fragment) {
-        // React 19's isValidElement narrows to ReactElement<unknown>.
-        walk((node.props as { children?: ReactNode }).children);
-      }
-    });
-  };
-  walk(children);
+  // The mapped tree is discarded (metas only); ReactNode includes
+  // Promise children, hence the void.
+  void walkChildren(
+    children,
+    (element) => {
+      if (element.type !== Tab) return;
+      const { value, icon, status, disabled, children: label } =
+        element.props as TabProps;
+      metas.push({ value, icon, status, disabled, label });
+    },
+    { flattenFragments: true }
+  );
   return metas;
 }

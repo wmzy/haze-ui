@@ -106,6 +106,13 @@ const toggleBtn = css`
   }
 `;
 
+/* The chevron svg's rotate transition; the transform itself is the
+   button's &[aria-expanded='true'] svg rule above — both must sit on
+   the svg, so the former inline style becomes this class. */
+const chevron = css`
+  transition: transform var(--haze-duration-fast) var(--haze-ease);
+`;
+
 const snippetBase = css`
   flex-basis: 100%;
   padding: var(--haze-space-1) var(--haze-space-2);
@@ -176,7 +183,7 @@ const ChevronGlyph = () => (
     strokeLinejoin='round'
     aria-hidden='true'
     focusable='false'
-    style={{ transition: 'transform var(--haze-duration-fast) var(--haze-ease)' }}
+    x-class={[chevron]}
   >
     <path d='M3 1.5 6.5 5 3 8.5' />
   </svg>

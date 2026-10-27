@@ -613,43 +613,35 @@ export default function FormItem<
     </label>
   );
 
+  // The bridge wiring shared by both declarative channels: identity,
+  // the aria linkage, the control slot class, the focus channel and the
+  // value/change plumbing (the value tail lands last, so valueToProps
+  // output wins over the bare value). Only the forwarded props differ
+  // per channel — `inputProps` for the input channel, `asProps` for
+  // `as` — and they spread first, so this wiring (spread after) always
+  // wins: on the input channel the wired keys are excluded from the
+  // forwarded type (a typed caller can never hit the clash), while
+  // `asProps` is untyped, so a collision there is a silent runtime
+  // override by the wiring, never a compile error.
+  const wiredProps: Record<string, any> = {
+    id,
+    'aria-invalid': invalid || undefined,
+    'aria-describedby': invalid ? errorId : undefined,
+    className: controlClassName,
+    // the focus channel rides the control's ref (raw DOM elements
+    // and haze cores both accept a callback ref there)
+    ref: focusRef,
+    onBlur,
+    onChange: (e: any) => onChange(toValue(e) as PathValueOf<TValues, P>),
+    ...(valueToProps ? valueToProps(value) : {value}),
+  };
+
   const control = InputComponent ? (
-    <InputComponent
-      // forwarded props first — the wiring below is the bridge's
-      // contract and always wins (they're excluded from the forwarded
-      // type, so a typed caller can never hit the clash)
-      {...(inputProps as Record<string, any>)}
-      id={id}
-      aria-invalid={invalid || undefined}
-      aria-describedby={invalid ? errorId : undefined}
-      className={controlClassName}
-      // the focus channel rides the control's ref (raw DOM elements
-      // and haze cores both accept a callback ref there)
-      ref={focusRef}
-      onBlur={onBlur}
-      onChange={(e: any) => onChange(toValue(e) as PathValueOf<TValues, P>)}
-      {...(valueToProps ? valueToProps(value) : {value})}>
+    <InputComponent {...(inputProps as Record<string, any>)} {...wiredProps}>
       {children as ReactNode}
     </InputComponent>
   ) : As ? (
-    <As
-      // asProps first — the wiring below is the bridge's contract
-      // and always wins, the same precedence as the input channel
-      // (asProps is untyped, so a collision is a silent runtime
-      // override by the wiring, never a compile error); the value
-      // props still land last
-      {...asProps}
-      id={id}
-      aria-invalid={invalid || undefined}
-      aria-describedby={invalid ? errorId : undefined}
-      className={controlClassName}
-      // the focus channel rides the control's ref (raw DOM elements
-      // and haze cores both accept a callback ref there)
-      ref={focusRef}
-      onBlur={onBlur}
-      onChange={(e: any) => onChange(toValue(e) as PathValueOf<TValues, P>)}
-      {...(valueToProps ? valueToProps(value) : {value})}
-    />
+    <As {...asProps} {...wiredProps} />
   ) : (
     (children as (binding: FormItemBinding<TValues, P>) => ReactNode)({
       id,

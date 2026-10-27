@@ -24,7 +24,9 @@ const track = css`
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-bg-muted);
   cursor: pointer;
-  padding: 2px;
+  /* Half of space-1 — the scale has no 2px step, and the calc keeps
+     the track inset density-aware instead of another literal. */
+  padding: calc(var(--haze-space-1) / 2);
   transition: background var(--haze-duration-normal);
 
   &:focus-visible {
@@ -38,7 +40,7 @@ const track = css`
   }
 
   /* Forced-colors: the UA flattens both the muted and the primary
-     track onto Canvas and the white thumb onto Canvas — the switch
+     track onto Canvas and the inverse thumb onto Canvas — the switch
      would disappear. The track keeps a CanvasText boundary with a
      CanvasText thumb; when on, the Windows-native rendering takes
      over (Highlight track, HighlightText thumb). Disabled tracks drop
@@ -87,7 +89,10 @@ const trackChecked = css`
 const thumb = css`
   display: block;
   border-radius: var(--haze-radius-full);
-  background: white;
+  /* Sits on saturated fills (the primary track when on), the exact
+     pairing the primary button label uses — light mode resolves to
+     pure white, the historical hardcoded value. */
+  background: var(--haze-color-text-inverse);
   transition: transform var(--haze-duration-normal);
   box-shadow: var(--haze-shadow-sm);
 `;

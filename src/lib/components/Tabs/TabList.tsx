@@ -11,7 +11,9 @@ import { css } from '@linaria/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { getDirection } from '../../utils/direction';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { mergeRefs } from '../../utils/refs';
 
 import { Menu } from '../Menu';
 import { useStrings } from '../LocaleProvider';
@@ -171,6 +173,17 @@ export default function TabList({
   const strings = useStrings('tabs');
   const internalListRef = useRef<HTMLDivElement>(null);
   const listRef = listRefProp ?? internalListRef;
+  const [observeRef, resizeEntry] = useResizeObserver<HTMLDivElement>();
+  // The strip element feeds two handles: the consumer/own ref object
+  // (measure + keyboard read it) and the observer's callback ref. The
+  // useCallback keeps the merged identity stable — a fresh callback per
+  // render would null-detach and re-observe every render, and every
+  // observe() fires a fresh entry (the re-render loop the hook's
+  // stable-ref contract guards against).
+  const stripRef = useCallback(
+    (node: HTMLDivElement | null) => mergeRefs(listRef, observeRef)(node),
+    [listRef, observeRef]
+  );
   const [overflowing, setOverflowing] = useState(false);
 
   // Controlled handle on the ⋯ menu so a radio pick can close it.
@@ -223,19 +236,14 @@ export default function TabList({
   }, []);
 
   useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
+    // jsdom ships no ResizeObserver — the hook's ref degrades to a
+    // no-op there, so this degenerates to the mount + `children` passes
+    // (tests stub the global to simulate resizes). `children` re-runs
+    // the pass so tabs mounting or unmounting re-measures even when the
+    // strip box itself did not move; `resizeEntry` changes identity on
+    // every observer notification, which re-runs the measure.
     measure();
-    // jsdom ships no ResizeObserver — the initial measure above keeps
-    // the strip menu-free there (tests stub the global to simulate
-    // resizes). `children` re-runs the pass so tabs mounting or
-    // unmounting re-measures even when the strip box itself did not
-    // move.
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [measure, children]);
+  }, [measure, children, resizeEntry]);
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     const tabs = Array.from(
@@ -255,9 +263,10 @@ export default function TabList({
       setValue(tab.dataset.hazeTabValue ?? '');
     };
 
-    const nextKey =
-      getDirection(listRef.current) === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const prevKey = nextKey === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
+    const { next: nextKey, prev: prevKey } = inlineAxisKeys(
+      'horizontal',
+      getDirection(listRef.current)
+    );
 
     switch (event.key) {
       case nextKey:
@@ -284,7 +293,7 @@ export default function TabList({
   return (
     <div data-slot='tab-bar' x-class={bar}>
       <div
-        ref={listRef}
+        ref={stripRef}
         data-slot='tab-list'
         data-variant={variant}
         role='tablist'

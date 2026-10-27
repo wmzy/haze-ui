@@ -2,6 +2,9 @@ import type { DensitySpaceTokenName } from './spacing';
 
 import { css } from '@linaria/core';
 
+import { SPACE_PX } from './spacing';
+import { TEXT_SIZE_PX } from './typography';
+
 /*
  * Text-zoom preset (WCAG 1.4.4 resize text): re-declares the spacing,
  * text-size and radius scales at a 16px = 1rem base so the whole metric
@@ -47,37 +50,36 @@ import { css } from '@linaria/core';
  * multiply.
  *
  * Pure constants — no hooks, no DOM access (RSC-safe; see
- * scripts/rsc-safe.mjs). The type-only import from ./spacing is erased.
+ * scripts/rsc-safe.mjs). The ./spacing and ./typography imports are pure
+ * integer records; both modules are in the RSC-safe group, so the
+ * closure stays in-group.
  */
 
+/** `<px>` at a 16px = 1rem base, as an exact rem string (12 → `0.75rem`). */
+const toRem = (px: number): string => `${px / 16}rem`;
+
 /** The spacing scale at a 16px = 1rem base, answered through the density indirection. */
-export const REM_SPACE_OVERRIDES: Record<DensitySpaceTokenName, string> = {
-  '--haze-density-space-1': '0.25rem',
-  '--haze-density-space-2': '0.5rem',
-  '--haze-density-space-3': '0.75rem',
-  '--haze-density-space-4': '1rem',
-  '--haze-density-space-5': '1.25rem',
-  '--haze-density-space-6': '1.5rem',
-  '--haze-density-space-8': '2rem',
-  '--haze-density-space-10': '2.5rem',
-  '--haze-density-space-12': '3rem',
-  '--haze-density-space-16': '4rem',
-};
+export const REM_SPACE_OVERRIDES: Record<DensitySpaceTokenName, string> =
+  Object.fromEntries(
+    Object.entries(SPACE_PX).map(([token, px]) => [
+      token.replace('--haze-space-', '--haze-density-space-'),
+      toRem(px),
+    ] as const)
+  ) as Record<DensitySpaceTokenName, string>;
 
 /** The text-size scale at a 16px = 1rem base (leading is unitless already). */
-export const REM_TEXT_SIZES = {
-  '--haze-text-xs': '0.75rem',
-  '--haze-text-sm': '0.875rem',
-  '--haze-text-base': '1rem',
-  '--haze-text-lg': '1.125rem',
-  '--haze-text-xl': '1.25rem',
-  '--haze-text-2xl': '1.5rem',
-  '--haze-text-3xl': '1.875rem',
-} as const;
+export const REM_TEXT_SIZES = Object.fromEntries(
+  Object.entries(TEXT_SIZE_PX).map(([token, px]) => [token, toRem(px)] as const)
+) as Record<keyof typeof TEXT_SIZE_PX, string>;
 
 export type TextSizeTokenName = keyof typeof REM_TEXT_SIZES;
 
-/** The radius scale at a 16px = 1rem base (9999px = 624.9375rem exactly). */
+/**
+ * The radius scale at a 16px = 1rem base (9999px = 624.9375rem exactly).
+ * Kept literal on purpose: the radius values are template-only data in
+ * tokens/spacing.ts (no numeric record to derive from), so each entry
+ * mirrors its `--haze-radius-*` px declaration there by hand.
+ */
 export const REM_RADII = {
   '--haze-radius-none': '0',
   '--haze-radius-sm': '0.25rem',

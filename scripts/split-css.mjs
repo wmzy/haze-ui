@@ -83,22 +83,79 @@ const sharedLayers = {
   // TagGroupItem applies to its label) rides with tag-group via
   // TagGroupItem; utils/sortable (the SortableItem wrapper node css) rides
   // with tag-group via SortableTagGroup. The tag-input sortable variant
-  // uses the css-less SortableRegion and defines its tag classes locally,
-  // so tag-input needs no utils css.
+  // uses the css-less SortableRegion — its tag classes now come from
+  // the shared utils/tag-skin.ts layer, registered separately below.
   'utils/sortable': ['tag-group'],
   'utils/sortable-handle': ['tag-group'],
-  // Native-form hidden inputs (utils/native-form.tsx): every component
-  // that renders a name-carrying FormData bridge rides with its css.
-  'utils/native-form': [
+  // Shared sr-only clip class (utils/sr-only.ts): rides with every
+  // component group whose members render the visually-hidden pattern
+  // directly (Tabs' status-word label, FileInput's native input,
+  // FilePreview's status text) or through utils/native-form.tsx — the
+  // FormData bridge module went css-less when its boolean hidden input
+  // adopted the shared clip class, so its former consumer families are
+  // folded in here instead (a native-form entry would now fail the
+  // "emitted no module CSS" guard).
+  'utils/sr-only': [
+    'chat-message',
     'color-picker',
+    'file-input',
+    'file-preview',
+    'inline-completion',
     'otp-input',
     'rating',
     'rich-text-editor',
     'segmented',
     'select',
+    'streaming-text',
     'switch',
     'tag-input',
+    'tabs',
+    'trace',
   ],
+  // Menu-family shared skins (utils/menu-skins.ts): the item base/state
+  // skins, slot skins, panel surfaces and divider shared by the three
+  // menu families ride with each family's css.
+  'utils/menu-skins': ['menu', 'dropdown-menu', 'context-menu'],
+  // Shared field skin (utils/field-skin.ts): the surface chrome, the
+  // :focus-within focus ring, the native input/textarea chrome and the
+  // field size map the field families wear. masked-input and any other
+  // InputCore compositor is covered automatically through the input
+  // family's css via the css-manifest dependency closure, not listed.
+  'utils/field-skin': [
+    'file-input',
+    'input',
+    'number-input',
+    'otp-input',
+    'prompt-input',
+    'tag-input',
+    'textarea',
+  ],
+  // Shared tag skin (utils/tag-skin.ts): the tag list/chip/remove-button
+  // classes TagInput and PromptInput both wear; the sortable-mode drag
+  // classes stay in tag-input's own tag-input-styles.ts.
+  'utils/tag-skin': ['prompt-input', 'tag-input'],
+  // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
+  // the details/summary header + content typography shared by
+  // Accordion's items and Disclosure ride with both families' css.
+  'utils/disclosure-skin': ['accordion', 'disclosure'],
+  // Shared timeline skeleton (utils/timeline-skin.ts): list/row/dot
+  // geometry and the muted text skins shared by Timeline and
+  // StepTimeline ride with both families' css.
+  'utils/timeline-skin': ['timeline', 'step-timeline'],
+  // Shared preset shortcut rows (utils/preset-list-skin.ts) heading
+  // the Datepicker and DateRangePicker panels ride with both css.
+  'utils/preset-list-skin': ['datepicker', 'date-range-picker'],
+  // Picker trigger base (utils/picker-trigger.tsx): the shared trigger
+  // skin, caret slot and native-select caret overlay ride with every
+  // family that renders a picker trigger button or a native-select
+  // caret overlay (Select floating + SelectCore, Cascader, TreeSelect,
+  // ModelPicker). No rsc-safe entry: the module renders DOM.
+  'utils/picker-trigger': ['select', 'cascader', 'tree-select', 'model-picker'],
+  // Shared choice-input skin (utils/choice-skin.ts): the 24px box
+  // geometry, idle/hover/focus/disabled chrome, forced-colors baseline
+  // and the label base Checkbox and Radio both wear; the :checked
+  // decorations (checkmark vs dot) stay local per component.
+  'utils/choice-skin': ['checkbox', 'radio'],
 };
 
 /**

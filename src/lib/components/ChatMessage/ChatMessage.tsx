@@ -1,18 +1,17 @@
 import type { ReactNode } from 'react';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { useClipboard } from '../../hooks/useClipboard';
+import { useStreamingAnnouncements } from '../../hooks/useStreamingAnnouncements';
+import { srOnly } from '../../utils/sr-only';
 
 type ChatMessageRole = 'user' | 'assistant' | 'system';
 
 /** Feedback window for the copy success glyph. */
 const COPIED_FEEDBACK_MS = 1500;
-
-/** Live-region cadence for `streaming` snapshots — matches StreamingText. */
-const ANNOUNCE_INTERVAL_MS = 1200;
 
 type ChatMessageProps = {
   role: ChatMessageRole;
@@ -177,22 +176,6 @@ const actionBtnCopied = css`
   color: var(--haze-color-success);
 `;
 
-// Visually hidden but exposed to assistive tech (the clip pattern from
-// the WCAG tutorials). Deliberately token-free: this is not a visual
-// surface, it only has to be removed from the layout entirely.
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-`;
-
 /**
  * Visible text of an element with any nested live regions stripped.
  * Announcements and the copy action must read what is on screen, not
@@ -270,35 +253,21 @@ export default function ChatMessage({
   const isUser = role === 'user';
   const strings = useStrings('chatMessage');
   const chatStrings = useStrings('chat');
-  const streamingStrings = useStrings('streamingText');
   const bubbleRef = useRef<HTMLDivElement>(null);
   const { copied, copy } = useClipboard(COPIED_FEEDBACK_MS);
   const showActions = copyable || actions !== undefined;
 
   // Screen-reader mirror for `streaming` assistant messages (see the
   // prop doc): '' for a message that never streamed, the announcement
-  // lifecycle otherwise — cue, throttled snapshots, final full text.
-  const [announced, setAnnounced] = useState('');
-  const wasStreamingRef = useRef(false);
-
-  useEffect(() => {
-    if (!streaming) {
-      // Generation just ended: announce the complete message once.
-      // Guarded by the ref so a message that never streamed stays
-      // silent (mounting with content is not a live-region change).
-      if (wasStreamingRef.current) {
-        wasStreamingRef.current = false;
-        setAnnounced(visibleText(bubbleRef.current));
-      }
-      return;
-    }
-    wasStreamingRef.current = true;
-    setAnnounced(streamingStrings.generating);
-    const timer = setInterval(() => {
-      setAnnounced(visibleText(bubbleRef.current));
-    }, ANNOUNCE_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [streaming, streamingStrings.generating]);
+  // lifecycle otherwise — cue, throttled snapshots, final full text
+  // (useStreamingAnnouncements reads the "Generating" cue from the
+  // streamingText locale section itself). Snapshots read the bubble's
+  // visible text (nested live regions stripped) so nothing already
+  // said aloud is repeated.
+  const announced = useStreamingAnnouncements({
+    active: streaming,
+    getText: () => visibleText(bubbleRef.current),
+  });
 
   const handleCopy = () => {
     void copy(visibleText(bubbleRef.current));

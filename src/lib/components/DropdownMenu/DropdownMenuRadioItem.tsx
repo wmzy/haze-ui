@@ -1,15 +1,16 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
 import {
-  dropdownMenuItemDanger,
-  dropdownMenuItemIcon,
-  dropdownMenuItemIndicator,
-  dropdownMenuItemKbd,
-} from './dropdown-menu-item-styles';
+  menuItemDanger,
+  menuItemIcon,
+  menuItemIndicator,
+  menuItemKbd,
+  menuItemBase,
+  menuPopupItem,
+} from '../../utils/menu-skins';
+
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
 type DropdownMenuRadioItemProps = {
@@ -26,35 +27,8 @@ type DropdownMenuRadioItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's skin; the leading slot is the fixed-size selection dot.
-const item = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-  border-radius: var(--haze-radius-sm);
-  text-align: start;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
+// utils/menu-skins); the leading slot is the fixed-size selection dot.
 
 /**
  * One option of a DropdownMenuRadioGroup (`role="menuitemradio"`):
@@ -77,7 +51,7 @@ export default function DropdownMenuRadioItem({
   return (
     <button
       data-slot='menu-radio-item'
-      x-class={[item, danger && dropdownMenuItemDanger, classNames?.radioItem, className]}
+      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.radioItem, className]}
       type="button"
       role="menuitemradio"
       aria-checked={checked}
@@ -85,17 +59,17 @@ export default function DropdownMenuRadioItem({
       disabled={disabled}
       onClick={select}
     >
-      <span data-slot='indicator' x-class={dropdownMenuItemIndicator} aria-hidden="true">
+      <span data-slot='indicator' x-class={menuItemIndicator} aria-hidden="true">
         {checked && (
           <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="3.5" fill="currentColor" />
           </svg>
         )}
       </span>
-      {icon !== undefined && <span data-slot='icon' x-class={dropdownMenuItemIcon}>{icon}</span>}
+      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
       {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={dropdownMenuItemKbd} aria-hidden="true">{kbdLabel}</span>
+        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
       )}
     </button>
   );

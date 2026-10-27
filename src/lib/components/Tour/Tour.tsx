@@ -131,7 +131,7 @@ const spotlight = css`
   pointer-events: none;
   box-shadow:
     0 0 0 3px var(--haze-color-focus-ring),
-    0 0 0 9999px rgba(0, 0, 0, 0.4);
+    0 0 0 9999px var(--haze-color-scrim);
 
   transition:
     top var(--haze-duration-normal) var(--haze-ease),
@@ -145,7 +145,7 @@ const spotlight = css`
 const mask = css`
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--haze-color-scrim);
   pointer-events: none;
 `;
 

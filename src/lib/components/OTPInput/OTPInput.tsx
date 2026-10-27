@@ -47,10 +47,7 @@ export default function OTPInput({
         }}
         className={className}
       />
-      <NativeHiddenFields
-        name={name}
-        values={value === '' ? [] : [value]}
-      />
+      <NativeHiddenFields name={name} values={[value]} skipEmpty />
     </>
   );
 }

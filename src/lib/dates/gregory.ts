@@ -4,77 +4,32 @@
  * duplicated). `fromGregorian`/`toGregorian` are identity mappings
  * between local-civil Dates and their parts; month-length and view-shift
  * semantics are date.ts's own, so a Calendar wired to this adapter
- * behaves exactly like today's hard-wired Gregorian code paths.
+ * behaves exactly like today's hard-wired Gregorian code paths. The
+ * offset-zero instance of `makeGregorianLikeAdapter`.
  */
-import type { HazeDateAdapter, MonthNameStyle } from './adapter';
+import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
-import {
-  addMonths as shiftMonth,
-  getDaysInMonth as monthLength,
-} from '../components/Calendar/date';
+import { getDaysInMonth as monthLength } from '../components/Calendar/date';
 
-import { eraOfDate } from './adapter';
+import { assertCivilDate, makeGregorianLikeAdapter } from './adapter';
 
-/** Era abbreviation of a Gregorian year. Astronomical numbering is used
- * (year 0 = 1 BC, -44 = 45 BC) — Intl already renders years ≤ 0 as BC,
- * so the year passes through unchanged; `setUTCFullYear` sidesteps the
- * constructor's two-digit-year → 19xx remap for years 0–99. */
-function gregorianEra(year: number, locale: string): string {
-  const anchor = new Date(0);
-  anchor.setUTCFullYear(year, 0, 1);
-  return eraOfDate(anchor, 'gregory', locale);
-}
+const base = makeGregorianLikeAdapter('gregory', 'gregory');
 
 export const gregoryAdapter: HazeDateAdapter = {
-  identifier: 'gregory',
+  ...base,
 
-  fromGregorian(date) {
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth(),
-      day: date.getDate(),
-    };
-  },
-
-  toGregorian(parts) {
-    // Strict on the day (the classic `new Date(y, m, 30)` rollover
-    // hazard date.ts's header warns about); months normalize with
-    // carry, matching date.ts's own helpers.
-    if (parts.day < 1 || parts.day > monthLength(parts.year, parts.month)) {
-      throw new RangeError(
-        `Not a gregorian date: ${parts.year}-${parts.month + 1}-${parts.day}`
-      );
-    }
+  toGregorian(parts: CivilDateParts) {
+    // Historical route kept byte-identical: parts go straight to the
+    // Date constructor (the factory's utcCivilMs route differs only
+    // for years 0–99, which gregory has always let remap to 19xx);
+    // months normalize with carry, matching date.ts's own helpers.
+    assertCivilDate(parts, parts, monthLength, 'a gregorian');
     return new Date(parts.year, parts.month, parts.day);
   },
 
-  getDaysInMonth: monthLength,
-
-  addMonths(parts, delta) {
-    const shifted = shiftMonth(parts.year, parts.month, delta);
-    const lastDay = monthLength(shifted.year, shifted.month);
-    return {
-      year: shifted.year,
-      month: shifted.month,
-      day: Math.min(parts.day, lastDay),
-    };
-  },
-
-  monthNames(locale, style: MonthNameStyle = 'long') {
-    // Calendar pinned (a default-calendar locale like ar-SA would
-    // otherwise return Islamic names for Gregorian dates); UTC pinned so
-    // the sampled anchors format identically in every local zone.
-    const fmt = new Intl.DateTimeFormat(locale ?? 'default', {
-      calendar: 'gregory',
-      month: style,
-      timeZone: 'UTC',
-    });
-    return Array.from({ length: 12 }, (_, month) =>
-      fmt.format(new Date(Date.UTC(2026, month, 15)))
-    );
-  },
-
-  era(year, locale = 'en') {
-    return gregorianEra(year, locale);
+  monthNames(locale, style) {
+    // Intl's own default locale when the caller passes none —
+    // gregory's historical fallback (the other built-ins pin 'en').
+    return base.monthNames(locale ?? 'default', style);
   },
 };

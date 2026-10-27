@@ -10383,7 +10383,7 @@
           },
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger'",
+            "type": "TimelineColor",
             "required": false
           },
           {

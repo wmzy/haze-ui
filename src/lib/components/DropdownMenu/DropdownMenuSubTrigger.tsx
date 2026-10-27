@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-
 import { useSubmenuContext } from '../../utils/submenu';
+
+import { menuItemBase, menuChevron, menuPopupItem } from '../../utils/menu-skins';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -12,47 +12,10 @@ type DropdownMenuSubTriggerProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's skin plus the submenu affordances: an inline-end
-// chevron and a persistent highlight while the submenu is open.
-const trigger = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-  border-radius: var(--haze-radius-sm);
-  text-align: start;
-  transition: background var(--haze-duration-fast);
-
-  &::after {
-    content: '›';
-    margin-inline-start: auto;
-    color: var(--haze-color-text-muted);
-  }
-
-  [dir='rtl'] &::after {
-    content: '‹';
-  }
-
-  &:hover,
-  &[aria-expanded='true'] {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
+// utils/menu-skins) plus the submenu affordances: the menuChevron
+// inline-end arrow and a persistent highlight while the submenu is
+// open (the aria-expanded arm baked into menuPopupItem).
 
 /**
  * The menuitem that opens a DropdownMenuSub submenu: hover opens it after
@@ -78,7 +41,7 @@ export default function DropdownMenuSubTrigger({
       aria-expanded={sub.open}
       aria-owns={sub.open ? sub.contentId : undefined}
       disabled={disabled}
-      x-class={[trigger, classNames?.subTrigger, className]}
+      x-class={[menuItemBase, menuPopupItem, menuChevron, classNames?.subTrigger, className]}
       style={sub.floating.triggerStyle}
       onPointerDown={sub.floating.onTriggerPointerDown}
       onPointerEnter={sub.onTriggerPointerEnter}

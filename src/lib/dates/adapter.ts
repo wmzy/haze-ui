@@ -16,6 +16,10 @@
  * arithmetic rides the UTC civil timeline (whole-day millisecond spans
  * with no DST drift) before materializing the local-midnight result.
  */
+import {
+  addMonths as shiftMonth,
+  getDaysInMonth as monthLength,
+} from '../components/Calendar/date';
 
 /** Civil date parts in a specific calendar. `month` is 0-based — the
  * same `Date#getMonth` convention every date.ts function uses (0 = the
@@ -146,4 +150,146 @@ export function localMidnightOf(ms: number): Date {
     date.setFullYear(year, month, day);
   }
   return date;
+}
+
+/** Milliseconds in one civil day — the whole-day span the adapters'
+ * conversion arithmetic rides on (no DST drift). Internal constant;
+ * not part of the public dates surface. */
+export const DAY_MS = 86400000;
+
+/** Julian Day Number of 1970-01-01 — the days-since-epoch ↔ JDN offset
+ * every JDN-based conversion rides on. Internal constant; not part of
+ * the public dates surface. */
+export const UNIX_EPOCH_JDN = 2440588;
+
+/**
+ * Month names sampled through Intl: one formatter pinned to `calendar`
+ * and UTC, applied to `anchors` — one UTC-civil millisecond instant per
+ * month of a probe year (day 15 of every month, or a day that exists
+ * in the calendar's short months). The skeleton every built-in
+ * adapter's `monthNames` member reduces to. Internal helper; not part
+ * of the public dates surface.
+ */
+export function sampleMonthNames(
+  calendar: HazeCalendarIdentifier,
+  locale: string,
+  style: MonthNameStyle,
+  anchors: readonly number[]
+): string[] {
+  const fmt = new Intl.DateTimeFormat(locale, {
+    calendar,
+    month: style,
+    timeZone: 'UTC',
+  });
+  return anchors.map((ms) => fmt.format(new Date(ms)));
+}
+
+/**
+ * Strict-day guard shared by the adapters' `toGregorian` members:
+ * rejects a `day` that exists in no month of the calendar — never the
+ * silent `new Date(y, m, 31)` rollover — reading the month's length
+ * through the caller's month-carried `normalized` parts. `label` is
+ * the article + calendar name exactly as the message renders it
+ * ('a gregorian', 'an ethiopic'). Internal helper; not part of the
+ * public dates surface.
+ */
+export function assertCivilDate(
+  parts: CivilDateParts,
+  normalized: { year: number; month: number },
+  monthLength: (year: number, month: number) => number,
+  label: string
+): void {
+  if (
+    parts.day < 1 ||
+    parts.day > monthLength(normalized.year, normalized.month)
+  ) {
+    throw new RangeError(
+      `Not ${label} date: ${parts.year}-${parts.month + 1}-${parts.day}`
+    );
+  }
+}
+
+/**
+ * Anchor instants for Gregorian-structure month-name sampling: day 15
+ * of every month of 2026 UTC (day 15 exists in every month; the year
+ * sits mid-range). Shared by the Gregorian-like adapters' factory.
+ */
+const GREGORIAN_LIKE_MONTH_ANCHORS: readonly number[] = Array.from(
+  { length: 12 },
+  (_, month) => Date.UTC(2026, month, 15)
+);
+
+/**
+ * Factory for Gregorian-structure adapters — calendars whose month
+ * lengths, leap rules and weekday math are the Gregorian ones, with at
+ * most a constant year offset (buddhist's +543 BE) and a different era
+ * label (japanese's imperial eras). `calendar` is the Intl calendar
+ * string month names and eras are sampled through; `yearOffset` is
+ * added to the Gregorian year coming in (`fromGregorian`) and
+ * subtracted going out; `eraAnchor` is the Gregorian (post-offset)
+ * month/day whose era label `era` reports for a year. Internal helper;
+ * the adapter modules themselves are the public surface.
+ */
+export function makeGregorianLikeAdapter(
+  identifier: HazeCalendarIdentifier,
+  calendar: HazeCalendarIdentifier,
+  yearOffset = 0,
+  eraAnchor: { month: number; day: number } = { month: 0, day: 1 }
+): HazeDateAdapter {
+  return {
+    identifier,
+
+    fromGregorian(date) {
+      return {
+        year: date.getFullYear() + yearOffset,
+        month: date.getMonth(),
+        day: date.getDate(),
+      };
+    },
+
+    toGregorian(parts) {
+      const shifted = shiftMonth(parts.year - yearOffset, parts.month, 0);
+      assertCivilDate(parts, shifted, monthLength, `a ${identifier}`);
+      // utcCivilMs sidesteps the constructor's two-digit-year → 19xx
+      // remap for years 0–99.
+      return localMidnightOf(
+        utcCivilMs(shifted.year, shifted.month, parts.day)
+      );
+    },
+
+    getDaysInMonth:
+      yearOffset === 0
+        ? monthLength
+        : (year: number, month: number) =>
+            monthLength(year - yearOffset, month),
+
+    addMonths(parts, delta) {
+      const shifted = shiftMonth(parts.year, parts.month, delta);
+      const lastDay = monthLength(shifted.year - yearOffset, shifted.month);
+      return {
+        year: shifted.year,
+        month: shifted.month,
+        day: Math.min(parts.day, lastDay),
+      };
+    },
+
+    monthNames(locale = 'en', style: MonthNameStyle = 'long') {
+      return sampleMonthNames(
+        calendar,
+        locale,
+        style,
+        GREGORIAN_LIKE_MONTH_ANCHORS
+      );
+    },
+
+    era(year, locale = 'en') {
+      return eraOfDate(
+        new Date(
+          utcCivilMs(year - yearOffset, eraAnchor.month, eraAnchor.day)
+        ),
+        calendar,
+        locale
+      );
+    },
+  };
 }
