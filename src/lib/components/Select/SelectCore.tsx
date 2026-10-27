@@ -6,7 +6,7 @@ import type { SelectClassNames } from './Select';
 import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
 
-import { PickerCaret, pickerNativeCaret } from '../../utils/picker-trigger';
+import { PickerCaret, pickerNativeCaret, pickerNativeSelect } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -118,39 +118,6 @@ type SelectCoreProps<T extends string | number = string> = {
   ComponentPropsWithoutRef<'select'>,
   'value' | 'onChange' | 'size' | 'multiple'
 >;
-
-const base = css`
-  display: block;
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  line-height: var(--haze-leading-normal);
-  appearance: none;
-  padding-inline-end: var(--haze-space-8);
-
-  cursor: pointer;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
 const sizes = {
   sm: css`
@@ -333,7 +300,7 @@ export default function SelectCore<T extends string | number = string>({
         <select
           ref={setNativeSelectRef}
           data-slot='trigger'
-          x-class={[base, sizes[size], className, classNames?.trigger]}
+          x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
           value={selectedValue}
           onChange={(e) => {
             onChange(valueFromDom(e.target.value));
@@ -382,7 +349,7 @@ export default function SelectCore<T extends string | number = string>({
       <select
         ref={ref as Ref<HTMLSelectElement> | undefined}
         data-slot='trigger'
-        x-class={[base, sizes[size], className, classNames?.trigger]}
+        x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
         value={selectedValue}
         onChange={(e) => {
           onChange(valueFromDom(e.target.value));

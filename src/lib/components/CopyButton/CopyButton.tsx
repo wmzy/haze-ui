@@ -1,4 +1,4 @@
-import type { ElementType, MouseEvent, ReactNode, SVGProps } from 'react';
+import type { ElementType, MouseEvent, ReactNode } from 'react';
 
 import type { ButtonProps } from '../Button';
 
@@ -6,6 +6,8 @@ import { Button } from '../Button';
 import VisuallyHidden from '../VisuallyHidden/VisuallyHidden';
 import { useClipboard } from '../../hooks/useClipboard';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { Check } from '../../icons';
+import { CopyGlyph } from '../../utils/copy-glyph';
 
 import { copiedSkin, iconSizes } from './copy-button-styles';
 
@@ -55,51 +57,6 @@ type CopyButtonProps<T extends ElementType = 'button'> = CopyButtonOwnProps & {
    */
   as?: T;
 } & Omit<ButtonProps<T>, keyof CopyButtonOwnProps | 'children' | 'as'>;
-
-/** Explicit width/height: a viewBox-only inline svg contributes zero
- * content size in flex containers and collapses to 0×0 (the sizing
- * lives in the iconSizes classes; the attributes are the no-CSS
- * floor). */
-function CopyGlyph(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      width={16}
-      height={16}
-      {...props}
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckGlyph(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      width={16}
-      height={16}
-      {...props}
-    >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
-}
 
 /**
  * A `Button` that copies text to the clipboard on click and flips into
@@ -153,7 +110,7 @@ export default function CopyButton<T extends ElementType = 'button'>({
     onClick?.(event);
   }
 
-  const Glyph = copied ? CheckGlyph : CopyGlyph;
+  const Glyph = copied ? Check : CopyGlyph;
   // The generic Omit arms are opaque to the type checker; at runtime
   // rest is exactly Button's remainder — CopyButton owns or redeclares
   // every other key (an explicit consumer aria-label still overrides the
@@ -181,7 +138,15 @@ export default function CopyButton<T extends ElementType = 'button'>({
       {typeof children === 'function' ? (
         children(copied)
       ) : (
-        children ?? <Glyph x-class={[iconClass, classNames?.icon]} />
+        children ?? (
+          <Glyph
+            x-class={[iconClass, classNames?.icon]}
+            width={16}
+            height={16}
+            aria-hidden='true'
+            focusable='false'
+          />
+        )
       )}
       {/* Status announcement: aria-label swaps silently on a focused
        * control, so the copied transition speaks through a polite

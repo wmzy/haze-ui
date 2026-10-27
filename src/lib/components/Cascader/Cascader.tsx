@@ -16,6 +16,7 @@ import { getDirection } from '../../utils/direction';
 import { useFocusScope } from '../../utils/focus-scope';
 import { ChevronRight, PickerTrigger, pickerCaret } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { useSearchReport } from '../../utils/use-search-report';
 import { useStrings } from '../LocaleProvider';
 import Spinner from '../Spinner/Spinner';
 import { VirtualList } from '../VirtualList';
@@ -560,22 +561,7 @@ export default function Cascader({
     target.focus();
   }, [open, floating.shown, activePath, value, pendingFocus, virtual, options, searchMode]);
 
-  // Remote-search report (Toast's latest-ref pattern: an inline arrow
-  // has a fresh identity every parent render, so the callback rides a
-  // ref and the report effect keys on the query alone). Fires once per
-  // actual query transition — every keystroke, clearing the field, and
-  // the close-reset back to '' below — including empty queries, which
-  // the consumer uses to restore the full tree. Never fires on mount.
-  const onSearchRef = useRef(onSearch);
-  useEffect(() => {
-    onSearchRef.current = onSearch;
-  }, [onSearch]);
-  const reportedQueryRef = useRef(query);
-  useEffect(() => {
-    if (reportedQueryRef.current === query) return;
-    reportedQueryRef.current = query;
-    onSearchRef.current?.(query);
-  }, [query]);
+  useSearchReport(onSearch, query);
 
   // A closed panel starts the next open with a fresh query — a stale
   // remote result set surviving close/reopen would show the consumer's

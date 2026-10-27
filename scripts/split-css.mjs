@@ -146,11 +146,22 @@ const sharedLayers = {
   // the Datepicker and DateRangePicker panels ride with both css.
   'utils/preset-list-skin': ['datepicker', 'date-range-picker'],
   // Picker trigger base (utils/picker-trigger.tsx): the shared trigger
-  // skin, caret slot and native-select caret overlay ride with every
-  // family that renders a picker trigger button or a native-select
-  // caret overlay (Select floating + SelectCore, Cascader, TreeSelect,
-  // ModelPicker). No rsc-safe entry: the module renders DOM.
-  'utils/picker-trigger': ['select', 'cascader', 'tree-select', 'model-picker'],
+  // skin, the native-select skin, the maxTagCount overflow badge, the
+  // tier-aware panel width cascade, the caret slot and the
+  // native-select caret overlay ride with every family that renders a
+  // picker trigger button, a native-select trigger or an anchored
+  // picker panel (Select floating + SelectCore, Cascader, TreeSelect,
+  // ModelPicker, Combobox, PromptInput, Mentions). No rsc-safe entry:
+  // the module renders DOM.
+  'utils/picker-trigger': [
+    'cascader',
+    'combobox',
+    'mentions',
+    'model-picker',
+    'prompt-input',
+    'select',
+    'tree-select',
+  ],
   // Shared choice-input skin (utils/choice-skin.ts): the 24px box
   // geometry, idle/hover/focus/disabled chrome, forced-colors baseline
   // and the label base Checkbox and Radio both wear; the :checked

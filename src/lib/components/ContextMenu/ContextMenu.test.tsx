@@ -1,6 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { menuItemDanger } from '../../utils/menu-skins';
+
 import ContextMenu from './ContextMenu';
 import ContextMenuTrigger from './ContextMenuTrigger';
 import ContextMenuContent from './ContextMenuContent';
@@ -108,6 +110,45 @@ describe('ContextMenu', () => {
     );
     await user.click(screen.getByText('Item'));
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('renders icon and kbdLabel slots like the sibling item families', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem icon={<svg viewBox='0 0 16 16' />} kbdLabel='⌘C'>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    const item = screen.getByRole('menuitem', { name: 'Copy' });
+    expect(item.querySelector("[data-slot='icon'] svg")).toBeInTheDocument();
+    const kbd = item.querySelector("[data-slot='kbd']");
+    expect(kbd).toHaveTextContent('⌘C');
+    expect(kbd).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('omits the icon and kbd slots by default', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem>Copy</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    const item = screen.getByRole('menuitem', { name: 'Copy' });
+    expect(item.querySelector("[data-slot='icon']")).not.toBeInTheDocument();
+    expect(item.querySelector("[data-slot='kbd']")).not.toBeInTheDocument();
+  });
+
+  it('applies the danger skin to destructive items', () => {
+    render(
+      <ContextMenu open>
+        <ContextMenuContent>
+          <ContextMenuItem danger>Delete</ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveClass(menuItemDanger);
   });
 
   it('exposes menu semantics when open', () => {

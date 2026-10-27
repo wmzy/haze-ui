@@ -2,14 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
-import {
-  menuItemDanger,
-  menuItemIcon,
-  menuItemIndicator,
-  menuItemKbd,
-  menuItemBase,
-  menuPopupItem,
-} from '../../utils/menu-skins';
+import { MenuItemShell } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -27,8 +20,8 @@ type DropdownMenuRadioItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
-// utils/menu-skins); the leading slot is the fixed-size selection dot.
+// DropdownMenuItem's chrome (utils/menu-item-parts with the
+// menuPopupItem skin); the leading slot is the fixed-size selection dot.
 
 /**
  * One option of a DropdownMenuRadioGroup (`role="menuitemradio"`):
@@ -49,29 +42,23 @@ export default function DropdownMenuRadioItem({
   const classNames = useDropdownMenuContext().classNames;
 
   return (
-    <button
-      data-slot='menu-radio-item'
-      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.radioItem, className]}
-      type="button"
-      role="menuitemradio"
-      aria-checked={checked}
-      tabIndex={-1}
+    <MenuItemShell
+      skin='popup'
+      itemRole='menuitemradio'
+      itemSlot='menu-radio-item'
+      familyClass={classNames?.radioItem}
+      ariaChecked={checked}
+      indicator='dot'
+      indicatorShown={checked}
       disabled={disabled}
+      danger={danger}
+      icon={icon}
+      kbdLabel={kbdLabel}
+      className={className}
       onClick={select}
     >
-      <span data-slot='indicator' x-class={menuItemIndicator} aria-hidden="true">
-        {checked && (
-          <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="3.5" fill="currentColor" />
-          </svg>
-        )}
-      </span>
-      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
-      {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
-      )}
-    </button>
+    </MenuItemShell>
   );
 }
 

@@ -10,6 +10,7 @@ import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { pickerPanelWidth } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -82,17 +83,14 @@ const textareaClass = css`
 `;
 
 /**
- * Same tier-aware width contract as Combobox's listbox: the fallback
- * tier's containing block is the textarea-width wrapper, so `100%`
- * matches it; the anchored tier's containing block is the viewport-wide
- * position-area region, so the second declaration re-pins the panel to
- * the trigger's border-box width and drops as invalid on engines
- * without anchor positioning.
+ * Panel chrome for the anchored listbox; the tier-aware width cascade
+ * (`pickerPanelWidth`, utils/picker-trigger.tsx) rides alongside — the
+ * fallback tier's containing block is the textarea-width wrapper, so
+ * `100%` matches it, while the anchored tier's containing block is the
+ * viewport-wide position-area region, so the cascade's second
+ * declaration re-pins the panel to the trigger's border-box width.
  */
 const listbox = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
@@ -346,7 +344,7 @@ export default function MentionsCore({
         placement="bottom-span"
         id={id}
         role="listbox"
-        visualClass={listbox}
+        visualClass={`${pickerPanelWidth} ${listbox}`}
       >
         {filtered.length === 0 ? (
           // An aria-disabled option keeps the listbox's required owned

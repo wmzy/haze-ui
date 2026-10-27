@@ -3,8 +3,10 @@ import type {ControlOrValue} from 'react-use-control';
 import type {NavigationMenuClassNames} from './NavigationMenuContext';
 
 import {css} from '@linaria/core';
-import {useCallback, useEffect, useId, useMemo, useRef} from 'react';
+import {useCallback, useId, useMemo} from 'react';
 import {isControl, useControl, useThru, watch} from 'react-use-control';
+
+import {useHoverIntent} from '../../utils/use-hover-intent';
 
 import {NavigationMenuProvider} from './NavigationMenuContext';
 
@@ -98,50 +100,39 @@ export default function NavigationMenu({
 
   // Hover choreography: the intent timer delays the first open, the
   // grace timer waits out pointer travel to the panel body. Exactly one
-  // of each exists per menu; every entry point cancels both first.
-  const intentTimerRef = useRef(0);
-  const graceTimerRef = useRef(0);
-  const cancelHoverTimers = useCallback(() => {
-    window.clearTimeout(intentTimerRef.current);
-    window.clearTimeout(graceTimerRef.current);
-  }, []);
-  useEffect(() => cancelHoverTimers, [cancelHoverTimers]);
+  // timer pair exists per menu (the shared useHoverIntent protocol);
+  // the target is the hovered item's value, committed as armed. The one
+  // bar-specific rule stays here: switching to another trigger while a
+  // panel is open skips the dwell entirely.
+  const intent = useHoverIntent<string>({
+    openDelay: intentDelay,
+    closeDelay: graceDelay,
+    isOpen: () => activeValue !== null,
+    onOpen: (value) => setActiveValue(value),
+    onClose: () => setActiveValue(null),
+  });
 
   const hoverTrigger = useCallback(
     (value: string) => {
-      cancelHoverTimers();
-      if (activeValue === value) return;
-      if (activeValue !== null) {
+      if (activeValue !== null && activeValue !== value) {
         // A panel is already open: switching is instant — the user is
         // traversing the bar, not grazing it.
+        intent.cancel();
         setActiveValue(value);
         return;
       }
-      intentTimerRef.current = window.setTimeout(
-        () => setActiveValue(value),
-        intentDelay
-      );
+      intent.scheduleOpen(value);
     },
-    [activeValue, cancelHoverTimers, intentDelay, setActiveValue]
+    [activeValue, intent, setActiveValue]
   );
-
-  const scheduleClose = useCallback(() => {
-    // Also drops a pending intent: leaving before the dwell never opens.
-    cancelHoverTimers();
-    if (activeValue === null) return;
-    graceTimerRef.current = window.setTimeout(
-      () => setActiveValue(null),
-      graceDelay
-    );
-  }, [activeValue, cancelHoverTimers, graceDelay, setActiveValue]);
 
   const contextValue = useMemo(
     () => ({
       activeValue,
       setActiveValue,
       hoverTrigger,
-      scheduleClose,
-      cancelHoverTimers,
+      scheduleClose: intent.scheduleClose,
+      cancelHoverTimers: intent.cancel,
       contentId,
       triggerId,
       classNames,
@@ -151,8 +142,7 @@ export default function NavigationMenu({
       activeValue,
       setActiveValue,
       hoverTrigger,
-      scheduleClose,
-      cancelHoverTimers,
+      intent,
       contentId,
       triggerId,
       classNames,

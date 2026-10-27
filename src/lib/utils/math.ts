@@ -1,8 +1,11 @@
 /**
- * Shared numeric helpers — the one clamp implementation every haze-ui
- * module delegates to (scroll geometry, color math, collision placement,
- * upload progress, splitter ranges). Pure functions, zero imports: no
- * hooks, no DOM access (RSC-safe; see scripts/rsc-safe.mjs).
+ * Shared numeric helpers — the cross-module clamp, imported by the
+ * modules whose range semantics are shared or subtle (scroll geometry,
+ * color math, gradient stops, collision placement, upload progress,
+ * splitter ranges, crop geometry, number-input bounds). It is not the
+ * only clamp in the tree: call sites with a purely local one-off range
+ * still inline Math.min/Math.max pairs. Pure functions, zero imports:
+ * no hooks, no DOM access (RSC-safe; see scripts/rsc-safe.mjs).
  */
 
 /**

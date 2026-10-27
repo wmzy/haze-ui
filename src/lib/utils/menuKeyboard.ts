@@ -39,6 +39,66 @@ export function getEnabledMenuItems(
   return items;
 }
 
+type MoveFocusInAxisOptions = {
+  /** Element whose enabled items (`selector`) form the focus loop. */
+  container: HTMLElement | null;
+  /** Item selector; the menu item selector by default. */
+  selector?: string;
+  /**
+   * Layout axis of the container. Horizontal mirrors the arrow keys
+   * under `dir="rtl"` (← advances); vertical never mirrors. Home/End
+   * are direction-invariant either way.
+   */
+  orientation: 'horizontal' | 'vertical';
+};
+
+/**
+ * The axis-traversal core shared by the roving focus patterns
+ * (useMenuKeyboard here, Toolbar, the NavigationMenu trigger strip): the
+ * orientation's main-axis arrows move focus to the next/previous enabled
+ * item with wrapping, Home/End jump to the first/last. Any other key is
+ * left untouched (no preventDefault) so callers layer their own semantics
+ * on top — menus add Escape/Tab/typeahead; toolbar and navigation-strip
+ * callers stop at this loop. Returns whether the key belonged to the
+ * axis (and focus was moved).
+ */
+export function moveFocusInAxis(
+  event: ReactKeyboardEvent,
+  { container, selector, orientation }: MoveFocusInAxisOptions
+): boolean {
+  // Main-axis keys for the orientation; horizontal mirrors under RTL
+  // (direction read from the DOM at event time — the layout truth the
+  // focus order must follow).
+  const { next: nextKey, prev: prevKey } = inlineAxisKeys(
+    orientation,
+    getDirection(container)
+  );
+  const { key } = event;
+  if (key !== nextKey && key !== prevKey && key !== 'Home' && key !== 'End') {
+    return false;
+  }
+  const items = getEnabledMenuItems(container, selector);
+  if (items.length === 0) return false;
+  const current = items.indexOf(document.activeElement as HTMLElement);
+
+  event.preventDefault();
+  switch (key) {
+    case nextKey:
+      items[(current + 1) % items.length]?.focus();
+      break;
+    case prevKey:
+      items[(current - 1 + items.length) % items.length]?.focus();
+      break;
+    case 'Home':
+      items[0]?.focus();
+      break;
+    default:
+      // End — the only axis key left after the gate above.
+      items[items.length - 1]?.focus();
+  }
+  return true;
+}
+
 type UseMenuKeyboardOptions = {
   /** Element containing the item children (`[role=menuitem]` by default). */
   menuRef: RefObject<HTMLElement | null>;

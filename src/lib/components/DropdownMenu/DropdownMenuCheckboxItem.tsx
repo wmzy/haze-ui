@@ -3,14 +3,7 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
-import {
-  menuItemDanger,
-  menuItemIcon,
-  menuItemIndicator,
-  menuItemKbd,
-  menuItemBase,
-  menuPopupItem,
-} from '../../utils/menu-skins';
+import { MenuItemShell } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -30,8 +23,9 @@ type DropdownMenuCheckboxItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
-// utils/menu-skins); the leading slot is the fixed-size check indicator.
+// DropdownMenuItem's chrome (utils/menu-item-parts with the
+// menuPopupItem skin); the leading slot is the fixed-size check
+// indicator.
 
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or
@@ -54,39 +48,27 @@ export default function DropdownMenuCheckboxItem({
   const [checked, setChecked] = useControl(checkedControl, false);
 
   return (
-    <button
-      data-slot='menu-checkbox-item'
-      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.checkboxItem, className]}
-      type="button"
-      role="menuitemcheckbox"
-      aria-checked={checked}
-      tabIndex={-1}
+    <MenuItemShell
+      skin='popup'
+      itemRole='menuitemcheckbox'
+      itemSlot='menu-checkbox-item'
+      familyClass={classNames?.checkboxItem}
+      ariaChecked={checked}
+      indicator='check'
+      indicatorShown={checked}
       disabled={disabled}
+      danger={danger}
+      icon={icon}
+      kbdLabel={kbdLabel}
+      className={className}
       onClick={() => {
         const next = !checked;
         setChecked(next);
         onCheckedChange?.(next);
       }}
     >
-      <span data-slot='indicator' x-class={menuItemIndicator} aria-hidden="true">
-        {checked && (
-          <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M3.5 8.5 6.5 11.5 12.5 4.5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </span>
-      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
-      {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
-      )}
-    </button>
+    </MenuItemShell>
   );
 }
 

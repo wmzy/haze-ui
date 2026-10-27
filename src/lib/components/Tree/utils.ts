@@ -1,5 +1,7 @@
 import type { TreeNodeData } from './types';
 
+import { findMatchRanges } from '../../utils/text-match';
+
 /**
  * A visible tree row: one treeitem in the depth-first order the tree
  * renders (parents before children, expanded subtrees only). Backs both
@@ -160,27 +162,6 @@ export function getAllLeafKeys(data: TreeNodeData[]): string[] {
   return keys;
 }
 
-/**
- * Case-insensitive `[start, end)` ranges of every non-overlapping
- * occurrence of `query` inside `text`, left to right. Empty when the
- * query is empty or absent.
- */
-export function matchRanges(
-  text: string,
-  query: string
-): [number, number][] {
-  if (!query) return [];
-  const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase();
-  const ranges: [number, number][] = [];
-  let index = lowerText.indexOf(lowerQuery);
-  while (index !== -1) {
-    ranges.push([index, index + lowerQuery.length]);
-    index = lowerText.indexOf(lowerQuery, index + lowerQuery.length);
-  }
-  return ranges;
-}
-
 /** Does the node's own title match? Only string titles can match —
  *  ReactNode titles stay searchable through their descendants. */
 export function nodeTitleMatches(
@@ -188,7 +169,8 @@ export function nodeTitleMatches(
   query: string
 ): boolean {
   return (
-    typeof node.title === 'string' && matchRanges(node.title, query).length > 0
+    typeof node.title === 'string' &&
+    findMatchRanges(node.title, query).length > 0
   );
 }
 

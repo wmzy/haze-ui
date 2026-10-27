@@ -6,7 +6,7 @@ import type {
 
 import {css} from '@linaria/core';
 
-import {getDirection} from '../../utils/direction';
+import {moveFocusInAxis} from '../../utils/menuKeyboard';
 
 import {useNavigationMenuContext} from './NavigationMenuContext';
 
@@ -48,34 +48,13 @@ export default function NavigationMenuList({
   const {classNames} = useNavigationMenuContext();
 
   const moveFocus = (event: ReactKeyboardEvent<HTMLUListElement>) => {
-    // Arrows follow the painted layout: under dir='rtl' ← advances.
-    const rtl = getDirection(event.currentTarget) === 'rtl';
-    const nextKey = rtl ? 'ArrowLeft' : 'ArrowRight';
-    const prevKey = rtl ? 'ArrowRight' : 'ArrowLeft';
-    const {key} = event;
-    if (key !== nextKey && key !== prevKey && key !== 'Home' && key !== 'End') {
-      return;
-    }
-    const items = Array.from(
-      event.currentTarget.querySelectorAll<HTMLElement>(TRIGGER_SELECTOR)
-    );
-    if (items.length === 0) return;
-    const current = items.findIndex((el) => el === document.activeElement);
-    event.preventDefault();
-    switch (key) {
-      case nextKey:
-        items[(current + 1 + items.length) % items.length]?.focus();
-        return;
-      case prevKey:
-        items[(current - 1 + items.length) % items.length]?.focus();
-        return;
-      case 'Home':
-        items[0]?.focus();
-        return;
-      case 'End':
-        items[items.length - 1]?.focus();
-        return;
-    }
+    // The strip is horizontal: the shared axis primitive mirrors the
+    // arrows under dir='rtl' so they follow the painted layout.
+    moveFocusInAxis(event, {
+      container: event.currentTarget,
+      orientation: 'horizontal',
+      selector: TRIGGER_SELECTOR,
+    });
   };
 
   return (

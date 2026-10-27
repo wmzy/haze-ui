@@ -3,7 +3,7 @@ import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
@@ -14,6 +14,7 @@ import {
   useFloatingPosition,
   type FloatingPlacement,
 } from '../../utils/floating';
+import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
  * Semantic slot classes (AntD v6 `classNames` shape): keys mirror the
@@ -124,19 +125,17 @@ export default function Tooltip({
   });
   useFloatingPosition({ behavior: floating, placement, collision });
 
-  // Hover/focus intent: show after `delay`, hide at once; leaving before
-  // the delay cancels the pending show.
-  const showTimerRef = useRef(0);
-  useEffect(() => () => window.clearTimeout(showTimerRef.current), []);
-
-  const show = () => {
-    window.clearTimeout(showTimerRef.current);
-    showTimerRef.current = window.setTimeout(() => setOpen(true), delay);
-  };
-  const hide = () => {
-    window.clearTimeout(showTimerRef.current);
-    setOpen(false);
-  };
+  // Hover/focus intent: show after `delay`, hide at once (the shared
+  // useHoverIntent protocol with a zero grace closes synchronously);
+  // leaving before the delay cancels the pending show. No `isOpen`
+  // guard — the tooltip's setters are idempotent, and re-entering an
+  // open tooltip keeps today's re-arm semantics.
+  const intent = useHoverIntent({
+    openDelay: delay,
+    closeDelay: 0,
+    onOpen: () => setOpen(true),
+    onClose: () => setOpen(false),
+  });
 
   return (
     <span ref={ref} data-slot='tooltip' x-class={[wrapper, className, classNames?.root]}>
@@ -146,10 +145,10 @@ export default function Tooltip({
         x-class={[classNames?.trigger]}
         style={floating.triggerStyle}
         aria-describedby={id}
-        onMouseEnter={show}
-        onMouseLeave={hide}
-        onFocus={show}
-        onBlur={hide}
+        onMouseEnter={() => intent.scheduleOpen()}
+        onMouseLeave={() => intent.scheduleClose()}
+        onFocus={() => intent.scheduleOpen()}
+        onBlur={() => intent.scheduleClose()}
       >
         {children}
       </span>

@@ -5,9 +5,8 @@ import type { TreeNodeData } from './types';
 import { css } from '@linaria/core';
 import { useId } from 'react';
 
+import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
 import { useStrings } from '../LocaleProvider';
-
-import { matchRanges } from './utils';
 
 type TreeItemProps = {
   node: TreeNodeData;
@@ -325,22 +324,18 @@ const RetryIcon = () => (
 /** Wraps every case-insensitive occurrence of `query` inside `text`
  *  with a token-styled `<mark>`; returns `text` when nothing matches. */
 function highlightTitle(text: string, query: string): ReactNode {
-  const ranges = matchRanges(text, query);
+  const ranges = findMatchRanges(text, query);
   if (ranges.length === 0) return text;
 
-  const parts: ReactNode[] = [];
-  let cursor = 0;
-  ranges.forEach(([start, end], index) => {
-    if (start > cursor) parts.push(text.slice(cursor, start));
-    parts.push(
+  return splitMatchSegments(text, ranges).map((segment, index) =>
+    segment.match ? (
       <mark key={index} className={mark}>
-        {text.slice(start, end)}
+        {segment.text}
       </mark>
-    );
-    cursor = end;
-  });
-  if (cursor < text.length) parts.push(text.slice(cursor));
-  return parts;
+    ) : (
+      segment.text
+    )
+  );
 }
 
 export default function TreeItem({

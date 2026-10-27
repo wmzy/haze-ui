@@ -2,6 +2,8 @@ import type { RefCallback } from 'react';
 
 import { useCallback, useRef, useState } from 'react';
 
+import { connectResizeObserver } from '../utils/connect-resize-observer';
+
 type UseResizeObserverOptions = {
   /**
    * 触发时机盒子，同 ResizeObserver 的 box 选项（'content-box' |
@@ -59,28 +61,17 @@ export function useResizeObserver<T extends Element = Element>(
   const [entry, setEntry] = useState<ResizeObserverEntry | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
 
-  // 解绑走 observer.disconnect()：换成空观察 + reobserve 也能实现，
-  // 但 disconnect 释放所有监听面且无任何竞态窗口。
+  // 解绑与观察生命周期在 utils/connect-resize-observer（与
+  // useElementSize 共享）；断开时 entry 冻结的语义在这里。
   const ref = useCallback<RefCallback<T>>(
     (node) => {
-      observerRef.current?.disconnect();
-      observerRef.current = null;
-
-      if (
-        !node ||
-        !enabled ||
-        typeof globalThis.ResizeObserver !== 'function'
-      ) {
-        return;
-      }
-
-      const observer = new globalThis.ResizeObserver((entries) => {
-        // ResizeObserver 回调给的是数组，但我们观察单个元素——取第一条。
-        const first = entries[0];
-        if (first) setEntry(first);
+      connectResizeObserver({
+        observerRef,
+        node,
+        box,
+        enabled,
+        onEntry: setEntry,
       });
-      observer.observe(node, { box });
-      observerRef.current = observer;
     },
     [box, enabled]
   );

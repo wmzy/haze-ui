@@ -1,6 +1,6 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
-import { menuItemBase, menuItemDanger, menuItemIcon, menuItemKbd, menuItemStates } from '../../utils/menu-skins';
+import { MenuItemShell, type MenuItemShellOwnProps } from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -41,27 +41,23 @@ export default function MenuItem<T extends ElementType = 'button'>({
   ...rest
 }: MenuItemProps<T>) {
   const classNames = useMenuClassNames();
-  const Tag = (as ?? 'button');
-  const isNativeButton = as === undefined || as === 'button';
   return (
-    <Tag
-      {...(isNativeButton ? { type: 'button' as const } : {})}
-      role='menuitem'
-      data-slot='menu-item'
-      tabIndex={-1}
-      x-class={[menuItemBase, menuItemStates, danger && menuItemDanger, classNames?.item, className]}
-      {...(isNativeButton
-        ? { disabled }
-        : { 'aria-disabled': disabled || undefined })}
+    <MenuItemShell<T>
+      as={as}
+      skin='menu'
+      itemRole='menuitem'
+      itemSlot='menu-item'
+      familyClass={classNames?.item}
+      disabled={disabled}
+      danger={danger}
+      icon={icon}
+      kbdLabel={kbdLabel}
+      className={className}
       onClick={onSelect}
-      {...rest}
+      {...(rest as Omit<ComponentPropsWithRef<T>, keyof MenuItemShellOwnProps | 'as'>)}
     >
-      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
-      {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden='true'>{kbdLabel}</span>
-      )}
-    </Tag>
+    </MenuItemShell>
   );
 }
 

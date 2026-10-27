@@ -6,7 +6,9 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { useClipboard } from '../../hooks/useClipboard';
 import { useStreamingAnnouncements } from '../../hooks/useStreamingAnnouncements';
+import { Check } from '../../icons';
 import { srOnly } from '../../utils/sr-only';
+import { CopyGlyph } from '../../utils/copy-glyph';
 
 type ChatMessageRole = 'user' | 'assistant' | 'system';
 
@@ -201,43 +203,6 @@ const roleMap = {
   system: bubbleSystem,
 };
 
-/** Explicit width/height: a viewBox-only inline svg contributes zero
- * content size in flex containers and collapses to 0×0. */
-const CopyGlyph = () => (
-  <svg
-    width='14'
-    height='14'
-    viewBox='0 0 24 24'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <rect x='9' y='9' width='13' height='13' rx='2' ry='2' />
-    <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
-  </svg>
-);
-
-const CheckGlyph = () => (
-  <svg
-    width='14'
-    height='14'
-    viewBox='0 0 24 24'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M20 6 9 17l-5-5' />
-  </svg>
-);
-
 export default function ChatMessage({
   role,
   avatar,
@@ -318,7 +283,11 @@ export default function ChatMessage({
                 onClick={handleCopy}
                 aria-label={chatStrings.copy}
               >
-                {copied ? <CheckGlyph /> : <CopyGlyph />}
+                {copied ? (
+                  <Check size={14} aria-hidden='true' focusable='false' />
+                ) : (
+                  <CopyGlyph />
+                )}
               </button>
             )}
             {actions}

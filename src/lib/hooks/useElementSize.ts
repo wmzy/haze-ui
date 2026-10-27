@@ -2,6 +2,8 @@ import type { RefCallback } from 'react';
 
 import { useCallback, useRef, useState } from 'react';
 
+import { connectResizeObserver } from '../utils/connect-resize-observer';
+
 type ElementSize = {
   width: number;
   height: number;
@@ -55,41 +57,41 @@ export function useElementSize<T extends Element = Element>(
   // 更直）。
   const lastRef = useRef<ElementSize>(ZERO);
 
+  // 观察生命周期在 utils/connect-resize-observer（与
+  // useResizeObserver 共享）；这里只保留 size 提取、引用级去重与
+  // 断开时清零的语义。
   const ref = useCallback<RefCallback<T>>(
     (node) => {
-      observerRef.current?.disconnect();
-      observerRef.current = null;
-
-      if (!node || !enabled || typeof globalThis.ResizeObserver !== 'function') {
+      const watching = connectResizeObserver({
+        observerRef,
+        node,
+        box,
+        enabled,
+        onEntry: (first) => {
+          // borderBoxSize 在生产是 ResizeObserverSize 数组；polyfill 或老
+          // 接口可能为空数组——直接索引 + 兜底
+          const borderBox =
+            box === 'border-box' && first.borderBoxSize.length > 0
+              ? first.borderBoxSize[0]
+              : undefined;
+          const next = borderBox
+            ? { width: borderBox.inlineSize, height: borderBox.blockSize }
+            : { width: first.contentRect.width, height: first.contentRect.height };
+          if (
+            lastRef.current.width === next.width &&
+            lastRef.current.height === next.height
+          ) {
+            return;
+          }
+          lastRef.current = next;
+          setSize(next);
+        },
+      });
+      if (!watching) {
         // 清空到零而非「保持上次」：卸载/禁用后无订阅，冻结值是陈旧数据。
         lastRef.current = ZERO;
         setSize((prev) => (prev.width === 0 && prev.height === 0 ? prev : ZERO));
-        return;
       }
-
-      const observer = new globalThis.ResizeObserver((entries) => {
-        const first = entries[0];
-        if (!first) return;
-        // borderBoxSize 在生产是 ResizeObserverSize 数组；polyfill 或老
-        // 接口可能为空数组——直接索引 + 兜底
-        const borderBox =
-          box === 'border-box' && first.borderBoxSize.length > 0
-            ? first.borderBoxSize[0]
-            : undefined;
-        const next = borderBox
-          ? { width: borderBox.inlineSize, height: borderBox.blockSize }
-          : { width: first.contentRect.width, height: first.contentRect.height };
-        if (
-          lastRef.current.width === next.width &&
-          lastRef.current.height === next.height
-        ) {
-          return;
-        }
-        lastRef.current = next;
-        setSize(next);
-      });
-      observer.observe(node, { box });
-      observerRef.current = observer;
     },
     [box, enabled]
   );

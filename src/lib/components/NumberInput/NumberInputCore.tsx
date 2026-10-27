@@ -4,6 +4,7 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { fieldSizes, focusWithinRing } from '../../utils/field-skin';
+import { clamp as clampToRange } from '../../utils/math';
 
 import { btnSizes } from './number-input-styles';
 
@@ -95,12 +96,11 @@ export default function NumberInputCore({
   ...rest
 }: NumberInputCoreProps) {
   const strings = useStrings('numberInput');
-  const clamp = (n: number) => {
-    const clamped = Math.round(n * 1e10) / 1e10;
-    if (min !== undefined && clamped < min) return min;
-    if (max !== undefined && clamped > max) return max;
-    return clamped;
-  };
+  // Round away binary-float noise (0.30000000000000004) at 1e10
+  // precision, then clamp via the shared clamp — an undefined bound is
+  // passed as ±Infinity, i.e. unbounded.
+  const clamp = (n: number) =>
+    clampToRange(Math.round(n * 1e10) / 1e10, min ?? -Infinity, max ?? Infinity);
 
   return (
     <div data-slot='number-input' x-class={[focusWithinRing, wrapper, className]}>

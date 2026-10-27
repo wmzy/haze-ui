@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { menuItemBase, menuItemDanger, menuItemIcon, menuItemKbd, menuPopupItem } from '../../utils/menu-skins';
+import { MenuItemShell } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -38,21 +38,20 @@ export default function DropdownMenuItem({
   };
 
   return (
-    <button
-      data-slot='menu-item'
-      x-class={[menuItemBase, menuPopupItem, danger && menuItemDanger, classNames?.item, className]}
-      type="button"
-      role="menuitem"
-      tabIndex={-1}
-      onClick={handleClick}
+    <MenuItemShell
+      skin='popup'
+      itemRole='menuitem'
+      itemSlot='menu-item'
+      familyClass={classNames?.item}
       disabled={disabled}
+      danger={danger}
+      icon={icon}
+      kbdLabel={kbdLabel}
+      className={className}
+      onClick={handleClick}
     >
-      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
-      {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden="true">{kbdLabel}</span>
-      )}
-    </button>
+    </MenuItemShell>
   );
 }
 

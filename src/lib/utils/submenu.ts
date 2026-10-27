@@ -29,6 +29,7 @@ import { useControl } from 'react-use-control';
 import { getDirection, inlineAxisKeys } from './direction';
 import { useFloating, type FloatingBehavior } from './floating';
 import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from './menuKeyboard';
+import { useHoverIntent } from './use-hover-intent';
 
 /** Pointer rest time before a submenu opens on hover (intent, not rest). */
 export const SUBMENU_OPEN_DELAY_MS = 120;
@@ -80,8 +81,6 @@ export function useSubmenu({
   // popover is display:none until showPopover(); a .focus() before that
   // is silently dropped in Chromium).
   const focusRequestRef = useRef(false);
-  const openTimerRef = useRef(0);
-  const closeTimerRef = useRef(0);
 
   // Same shape as DropdownMenu's handleSetOpen: accepts functional updates
   // (the floating engine's trigger click toggles with (prev) => !prev) and
@@ -108,33 +107,26 @@ export function useSubmenu({
   // pointer settles anywhere outside the trigger ∪ panel region (a
   // document-level pointerover listener, so sibling items need no
   // cooperation from the parent menu). Re-entering the region cancels a
-  // pending close.
+  // pending close. The two timers follow the shared useHoverIntent
+  // protocol; this hook adds only the region wiring.
   //
   // Fallback-tier note: on engines without the popover API the parent
   // menu hides through CSS only, so a submenu that was open when the
   // parent closed re-appears until the next pointerover closes it (the
   // native tier reconciles through toggle events — hidePopover on an
   // ancestor hides nested popovers).
-  const clearCloseTimer = useCallback(() => {
-    window.clearTimeout(closeTimerRef.current);
-  }, []);
-
-  const closeAfterGrace = useCallback(() => {
-    window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => {
-      setOpen(false);
-    }, SUBMENU_CLOSE_GRACE_MS);
-  }, [setOpen]);
+  const intent = useHoverIntent({
+    openDelay: SUBMENU_OPEN_DELAY_MS,
+    closeDelay: SUBMENU_CLOSE_GRACE_MS,
+    isOpen: () => open,
+    onOpen: () => setOpen(true),
+    onClose: () => setOpen(false),
+  });
 
   const onTriggerPointerEnter = useCallback(() => {
     if (triggerRef.current?.disabled) return;
-    clearCloseTimer();
-    if (open) return;
-    window.clearTimeout(openTimerRef.current);
-    openTimerRef.current = window.setTimeout(() => {
-      setOpen(true);
-    }, SUBMENU_OPEN_DELAY_MS);
-  }, [open, setOpen, clearCloseTimer]);
+    intent.scheduleOpen();
+  }, [intent]);
 
   useEffect(() => {
     const inRegion = (target: EventTarget | null) =>
@@ -145,29 +137,21 @@ export function useSubmenu({
       );
     const handlePointerOver = (event: PointerEvent) => {
       if (inRegion(event.target)) {
-        if (open) clearCloseTimer();
+        // Moving within the region keeps a pending dwell running; when
+        // this level is open it must also drop a pending grace close.
+        if (open) intent.cancel();
         return;
       }
       // Pointer left the trigger before the open delay elapsed: cancel
       // the pending open; when this level is open, run the close grace.
-      window.clearTimeout(openTimerRef.current);
-      if (!open) return;
-      closeAfterGrace();
+      intent.scheduleClose();
     };
     document.addEventListener('pointerover', handlePointerOver);
     return () => {
       document.removeEventListener('pointerover', handlePointerOver);
-      if (open) clearCloseTimer();
+      if (open) intent.cancel();
     };
-  }, [open, clearCloseTimer, closeAfterGrace]);
-
-  useEffect(
-    () => () => {
-      window.clearTimeout(openTimerRef.current);
-      window.clearTimeout(closeTimerRef.current);
-    },
-    []
-  );
+  }, [open, intent]);
 
   // --- keyboard -----------------------------------------------------------
   const focusFirstItem = useCallback(() => {

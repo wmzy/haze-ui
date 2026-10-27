@@ -6,12 +6,15 @@ import type { VirtualListHandle } from '../VirtualList';
 import type { ComboboxOptionData } from './combobox-options';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { pickerOverflowBadge, pickerPanelWidth } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { useHighlightScroll } from '../../utils/use-highlight-scroll';
+import { useSearchReport } from '../../utils/use-search-report';
 import Chip from '../Chip/Chip';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { useStrings } from '../LocaleProvider';
@@ -256,27 +259,6 @@ const multiInput = css`
 `;
 
 /**
- * The `+N` overflow badge of `maxTagCount`: presentational (selection
- * lives in the value, removal through the panel/Backspace), with the
- * full overflow label list in the native `title` tooltip — Select's
- * badge, token for token.
- */
-const overflowBadge = css`
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  font-weight: var(--haze-weight-medium);
-  line-height: 1;
-  white-space: nowrap;
-  padding: var(--haze-space-1) var(--haze-space-2);
-  cursor: default;
-`;
-
-/**
  * Query-match highlight inside an option label. Only token colors —
  * the `mark` element's UA chrome (yellow/black) is fully replaced.
  */
@@ -316,20 +298,13 @@ const groupHeadingText = css`
 `;
 
 /**
- * The fallback/absolute tier keeps the panel as wide as the input via
- * `min-width: 100%` (its containing block is the input-width wrapper).
- * On the anchored tier the containing block is the viewport-wide
- * position-area region, so `100%` there inflates the panel to the whole
- * region — the second declaration re-pins it to the trigger's width and
- * simply drops as invalid on engines without anchor positioning,
- * leaving the fallback intact. `border-box` makes the re-pin match the
- * trigger's border-box width exactly (content-box would add the panel's
- * own border+padding on top of the anchor size).
+ * Chrome of the plain (scrolling) listbox on top of the shared
+ * tier-aware width cascade (`pickerPanelWidth` — see its doc for the
+ * fallback/anchored tier rationale; `border-box` there makes the
+ * re-pin match the trigger's border-box width exactly): the scroll cap
+ * and the surface chrome.
  */
 const listbox = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
@@ -345,9 +320,6 @@ const listbox = css`
  * border-box consumer (2px of panel border would overflow the cap).
  */
 const listboxVirtual = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
@@ -581,44 +553,15 @@ export default function Combobox<T extends string | number = string>({
   }
   const hasGroups = sections.some((s) => s.label !== undefined);
 
-  // The highlighted row must stay visible whenever it moves (keyboard
-  // navigation) and whenever the panel (re)opens with a live highlight —
-  // 'auto' alignment is a no-op for rows already on screen. Gated on
-  // `shown`, not `open`: this child effect runs before the behavior
-  // effect calls showPopover(), and scrollTop set on a still-hidden
-  // popover is clamped away and lost. Virtualized mode drives the
-  // window through scrollToIndex (rows outside the window are not
-  // mounted, so scrollIntoView has no target); jsdom ships no
-  // scrollIntoView, hence the typeof guard on the plain path.
-  useEffect(() => {
-    if (!floating.shown || highlightIndex < 0) return;
-    if (virtualized) {
-      listRef.current?.scrollToIndex(highlightIndex, 'auto');
-      return;
-    }
-    const row = activeRowRef.current;
-    if (row && typeof row.scrollIntoView === 'function') {
-      row.scrollIntoView({ block: 'nearest' });
-    }
-  }, [virtualized, floating.shown, highlightIndex]);
+  useHighlightScroll({
+    shown: floating.shown,
+    highlightIndex,
+    virtualized,
+    listRef,
+    rowRef: activeRowRef,
+  });
 
-  // Remote-search report (Toast's latest-ref pattern: an inline arrow
-  // has a fresh identity every parent render, so the callback rides a
-  // ref and the report effect keys on the query alone). Fires once per
-  // actual query transition — every keystroke, clearing the input, and
-  // the resets that follow a selection (query '' in multiple mode, the
-  // picked label in single mode) — including empty queries, which the
-  // consumer uses to restore the full list. Never fires on mount.
-  const onSearchRef = useRef(onSearch);
-  useEffect(() => {
-    onSearchRef.current = onSearch;
-  }, [onSearch]);
-  const reportedQueryRef = useRef(query);
-  useEffect(() => {
-    if (reportedQueryRef.current === query) return;
-    reportedQueryRef.current = query;
-    onSearchRef.current?.(query);
-  }, [query]);
+  useSearchReport(onSearch, query);
 
   // Typing a new query invalidates the highlight — adjust during render
   // (React-endorsed reset) so the first filtered frame already drops any
@@ -822,7 +765,7 @@ export default function Combobox<T extends string | number = string>({
             selected.length > Math.max(maxTagCount, 0) && (
               <span
                 data-slot='overflow-badge'
-                x-class={overflowBadge}
+                x-class={pickerOverflowBadge}
                 title={selected
                   .slice(Math.max(maxTagCount, 0))
                   .map((v) => labelFor(v))
@@ -845,7 +788,11 @@ export default function Combobox<T extends string | number = string>({
         id={id}
         role="listbox"
         aria-multiselectable={multiple ? 'true' : undefined}
-        visualClass={virtualized ? listboxVirtual : listbox}
+        visualClass={
+          virtualized
+            ? `${pickerPanelWidth} ${listboxVirtual}`
+            : `${pickerPanelWidth} ${listbox}`
+        }
         style={
           maxHeight !== undefined && !virtualized
             ? { maxHeight: `${maxHeight}px` }

@@ -7,7 +7,6 @@ import {
   getNodePath,
   getParentKey,
   getAllLeafKeys,
-  matchRanges,
   mergeLoadedChildren,
   pruneLoadedChildren,
 } from './utils';
@@ -174,20 +173,6 @@ describe('flattenVisibleTree', () => {
 
   it('handles empty input', () => {
     expect(flattenVisibleTree([], [], false)).toEqual([]);
-  });
-});
-
-describe('matchRanges', () => {
-  it('finds every case-insensitive non-overlapping occurrence', () => {
-    expect(matchRanges('Banana bandana', 'ANA')).toEqual([
-      [1, 4],
-      [11, 14],
-    ]);
-  });
-
-  it('returns empty for an empty query or no hit', () => {
-    expect(matchRanges('Target file', '')).toEqual([]);
-    expect(matchRanges('Target file', 'zzz')).toEqual([]);
   });
 });
 

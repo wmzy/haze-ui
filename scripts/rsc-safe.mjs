@@ -31,6 +31,11 @@ export const RSC_SAFE_MODULES = new Set([
   // The shared numeric clamp: zero imports, no hooks, no DOM access —
   // the same purity class as classnames above.
   'utils/math.ts',
+  // Shared text-match helpers (utils/text-match.ts): the substring
+  // range finder + segment splitter Highlight and Tree search delegate
+  // to — zero imports, same purity class as math above. Required for
+  // the RSC-safe closure: Highlight.tsx (safe-listed) imports it.
+  'utils/text-match.ts',
   // Menu-family shared skins: pure Linaria class constants — no hooks,
   // no DOM access; the @linaria/core import is elided at build time, so
   // the dist module is a bare constant list.

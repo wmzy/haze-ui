@@ -9,16 +9,19 @@ import { css } from '@linaria/core';
 
 /**
  * Shared trigger building block of the picker families (Select's
- * floating paths, Cascader, TreeSelect) and the native-select caret
- * overlay (SelectCore's single paths, ModelPicker): the base trigger
- * skin, the 12x12 stroke chevron glyphs, the caret slot and the popup
- * aria wiring of the trigger button.
+ * floating paths, Cascader, TreeSelect) and the native-select paths
+ * (SelectCore's single modes, ModelPicker): the base trigger skin,
+ * the native-select skin, the maxTagCount overflow badge, the
+ * tier-aware panel width cascade, the 12x12 stroke chevron glyphs,
+ * the caret slot and the popup aria wiring of the trigger button.
  *
  * Deliberately NOT shared — genuinely drifted, they stay local to each
  * family (the drift discipline): gap/flex-wrap/padding/font-size per
- * trigger shape, the focus arm (`:focus, :focus-within` for Select's
- * tags box vs `:focus-visible` elsewhere), hover/disabled arms, and
- * per-site caret deltas (centering, inline-end push).
+ * trigger shape, the floating focus arm (`:focus, :focus-within` for
+ * Select's tags box vs `:focus-visible` elsewhere) and per-site caret
+ * deltas (centering, inline-end push). The native-select skin's
+ * hover/focus/disabled arms are shared verbatim — SelectCore and
+ * ModelPicker agree token for token.
  */
 
 /**
@@ -43,6 +46,93 @@ export const pickerTrigger = css`
   transition:
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
+`;
+
+/**
+ * Native-select trigger skin: the chrome shared verbatim by the
+ * native `<select>` paths — SelectCore's single modes (the
+ * padding/font-size metrics ride its local `sizes` variants) and
+ * ModelPicker (whose local extension carries the md pair). The same
+ * declaration set the floating `pickerTrigger` has where the two
+ * agree (border/radius/fill/color/typography/cursor/transition) plus
+ * the native-element specifics: `appearance: none` removes the
+ * painted caret (the `pickerNativeCaret` overlay replaces it) and the
+ * reserved `padding-inline-end` gives that overlay room. The
+ * hover/focus/disabled arms are state arms of the class itself, so a
+ * consumer extension class can never flip them by injection order —
+ * extensions add only properties this skin does not declare.
+ */
+export const pickerNativeSelect = css`
+  display: block;
+  width: 100%;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  line-height: var(--haze-leading-normal);
+  appearance: none;
+  padding-inline-end: var(--haze-space-8);
+  cursor: pointer;
+  transition:
+    border-color var(--haze-duration-fast),
+    box-shadow var(--haze-duration-fast);
+
+  &:hover {
+    border-color: var(--haze-color-border-hover);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/**
+ * The `+N` overflow badge of the picker triggers' `maxTagCount`
+ * (Select's floating trigger, Combobox, TreeSelect): presentational
+ * (selection lives in the value, removal through the panel or the
+ * clear affordance), with the full overflow label list in the native
+ * `title` tooltip.
+ */
+export const pickerOverflowBadge = css`
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--haze-radius-full);
+  background: var(--haze-color-bg-muted);
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  font-weight: var(--haze-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  padding: var(--haze-space-1) var(--haze-space-2);
+  cursor: default;
+`;
+
+/**
+ * Tier-aware width cascade of the picker panels (Select/Combobox
+ * listboxes and their virtual variants, TreeSelect's panel,
+ * PromptInput's suggestion listbox): the fallback tier's containing
+ * block is the trigger-width wrapper, so `100%` matches it; the
+ * anchored tier's containing block is the viewport-wide position-area
+ * region, so the second declaration re-pins the panel to the
+ * trigger's border-box width and drops as invalid on engines without
+ * anchor positioning, leaving the fallback intact. Consumers pass it
+ * ahead of their chrome class (the space-joined `visualClass` pattern
+ * of ContextMenuContent) — the two declare disjoint properties, so
+ * cascade order between them can never matter.
+ */
+export const pickerPanelWidth = css`
+  box-sizing: border-box;
+  min-width: 100%;
+  min-width: anchor-size(width);
 `;
 
 /**

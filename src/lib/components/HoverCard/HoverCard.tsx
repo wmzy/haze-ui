@@ -11,6 +11,7 @@ import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getTabbables } from '../../utils/focus';
+import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
  * HoverCard — a non-modal floating preview (avatar card, link summary)
@@ -153,35 +154,19 @@ export default function HoverCard({
     collision,
   });
 
-  // Hover/focus intent with a resting zone: the open timer gives the
-  // `openDelay` dwell, the close timer the `closeDelay` grace. Entering
-  // the panel clears both timers (nothing pending to close); leaving
-  // either side arms the close, which re-entering either side cancels.
-  const openTimerRef = useRef(0);
-  const closeTimerRef = useRef(0);
-  useEffect(
-    () => () => {
-      window.clearTimeout(openTimerRef.current);
-      window.clearTimeout(closeTimerRef.current);
-    },
-    []
-  );
-
-  const cancelTimers = () => {
-    window.clearTimeout(openTimerRef.current);
-    window.clearTimeout(closeTimerRef.current);
-  };
-  const scheduleOpen = () => {
-    cancelTimers();
-    if (open) return;
-    openTimerRef.current = window.setTimeout(() => setOpen(true), openDelay);
-  };
-  const scheduleClose = () => {
-    // Also drops a pending open: leaving before the delay never shows.
-    cancelTimers();
-    if (!open) return;
-    closeTimerRef.current = window.setTimeout(() => setOpen(false), closeDelay);
-  };
+  // Hover/focus intent with a resting zone: the shared useHoverIntent
+  // protocol gives the `openDelay` dwell and the `closeDelay` grace
+  // (entering the panel cancels both timers — nothing pending to
+  // close; leaving either side arms the close, which re-entering
+  // either side cancels). HoverCard adds only the interactive-mode
+  // guards on top.
+  const intent = useHoverIntent({
+    openDelay,
+    closeDelay,
+    isOpen: () => open,
+    onOpen: () => setOpen(true),
+    onClose: () => setOpen(false),
+  });
   const schedulePointerClose = () => {
     // Interactive: once focus rests inside the card, pointer travel no
     // longer closes it — Escape or tabbing out does. A keyboard user
@@ -196,7 +181,7 @@ export default function HoverCard({
     ) {
       return;
     }
-    scheduleClose();
+    intent.scheduleClose();
   };
 
   // Interactive: focus moves between the trigger and the card (or
@@ -207,10 +192,10 @@ export default function HoverCard({
   const handleFocusOut = (event: ReactFocusEvent<HTMLSpanElement>) => {
     const next = event.relatedTarget;
     if (next instanceof Node && event.currentTarget.contains(next)) {
-      cancelTimers();
+      intent.cancel();
       return;
     }
-    scheduleClose();
+    intent.scheduleClose();
   };
 
   // Interactive focus return: any close while focus rests inside the
@@ -256,10 +241,10 @@ export default function HoverCard({
         data-slot='trigger'
         style={floating.triggerStyle}
         aria-describedby={id}
-        onMouseEnter={scheduleOpen}
-        onMouseLeave={interactive ? schedulePointerClose : scheduleClose}
-        onFocus={scheduleOpen}
-        onBlur={interactive ? undefined : scheduleClose}
+        onMouseEnter={() => intent.scheduleOpen()}
+        onMouseLeave={interactive ? schedulePointerClose : () => intent.scheduleClose()}
+        onFocus={() => intent.scheduleOpen()}
+        onBlur={interactive ? undefined : () => intent.scheduleClose()}
       >
         {children}
       </span>
@@ -270,8 +255,8 @@ export default function HoverCard({
         id={id}
         visualClass={panelVisuals}
         className={className}
-        onMouseEnter={cancelTimers}
-        onMouseLeave={interactive ? schedulePointerClose : scheduleClose}
+        onMouseEnter={() => intent.cancel()}
+        onMouseLeave={interactive ? schedulePointerClose : () => intent.scheduleClose()}
       >
         {content}
       </FloatingPanel>

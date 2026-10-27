@@ -13,7 +13,11 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
-import { PickerTrigger } from '../../utils/picker-trigger';
+import {
+  PickerTrigger,
+  pickerOverflowBadge,
+  pickerPanelWidth,
+} from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
@@ -202,26 +206,6 @@ const chipRemove = css`
 `;
 
 /**
- * The +N overflow badge of maxTagCount: presentational (selection
- * lives in the value, removal through the panel or the clear ×), with
- * the full overflow label list in the native title tooltip.
- */
-const overflowBadge = css`
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  font-weight: var(--haze-weight-medium);
-  line-height: 1;
-  white-space: nowrap;
-  padding: var(--haze-space-1) var(--haze-space-2);
-  cursor: default;
-`;
-
-/**
  * Pointer-only clear affordance (same nested-interactive rationale as
  * chipRemove), revealed on trigger hover/focus-within through the
  * data-clearable ancestor selector (Select's trigger pattern).
@@ -265,16 +249,12 @@ const triggerCaret = css`
 `;
 
 /**
- * Panel skin: same chrome as Cascader's panel. The min-width cascade
- * re-pins the panel to the trigger's width on the anchored tier (100%
- * would resolve against the viewport-wide position-area region) and
- * drops as invalid on engines without anchor positioning, leaving the
- * fallback — the trigger-width wrapper — intact.
+ * Panel chrome on top of the shared tier-aware width cascade
+ * (`pickerPanelWidth`, utils/picker-trigger — it re-pins the panel to
+ * the trigger's width on the anchored tier): same chrome as Cascader's
+ * panel.
  */
 const panel = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   padding: var(--haze-space-2);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);
@@ -670,7 +650,7 @@ export default function TreeSelect({
         {overflowKeys.length > 0 && (
           <span
             data-slot='overflow-badge'
-            x-class={overflowBadge}
+            x-class={pickerOverflowBadge}
             title={overflowKeys.map(labelText).join(', ')}
           >
             {formatString(strings.moreTags, { count: overflowKeys.length })}
@@ -728,7 +708,7 @@ export default function TreeSelect({
         ref={setPanelRef}
         behavior={floating}
         placement='bottom'
-        visualClass={panel}
+        visualClass={`${pickerPanelWidth} ${panel}`}
         onKeyDown={handlePanelKeyDown}
       >
         <div id={id}>

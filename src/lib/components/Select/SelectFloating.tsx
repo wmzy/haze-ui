@@ -9,8 +9,16 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { PickerCaret, PickerTrigger, pickerTrigger } from '../../utils/picker-trigger';
+import {
+  PickerCaret,
+  PickerTrigger,
+  pickerOverflowBadge,
+  pickerPanelWidth,
+  pickerTrigger,
+} from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { useHighlightScroll } from '../../utils/use-highlight-scroll';
+import { useSearchReport } from '../../utils/use-search-report';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -284,26 +292,6 @@ const chipRemove = css`
 `;
 
 /**
- * The `+N` overflow badge of `maxTagCount`: presentational (selection
- * lives in the value, removal through the panel/Backspace), with the
- * full overflow label list in the native `title` tooltip.
- */
-const overflowBadge = css`
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  font-weight: var(--haze-weight-medium);
-  line-height: 1;
-  white-space: nowrap;
-  padding: var(--haze-space-1) var(--haze-space-2);
-  cursor: default;
-`;
-
-/**
  * Pointer-only clear affordance (same nested-interactive rationale as
  * `chipRemove`). Revealed on trigger hover/focus-within through the
  * `[data-clearable]` ancestor selector (the `[role='option']:hover &`
@@ -355,16 +343,13 @@ const caret = css`
 `;
 
 /**
- * Same chrome contract as Combobox's listbox: the `min-width` cascade
- * re-pins the panel to the trigger's width on the anchored tier (where
- * `100%` would resolve against the viewport-wide position-area region)
- * and drops as invalid on engines without anchor positioning, leaving
- * the fallback — the trigger-width wrapper — intact.
+ * Chrome of the plain (scrolling) listbox on top of the shared
+ * tier-aware width cascade (`pickerPanelWidth`, which also re-pins
+ * the panel to the trigger's width on the anchored tier): the scroll
+ * cap and the surface chrome. Same chrome contract as Combobox's
+ * listbox.
  */
 const listbox = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
@@ -380,9 +365,6 @@ const listbox = css`
  * trade-off as Combobox's listboxVirtual).
  */
 const listboxVirtual = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
@@ -390,16 +372,14 @@ const listboxVirtual = css`
 `;
 
 /**
- * Searchable panel chrome: the panel itself stays a plain container (a
- * `display` declaration here would override the UA sheet's
- * `[popover]:not(:popover-open) { display: none }` and paint the closed
- * popover into the document flow) — the search input and the inner
- * listbox stack as plain block flow inside the padding.
+ * Searchable panel chrome on top of the shared tier-aware width
+ * cascade (`pickerPanelWidth`): the panel itself stays a plain
+ * container (a `display` declaration here would override the UA
+ * sheet's `[popover]:not(:popover-open) { display: none }` and paint
+ * the closed popover into the document flow) — the search input and
+ * the inner listbox stack as plain block flow inside the padding.
  */
 const panelSearch = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
@@ -745,24 +725,13 @@ export default function SelectFloating<T extends string | number = string>({
   // aria-controls targets the inner element there.
   const listboxId = `${id}-listbox`;
 
-  // Keep the highlighted row visible as it moves. Gated on `shown`, not
-  // `open`: scrollTop set on a still-hidden popover is clamped away and
-  // lost (the same contract as Combobox's virtualized scroll effect).
-  // Virtualized mode drives the window through scrollToIndex (rows
-  // outside the window are not mounted, so scrollIntoView has no target);
-  // jsdom ships no scrollIntoView, hence the typeof guard on the plain
-  // path.
-  useEffect(() => {
-    if (!floating.shown || activeIndex < 0) return;
-    if (virtual) {
-      listRef.current?.scrollToIndex(activeIndex, 'auto');
-      return;
-    }
-    const row = activeOptionRef.current;
-    if (row && typeof row.scrollIntoView === 'function') {
-      row.scrollIntoView({ block: 'nearest' });
-    }
-  }, [floating.shown, activeIndex, virtual]);
+  useHighlightScroll({
+    shown: floating.shown,
+    highlightIndex: activeIndex,
+    virtualized: virtual,
+    listRef,
+    rowRef: activeOptionRef,
+  });
 
   // Focus lands in the panel's search input whenever the searchable
   // popup is actually shown (gated on `shown` — focus on a still-hidden
@@ -775,22 +744,7 @@ export default function SelectFloating<T extends string | number = string>({
     }
   }, [showPanelSearch, open, floating.shown]);
 
-  // Remote-search report (Toast's latest-ref pattern: an inline arrow
-  // has a fresh identity every parent render, so the callback rides a
-  // ref and the report effect keys on the query alone). Fires once per
-  // actual query transition — every keystroke, clearing the field, and
-  // the close-reset back to '' — including empty queries, which the
-  // consumer uses to restore the full list. Never fires on mount.
-  const onSearchRef = useRef(onSearch);
-  useEffect(() => {
-    onSearchRef.current = onSearch;
-  }, [onSearch]);
-  const reportedQueryRef = useRef(query);
-  useEffect(() => {
-    if (reportedQueryRef.current === query) return;
-    reportedQueryRef.current = query;
-    onSearchRef.current?.(query);
-  }, [query]);
+  useSearchReport(onSearch, query);
 
   // A closed panel starts the next open with a fresh query — a stale
   // filter surviving close/reopen would hide the very value the user
@@ -1096,7 +1050,7 @@ export default function SelectFloating<T extends string | number = string>({
       {maxTagCount !== undefined && selected.length > Math.max(maxTagCount, 0) && (
         <span
           data-slot='overflow-badge'
-          x-class={overflowBadge}
+          x-class={pickerOverflowBadge}
           title={selected
             .slice(Math.max(maxTagCount, 0))
             .map((v) => selectOptionText(labelFor(v)))
@@ -1303,7 +1257,7 @@ export default function SelectFloating<T extends string | number = string>({
           behavior={floating}
           placement='bottom-span'
           aria-busy={loading || undefined}
-          visualClass={panelSearch}
+          visualClass={`${pickerPanelWidth} ${panelSearch}`}
           className={classNames?.content}
         >
           <input
@@ -1350,7 +1304,11 @@ export default function SelectFloating<T extends string | number = string>({
           aria-multiselectable={hasVisibleOptions && isMulti ? 'true' : undefined}
           aria-label={strings.listboxLabel}
           aria-busy={loading || undefined}
-          visualClass={virtual ? listboxVirtual : listbox}
+          visualClass={
+            virtual
+              ? `${pickerPanelWidth} ${listboxVirtual}`
+              : `${pickerPanelWidth} ${listbox}`
+          }
           className={classNames?.content}
         >
           {hasVisibleOptions ? optionsList : listboxBody}

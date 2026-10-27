@@ -15,6 +15,7 @@ import { useControl } from 'react-use-control';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
+import { pickerPanelWidth } from '../../utils/picker-trigger';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
@@ -127,17 +128,12 @@ const textareaClass = css`
 `;
 
 /**
- * Same tier-aware width contract as Mentions' listbox: the fallback
- * tier's containing block is the field-width container, so `100%`
- * matches it; the anchored tier's containing block is the viewport-wide
- * position-area region, so the second declaration re-pins the panel to
- * the trigger's border-box width and drops as invalid on engines
- * without anchor positioning.
+ * Chrome of the suggestion listbox on top of the shared tier-aware
+ * width cascade (`pickerPanelWidth`, utils/picker-trigger — same
+ * tier-aware width contract as Mentions' listbox): the height cap and
+ * the surface chrome.
  */
 const listbox = css`
-  box-sizing: border-box;
-  min-width: 100%;
-  min-width: anchor-size(width);
   max-height: var(--haze-prompt-input-list-max-height, 200px);
   overflow-y: auto;
   border: 1px solid var(--haze-color-border);
@@ -529,7 +525,7 @@ export default function PromptInput({
           placement="bottom-span"
           id={id}
           role="listbox"
-          visualClass={listbox}
+          visualClass={`${pickerPanelWidth} ${listbox}`}
         >
           {loading ? (
             // An aria-disabled option keeps the listbox's required owned

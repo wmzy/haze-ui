@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
-import { menuItemDanger, menuItemIcon, menuItemIndicator, menuItemKbd, menuItemBase, menuItemStates } from '../../utils/menu-skins';
+import { MenuItemShell } from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -20,8 +20,8 @@ type MenuRadioItemProps = {
   children: ReactNode;
 };
 
-// MenuItem's skin (menuItemBase + menuItemStates, utils/menu-skins);
-// the leading slot is the fixed-size selection dot (it draws in
+// MenuItem's chrome (utils/menu-item-parts with the menuItemStates
+// skin); the leading slot is the fixed-size selection dot (it draws in
 // CanvasText through currentColor under forced-colors).
 
 /**
@@ -43,29 +43,23 @@ export default function MenuRadioItem({
   const { checked, select } = useMenuRadioItem(value);
 
   return (
-    <button
-      type='button'
-      role='menuitemradio'
-      data-slot='menu-radio-item'
-      aria-checked={checked}
-      tabIndex={-1}
-      x-class={[menuItemBase, menuItemStates, danger && menuItemDanger, classNames?.radioItem, className]}
+    <MenuItemShell
+      skin='menu'
+      itemRole='menuitemradio'
+      itemSlot='menu-radio-item'
+      familyClass={classNames?.radioItem}
+      ariaChecked={checked}
+      indicator='dot'
+      indicatorShown={checked}
       disabled={disabled}
+      danger={danger}
+      icon={icon}
+      kbdLabel={kbdLabel}
+      className={className}
       onClick={select}
     >
-      <span data-slot='indicator' x-class={menuItemIndicator} aria-hidden='true'>
-        {checked && (
-          <svg width='1em' height='1em' viewBox='0 0 16 16' fill='none'>
-            <circle cx='8' cy='8' r='3.5' fill='currentColor' />
-          </svg>
-        )}
-      </span>
-      {icon !== undefined && <span data-slot='icon' x-class={menuItemIcon}>{icon}</span>}
       {children}
-      {kbdLabel !== undefined && (
-        <span data-slot='kbd' x-class={menuItemKbd} aria-hidden='true'>{kbdLabel}</span>
-      )}
-    </button>
+    </MenuItemShell>
   );
 }
 
