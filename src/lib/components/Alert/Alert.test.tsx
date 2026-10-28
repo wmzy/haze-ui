@@ -4,16 +4,32 @@ import userEvent from '@testing-library/user-event';
 
 import Alert from './Alert';
 import { alertVariants } from './index';
+import { borders } from './alert-styles';
 
 describe('Alert', () => {
-  it('renders children with alert role', () => {
+  it('renders children with a polite status role (default info)', () => {
     render(<Alert>Something happened</Alert>);
-    expect(screen.getByRole('alert')).toHaveTextContent('Something happened');
+    expect(screen.getByRole('status')).toHaveTextContent('Something happened');
+  });
+
+  it('maps every severity to its live-region role', () => {
+    // Only danger interrupts (role="alert", implicitly assertive);
+    // every other severity announces politely via role="status" —
+    // Toast's documented convention.
+    const { rerender } = render(<Alert color="info">Info</Alert>);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    for (const color of ['default', 'primary', 'success', 'warning'] as const) {
+      rerender(<Alert color={color}>Message</Alert>);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    }
+    rerender(<Alert color="danger">Danger</Alert>);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
   it('applies className', () => {
     render(<Alert className="custom">Message</Alert>);
-    expect(screen.getByRole('alert')).toHaveClass('custom');
+    expect(screen.getByRole('status')).toHaveClass('custom');
   });
 
   it('does not render close button by default', () => {
@@ -29,14 +45,14 @@ describe('Alert', () => {
   it('forwards the ref onto the root div', () => {
     const ref = createRef<HTMLDivElement>();
     render(<Alert ref={ref}>Message</Alert>);
-    expect(ref.current).toBe(screen.getByRole('alert'));
+    expect(ref.current).toBe(screen.getByRole('status'));
   });
 
   it('hides alert when close button is clicked', async () => {
     const user = userEvent.setup();
     render(<Alert closable>Message</Alert>);
     await user.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('has no axe violations', async () => {
@@ -66,8 +82,12 @@ describe('alertVariants exports', () => {
     }
   });
 
-  it('is the exact class Alert wears', () => {
+  it('is the exact class Alert wears, border layer composed on top', () => {
     render(<Alert color="warning">Skin</Alert>);
-    expect(screen.getByRole('alert')).toHaveClass(alertVariants.warning);
+    const alert = screen.getByRole('status');
+    expect(alert).toHaveClass(alertVariants.warning);
+    // The tinted pair comes from the shared status skin; Alert's own
+    // layer is the color-mix border composed over it.
+    expect(alert).toHaveClass(borders.warning);
   });
 });

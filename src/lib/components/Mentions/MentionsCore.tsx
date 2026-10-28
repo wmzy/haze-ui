@@ -5,12 +5,23 @@ import type {
   Ref,
   SyntheticEvent,
 } from 'react';
+import type { VirtualListHandle } from '../VirtualList';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
 import { pickerPanelWidth } from '../../utils/picker-trigger';
+import {
+  suggestHintRow,
+  suggestListbox,
+  suggestOption,
+  suggestOptionHighlighted,
+} from '../../utils/suggest-list-skin';
+import { spliceToken, suggestOptionId } from '../../utils/suggest-marker';
+import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
+import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -45,129 +56,24 @@ const wrapper = css`
   width: 100%;
 `;
 
-const textareaClass = css`
-  display: block;
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
-  padding: var(--haze-space-2) var(--haze-space-3);
+/* The field base is the shared field skin (utils/field-skin.ts) — the
+ * same surface trio, native chrome arms and md size Input and Textarea
+ * wear. Mentions' own deltas stay here: the drag handle and border-box
+ * sizing (the shared chrome leaves the box model to consumers, and
+ * width:100% plus border must stay inside the box). */
+const textareaDeltas = css`
   resize: vertical;
   box-sizing: border-box;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
-
-  &::placeholder {
-    color: var(--haze-color-text-muted);
-  }
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 `;
 
 /**
- * Panel chrome for the anchored listbox; the tier-aware width cascade
- * (`pickerPanelWidth`, utils/picker-trigger.tsx) rides alongside — the
- * fallback tier's containing block is the textarea-width wrapper, so
- * `100%` matches it, while the anchored tier's containing block is the
- * viewport-wide position-area region, so the cascade's second
- * declaration re-pins the panel to the trigger's border-box width.
+ * Height cap of the suggestion listbox — Mentions' fixed-cap delta over
+ * the shared suggestion skin (utils/suggest-list-skin.ts), which owns
+ * the rest of the panel chrome.
  */
-const listbox = css`
+const listMaxHeight = css`
   max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
 `;
-
-const option = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-`;
-
-const highlightedStyle = css`
-  background: var(--haze-color-bg-subtle);
-`;
-
-const noMatch = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-muted);
-`;
-
-/** The mention token the caret currently sits in, if any. */
-type MentionMarker = {
-  /** Index of the trigger character. */
-  start: number;
-  /** Caret position when the marker was recorded — the token's end. */
-  end: number;
-  /** Text between the trigger and the caret; filters the options. */
-  query: string;
-};
-
-/**
- * Finds the mention token at the caret: a trigger character at the
- * start of the text or right after whitespace, with nothing but
- * non-whitespace between it and the caret. The word-boundary rule keeps
- * email-like text ("a@b") from opening the panel.
- */
-function findMentionMarker(
-  text: string,
-  caret: number,
-  trigger: string
-): MentionMarker | null {
-  const head = Math.min(caret, text.length);
-  for (let i = head - 1; i >= 0; i -= 1) {
-    const ch = text[i];
-    // Unreachable (i < head <= length), but the checked index signature
-    // says otherwise — treat it as end-of-text.
-    if (ch === undefined) return null;
-    if (/\s/.test(ch)) return null;
-    // The trigger only opens a token at the start of the text or right
-    // after whitespace; "a@b" stays plain text.
-    const before = i > 0 ? text[i - 1] : undefined;
-    if (ch === trigger && (before === undefined || /\s/.test(before))) {
-      return { start: i, end: head, query: text.slice(i + 1, head) };
-    }
-  }
-  return null;
-}
 
 export default function MentionsCore({
   value,
@@ -182,8 +88,6 @@ export default function MentionsCore({
 }: MentionsCoreProps) {
   const strings = useStrings('mentions');
   const [open, setOpen] = useState(false);
-  const [marker, setMarker] = useState<MentionMarker | null>(null);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
   const id = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const setTextareaRef = useCallback(
@@ -191,6 +95,20 @@ export default function MentionsCore({
     [textareaRef, ref]
   );
   const panelRef = useRef<HTMLDivElement>(null);
+  const activeRowRef = useRef<HTMLDivElement>(null);
+  // The listbox is never virtualized; useHighlightScroll still takes the
+  // handle (same call shape as Combobox/SelectFloating).
+  const listRef = useRef<VirtualListHandle>(null);
+
+  // Shared token machinery (utils/use-textarea-suggest.ts): the marker
+  // state, the keyboard highlight and the post-insert caret restore.
+  const suggest = useTextareaSuggest({
+    enabled: true,
+    triggers: [trigger],
+    textareaRef,
+    value,
+  });
+  const { marker, highlightIndex } = suggest;
 
   const floating = useFloating({
     open,
@@ -198,6 +116,17 @@ export default function MentionsCore({
     triggerRef: textareaRef,
     panelRef,
     animated: true,
+  });
+
+  // The keyboard highlight must follow into view — its rows are
+  // aria-activedescendant targets that never receive DOM focus, so the
+  // browser does not scroll to them on its own.
+  useHighlightScroll({
+    shown: floating.shown,
+    highlightIndex,
+    virtualized: false,
+    listRef,
+    rowRef: activeRowRef,
   });
 
   // Case-insensitive prefix match against both the insertion value and
@@ -216,7 +145,7 @@ export default function MentionsCore({
   // deterministic across renders and re-opens (no random values). The
   // textarea's aria-activedescendant points here so screen readers
   // announce the keyboard highlight on rows that never receive DOM focus.
-  const optionId = (index: number) => `${id}-option-${index}`;
+  const optionId = (index: number) => suggestOptionId(id, index);
 
   // Only while the popup is open — a closed listbox must not own the
   // textarea's active descendant. No highlight (or an out-of-range one
@@ -224,74 +153,37 @@ export default function MentionsCore({
   const activeDescendant =
     open && filtered[highlightIndex] ? optionId(highlightIndex) : undefined;
 
-  // Editing the token invalidates the highlight — adjust during render
-  // (React-endorsed reset) so the first filtered frame already drops a
-  // stale highlight, keyed on token identity + query so a brand-new
-  // token resets even when its query starts out identical.
-  const markerKey = marker ? `${marker.start}:${marker.query}` : '';
-  const [prevMarkerKey, setPrevMarkerKey] = useState(markerKey);
-  if (markerKey !== prevMarkerKey) {
-    setPrevMarkerKey(markerKey);
-    setHighlightIndex(-1);
-  }
-
-  // After an insertion the caret must land right after the inserted
-  // mention, but the DOM value re-renders from the committed `value` —
-  // stash the offset and apply it once that commit lands.
-  const pendingCaretRef = useRef<number | null>(null);
-  useEffect(() => {
-    const caret = pendingCaretRef.current;
-    if (caret === null) return;
-    pendingCaretRef.current = null;
-    const el = textareaRef.current;
-    if (!el) return;
-    el.focus();
-    el.setSelectionRange(caret, caret);
-  }, [value]);
-
   /** Recomputes the token (and panel visibility) from the live caret. */
   const syncFromCaret = (text: string, caret: number) => {
-    const nextMarker = findMentionMarker(text, caret, trigger);
-    setMarker(nextMarker);
-    setOpen(nextMarker !== null);
+    setOpen(suggest.syncFromCaret(text, caret) !== null);
   };
 
   const insertMention = (optionToInsert: MentionsOption) => {
     if (!marker) return;
     const text = textareaRef.current?.value ?? value;
-    const end = Math.min(marker.end, text.length);
-    const insertion = `${trigger}${optionToInsert.value} `;
-    onChange(text.slice(0, marker.start) + insertion + text.slice(end));
-    pendingCaretRef.current = marker.start + insertion.length;
-    setMarker(null);
+    const spliced = spliceToken(
+      text,
+      marker,
+      `${marker.trigger}${optionToInsert.value} `
+    );
+    onChange(spliced.text);
+    suggest.stageCaretRestore(spliced.caret);
+    suggest.setMarker(null);
     setOpen(false);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // The panel is typing-driven; without an open panel every key keeps
     // its native textarea behavior (newlines, caret moves, tabbing away).
-    if (!open) return;
-    if (e.key === 'ArrowDown') {
-      // Keep the caret put while navigating the suggestion list.
-      e.preventDefault();
-      setHighlightIndex((i) => Math.min(i + 1, filtered.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' || e.key === 'Tab') {
-      // With the panel open, Enter/Tab always commits a mention — the
-      // highlighted row when the user navigated, otherwise the first
-      // option (the AntD Mentions / GitHub convention: no explicit
-      // highlight still means "top suggestion").
-      const selected = filtered[highlightIndex] ?? filtered[0];
-      if (selected) {
-        // No newline / focus move — the mention replaces the token.
-        e.preventDefault();
-        insertMention(selected);
-      }
-    } else if (e.key === 'Escape') {
-      setOpen(false);
-    }
+    suggest.handleListKeyDown(e, {
+      open,
+      optionCount: filtered.length,
+      onCommit: (index) => {
+        const selected = filtered[index];
+        if (selected !== undefined) insertMention(selected);
+      },
+      onEscape: () => setOpen(false),
+    });
   };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -329,7 +221,7 @@ export default function MentionsCore({
         aria-autocomplete="list"
         aria-controls={id}
         aria-activedescendant={activeDescendant}
-        className={textareaClass}
+        x-class={[fieldChrome, nativeFieldChrome, fieldSizes.md, textareaDeltas]}
         value={value}
         placeholder={placeholder}
         onChange={handleChange}
@@ -344,7 +236,7 @@ export default function MentionsCore({
         placement="bottom-span"
         id={id}
         role="listbox"
-        visualClass={`${pickerPanelWidth} ${listbox}`}
+        visualClass={`${pickerPanelWidth} ${suggestListbox} ${listMaxHeight}`}
       >
         {filtered.length === 0 ? (
           // An aria-disabled option keeps the listbox's required owned
@@ -354,7 +246,7 @@ export default function MentionsCore({
             data-slot="empty"
             aria-selected="false"
             aria-disabled="true"
-            className={noMatch}
+            className={suggestHintRow}
           >
             {strings.noMatch}
           </div>
@@ -368,7 +260,8 @@ export default function MentionsCore({
               aria-selected={i === highlightIndex}
               aria-setsize={filtered.length}
               aria-posinset={i + 1}
-              x-class={[option, i === highlightIndex && highlightedStyle]}
+              ref={i === highlightIndex ? activeRowRef : undefined}
+              x-class={[suggestOption, i === highlightIndex && suggestOptionHighlighted]}
               onClick={() => insertMention(o)}
             >
               {o.label ?? o.value}

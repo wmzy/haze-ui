@@ -12,7 +12,7 @@
 
 import type { Rgb } from './color-math';
 
-import { clamp } from '../../utils/math';
+import { clamp, quantize } from '../../utils/math';
 
 import { formatColor, parseColor, rgbHexKey } from './color-math';
 
@@ -32,9 +32,14 @@ export type ColorPickerPreset =
   | { label?: string; colors: string[] }
   | { label?: string; gradient: string };
 
-/** Numbers serialize without floating-point noise: 2 decimals max, trailing zeros trimmed. */
-function fmtNum(value: number): string {
-  return String(Math.round(value * 100) / 100);
+/**
+ * Numbers serialize without floating-point noise: 2 decimals max,
+ * trailing zeros trimmed (stop positions, angles). Shared with the
+ * panel's stop-position fields (formerly a byte-identical private
+ * `positionString` copy there).
+ */
+export function fmtNum(value: number): string {
+  return String(quantize(value, 100));
 }
 
 /**

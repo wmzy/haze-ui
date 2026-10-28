@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 
 import InputCore from '../Input/InputCore';
 import { useStrings } from '../LocaleProvider';
+import { Eye, EyeOff } from '../../icons';
 
 type PasswordInputCoreProps = {
   value: string;
@@ -77,7 +78,15 @@ export default function PasswordInputCore({
             tabIndex={-1}
             aria-label={visible ? strings.hide : strings.show}
           >
-            {visible ? '🙈' : '👁'}
+            {/* 16px lucide glyph at the default stroke-2 — the in-field
+               affordance convention (CopyGlyph's Check is the 14px
+               compact-button tier); tinted through currentColor so the
+               text-muted/hover-text pair above stays the single source. */}
+            {visible ? (
+              <EyeOff size={16} aria-hidden='true' focusable='false' />
+            ) : (
+              <Eye size={16} aria-hidden='true' focusable='false' />
+            )}
           </button>
         }
       />

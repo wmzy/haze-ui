@@ -1,5 +1,7 @@
 /**
- * Time-of-day value helpers for the TimePicker panel form.
+ * Shared time-of-day value math for the time-picker family (TimePicker's
+ * panel and native forms, TimeField, TimeGrid, Datepicker's `showTime`
+ * serialization and Countdown's display padding).
  *
  * The value is a 24-hour `"HH:mm"` / `"HH:mm:ss"` string (per `format`,
  * always zero-padded). With `use12Hours` the columns present a 12-hour

@@ -16,8 +16,23 @@ describe('Banner', () => {
     expect(container.firstChild).toHaveClass('custom');
   });
 
-  it('has alert role', () => {
+  it('has a polite status role for the default info severity', () => {
     render(<Banner>Alert</Banner>);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('maps every severity to its live-region role', () => {
+    // Only danger interrupts (role="alert", implicitly assertive);
+    // every other severity announces politely via role="status" —
+    // Toast's documented convention.
+    const { rerender } = render(<Banner color="info">Info</Banner>);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    for (const color of ['default', 'primary', 'success', 'warning'] as const) {
+      rerender(<Banner color={color}>Message</Banner>);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    }
+    rerender(<Banner color="danger">Danger</Banner>);
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
@@ -49,7 +64,7 @@ describe('Banner', () => {
   it('forwards the ref onto the root div', () => {
     const ref = createRef<HTMLDivElement>();
     render(<Banner ref={ref}>Message</Banner>);
-    expect(ref.current).toBe(screen.getByRole('alert'));
+    expect(ref.current).toBe(screen.getByRole('status'));
   });
 
   it('renders with different colors', () => {

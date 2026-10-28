@@ -1,7 +1,7 @@
 /**
  * Calendar-agnostic date adapter contract.
  *
- * `src/lib/components/Calendar/date.ts` owns the complete Gregorian math
+ * `src/lib/utils/date-math.ts` owns the complete Gregorian math
  * (month lengths, view shifts, ISO weeks, value parsing); this module is
  * the adapter layer above it that lets consumers reason about *any*
  * calendar's civil dates. The contract is deliberately shaped after the
@@ -9,20 +9,32 @@
  * building, month shifts for view navigation, name lists for headers —
  * nothing more.
  *
- * Semantics (inherited from date.ts): every `(year, month, day)` triple is
+ * Semantics (inherited from date-math.ts): every `(year, month, day)` triple is
  * a civil calendar date realized as a *local* Date at midnight. DST
  * transitions never move midnight, so `toGregorian` output always
  * round-trips through `fromGregorian` exactly, and internal conversion
  * arithmetic rides the UTC civil timeline (whole-day millisecond spans
  * with no DST drift) before materializing the local-midnight result.
  */
-import {
-  addMonths as shiftMonth,
-  getDaysInMonth as monthLength,
-} from '../components/Calendar/date';
+import { addMonths as shiftMonth, getDaysInMonth as monthLength } from '../utils/date-math';
+
+/**
+ * Normalize a possibly out-of-range month index into the `(year, month)`
+ * pair it denotes — `addMonths(year, month, 0)` named for what the
+ * 12-month adapters read consumer parts through: month 12 is next
+ * January, month −1 the prior December, and day-level clamping in
+ * `addMonths` must not fire (the normalized year feeds month-length
+ * checks and conversions that carry the original day).
+ */
+export function normalizeParts(
+  year: number,
+  month: number
+): { year: number; month: number } {
+  return shiftMonth(year, month, 0);
+}
 
 /** Civil date parts in a specific calendar. `month` is 0-based — the
- * same `Date#getMonth` convention every date.ts function uses (0 = the
+ * same `Date#getMonth` convention every date-math.ts function uses (0 = the
  * calendar's first month; 11 in 12-month calendars, 12 in hebrew leap
  * years and ethiopic's Pagume-ending years) — while `day` is 1-based. */
 export type CivilDateParts = {
@@ -248,7 +260,7 @@ export function makeGregorianLikeAdapter(
     },
 
     toGregorian(parts) {
-      const shifted = shiftMonth(parts.year - yearOffset, parts.month, 0);
+      const shifted = normalizeParts(parts.year - yearOffset, parts.month);
       assertCivilDate(parts, shifted, monthLength, `a ${identifier}`);
       // utcCivilMs sidesteps the constructor's two-digit-year → 19xx
       // remap for years 0–99.

@@ -69,7 +69,10 @@ function confirm(options: ConfirmOptions): Promise<boolean> {
       settled = true;
       cb?.();
       flushSync(() => {
-        /* render closed state before unmount so `onClose` flushes */
+        /* render closed state before unmount: flips data-state/exits the
+           focus scope synchronously (the native close event never lands —
+           the microtask unmount below wins the race, so onClose stays a
+           no-op after settle) */
         root.render(
           createElement(ConfirmDialog, {
             ...rest,

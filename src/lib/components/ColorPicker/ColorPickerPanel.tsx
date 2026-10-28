@@ -6,14 +6,14 @@ import type {
 import type { ColorFormat, Hsv, Rgb } from './color-math';
 import type { ColorPickerPreset, Gradient } from './gradient';
 
-import { Fragment, useId, useRef, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 
 import { useStrings } from '../LocaleProvider';
 
-import { clamp } from '../../utils/math';
+import { usePointerDrag } from '../../utils/use-pointer-drag';
 
-import { cssColor, formatColor, hsvToRgb, parseColor, rgbHexKey, rgbToHsv } from './color-math';
-import { gradientFromColor, parseGradient, serializeGradient } from './gradient';
+import { clamp01, cssColor, formatColor, hsvToRgb, parseColor, rgbHexKey, rgbToHsv } from './color-math';
+import { fmtNum, gradientFromColor, parseGradient, serializeGradient } from './gradient';
 
 import {
   addStopBtn,
@@ -90,62 +90,10 @@ type ColorPickerPanelProps = {
 
 const BLACK: Rgb = {r: 0, g: 0, b: 0};
 
-function clamp01(value: number): number {
-  return clamp(value, 0, 1);
-}
-
 /** A laid-out rect, or null for the zero-size rects jsdom reports. */
 function rectOf(el: Element): DOMRect | null {
   const rect = el.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0 ? rect : null;
-}
-
-/**
- * Pointer-drag wiring for one control surface: extracts a value from
- * each event, streams it through `apply` while the gesture runs and
- * commits on release. Pointer capture is guarded — jsdom and engines
- * without it still deliver moves bubbling through the element itself
- * (Signature/BottomSheet precedent). A zero-size surface is a no-op.
- */
-function usePointerDrag<T>(
-  extract: (event: ReactPointerEvent<HTMLDivElement>) => T | null,
-  apply: (value: T) => void,
-  commit: (value: T) => void
-) {
-  const pointerRef = useRef<number | null>(null);
-  return {
-    onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-      if (event.button !== 0) return;
-      const value = extract(event);
-      if (value === null) return;
-      event.preventDefault();
-      pointerRef.current = event.pointerId;
-      if (typeof event.currentTarget.setPointerCapture === 'function') {
-        try {
-          event.currentTarget.setPointerCapture(event.pointerId);
-        } catch {
-          // pointer already released — the gesture still tracks
-        }
-      }
-      apply(value);
-    },
-    onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-      if (pointerRef.current !== event.pointerId) return;
-      const value = extract(event);
-      if (value !== null) apply(value);
-    },
-    onPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-      if (pointerRef.current !== event.pointerId) return;
-      pointerRef.current = null;
-      const value = extract(event);
-      if (value !== null) commit(value);
-    },
-    onPointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
-      if (pointerRef.current !== event.pointerId) return;
-      // Aborted gesture: stop tracking without recording a commit.
-      pointerRef.current = null;
-    },
-  };
 }
 
 /** Horizontal position of the pointer along the element, as 0..1. */
@@ -153,11 +101,6 @@ function horizontalFraction(event: ReactPointerEvent<HTMLDivElement>): number | 
   const rect = rectOf(event.currentTarget);
   if (!rect) return null;
   return clamp01((event.clientX - rect.left) / rect.width);
-}
-
-/** Position serialization without float noise (33.33 stays 33.33). */
-function positionString(position: number): string {
-  return String(Math.round(position * 100) / 100);
 }
 
 /** Channel-wise midpoint of two stop colors (the inserted stop's paint). */
@@ -277,7 +220,7 @@ export default function ColorPickerPanel({
     emit({...base, a: next}, commit);
   };
 
-  const svHandlers = usePointerDrag<Hsv>(
+  const svHandlers = usePointerDrag<HTMLDivElement, Hsv>(
     (event) => {
       const rect = rectOf(event.currentTarget);
       if (!rect) return null;
@@ -291,7 +234,7 @@ export default function ColorPickerPanel({
     (next) => applyHsv(next, true)
   );
 
-  const hueHandlers = usePointerDrag<number>(
+  const hueHandlers = usePointerDrag<HTMLDivElement, number>(
     (event) => {
       const fraction = horizontalFraction(event);
       return fraction === null ? null : fraction * 360;
@@ -300,7 +243,7 @@ export default function ColorPickerPanel({
     (next) => applyHsv({...hsv, h: next}, true)
   );
 
-  const alphaHandlers = usePointerDrag<number>(
+  const alphaHandlers = usePointerDrag<HTMLDivElement, number>(
     (event) => horizontalFraction(event),
     (next) => applyAlpha(next, false),
     (next) => applyAlpha(next, true)
@@ -388,7 +331,7 @@ export default function ColorPickerPanel({
   // emits immediately (rounded, wrapped to 0..360), blur restores the
   // canonical derived value.
   const [angleDraft, setAngleDraft] = useState<string | null>(null);
-  const shownAngle = angleDraft ?? (gradientValue ? positionString(gradientValue.angle) : '0');
+  const shownAngle = angleDraft ?? (gradientValue ? fmtNum(gradientValue.angle) : '0');
   const changeAngle = (raw: string) => {
     setAngleDraft(raw);
     const n = Number(raw);
@@ -683,7 +626,7 @@ export default function ColorPickerPanel({
                   value={
                     stopDraft?.index === index
                       ? stopDraft.value
-                      : positionString(stop.position)
+                      : fmtNum(stop.position)
                   }
                   onChange={(e) => changeStopPosition(index, e.target.value)}
                   onBlur={() => setStopDraft(null)}

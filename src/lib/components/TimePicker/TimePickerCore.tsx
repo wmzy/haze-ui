@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
+import { pickerFieldInput } from '../../utils/field-skin';
+
 type TimePickerCoreProps = {
   value: string;
   onChange: (value: string) => void;
@@ -14,22 +16,12 @@ type TimePickerCoreProps = {
   'value' | 'onChange' | 'type' | 'placeholder'
 >;
 
+/* Native core input deltas on the shared picker field skin
+   (utils/field-skin.ts): the editable input fills its host and carries
+   the disabled and placeholder arms. Composed with `pickerFieldInput`
+   at the input — additive properties only. */
 const input = css`
   width: 100%;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  outline: none;
-  transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   &:disabled {
     opacity: 0.5;
@@ -54,7 +46,7 @@ export default function TimePickerCore({
       ref={ref}
       data-slot='input'
       type="time"
-      x-class={[input, className]}
+      x-class={[pickerFieldInput, input, className]}
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}

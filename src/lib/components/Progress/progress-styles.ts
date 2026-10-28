@@ -1,5 +1,8 @@
 import {css} from '@linaria/core';
 
+import { statusSolidColors } from '../../utils/status-solid-skin';
+import { statusStrokeColors } from '../../utils/status-stroke-skin';
+
 /**
  * Shared Progress skin — the bar and circle chrome (base, per-size and
  * per-color classes) the `Progress` component wears. Living in their
@@ -41,14 +44,11 @@ export const barFill = css`
   transition: width var(--haze-duration-slow) ease;
 `;
 
-export const colorMap = {
-  default: css`background: var(--haze-color-text-secondary);`,
-  primary: css`background: var(--haze-color-primary);`,
-  success: css`background: var(--haze-color-success);`,
-  warning: css`background: var(--haze-color-warning);`,
-  danger: css`background: var(--haze-color-danger);`,
-  info: css`background: var(--haze-color-info);`,
-} as const;
+/* The fill's semantic color axes come from the shared status skin
+ * (utils/status-skin.ts) — the same solid/stroke maps Progress
+ * historically declared inline; aliased under their historical names
+ * (`colorMap` / `circleColorMap`). */
+export const colorMap = statusSolidColors;
 
 export const circleBase = css`
   transform: rotate(-90deg);
@@ -85,11 +85,4 @@ export const circleFill = css`
   transition: stroke-dashoffset var(--haze-duration-slow) ease;
 `;
 
-export const circleColorMap = {
-  default: css`stroke: var(--haze-color-text-secondary);`,
-  primary: css`stroke: var(--haze-color-primary);`,
-  success: css`stroke: var(--haze-color-success);`,
-  warning: css`stroke: var(--haze-color-warning);`,
-  danger: css`stroke: var(--haze-color-danger);`,
-  info: css`stroke: var(--haze-color-info);`,
-} as const;
+export const circleColorMap = statusStrokeColors;

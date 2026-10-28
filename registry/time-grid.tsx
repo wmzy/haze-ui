@@ -20,7 +20,6 @@ import { TimeGrid } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/time-grid.css';
-import 'haze-ui/css/time-picker.css';
 
 export { TimeGrid };
 export type { TimeGridProps, TimeGridClassNames } from 'haze-ui';

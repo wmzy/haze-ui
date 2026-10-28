@@ -5,6 +5,7 @@ import {useEffect} from 'react';
 
 import {classnames} from '../../utils/classnames';
 import {FloatingPanel} from '../../utils/floating';
+import {panelSurface} from '../../utils/panel-skin';
 
 import {
   useNavigationMenuContext,
@@ -17,29 +18,13 @@ type NavigationMenuContentProps = {
   children?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'className' | 'children'>;
 
-/** Visual skin applied on every rendering tier of the panel. */
-const panelVisuals = css`
-  /* min/max-width pairs with padding + border: border-box keeps both
-   * bounds covering the padding too (panel-family box-sizing
-   * contract). Mega-menu panels get a wider lane than a popover's. */
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * mega-menu lane is wider than a popover's — the surface's border-box
+ * sizing keeps both bounds covering the padding too. */
+const panelDeltas = css`
   min-width: 240px;
   max-width: 480px;
   padding: var(--haze-space-4);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 /**
@@ -86,8 +71,8 @@ export default function NavigationMenuContent({
       placement='bottom'
       id={contentId(value)}
       aria-labelledby={triggerId(value)}
-      visualClass={panelVisuals}
-      className={classnames(className, classNames?.content)}
+      visualClass={panelSurface}
+      className={classnames(panelDeltas, className, classNames?.content)}
       onMouseEnter={cancelHoverTimers}
       onMouseLeave={() => {
         const panel = panelRef.current;

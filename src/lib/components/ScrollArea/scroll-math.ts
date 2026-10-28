@@ -23,6 +23,10 @@
  */
 
 import { clamp } from '../../utils/math';
+import {
+  readLogicalScrollLeft,
+  writeLogicalScrollLeft,
+} from '../../utils/scroll-offset';
 
 /** Axis a scrollbar/thumb operates on. */
 export type Orientation = 'vertical' | 'horizontal';
@@ -198,7 +202,8 @@ export type ViewportAxis = {
 /**
  * Read one axis off a scroll element. Horizontal RTL `scrollLeft` reads
  * 0 at the inline start (physical right) and goes negative toward the
- * end — negate it into logical units.
+ * end — negate it into logical units (shared with VirtualList in
+ * utils/scroll-offset).
  */
 export function readViewportAxis(
   el: ScrollElementLike,
@@ -215,7 +220,7 @@ export function readViewportAxis(
   return {
     viewportSize: el.clientWidth,
     scrollSize: el.scrollWidth,
-    scrollOffset: rtl ? -el.scrollLeft : el.scrollLeft,
+    scrollOffset: readLogicalScrollLeft(el, rtl),
   };
 }
 
@@ -229,6 +234,6 @@ export function writeViewportAxis(
   if (orientation === 'vertical') {
     el.scrollTop = value;
   } else {
-    el.scrollLeft = rtl ? -value : value;
+    writeLogicalScrollLeft(el, value, rtl);
   }
 }

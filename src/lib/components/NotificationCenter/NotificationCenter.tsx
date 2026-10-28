@@ -5,10 +5,13 @@ import { css } from '@linaria/core';
 import { useCallback, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import { Bell } from '../../icons';
 import { classnames } from '../../utils/classnames';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { panelSurface, popoverPanelHidden } from '../../utils/panel-skin';
+import { statusSubtleColors } from '../../utils/status-skin';
 import { Badge } from '../Badge';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { Icon } from '../Icon';
@@ -170,28 +173,19 @@ const badgeWrap = css`
   pointer-events: none;
 `;
 
-/** Visual skin applied on every rendering tier of the panel.
- *  width/max-width pair with padding + border — border-box keeps the
- *  floor covering them (panel-family box-sizing contract). */
-const panelVisuals = css`
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * column lane the header/list/footer stack along, plus the width bounds
+ * and padding step — the surface's border-box sizing keeps both bounds
+ * covering the padding too. Zero property overlap with the surface: the
+ * union reproduces the former local panelVisuals declaration-identical
+ * (open-state rendering unchanged). */
+const panelDeltas = css`
   display: flex;
   flex-direction: column;
   gap: var(--haze-space-1);
   width: 360px;
   max-width: calc(100vw - var(--haze-space-4) * 2);
   padding: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
-
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 const panelHeader = css`
@@ -270,24 +264,13 @@ const itemIconWrap = css`
   border-radius: var(--haze-radius-md);
 `;
 
-/** Severity tint of the kind icon (Alert's subtle/status pairing). */
+/* Severity tint of the kind icon — Alert's subtle/status pairing, picked
+ * from the shared status skin (utils/status-skin.ts). */
 const severityColors = {
-  info: css`
-    background: var(--haze-color-info-subtle);
-    color: var(--haze-color-info);
-  `,
-  success: css`
-    background: var(--haze-color-success-subtle);
-    color: var(--haze-color-success);
-  `,
-  warning: css`
-    background: var(--haze-color-warning-subtle);
-    color: var(--haze-color-warning);
-  `,
-  danger: css`
-    background: var(--haze-color-danger-subtle);
-    color: var(--haze-color-danger);
-  `,
+  info: statusSubtleColors.info,
+  success: statusSubtleColors.success,
+  warning: statusSubtleColors.warning,
+  danger: statusSubtleColors.danger,
 } as const;
 
 const itemBody = css`
@@ -363,24 +346,6 @@ const emptyState = css`
   text-align: center;
   color: var(--haze-color-text-muted);
 `;
-
-/** Default trigger glyph (lucide bell, stroke style). */
-function BellGlyph() {
-  return (
-    <svg
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth={2}
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      aria-hidden='true'
-    >
-      <path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9' />
-      <path d='M10.3 21a1.94 1.94 0 0 0 3.4 0' />
-    </svg>
-  );
-}
 
 /** `task` kind — checklist square. */
 function TaskGlyph() {
@@ -551,9 +516,7 @@ export default function NotificationCenter({
         onPointerDown={floating.onTriggerPointerDown}
         onClick={floating.onTriggerClick}
       >
-        <Icon size='md'>
-          <BellGlyph />
-        </Icon>
+        <Icon icon={Bell} size='md' />
         {unreadCount > 0 && (
           <span data-slot='badge' x-class={[badgeWrap, resolvedClassNames?.badge]}>
             <Badge color='danger' size='sm'>
@@ -569,8 +532,8 @@ export default function NotificationCenter({
         id={id}
         role='dialog'
         aria-label={strings.panelTitle}
-        visualClass={panelVisuals}
-        className={classnames(resolvedClassNames?.panel, className)}
+        visualClass={`${panelSurface} ${popoverPanelHidden}`}
+        className={classnames(panelDeltas, resolvedClassNames?.panel, className)}
         onKeyDown={handlePanelKeyDown}
       >
         <div data-slot='header' x-class={[panelHeader, resolvedClassNames?.header]}>

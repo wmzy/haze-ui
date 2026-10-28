@@ -2,7 +2,7 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import type { SegmentSpec } from './segmented-field';
 
-import { formatDate, getDaysInMonth, parseCivilDate } from '../Calendar/date';
+import { formatDate, getDaysInMonth, parseCivilDate } from '../../utils/date-math';
 
 import SegmentedField from './segmented-field';
 

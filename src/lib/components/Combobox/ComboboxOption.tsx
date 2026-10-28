@@ -2,6 +2,11 @@ import type { ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
+import {
+  pickerOptionRow,
+  pickerOptionRowComfortable,
+} from '../../utils/picker-trigger';
+
 type ComboboxOptionProps<T extends string | number = string> = {
   value: T;
   highlighted?: boolean;
@@ -34,34 +39,6 @@ type ComboboxOptionProps<T extends string | number = string> = {
   className?: string;
   children: ReactNode;
 };
-
-const option = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-
-  /* Option-level disabled: the row stays visible and filterable but
-     inert — no hover/active feedback, dimmed, not-allowed cursor (the
-     Select optionRow contract). The attribute gate keeps enabled rows
-     byte-identical. */
-  &:hover:not([data-disabled]) {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active:not([data-disabled]) {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &[data-disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
 
 const highlightedStyle = css`
   background: var(--haze-color-bg-subtle);
@@ -100,7 +77,8 @@ export default function ComboboxOption<T extends string | number = string>({
       aria-setsize={setSize}
       aria-posinset={posInSet}
       x-class={[
-        option,
+        pickerOptionRow,
+        pickerOptionRowComfortable,
         highlighted && highlightedStyle,
         selected && selectedStyle,
         className,

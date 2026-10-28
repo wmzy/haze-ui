@@ -8,7 +8,9 @@ import type { VisibleTreeRow } from './utils';
 import { useCallback, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import { flattenVisibleTree, getNodePath } from './utils';
+import { getNodePath } from '../../utils/tree-utils';
+
+import { flattenVisibleTree } from './utils';
 
 /**
  * Options for `useTree`.

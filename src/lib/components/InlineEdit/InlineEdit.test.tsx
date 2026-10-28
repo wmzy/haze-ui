@@ -21,6 +21,18 @@ describe('InlineEdit', () => {
     expect(screen.getByDisplayValue('Hello')).toBeInTheDocument();
   });
 
+  it('enters edit mode on Space (button-role activation, no page scroll)', async () => {
+    const user = userEvent.setup();
+    render(<InlineEdit value="Hello" />);
+    const trigger = screen.getByRole('button');
+    // Focus without clicking — the click path is covered above; this
+    // pins the keyboard-only Space contract (native buttons activate
+    // Space on keyup, Enter on keydown).
+    trigger.focus();
+    await user.keyboard(' ');
+    expect(screen.getByDisplayValue('Hello')).toBeInTheDocument();
+  });
+
   it('commits on blur', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

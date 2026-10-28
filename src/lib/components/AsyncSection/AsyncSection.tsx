@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { quietButton } from '../../utils/quiet-button-skin';
 
 type AsyncSectionProps = {
   /**
@@ -85,35 +86,9 @@ const errorMessage = css`
   color: var(--haze-color-danger);
 `;
 
-const retryButton = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-2);
-  padding: var(--haze-space-1) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  line-height: var(--haze-leading-tight);
-  cursor: pointer;
-  user-select: none;
-  transition:
-    background var(--haze-duration-fast),
-    border-color var(--haze-duration-fast);
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
+// The retry button wears the shared quiet-button skin
+// (utils/quiet-button-skin.ts) — this file kept a byte-identical
+// hand-rolled copy before the split.
 
 export default function AsyncSection({
   loading = false,
@@ -165,7 +140,7 @@ export default function AsyncSection({
         <div data-slot='error' x-class={[errorBox]} role="alert">
           <p data-slot='message' x-class={[errorMessage]}>{message}</p>
           {onRetry && (
-            <button data-slot='retry-button' type="button" x-class={[retryButton]} onClick={onRetry}>
+            <button data-slot='retry-button' type="button" x-class={[quietButton]} onClick={onRetry}>
               {retryLabel}
             </button>
           )}

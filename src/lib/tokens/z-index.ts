@@ -10,7 +10,7 @@
  *   header over scrolling rows, DataTable's sticky/fixed cell lattice,
  *   Schedule's now-indicator). These never leave the component.
  * - z-overlay — fixed overlays above page content that still stack
- *   normally: BottomSheet / ConfirmDialog scrims, Affix, the Tour card,
+ *   normally: BottomSheet scrims, Affix, the Tour card,
  *   the ContextMenu panel off the top layer, Workbench's slide-out
  *   regions (its scrim/chrome sit just below/above via calc on this
  *   tier so a re-tiered overlay keeps the shell's internal order).

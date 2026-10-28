@@ -7,7 +7,8 @@ import { useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
-import { FloatingPanel, useFloating } from '../../utils/floating';
+import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
+import { panelSurface } from '../../utils/panel-skin';
 // Manual merge (not x-class): FloatingPanel appends its `className` prop
 // last in its own x-class array, so both consumer classes arrive there
 // in order — plain `className` first, the `content` slot after it.
@@ -69,27 +70,13 @@ const container = css`
   display: inline-flex;
 `;
 
-/** Visual skin applied on every rendering tier of the panel. */
-const panelVisuals = css`
-  /* min-width pairs with padding + border: border-box keeps the floor
-   * covering the padding too (panel-family box-sizing contract). */
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * padding step and the min-width floor size this panel — min-width
+ * pairs with padding + the surface's border, whose border-box sizing
+ * keeps the floor covering the padding too. */
+const panelDeltas = css`
   padding: var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
   min-width: var(--haze-popover-min-width, 200px);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 export default function Popover({
@@ -143,44 +130,24 @@ export default function Popover({
 
   return (
     <span data-slot='popover' className={container}>
-      <span
+      <FloatingTriggerSpan
         ref={triggerRef}
-        data-slot='trigger'
-        // Plain className (not x-class): the trigger has no base class, so
-        // an omitted slot must leave the attribute absent — undefined does
-        // exactly that, while x-class would compile to class="".
+        behavior={floating}
+        open={open}
+        controlsId={id}
+        // Plain className (not x-class): an omitted slot must leave the
+        // attribute absent — see FloatingTriggerSpan's own doc.
         className={classNames?.trigger}
-        style={floating.triggerStyle}
-        // aria-expanded requires an interactive role; a bare span resolves
-        // to role=generic, which ARIA 1.2 does not allow it on (axe
-        // aria-allowed-attr). The trigger span is the clickable popover
-        // trigger — role=button is its honest semantics.
-        role='button'
-        tabIndex={0}
-        aria-haspopup='true'
-        aria-expanded={open}
-        aria-controls={id}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
-        onKeyDown={(e) => {
-          // The trigger is a span, not a button: Enter/Space have no
-          // native activation, so the button contract is completed here.
-          // preventDefault on Space keeps the page from scrolling.
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            floating.onTriggerClick();
-          }
-        }}
       >
         {children}
-      </span>
+      </FloatingTriggerSpan>
       <FloatingPanel
         ref={panelRef}
         behavior={floating}
         placement="bottom-span"
         id={id}
-        visualClass={panelVisuals}
-        className={classnames(className, classNames?.content)}
+        visualClass={panelSurface}
+        className={classnames(panelDeltas, className, classNames?.content)}
       >
         {content}
       </FloatingPanel>

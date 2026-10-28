@@ -1,14 +1,11 @@
 import type {
   ComponentPropsWithoutRef,
-  KeyboardEvent,
   MouseEvent,
-  PointerEventHandler,
   ReactNode,
   Ref,
 } from 'react';
 import type { Control, ControlOrValue } from 'react-use-control';
 import type {
-  Column,
   ColumnDef,
   ColumnOrderState,
   ColumnVisibilityState,
@@ -21,19 +18,22 @@ import type {
 } from '@tanstack/react-table';
 
 import type { DataTableCellEditorProps, DataTableColumnMeta } from './features';
+import type { ColumnReorderKit } from './data-table-header';
+import type { DataTableRowsView } from './data-table-rows';
+import type { FixedCellSpec } from './data-table-shared';
+import type { NavCell } from './use-cell-navigation';
 
 import type { VirtualListHandle } from '../VirtualList';
 
 import type { DataTableFiltersState } from './filters';
 
-import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTable } from '@tanstack/react-table';
 import { css } from '@linaria/core';
 import { useControl, useThru, watch, isControl } from 'react-use-control';
 
 
-import { getDirection, useDirection } from '../../utils/direction';
-import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
+import { useDirection } from '../../utils/direction';
 
 import { CheckboxCore } from '../Checkbox';
 import {
@@ -41,21 +41,33 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '../DropdownMenu';
-import { Empty } from '../Empty';
-import { Input } from '../Input';
 import { useStrings } from '../LocaleProvider';
 import { Pagination } from '../Pagination';
-import { Skeleton } from '../Skeleton';
-import { TableBody, TableCell, TableHead } from '../Table';
+import { TableBody, TableCell } from '../Table';
 
 import { TableClassNamesProvider } from '../Table/TableContext';
 import { VisuallyHidden } from '../VisuallyHidden';
 import { VirtualList } from '../VirtualList';
 
-import CellEditor from './CellEditor';
-import ColumnFilterTrigger from './column-filter';
+import { renderDataTableHeader } from './data-table-header';
+import {
+  renderDataTableRow,
+  renderEmptyRow,
+  renderFilterBody,
+  renderSkeletonRow,
+} from './data-table-rows';
+import {
+  checkCell,
+  checkCellCol,
+  columnLabel,
+  SELECTION_COL_WIDTH,
+  SELECTION_NAV_ID,
+  SELECTION_WIDTH_PART,
+  sumLengths,
+} from './data-table-shared';
 import { dataTableFeatures } from './features';
 import { applyColumnFilters } from './filters';
+import { useCellNavigation } from './use-cell-navigation';
 
 /** Windowing configuration for the table body, reusing `VirtualList`. */
 type DataTableVirtualized =
@@ -487,11 +499,6 @@ type DataTableProps<TData extends RowData> = {
   ref?: Ref<HTMLDivElement>;
 } & Omit<ComponentPropsWithoutRef<'table'>, 'children' | 'summary'>;
 
-/** The lazily loaded drag kit behind `columnReorderable` — see
- * `column-reorder.tsx`. Typed through the dynamic import so DataTable's
- * static import graph never touches `@dnd-kit`. */
-type ColumnReorderKit = typeof import('./column-reorder');
-
 /** Moves one entry of an array to another index (the `@dnd-kit` helper,
  * inlined so this dnd-free module need not depend on it). */
 function arrayMove<T>(array: readonly T[], from: number, to: number): T[] {
@@ -500,52 +507,6 @@ function arrayMove<T>(array: readonly T[], from: number, to: number): T[] {
   if (moved === undefined) return next;
   next.splice(to, 0, moved);
   return next;
-}
-
-/** The reorder grip inside a header cell: a focusable button carrying the
- * keyboard reorder model — Alt+ArrowLeft/ArrowRight move the column one
- * slot, mirrored under RTL (read from the DOM at event time, the resize
- * handle's contract). Pointer dragging arms through the SortableItem
- * wrapper once the lazily loaded column-reorder kit arrives: the grip
- * consumes its activator seam, which is null until then, so the keyboard
- * model works even before (or without) that chunk. */
-function ReorderGrip({
-  columnId,
-  label,
-  onMove,
-}: {
-  columnId: string;
-  label: string;
-  onMove: (forward: boolean) => void;
-}) {
-  const handle = useSortableHandle();
-  return (
-    <button
-      type='button'
-      data-slot='reorder-grip'
-      data-reorder-handle={columnId}
-      onPointerDown={
-        handle?.listeners?.onPointerDown as
-          | PointerEventHandler<HTMLButtonElement>
-          | undefined
-      }
-      onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
-        if (event.defaultPrevented) return;
-        if (!event.altKey || event.ctrlKey || event.metaKey) return;
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-        event.preventDefault();
-        onMove(
-          (event.key === 'ArrowRight') !==
-            (getDirection(event.currentTarget) === 'rtl')
-        );
-      }}
-      aria-label={`Reorder ${label}`}
-      aria-keyshortcuts='Alt+ArrowLeft Alt+ArrowRight'
-      x-class={[sortableHandle, reorderGripClass]}
-    >
-      <span aria-hidden='true'>⠿</span>
-    </button>
-  );
 }
 
 /** Per-column feature switches resolved from the table-level props. */
@@ -589,16 +550,6 @@ function resolveColumn<TData extends RowData>(
   return resolved;
 }
 
-/** Human label for a column in generated UI (resize handles, filter inputs,
- * the visibility menu): the header string when one was given, else the
- * column id. */
-function columnLabel<TData extends RowData>(
-  column: Column<typeof dataTableFeatures, TData>
-): string {
-  const header = column.columnDef.header;
-  return typeof header === 'string' ? header : column.id;
-}
-
 /** Resolves a column def's effective width: `meta.width` wins, then the
  * native TanStack `size` as a px fallback. Returns a CSS length string, or
  * undefined when neither is declared. Read off the resolved column def —
@@ -612,59 +563,10 @@ function columnWidthCss(def: {
   return typeof width === 'number' ? `${width}px` : width;
 }
 
-/** Sticky-column presentation resolved for one rendered cell: which edge,
- * the CSS length to offset it by, and whether this is the innermost column
- * of a pinned run (the one carrying the scroll-hint shadow). */
-type FixedCellSpec = {
-  side: 'left' | 'right';
-  offset: string;
-  edge: boolean;
-};
-
-/** One tbody cell in the roving-tabindex navigation model, keyed by row id
- * and column id (the selection column uses `SELECTION_NAV_ID`). */
-type NavCell = { rowId: string; columnId: string };
-
-/** Sums CSS length fragments into a single length expression. Fragments are
- * plain lengths (`'120px'`) or parenthesized expressions (the selection
- * column's token math), so anything non-trivial is wrapped in `calc()`. */
-function sumLengths(parts: string[]): string {
-  if (parts.length === 0) return '0px';
-  const [first] = parts;
-  if (parts.length === 1 && first !== undefined && !first.includes('(')) {
-    return first;
-  }
-  return `calc(${parts.join(' + ')})`;
-}
-
-/** Inline style carrying a fixed cell's sticky edge offset; the position,
- * background and z-index come from the fixed-cell classes. */
-function fixedOffsetStyle(spec: FixedCellSpec | undefined) {
-  return spec
-    ? {
-        left: spec.side === 'left' ? spec.offset : undefined,
-        right: spec.side === 'right' ? spec.offset : undefined,
-      }
-    : undefined;
-}
-
-/** Selection column width wherever a colgroup owns it: 2 × `--haze-space-3`
- * cell padding + one checkbox (`--haze-space-5`). The `calc` form keeps
- * token overrides live; the parenthesized twin is the fragment summed into
- * fixed-column offsets. */
-const SELECTION_COL_WIDTH =
-  'calc(var(--haze-space-3) * 2 + var(--haze-space-5))';
-const SELECTION_WIDTH_PART =
-  '(var(--haze-space-3) * 2 + var(--haze-space-5))';
-
 /** Default `virtualized` row height per density step: 2 × the step's block
  * cell padding + one `--haze-text-sm` (14px) line box + the 1px row
  * border — sm 2×4, md 2×8, lg 2×12. */
 const VIRTUAL_ROW_HEIGHTS = { sm: 23, md: 34, lg: 39 } as const;
-
-/** Pseudo column id of the selection column inside the navigation model —
- * a string no accessor column can produce (ids derive from accessor keys). */
-const SELECTION_NAV_ID = '__selection__';
 
 /** Keyboard model description for the sr-only hint (English default —
  * like the generated cell/row labels, not routed through locale packs).
@@ -728,139 +630,6 @@ const tableBase = css`
   color: var(--haze-color-text);
 `;
 
-const stickyHead = css`
-  & th {
-    position: sticky;
-    top: 0;
-    /* Above sticky fixed-column body cells (--haze-z-local-1): at equal
-     * z-indexes the later-in-DOM body cells would paint over the header row. */
-    z-index: var(--haze-z-local-2);
-    background: var(--haze-color-bg);
-    box-shadow: var(--haze-shadow-sm);
-  }
-`;
-
-const sortButton = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-1);
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-weight: inherit;
-  color: inherit;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--haze-color-primary);
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-radius: var(--haze-radius-sm);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-const sortIcon = css`
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-`;
-
-const rowHover = css`
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-`;
-
-const rowSelected = css`
-  &,
-  &:hover {
-    background: var(--haze-color-primary-subtle);
-  }
-`;
-
-const clickableRow = css`
-  cursor: pointer;
-`;
-
-/* Selection column without a colgroup (normal mode, no declared widths):
- * the `width: 1%` shrink-to-fit trick under auto layout. */
-const checkCell = css`
-  width: 1%;
-  white-space: nowrap;
-`;
-
-/* Selection column under a colgroup — always in virtual mode, and in normal
- * mode once any column declares a width. The `<col>` owns the sizing
- * (`SELECTION_COL_WIDTH`), the cell keeps only `nowrap`. */
-const checkCellCol = css`
-  white-space: nowrap;
-`;
-
-/* Resizable header cells anchor the absolutely positioned drag handle.
- * `position: relative` only wins where the header cell is neither sticky
- * nor fixed — under `stickyHeader` the `.stickyHead th` rule (class + type
- * specificity) keeps `position: sticky`, and on a fixed column the
- * later-defined `fixedCell` rule below keeps it too; sticky positioning
- * anchors the handle exactly as well, being a positioned box either way. */
-const resizableHead = css`
-  position: relative;
-`;
-
-/* Sticky fixed columns (normal mode). Opaque background so scrolled cells
- * slide beneath. The row hover/selected backgrounds live on the `tr` and
- * would be covered by the cell's own background, so they are re-created on
- * the cell itself. */
-const fixedCell = css`
-  position: sticky;
-  z-index: var(--haze-z-local-1);
-  background: var(--haze-color-bg);
-
-  tr:hover & {
-    background: var(--haze-color-bg-subtle);
-  }
-`;
-
-/* Selected-row background for fixed cells — defined after `fixedCell` and
- * at equal-or-higher specificity (plus the `:hover` form), so it wins over
- * the plain and hovered backgrounds above. */
-const fixedCellSelected = css`
-  tr &,
-  tr:hover & {
-    background: var(--haze-color-primary-subtle);
-  }
-`;
-
-/* A fixed cell inside a sticky header is the scroll corner — it must
- * outrank both the header row (--haze-z-local-2) and fixed body cells
- * (--haze-z-local-1). A bare class would lose to `.stickyHead th`'s
- * class+type specificity, so the `thead &` form ties it and wins by later
- * definition — the `fixedCellSelected` order precedent below. */
-const fixedHeadCell = css`
-  thead & {
-    z-index: var(--haze-z-local-3);
-  }
-`;
-
-/* Scroll-hint shadow on the inner edge of the outermost pinned column;
- * `clip-path` confines it to that edge. Body cells only — the header row's
- * own shadow must not be replaced. */
-const fixedLeftEdge = css`
-  clip-path: inset(0 -8px 0 0);
-  box-shadow: 6px 0 8px -6px var(--haze-color-border);
-`;
-
-const fixedRightEdge = css`
-  clip-path: inset(0 0 0 -8px);
-  box-shadow: -6px 0 8px -6px var(--haze-color-border);
-`;
-
-const emptyCell = css`
-  padding: 0;
-`;
-
 const footer = css`
   display: flex;
   align-items: center;
@@ -920,136 +689,10 @@ const toggleRow = css`
   }
 `;
 
-/* Drag handle straddling the header cell's inline-end edge: a focusable
- * `separator` widget (ARIA authoring pattern). */
-const resizeHandle = css`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  inset-inline-end: -3px;
-  width: 6px;
-  z-index: var(--haze-z-local-1);
-  cursor: col-resize;
-  touch-action: none;
-  border-radius: var(--haze-radius-sm);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 25%;
-    bottom: 25%;
-    inset-inline-end: 2.5px;
-    width: 1px;
-    background: var(--haze-color-border);
-  }
-
-  &:hover::after,
-  &:focus-visible::after {
-    top: 0;
-    bottom: 0;
-    background: var(--haze-color-primary);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-/* Reorder grip at the header cell's inline-start edge: a focusable
- * button with its own tab stop (the resize-handle precedent) carrying an
- * aria-hidden glyph — the accessible name is the English aria-label, like
- * the resize handles' "Resize …". 24×24 keeps the WCAG 2.5.8 target
- * floor. */
-const reorderGripClass = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--haze-space-6);
-  height: var(--haze-space-6);
-  margin-inline-end: var(--haze-space-1);
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: var(--haze-text-xs);
-  line-height: 1;
-  color: var(--haze-color-text-muted);
-  vertical-align: middle;
-  border-radius: var(--haze-radius-sm);
-
-  &:hover {
-    color: var(--haze-color-primary);
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-/* The sortable wrapper span around a grip, present once the drag kit has
- * loaded: inline and middle-aligned so wrapping the grip changes no
- * header metrics between the pre- and post-load renders. */
-const reorderItemClass = css`
-  display: inline-flex;
-  vertical-align: middle;
-`;
-
 /* Zero-footprint sentinel after the body — an IntersectionObserver target
  * only. 1px tall so engines that skip zero-area targets still report it. */
 const endSentinelClass = css`
   height: 1px;
-`;
-
-const expander = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
-  margin-inline-end: var(--haze-space-1);
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-  vertical-align: middle;
-  cursor: pointer;
-  border-radius: var(--haze-radius-sm);
-
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-const expanderIcon = css`
-  transition: transform var(--haze-duration-fast) var(--haze-ease);
-
-  [aria-expanded='true'] & {
-    transform: rotate(90deg);
-  }
-`;
-
-/* Expansion panel cell: spans every rendered column on its own row. */
-const panelCell = css`
-  padding: var(--haze-space-3);
-  background: var(--haze-color-bg-subtle);
-`;
-
-/* Tree indentation: an inline-block spacer in the first content cell,
- * one `--haze-space-4` per depth level (inline style carries the depth
- * multiple). aria-hidden — purely presentational shifting. */
-const treeIndent = css`
-  display: inline-block;
-  vertical-align: middle;
 `;
 
 /* Summary footer: mirrors the body cell metrics with a heavier top rule
@@ -1073,24 +716,6 @@ const stickyFoot = css`
     z-index: var(--haze-z-local-2);
     background: var(--haze-color-bg);
     box-shadow: var(--haze-shadow-sm);
-  }
-`;
-
-/* Editable cell, at rest: hints at the affordance. The focus ring itself
- * lives on the shared navigable-cell class below — every tbody cell is a
- * roving-tabindex stop, editable or not. */
-const editableCell = css`
-  cursor: text;
-`;
-
-/* Navigable cell focus ring: inset so it stays inside the cell borders
- * under sticky headers and fixed columns. Every tbody data/selection cell
- * carries it (the resize handles and interactive cell content keep their
- * own rings). */
-const navCell = css`
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
   }
 `;
 
@@ -1220,19 +845,7 @@ export default function DataTable<TData extends RowData>({
   );
   // Which cell is being edited, if any — purely internal UI state, keyed by
   // row/column id so it survives reorders and the virtualized window.
-  const [editingCell, setEditingCell] = useState<{
-    rowId: string;
-    columnId: string;
-  } | null>(null);
-  // Roving-tabindex cursor: the single tbody cell carrying tabindex=0.
-  // Purely internal UI state (like hover tracking) keyed by row/column id,
-  // so it survives reorders and the virtualized window; null defers to the
-  // first rendered cell until the first focus/keypress.
-  const [activeCell, setActiveCell] = useState<NavCell | null>(null);
-  // Focus request for a virtualized navigation target whose row is outside
-  // the window — satisfied (and cleared) by the pending-focus effect once
-  // scrollToIndex mounts the row.
-  const pendingFocusRef = useRef<NavCell | null>(null);
+  const [editingCell, setEditingCell] = useState<NavCell | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   // The consumer ref and the internal rootRef both land on the wrapper:
   // a callback fans the node out to each target.
@@ -1575,167 +1188,24 @@ export default function DataTable<TData extends RowData>({
   }
 
   // ── Cell keyboard navigation (roving tabindex) ────────────────────────
-  // Every tbody cell participates: exactly one carries tabindex=0 (the
-  // active cell, or the first rendered cell before any interaction), the
-  // rest -1. Arrow keys move the active cell, Enter/F2 enter edit mode on
-  // editable cells, and Tab is never intercepted — interactive cell content
-  // and the resize handles keep their own independent tab stops.
+  // The roving model, the cell keymap and the virtualized pending-focus
+  // loop live in use-cell-navigation.ts; the ids the model resolves
+  // against are assembled here.
   const navColumnIds = [
     ...(selectable ? [SELECTION_NAV_ID] : []),
     ...leafHeaders.map((header) => header.column.id),
   ];
   const navRowIds = rows.map((row) => row.id);
 
-  // The active cell must still resolve against the current model — hidden
-  // columns and swapped pages quietly invalidate it, falling back to the
-  // first rendered cell.
-  const activeNavCell =
-    activeCell !== null &&
-    navRowIds.includes(activeCell.rowId) &&
-    navColumnIds.includes(activeCell.columnId)
-      ? activeCell
-      : null;
-  const firstNavRowId = navRowIds[0];
-  const firstNavColumnId = navColumnIds[0];
-  const isNavCellActive = (rowId: string, columnId: string) =>
-    activeNavCell !== null
-      ? activeNavCell.rowId === rowId && activeNavCell.columnId === columnId
-      : rowId === firstNavRowId && columnId === firstNavColumnId;
-
-  const findNavCell = (cell: NavCell) => {
-    const candidates = rootRef.current?.querySelectorAll<HTMLElement>(
-      '[data-nav-row]'
-    );
-    if (!candidates) return undefined;
-    for (const candidate of candidates) {
-      if (
-        candidate.dataset.navRow === cell.rowId &&
-        candidate.dataset.navCol === cell.columnId
-      ) {
-        return candidate;
-      }
-    }
-    return undefined;
-  };
-
-  // Focus a navigation target: cells inside the rendered tree (normal mode,
-  // or within the virtualized window) focus directly; a virtualized target
-  // outside the window is scrolled in through VirtualList's scrollToIndex
-  // and focused by the pending-focus effect once its row mounts.
-  const focusNavCell = (cell: NavCell) => {
-    const target = findNavCell(cell);
-    if (target) {
-      target.focus();
-      return;
-    }
-    if (!virtual) return;
-    const index = navRowIds.indexOf(cell.rowId);
-    if (index >= 0) {
-      virtualListRef.current?.scrollToIndex(index);
-      pendingFocusRef.current = cell;
-    }
-  };
-
-  // Virtualized targets mount one commit after scrollToIndex — focus them
-  // as soon as they appear, then clear the request.
-  useEffect(() => {
-    const pending = pendingFocusRef.current;
-    if (!pending) return;
-    const target = findNavCell(pending);
-    if (target) {
-      pendingFocusRef.current = null;
-      target.focus();
-    }
-  });
-
-  const handleNavKeyDown = (
-    event: KeyboardEvent<HTMLElement>,
-    cell: NavCell,
-    canEditTarget: boolean
-  ) => {
-    if (event.defaultPrevented) return;
-    // Modified keys stay with the browser (page shortcuts).
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
-    // Inner widgets (editors, expanders, checkboxes) own their keys.
-    if (event.target !== event.currentTarget) return;
-    if (event.key === 'Enter' || event.key === 'F2') {
-      if (!canEditTarget) return;
-      event.preventDefault();
-      setActiveCell(cell);
-      setEditingCell(cell);
-      return;
-    }
-    const rowIndex = navRowIds.indexOf(cell.rowId);
-    const columnIndex = navColumnIds.indexOf(cell.columnId);
-    if (rowIndex < 0 || columnIndex < 0) return;
-    const lastRowIndex = navRowIds.length - 1;
-    const lastColumnIndex = navColumnIds.length - 1;
-    const at = (r: number, c: number): NavCell | undefined => {
-      const rowId = navRowIds[r];
-      const columnId = navColumnIds[c];
-      return rowId !== undefined && columnId !== undefined
-        ? { rowId, columnId }
-        : undefined;
-    };
-    // Horizontal moves wrap through rows — right off the last column lands
-    // on the next row's first cell and vice versa — while vertical moves
-    // stop at the grid edges: the header is not part of the roving set.
-    const horizontal = (dir: 1 | -1): NavCell | undefined => {
-      let c = columnIndex + dir;
-      let r = rowIndex;
-      if (c > lastColumnIndex) {
-        if (r >= lastRowIndex) return undefined;
-        c = 0;
-        r += 1;
-      } else if (c < 0) {
-        if (r <= 0) return undefined;
-        c = lastColumnIndex;
-        r -= 1;
-      }
-      return at(r, c);
-    };
-    let next: NavCell | undefined;
-    switch (event.key) {
-      case 'ArrowUp':
-        next = rowIndex > 0 ? at(rowIndex - 1, columnIndex) : undefined;
-        break;
-      case 'ArrowDown':
-        next = rowIndex < lastRowIndex ? at(rowIndex + 1, columnIndex) : undefined;
-        break;
-      case 'ArrowLeft':
-        // Horizontal keys mirror under RTL, read from the DOM at event
-        // time (same contract as the resize handles).
-        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? 1 : -1);
-        break;
-      case 'ArrowRight':
-        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? -1 : 1);
-        break;
-      case 'Home':
-        next = at(rowIndex, 0);
-        break;
-      case 'End':
-        next = at(rowIndex, lastColumnIndex);
-        break;
-      case 'PageUp':
-        next = rowIndex > 0 ? at(0, columnIndex) : undefined;
-        break;
-      case 'PageDown':
-        next =
-          rowIndex < lastRowIndex ? at(lastRowIndex, columnIndex) : undefined;
-        break;
-      default:
-        return;
-    }
-    if (
-      next === undefined ||
-      (next.rowId === cell.rowId && next.columnId === cell.columnId)
-    ) {
-      return;
-    }
-    event.preventDefault();
-    setActiveCell(next);
-    focusNavCell(next);
-  };
+  const { isNavCellActive, handleNavKeyDown, setActiveCell } =
+    useCellNavigation({
+      navRowIds,
+      navColumnIds,
+      rootRef,
+      virtual,
+      scrollToIndex: (index) => virtualListRef.current?.scrollToIndex(index),
+      setEditingCell,
+    });
 
   const colgroup =
     virtual || hasColumnWidths || resizable ? (
@@ -1773,453 +1243,67 @@ export default function DataTable<TData extends RowData>({
       }
     : undefined;
 
-  const header = (
-    <TableHead className={stickyHeader ? stickyHead : undefined}>
-      {headerGroups.map((headerGroup, groupIndex) => (
-        <tr key={headerGroup.id} data-slot="row">
-          {selectable && groupIndex === 0 && (
-            <TableCell
-              as='th'
-              data-slot="select-cell"
-              x-class={[
-                checkCellStyle,
-                selectionFixedSpec && fixedCell,
-                selectionFixedSpec && fixedHeadCell,
-              ]}
-              rowSpan={
-                headerGroups.length > 1 ? headerGroups.length : undefined
-              }
-              style={fixedOffsetStyle(selectionFixedSpec)}
-            >
-              <span ref={selectAllRef}>
-                <CheckboxCore
-                  checked={table.getIsAllRowsSelected()}
-                  onChange={(checked) => table.toggleAllRowsSelected(checked)}
-                  aria-label={strings.selectAll}
-                />
-              </span>
-            </TableCell>
-          )}
-          {headerGroup.headers.map((header) => {
-            if (header.rowSpan === 0) return null;
-            if (header.isPlaceholder) {
-              return (
-                <TableCell
-                  as='th'
-                  key={header.placeholderId ?? header.id}
-                  data-slot="cell"
-                >
-                  {null}
-                </TableCell>
-              );
-            }
-            const sorted = header.column.getIsSorted();
-            // Fixed columns are honored on leaf headers — a group header
-            // spanning several columns has no single edge to stick to.
-            const fixedSpec =
-              header.subHeaders.length === 0
-                ? fixedById.get(header.column.id)
-                : undefined;
-            const canResize =
-              resizable &&
-              header.subHeaders.length === 0 &&
-              header.column.getCanResize();
-            // Reorder grip on leaf columns while reordering is active. The
-            // drag wrapper (a sortable item) appears once the lazily loaded
-            // kit arrives — until then the bare grip still carries the
-            // Alt+Arrow keyboard model.
-            const reorderGrip =
-              reorderActive && header.subHeaders.length === 0 ? (
-                <ReorderGrip
-                  columnId={header.column.id}
-                  label={columnLabel(header.column)}
-                  onMove={(forward) => {
-                    const from = leafIds.indexOf(header.column.id);
-                    const to = forward ? from + 1 : from - 1;
-                    if (from < 0) return;
-                    reorderFocusRef.current = header.column.id;
-                    moveColumn(from, to);
-                  }}
-                />
-              ) : null;
-            const reorderGripSlot =
-              reorderGrip !== null && reorderKit !== null ? (
-                <reorderKit.ColumnReorderItem
-                  id={header.column.id}
-                  className={reorderItemClass}
-                >
-                  {reorderGrip}
-                </reorderKit.ColumnReorderItem>
-              ) : (
-                reorderGrip
-              );
-            // Filter menu on leaf columns declaring predefined options —
-            // a group header spans several columns and has no single
-            // value to filter on.
-            const filterOptions =
-              header.subHeaders.length === 0
-                ? header.column.columnDef.meta?.filters
-                : undefined;
-            return (
-              <TableCell
-                as='th'
-                key={header.id}
-                data-slot="cell"
-                colSpan={header.colSpan > 1 ? header.colSpan : undefined}
-                rowSpan={header.rowSpan > 1 ? header.rowSpan : undefined}
-                x-class={[
-                  fixedSpec && fixedCell,
-                  fixedSpec && fixedHeadCell,
-                  canResize && resizableHead,
-                ]}
-                style={fixedOffsetStyle(fixedSpec)}
-                aria-sort={
-                  sorted === 'asc'
-                    ? 'ascending'
-                    : sorted === 'desc'
-                      ? 'descending'
-                      : undefined
-                }
-              >
-                {reorderGripSlot}
-                {header.column.getCanSort() ? (
-                  <button
-                    type='button'
-                    data-slot="sort-button"
-                    x-class={[sortButton]}
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    <table.FlexRender header={header} />
-                    <span data-slot="icon" x-class={[sortIcon]} aria-hidden='true'>
-                      {sorted === 'asc' ? '↑' : sorted === 'desc' ? '↓' : '↕'}
-                    </span>
-                  </button>
-                ) : (
-                  <table.FlexRender header={header} />
-                )}
-                {filterOptions !== undefined && filterOptions.length > 0 && (
-                  <ColumnFilterTrigger
-                    label={columnLabel(header.column)}
-                    options={filterOptions}
-                    selected={filters[header.column.id] ?? []}
-                    onChange={(values) =>
-                      setColumnFilter(header.column.id, values)
-                    }
-                  />
-                )}
-                {canResize && (
-                  <div
-                    role='separator'
-                    data-slot="resize-handle"
-                    aria-orientation='vertical'
-                    aria-label={`Resize ${columnLabel(header.column)}`}
-                    tabIndex={0}
-                    x-class={[resizeHandle]}
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      header.getResizeHandler()(event);
-                    }}
-                    onDoubleClick={() => header.column.resetSize()}
-                    onKeyDown={(event) => {
-                      if (
-                        event.key !== 'ArrowLeft' &&
-                        event.key !== 'ArrowRight'
-                      ) {
-                        return;
-                      }
-                      event.preventDefault();
-                      // Arrows mirror under RTL, read from the DOM at
-                      // event time so the keys follow the painted
-                      // direction (same contract as Calendar).
-                      const rtl = getDirection(event.currentTarget) === 'rtl';
-                      const grow = (event.key === 'ArrowRight') !== rtl;
-                      nudgeColumnSize(header, grow ? 5 : -5);
-                    }}
-                  />
-                )}
-              </TableCell>
-            );
-          })}
-        </tr>
-      ))}
-    </TableHead>
-  );
+  // eslint-disable-next-line react-hooks/refs -- the ref objects are forwarded into the render function for event-time access only (select-all input lookup, reorder focus restore), the same contract a JSX ref prop carries.
+  const header = renderDataTableHeader({
+    table,
+    headerGroups,
+    selectable,
+    sticky: stickyHeader,
+    checkCellStyle,
+    selectionFixedSpec,
+    fixedById,
+    selectAllRef,
+    selectAllLabel: strings.selectAll,
+    resizable,
+    nudgeColumnSize,
+    filters,
+    setColumnFilter,
+    reorderActive,
+    reorderKit,
+    leafIds,
+    moveColumn,
+    reorderFocusRef,
+  });
 
-  // Expansion panel row id, referenced by the expander's `aria-controls`.
-  // Row ids are consumer-defined, so stray whitespace is neutralized.
-  const panelId = (rowId: string) =>
-    `${instanceId}-${rowId.replace(/\s+/g, '-')}-panel`;
+  // Body-section rendering (data rows, skeleton, empty state, filter row)
+  // lives in data-table-rows.tsx; everything it reads is assembled into one
+  // view object here.
+  const rowsView: DataTableRowsView<TData> = {
+    table,
+    selectable,
+    leafHeaders,
+    checkCellStyle,
+    selectionFixedSpec,
+    fixedById,
+    rowClassName: classNames?.row,
+    handleRowClick,
+    isNavCellActive,
+    setActiveCell,
+    handleNavKeyDown,
+    editable,
+    editingCell,
+    setEditingCell,
+    onCellEdit,
+    renderExpandedRow,
+    instanceId,
+    columnCount,
+    empty,
+    filterPlaceholder: strings.filterPlaceholder,
+  };
 
-  const renderRow = (row: (typeof rows)[number]) => (
-    // Keyed fragment (not a bare fragment) — row identity across reorders
-    // (sorting, filtering) must reconcile by row id, not by position.
-    <Fragment key={row.id}>
-      <tr
-        key={row.id}
-        data-slot="row"
-        x-class={[
-          rowHover,
-          row.getIsSelected() && rowSelected,
-          onRowClick && clickableRow,
-          classNames?.row,
-        ]}
-        onClick={
-          handleRowClick
-            ? (event) => handleRowClick(row.original, event)
-            : undefined
-        }
-      >
-        {selectable && (
-          <TableCell
-            data-slot="select-cell"
-            data-nav-row={row.id}
-            data-nav-col={SELECTION_NAV_ID}
-            x-class={[
-              checkCellStyle,
-              selectionFixedSpec && fixedCell,
-              selectionFixedSpec?.edge && fixedLeftEdge,
-              row.getIsSelected() && fixedCellSelected,
-              navCell,
-            ]}
-            style={fixedOffsetStyle(selectionFixedSpec)}
-            tabIndex={isNavCellActive(row.id, SELECTION_NAV_ID) ? 0 : -1}
-            onFocus={(event) => {
-              if (event.target !== event.currentTarget) return;
-              setActiveCell({ rowId: row.id, columnId: SELECTION_NAV_ID });
-            }}
-            onKeyDown={(event) =>
-              handleNavKeyDown(
-                event,
-                { rowId: row.id, columnId: SELECTION_NAV_ID },
-                false
-              )
-            }
-          >
-            <CheckboxCore
-              checked={row.getIsSelected()}
-              onChange={(checked) => row.toggleSelected(checked)}
-              aria-label={`Select row ${row.id}`}
-            />
-          </TableCell>
-        )}
-        {row.getVisibleCells().map((cell, cellIndex) => {
-          const fixedSpec = fixedById.get(cell.column.id);
-          // Editing is resolved per leaf column: the table-level switch
-          // gates it, `meta.editor` picks the kind (`'text'` default,
-          // `false` opts out).
-          const editor: DataTableColumnMeta['editor'] = editable
-            ? (cell.column.columnDef.meta?.editor ?? 'text')
-            : false;
-          const canEdit = editor !== false;
-          const isEditing =
-            editingCell !== null &&
-            editingCell.rowId === row.id &&
-            editingCell.columnId === cell.column.id;
-          const commitEdit = (next: unknown) => {
-            setEditingCell(null);
-            const prev = cell.getValue();
-            if (!Object.is(next, prev)) {
-              onCellEdit?.(row.id, cell.column.id, next, prev);
-            }
-          };
-          return (
-            <TableCell
-              key={cell.id}
-              data-slot="cell"
-              data-nav-row={row.id}
-              data-nav-col={cell.column.id}
-              x-class={[
-                fixedSpec && fixedCell,
-                fixedSpec?.edge &&
-                  (fixedSpec.side === 'left' ? fixedLeftEdge : fixedRightEdge),
-                row.getIsSelected() && fixedCellSelected,
-                canEdit && editableCell,
-                navCell,
-              ]}
-              style={fixedOffsetStyle(fixedSpec)}
-              tabIndex={
-                isNavCellActive(row.id, cell.column.id) ? 0 : -1
-              }
-              onFocus={(event) => {
-                if (event.target !== event.currentTarget) return;
-                setActiveCell({ rowId: row.id, columnId: cell.column.id });
-              }}
-              onDoubleClick={
-                canEdit && !isEditing
-                  ? () => {
-                      setActiveCell({
-                        rowId: row.id,
-                        columnId: cell.column.id,
-                      });
-                      setEditingCell({
-                        rowId: row.id,
-                        columnId: cell.column.id,
-                      });
-                    }
-                  : undefined
-              }
-              onKeyDown={(event) =>
-                handleNavKeyDown(
-                  event,
-                  { rowId: row.id, columnId: cell.column.id },
-                  canEdit && !isEditing
-                )
-              }
-            >
-              {isEditing && canEdit ? (
-                typeof editor === 'function' ? (
-                  editor({
-                    value: cell.getValue(),
-                    row,
-                    column: cell.column,
-                    onSave: commitEdit,
-                    onCancel: () => setEditingCell(null),
-                  })
-                ) : (
-                  <CellEditor
-                    kind={editor === 'number' ? 'number' : 'text'}
-                    value={cell.getValue()}
-                    ariaLabel={`Edit ${columnLabel(cell.column)} in row ${row.id}`}
-                    onSave={commitEdit}
-                    onCancel={() => setEditingCell(null)}
-                  />
-                )
-              ) : (
-                <>
-                  {cellIndex === 0 && row.depth > 0 && (
-                    <span
-                      aria-hidden='true'
-                      x-class={[treeIndent]}
-                      style={{ width: `calc(var(--haze-space-4) * ${row.depth})` }}
-                    />
-                  )}
-                  {cellIndex === 0 && row.getCanExpand() && (
-                    <button
-                      type='button'
-                      data-slot="expand-button"
-                      x-class={[expander]}
-                      aria-expanded={row.getIsExpanded()}
-                      aria-controls={
-                        renderExpandedRow !== undefined
-                          ? panelId(row.id)
-                          : undefined
-                      }
-                      aria-label={
-                        row.getIsExpanded()
-                          ? `Collapse row ${row.id}`
-                          : `Expand row ${row.id}`
-                      }
-                      onClick={row.getToggleExpandedHandler()}
-                    >
-                      <span data-slot="icon" x-class={[expanderIcon]} aria-hidden='true'>
-                        ▸
-                      </span>
-                    </button>
-                  )}
-                  <table.FlexRender cell={cell} />
-                </>
-              )}
-            </TableCell>
-          );
-        })}
-      </tr>
-      {renderExpandedRow !== undefined &&
-        row.getCanExpand() &&
-        row.getIsExpanded() && (
-          <tr key={`${row.id}-panel`} data-slot="panel-row">
-            <TableCell
-              colSpan={columnCount}
-              data-slot="panel-cell"
-              x-class={[panelCell]}
-              id={panelId(row.id)}
-            >
-              {renderExpandedRow(row)}
-            </TableCell>
-          </tr>
-        )}
-    </Fragment>
-  );
-
-  const renderSkeletonRow = (rowIndex: number) => (
-    <tr key={`skeleton-${rowIndex}`} data-slot="row" x-class={[classNames?.row]}>
-      {selectable && (
-        <TableCell
-          data-slot="select-cell"
-          x-class={[
-            checkCellStyle,
-            selectionFixedSpec && fixedCell,
-            selectionFixedSpec?.edge && fixedLeftEdge,
-          ]}
-          style={fixedOffsetStyle(selectionFixedSpec)}
-        >
-          <Skeleton />
-        </TableCell>
-      )}
-      {leafHeaders.map((header) => {
-        const fixedSpec = fixedById.get(header.column.id);
-        return (
-          <TableCell
-            key={header.id}
-            data-slot="cell"
-            x-class={[
-              fixedSpec && fixedCell,
-              fixedSpec?.edge &&
-                (fixedSpec.side === 'left' ? fixedLeftEdge : fixedRightEdge),
-            ]}
-            style={fixedOffsetStyle(fixedSpec)}
-          >
-            <Skeleton />
-          </TableCell>
-        );
-      })}
-    </tr>
-  );
+  const renderRow = (row: (typeof rows)[number]) =>
+    renderDataTableRow(row, rowsView);
 
   const skeletonRows = Array.from(
     { length: pageSize ?? 5 },
-    (_, rowIndex) => renderSkeletonRow(rowIndex)
+    (_, rowIndex) => renderSkeletonRow(rowsView, rowIndex)
   );
 
-  const emptyRow = (
-    <tr data-slot="row" x-class={[classNames?.row]}>
-      <TableCell
-        colSpan={columnCount}
-        data-slot="empty-cell"
-        x-class={[emptyCell]}
-      >
-        {empty ?? <Empty />}
-      </TableCell>
-    </tr>
-  );
+  const emptyRow = renderEmptyRow(rowsView);
 
   // Filter row: rendered as the first body section directly below the
-  // header, one input per filterable leaf column (an empty cell keeps the
-  // columns aligned elsewhere). A dedicated tbody keeps the inputs out of
-  // the header's `columnheader` semantics; under `stickyHeader` it scrolls
-  // away with the body, and in virtualized mode it stays pinned with the
-  // header table above the scrolling rows.
-  const filterBody = filterable ? (
-    <TableBody>
-      <tr data-slot="filter-row">
-        {selectable && <TableCell data-slot="select-cell">{null}</TableCell>}
-        {leafHeaders.map((header) => (
-          <TableCell key={`filter-${header.id}`} data-slot="cell">
-            {header.column.getCanFilter() ? (
-              <Input
-                size='sm'
-                aria-label={`Filter ${columnLabel(header.column)}`}
-                placeholder={strings.filterPlaceholder}
-                value={(header.column.getFilterValue() as string | undefined) ?? ''}
-                onChange={(event) =>
-                  header.column.setFilterValue(event.target.value)
-                }
-              />
-            ) : null}
-          </TableCell>
-        ))}
-      </tr>
-    </TableBody>
-  ) : undefined;
+  // header (see data-table-rows.tsx) — only while `filterable` is on.
+  const filterBody = filterable ? renderFilterBody(rowsView) : undefined;
 
   // Summary footer: the callback summarizes the filtered data (every row,
   // all pages, tree sub-rows included) — never the skeleton or empty state.

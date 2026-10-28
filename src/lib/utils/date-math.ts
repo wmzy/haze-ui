@@ -1,5 +1,7 @@
 /**
- * Pure calendar-date math for the Calendar grid, extracted from Calendar.tsx.
+ * Shared calendar-date math for the date-picker family (Calendar,
+ * Datepicker, DateRangePicker, DateField, Schedule and the dates/
+ * multi-calendar adapters), extracted from Calendar.tsx.
  *
  * Semantics — naive local civil time:
  *
@@ -237,30 +239,18 @@ export function addMonthsToDate(date: Date, amount: number): Date {
 export type ISOWeek = { year: number; week: number };
 
 /**
- * ISO 8601 week number of a civil date. ISO weeks run Monday–Sunday and
- * week 1 is the week containing the year's first Thursday, so days at the
- * year's edges borrow the neighbor year's numbering (2025-12-31 is week 1
- * of 2026; 2027-01-01 is week 53 of 2026). The weekday is read from the
- * local-midnight Date of the civil triple (a calendar date's weekday is a
- * civil property, identical in every zone); the day arithmetic then moves
- * to UTC milliseconds — whole-day multiples with no DST drift — to reach
- * the week's Thursday, whose year is the ISO year, and counts seven-day
- * spans from that ISO year's January 1.
- */
-export function getISOWeekNumber(
-  year: number,
-  month: number,
-  day: number
-): number {
-  return getISOWeek(year, month, day).week;
-}
-
-/**
- * Full ISO 8601 week identity of a civil date (`{@link getISOWeekNumber}`
- * plus the ISO week-numbering year the week belongs to). Same Thursday
- * anchoring: the Thursday of a date's Monday–Sunday week carries the ISO
- * year, which is what `"YYYY-Www"` values (see
- * {@link formatWeekValue}) number weeks against.
+ * Full ISO 8601 week identity of a civil date (the week number plus the
+ * ISO week-numbering year the week belongs to). ISO weeks run Monday–
+ * Sunday and week 1 is the week containing the year's first Thursday,
+ * so days at the year's edges borrow the neighbor year's numbering
+ * (2025-12-31 is week 1 of 2026; 2027-01-01 is week 53 of 2026). The
+ * weekday is read from the local-midnight Date of the civil triple (a
+ * calendar date's weekday is a civil property, identical in every
+ * zone); the day arithmetic then moves to UTC milliseconds — whole-day
+ * multiples with no DST drift — to reach the week's Thursday, whose
+ * year is the ISO year, and counts seven-day spans from that ISO
+ * year's January 1. That Thursday's identity is what `"YYYY-Www"`
+ * values (see {@link formatWeekValue}) number weeks against.
  */
 export function getISOWeek(
   year: number,
@@ -316,6 +306,22 @@ export function formatDate(
   day: number
 ): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/**
+ * Format a Date's local civil date as the `"YYYY-MM-DD"` value string —
+ * {@link formatDate} applied to the Date's own year/month/day triple with
+ * the time-of-day dropped (the projection the Schedule grids key their
+ * day maps by and the pickers derive a controlled value's date part
+ * through). Never `Date#toISOString`: that serializes the UTC instant
+ * and shifts a day in zones behind UTC.
+ */
+export function formatDateOf(date: Date): string {
+  return formatDate(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
 }
 
 /**

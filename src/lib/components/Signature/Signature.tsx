@@ -1,4 +1,7 @@
-import type { ComponentPropsWithoutRef, PointerEvent as ReactPointerEvent } from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  PointerEvent as ReactPointerEvent,
+} from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { SignaturePoint } from './signature-points';
 
@@ -7,6 +10,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
+import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import {
   getCanvasPoint,
@@ -26,9 +30,11 @@ import {
  * input device; persist the committed string, e.g. into a form field).
  * `onChange` fires with the new string on every commit.
  *
- * Pointer Events drive the drawing (`setPointerCapture` keeps the
- * stroke alive outside the canvas bounds); the drawing scales for
- * high-DPI screens via `devicePixelRatio`. When the canvas 2d context
+ * Pointer Events drive the drawing through the shared `usePointerDrag`
+ * hook (guarded pointer capture keeps the stroke alive outside the
+ * canvas bounds — the ColorPickerPanel pattern the hook was promoted
+ * from); the drawing scales for high-DPI screens via
+ * `devicePixelRatio`. When the canvas 2d context
  * is unavailable (jsdom, ancient engines) the pad degrades to a notice
  * instead of a broken input — the Watermark precedent.
  *
@@ -174,7 +180,11 @@ export default function Signature({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const strokesRef = useRef<SignaturePoint[][]>([]);
-  const drawingPointerRef = useRef<number | null>(null);
+  // Whether the tracked gesture currently owns an open stroke — the
+  // discriminator the generic drag hook cannot provide (its apply runs
+  // for pointerdown and pointermove alike) plus the one-stroke-at-a-time
+  // gate for second pointers.
+  const strokeOpenRef = useRef(false);
   const penColorRef = useRef<string>(DEFAULT_PEN_FALLBACK);
   const committedRef = useRef<string>('');
 
@@ -260,61 +270,69 @@ export default function Signature({
     onChange?.(next);
   }, [setValue, onChange]);
 
-  const handlePointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (disabled || !ctxRef.current) return;
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (drawingPointerRef.current !== null) return; // one stroke at a time
-    drawingPointerRef.current = event.pointerId;
-    if (typeof canvas.setPointerCapture === 'function') {
-      try {
-        canvas.setPointerCapture(event.pointerId);
-      } catch {
-        // pointer already released/upstreamed — the stroke still tracks
+  // Drawing rides the shared pointer-drag wiring (pointerId gate +
+  // guarded capture, the ColorPickerPanel precedent the hook was
+  // promoted from); the stroke accumulation itself stays local:
+  // pointerdown opens a stroke (extract → apply with none open), moves
+  // extend it, the release normalizes and publishes.
+  const canvasDrag = usePointerDrag<HTMLCanvasElement, SignaturePoint>(
+    (event) => {
+      // While a stroke is open the gesture must always resolve to a
+      // point so its up/cancel commit can finalize — even if `disabled`
+      // flipped mid-stroke (the hand-rolled code ended unconditionally).
+      if (!strokeOpenRef.current && (disabled || !ctxRef.current)) return null;
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      return getCanvasPoint(
+        event.clientX,
+        event.clientY,
+        canvas.getBoundingClientRect()
+      );
+    },
+    (point) => {
+      if (!strokeOpenRef.current) {
+        strokeOpenRef.current = true;
+        penColorRef.current = resolvePenColor();
+        strokesRef.current = [...strokesRef.current, [point]];
+        setStrokeCount(strokesRef.current.length);
+        drawDot(point);
+        return;
       }
+      const strokes = strokesRef.current;
+      const stroke = strokes[strokes.length - 1];
+      const last = stroke?.[stroke.length - 1];
+      if (!last) return;
+      // sub-pixel moves only flood the stroke data — skip before drawing
+      if (pointDistance(last, point) < 0.5) return;
+      strokesRef.current = [...strokes.slice(0, -1), [...stroke, point]];
+      drawSegment(last, point);
+    },
+    () => {
+      strokeOpenRef.current = false;
+      const strokes = strokesRef.current;
+      const stroke = strokes[strokes.length - 1];
+      if (stroke) {
+        strokesRef.current = [
+          ...strokes.slice(0, -1),
+          normalizeStroke(stroke, MIN_POINT_DISTANCE),
+        ];
+      }
+      commit();
     }
-    penColorRef.current = resolvePenColor();
-    const point = getCanvasPoint(
-      event.clientX,
-      event.clientY,
-      canvas.getBoundingClientRect()
-    );
-    strokesRef.current = [...strokesRef.current, [point]];
-    setStrokeCount(strokesRef.current.length);
-    drawDot(point);
+  );
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    // one stroke at a time: a second pointer's pointerdown must not
+    // steal the hook's single-pointer tracking mid-stroke
+    if (strokeOpenRef.current) return;
+    canvasDrag.onPointerDown(event);
   };
 
-  const handlePointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (drawingPointerRef.current !== event.pointerId) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const strokes = strokesRef.current;
-    const stroke = strokes[strokes.length - 1];
-    if (!stroke) return;
-    const point = getCanvasPoint(
-      event.clientX,
-      event.clientY,
-      canvas.getBoundingClientRect()
-    );
-    const last = stroke[stroke.length - 1];
-    if (!last) return;
-    // sub-pixel moves only flood the stroke data — skip before drawing
-    if (pointDistance(last, point) < 0.5) return;
-    const nextStroke = [...stroke, point];
-    strokesRef.current = [...strokes.slice(0, -1), nextStroke];
-    drawSegment(last, point);
-  };
-
-  const endStroke = () => {
-    if (drawingPointerRef.current === null) return;
-    drawingPointerRef.current = null;
-    const strokes = strokesRef.current;
-    const stroke = strokes[strokes.length - 1];
-    if (stroke) {
-      strokesRef.current = [...strokes.slice(0, -1), normalizeStroke(stroke, MIN_POINT_DISTANCE)];
-    }
-    commit();
+  const handlePointerCancel = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    // The pad has always finalized partial strokes on cancel too — a
+    // gesture the engine stole must not eat the ink already laid down —
+    // so cancel rides the up path instead of the hook's silent abort.
+    canvasDrag.onPointerUp(event);
   };
 
   const handleUndo = () => {
@@ -359,9 +377,9 @@ export default function Signature({
           style={{ width: `${width}px`, height: `${height}px` }}
           data-disabled={disabled}
           onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={endStroke}
-          onPointerCancel={endStroke}
+          onPointerMove={canvasDrag.onPointerMove}
+          onPointerUp={canvasDrag.onPointerUp}
+          onPointerCancel={handlePointerCancel}
         />
       </div>
       <div data-slot='actions' x-class={[toolbar]}>

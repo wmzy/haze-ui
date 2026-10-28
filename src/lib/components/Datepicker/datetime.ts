@@ -2,7 +2,7 @@
  * Serialization helpers for Datepicker's `showTime` mode.
  *
  * The combined value is the day-grid `"YYYY-MM-DD"` value (see
- * Calendar/date.ts — a local civil date, never a UTC timestamp) plus a
+ * utils/date-math.ts — a local civil date, never a UTC timestamp) plus a
  * space and a 24-hour time: `"YYYY-MM-DD HH:mm"`, or
  * `"YYYY-MM-DD HH:mm:ss"` when `showTime` asks for seconds
  * (`{ seconds: true }`). Without `showTime` the value keeps the plain
@@ -11,8 +11,8 @@
  * pick).
  */
 
-import { parseCivilDate } from '../Calendar/date';
-import { pad2 } from '../TimePicker/time';
+import { parseCivilDate } from '../../utils/date-math';
+import { pad2 } from '../../utils/time-math';
 
 /** `"YYYY-MM-DD HH:mm"` / `"YYYY-MM-DD HH:mm:ss"` — one to 23 hours and
  * two-digit padded minutes, seconds only when the pattern carries them. */
@@ -69,7 +69,7 @@ export function normalizeTime(time: string, seconds: boolean): string {
  * Serialize a Date's wall-clock time as the `"HH:mm"` (or
  * `"HH:mm:ss"` with `seconds`) string the combined value and the time
  * input use. Inverse of {@link applyTimeToCivilDate} for the time
- * part. Padding is TimePicker's shared `pad2`.
+ * part. Padding is the shared `pad2` (utils/time-math.ts).
  */
 export function timeOf(date: Date, seconds: boolean): string {
   const base = `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;

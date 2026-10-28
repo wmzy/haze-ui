@@ -25,17 +25,20 @@ import {
 
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { mergeRefs } from '../../utils/refs';
+import {
+  findNodeByKey,
+  getChildKeys,
+  getParentKey,
+  mergeLoadedChildren,
+} from '../../utils/tree-utils';
+import { usePendingFocus } from '../../utils/use-pending-focus';
 import { useStrings } from '../LocaleProvider';
 import { VirtualList } from '../VirtualList';
 
 import TreeItem from './TreeItem';
 import {
   filterTreeByQuery,
-  findNodeByKey,
   flattenVisibleTree,
-  getChildKeys,
-  getParentKey,
-  mergeLoadedChildren,
   pruneLoadedChildren,
 } from './utils';
 
@@ -271,13 +274,24 @@ export default function Tree({
   // follows it; `null` before the first interaction parks the stop on
   // the first focusable row.
   const [focusedKey, setFocusedKey] = useState<string | null>(null);
-  // Row the next commit must focus. Keyboard focus moves resolve here so
-  // virtualized targets can mount first (the window shift and this flag
-  // land in the same commit).
-  const [pendingFocusKey, setPendingFocusKey] = useState<string | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VirtualListHandle>(null);
+
+  // Row the next commits must focus, resolved through the shared
+  // pending-focus loop: keyboard focus moves land after the commit that
+  // (in virtual mode) shifted the window onto the target row, and a
+  // request whose row is not mounted yet stays pending, retried on every
+  // commit until the treeitem exists.
+  const pendingFocus = usePendingFocus((key: string) => {
+    const el = Array.from(
+      rootRef.current?.querySelectorAll<HTMLElement>('[role="treeitem"]') ??
+        []
+    ).find((item) => item.dataset.treeKey === key);
+    if (!el) return false; // not mounted — retried when the rows change
+    el.focus();
+    return true;
+  });
   // The consumer's ref rides the same root node every render path
   // roots at; the tree's own handle stays live alongside (TreeSelect's
   // setTriggerRef pattern).
@@ -305,13 +319,14 @@ export default function Tree({
   })();
 
   // Apply a keyboard focus move: scroll the target row into the
-  // (virtual) window, then let the effect below focus it after commit.
+  // (virtual) window, then let the pending-focus loop focus it after
+  // commit.
   function focusRow(index: number) {
     const row = visibleRows[index];
     if (!row || row.disabled) return;
     if (virtual) listRef.current?.scrollToIndex(index, 'auto');
     setFocusedKey(row.key);
-    setPendingFocusKey(row.key);
+    pendingFocus.request(row.key);
   }
 
   /** Next focusable row from `from` stepping by `step`; `-1` when none —
@@ -421,36 +436,47 @@ export default function Tree({
     }
   }
 
-  // Keyboard focus moves land here, after the commit that (in virtual
-  // mode) shifted the window onto the target row.
-  useEffect(() => {
-    if (pendingFocusKey === null) return;
-    const root = rootRef.current;
-    if (!root) return;
-    const el = Array.from(
-      root.querySelectorAll<HTMLElement>('[role="treeitem"]')
-    ).find((item) => item.dataset.treeKey === pendingFocusKey);
-    if (!el) return; // not mounted — retried when the rows change
-    el.focus();
-    setPendingFocusKey(null);
-  }, [pendingFocusKey, visibleRows]);
-
   // ── Imperative scroll (useTree wiring) ──────────────────────────
-  // scrollToKey requests queue here and resolve exactly like keyboard
-  // focus moves above: the row may not exist in the current commit (its
-  // ancestors are still collapsed while useTree's autoExpand write is
-  // in flight), so the request stays pending and retries when the rows
-  // change — the autoExpand commit itself lands it.
-  const [pendingScroll, setPendingScroll] = useState<{
-    key: string;
-    align: VirtualListAlign;
-  } | null>(null);
+  // scrollToKey requests queue through the same pending loop as keyboard
+  // focus moves, with a scroll-instead-of-focus applier: the row may not
+  // exist in the current commit (its ancestors are still collapsed while
+  // useTree's autoExpand write is in flight), so the request stays
+  // pending and retries when the rows change — the autoExpand commit
+  // itself lands it. It never expands anything by itself.
+  const pendingScroll = usePendingFocus(
+    (request: { key: string; align: VirtualListAlign }) => {
+      const index = visibleRows.findIndex((row) => row.key === request.key);
+      if (index < 0) {
+        return false; // not visible (yet) — retried when the rows change
+      }
+      if (virtual) {
+        listRef.current?.scrollToIndex(index, request.align);
+        return true;
+      }
+      const row = Array.from(
+        rootRef.current?.querySelectorAll<HTMLElement>('[role="treeitem"]') ??
+          []
+      ).find((item) => item.dataset.treeKey === request.key);
+      const block: ScrollLogicalPosition =
+        request.align === 'start'
+          ? 'start'
+          : request.align === 'end'
+            ? 'end'
+            : request.align === 'center'
+              ? 'center'
+              : 'nearest';
+      row?.scrollIntoView({ block });
+      return true;
+    }
+  );
+
+  const { request: requestScroll } = pendingScroll;
 
   const scrollToKey = useCallback(
     (key: string, align: VirtualListAlign = 'auto') => {
-      setPendingScroll({ key, align });
+      requestScroll({ key, align });
     },
-    []
+    [requestScroll]
   );
 
   useImperativeHandle(
@@ -458,32 +484,6 @@ export default function Tree({
     () => ({ scrollToKey }),
     [scrollToKey]
   );
-
-  useEffect(() => {
-    if (!pendingScroll) return;
-    const index = visibleRows.findIndex(
-      (row) => row.key === pendingScroll.key
-    );
-    if (index < 0) return; // not visible (yet) — retried when the rows change
-    if (virtual) {
-      listRef.current?.scrollToIndex(index, pendingScroll.align);
-    } else {
-      const row = Array.from(
-        rootRef.current?.querySelectorAll<HTMLElement>('[role="treeitem"]') ??
-          []
-      ).find((item) => item.dataset.treeKey === pendingScroll.key);
-      const block: ScrollLogicalPosition =
-        pendingScroll.align === 'start'
-          ? 'start'
-          : pendingScroll.align === 'end'
-            ? 'end'
-            : pendingScroll.align === 'center'
-              ? 'center'
-              : 'nearest';
-      row?.scrollIntoView({ block });
-    }
-    setPendingScroll(null);
-  }, [pendingScroll, visibleRows, virtual]);
 
   function handleToggle(key: string) {
     const isExpanded = expandedKeys.includes(key);

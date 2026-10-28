@@ -13,17 +13,19 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
+import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import {
   PickerTrigger,
   pickerOverflowBadge,
   pickerPanelWidth,
+  pickerSearchInput,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { findNodeByKey, mergeLoadedChildren } from '../../utils/tree-utils';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import Tree from '../Tree/Tree';
-import { findNodeByKey, mergeLoadedChildren } from '../Tree/utils';
 
 /**
  * react-use-control's state tuple shape (the `State<T>` alias is not
@@ -249,48 +251,17 @@ const triggerCaret = css`
 `;
 
 /**
- * Panel chrome on top of the shared tier-aware width cascade
- * (`pickerPanelWidth`, utils/picker-trigger — it re-pins the panel to
- * the trigger's width on the anchored tier): same chrome as Cascader's
- * panel.
+ * Panel deltas over the shared tier-aware width cascade
+ * (`pickerPanelWidth`) and the shared bare surface (`panelSurfaceBare`,
+ * utils/panel-skin): the panel padding and the typography the tree
+ * rows inherit. The popover re-hide rule lives in the shared
+ * `popoverPanelHidden` (the "author display outranks the UA sheet"
+ * contract), composed alongside at the call site.
  */
 const panel = css`
   padding: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Author display outranks the UA sheet's closed-popover rule
-     (display none on non-open popovers) — the Cascader panel note;
-     scoped so the exit animation (running while still open) plays. */
-  &[popover]:not(:popover-open) {
-    display: none;
-  }
-`;
-
-/** Search input heading the panel (showSearch). */
-const searchInput = css`
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
-  padding: var(--haze-space-1) var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /**
@@ -708,7 +679,7 @@ export default function TreeSelect({
         ref={setPanelRef}
         behavior={floating}
         placement='bottom'
-        visualClass={`${pickerPanelWidth} ${panel}`}
+        visualClass={`${pickerPanelWidth} ${panelSurfaceBare} ${popoverPanelHidden} ${panel}`}
         onKeyDown={handlePanelKeyDown}
       >
         <div id={id}>
@@ -719,7 +690,7 @@ export default function TreeSelect({
               type='text'
               aria-label={strings.searchLabel}
               placeholder={strings.searchPlaceholder}
-              x-class={searchInput}
+              x-class={pickerSearchInput}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}

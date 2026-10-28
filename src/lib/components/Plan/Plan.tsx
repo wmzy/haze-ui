@@ -4,6 +4,21 @@ import { Children, isValidElement, useId } from 'react';
 
 import { css } from '@linaria/core';
 
+import {
+  statusDot,
+  statusDotActive,
+  statusDotDone,
+  statusDotError,
+  statusDotPending,
+  statusGlyphs,
+  timelineDescription,
+  timelineLabel,
+} from '../../utils/timeline-skin';
+
+/* Plan's statuses: the shared agentic set minus `running` (a plan step
+   is waiting, current, finished, failed or skipped — in-flight motion
+   belongs to Trace/StepTimeline lines), plus this family's `active`
+   and `skipped`. */
 type PlanStatus = 'pending' | 'active' | 'done' | 'error' | 'skipped';
 
 type PlanProps = {
@@ -84,41 +99,15 @@ const item = css`
   padding: var(--haze-space-1) 0;
 `;
 
-const indicator = css`
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+/* Plan rows carry no connector line, so the ring rides the shared
+   statusDot geometry (utils/timeline-skin) plus this family's optical
+   nudge onto the label's baseline — a documented sub-token keep. */
+const indicatorNudge = css`
   margin-top: 0.0625rem;
-  border-radius: var(--haze-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.5rem;
-  line-height: 1;
 `;
 
-const indicatorPending = css`
-  border: 2px solid var(--haze-color-border);
-  background: var(--haze-color-bg);
-`;
-
-const indicatorActive = css`
-  border: 2px solid var(--haze-color-primary);
-  background: var(--haze-color-primary);
-`;
-
-const indicatorDone = css`
-  border: 2px solid var(--haze-color-success);
-  background: var(--haze-color-success);
-  color: var(--haze-color-text-inverse);
-`;
-
-const indicatorError = css`
-  border: 2px solid var(--haze-color-danger);
-  background: var(--haze-color-danger);
-  color: var(--haze-color-text-inverse);
-`;
-
+/* `skipped` is Plan's own arm: a dashed ring instead of a status
+   color, over no fill. */
 const indicatorSkipped = css`
   border: 2px dashed var(--haze-color-border);
   background: transparent;
@@ -130,12 +119,6 @@ const body = css`
   padding-top: 0.0625rem;
 `;
 
-const labelStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
 const labelDone = css`
   color: var(--haze-color-text-secondary);
 `;
@@ -145,17 +128,11 @@ const labelSkipped = css`
   text-decoration: line-through;
 `;
 
-const descriptionStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-top: var(--haze-space-1);
-`;
-
 const indicatorMap: Record<PlanStatus, string> = {
-  pending: indicatorPending,
-  active: indicatorActive,
-  done: indicatorDone,
-  error: indicatorError,
+  pending: statusDotPending,
+  active: statusDotActive,
+  done: statusDotDone,
+  error: statusDotError,
   skipped: indicatorSkipped,
 };
 
@@ -165,12 +142,6 @@ const labelStatusMap: Record<PlanStatus, string | undefined> = {
   done: labelDone,
   error: undefined,
   skipped: labelSkipped,
-};
-
-/** Glyphs inside the indicator dot; every other status stays glyph-free. */
-const indicatorGlyphs: Partial<Record<PlanStatus, string>> = {
-  done: '✓',
-  error: '!',
 };
 
 function PlanItem({
@@ -187,16 +158,16 @@ function PlanItem({
       <span
         data-slot='plan-indicator'
         aria-hidden='true'
-        x-class={[indicator, indicatorMap[status]]}
+        x-class={[statusDot, indicatorNudge, indicatorMap[status]]}
       >
-        {indicatorGlyphs[status]}
+        {status === 'done' || status === 'error' ? statusGlyphs[status] : undefined}
       </span>
       <div data-slot='plan-body' x-class={body}>
-        <div data-slot='plan-label' x-class={[labelStyle, labelStatusMap[status]]}>
+        <div data-slot='plan-label' x-class={[timelineLabel, labelStatusMap[status]]}>
           {label}
         </div>
         {description !== undefined && (
-          <div data-slot='plan-description' x-class={descriptionStyle}>
+          <div data-slot='plan-description' x-class={timelineDescription}>
             {description}
           </div>
         )}

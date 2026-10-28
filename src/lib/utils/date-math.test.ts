@@ -1,4 +1,4 @@
-import type { CalendarCell } from './date';
+import type { CalendarCell } from './date-math';
 
 import {
   addMonths,
@@ -10,7 +10,6 @@ import {
   formatYearValue,
   getDaysInMonth,
   getISOWeek,
-  getISOWeekNumber,
   getISOWeekStartDate,
   getLeadingDays,
   parseCivilDate,
@@ -18,7 +17,7 @@ import {
   parseQuarterValue,
   parseWeekValue,
   parseYearValue,
-} from './date';
+} from './date-math';
 
 /* Time-zone control: Node on POSIX/glibc re-reads process.env.TZ before the
    next Date operation (verified experimentally on Node 24 / Fedora: setting
@@ -116,7 +115,7 @@ function expectMonthGrid(year: number, month: number, weekStart: 0 | 1) {
   return cells;
 }
 
-describe('Calendar date math', () => {
+describe('date math', () => {
   describe('in UTC (baseline)', () => {
     beforeAll(() => setTZ('UTC'));
     afterAll(restoreTZ);
@@ -518,15 +517,15 @@ describe('Calendar date math', () => {
 
       it('matches the ISO 8601 boundary fixtures', () => {
         for (const [year, month, day, week] of EXPECTED) {
-          expect(getISOWeekNumber(year, month, day)).toBe(week);
+          expect(getISOWeek(year, month, day).week).toBe(week);
         }
       });
 
       it('counts 52/53 whole weeks across a full ISO year', () => {
         // 2026 starts on a Thursday → long (53-week) ISO year; 2025 starts
         // on a Wednesday → 52 weeks.
-        expect(getISOWeekNumber(2026, 11, 31)).toBe(53);
-        expect(getISOWeekNumber(2025, 11, 28)).toBe(52);
+        expect(getISOWeek(2026, 11, 31).week).toBe(53);
+        expect(getISOWeek(2025, 11, 28).week).toBe(52);
       });
     });
 
@@ -540,7 +539,7 @@ describe('Calendar date math', () => {
 
       it('keeps the boundary fixtures stable west of UTC', () => {
         for (const [year, month, day, week] of EXPECTED) {
-          expect(getISOWeekNumber(year, month, day)).toBe(week);
+          expect(getISOWeek(year, month, day).week).toBe(week);
         }
       });
     });
@@ -555,7 +554,7 @@ describe('Calendar date math', () => {
 
       it('keeps the boundary fixtures stable east of UTC', () => {
         for (const [year, month, day, week] of EXPECTED) {
-          expect(getISOWeekNumber(year, month, day)).toBe(week);
+          expect(getISOWeek(year, month, day).week).toBe(week);
         }
       });
     });
@@ -638,18 +637,6 @@ describe('week values and ISO week identity', () => {
       expect(getISOWeek(2027, 0, 1)).toEqual({ year: 2026, week: 53 });
       // Mid-year dates carry their own civil year.
       expect(getISOWeek(2026, 8, 10)).toEqual({ year: 2026, week: 37 });
-    });
-
-    it('agrees with getISOWeekNumber on the week component', () => {
-      for (const [year, month, day] of [
-        [2025, 0, 1],
-        [2026, 11, 31],
-        [2024, 1, 29],
-      ] as const) {
-        expect(getISOWeek(year, month, day).week).toBe(
-          getISOWeekNumber(year, month, day)
-        );
-      }
     });
   });
 

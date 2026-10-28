@@ -210,6 +210,32 @@ describe('PromptInput', () => {
     );
   });
 
+  it('scrolls the keyboard highlight into view', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    // jsdom ships no scrollIntoView; stub it on the prototype for the
+    // duration of the test and restore (remove) afterwards.
+    const proto = window.HTMLElement.prototype as {
+      scrollIntoView?: (arg?: unknown) => void;
+    };
+    const original = proto.scrollIntoView;
+    proto.scrollIntoView = scrollIntoView;
+    try {
+      render(<PromptInput getSuggestions={filterPeople} />);
+      const textarea = screen.getByRole('textbox');
+      await user.type(textarea, '@');
+      // Opening without navigation keeps the effect idle (-1 highlight).
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      await user.keyboard('{ArrowDown}');
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+      await user.keyboard('{ArrowDown}');
+      expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    } finally {
+      if (original === undefined) delete proto.scrollIntoView;
+      else proto.scrollIntoView = original;
+    }
+  });
+
   it('inserts the top suggestion on Enter without prior navigation', async () => {
     const user = userEvent.setup();
     render(<PromptInput getSuggestions={filterPeople} />);

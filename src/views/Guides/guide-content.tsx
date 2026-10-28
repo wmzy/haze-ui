@@ -6537,7 +6537,7 @@ const brand = createBrandTheme({
           [
             [code('--haze-z-overlay')],
             '100',
-            'fixed overlays above page content that still stack normally — BottomSheet / ConfirmDialog scrims, Affix, the Tour card, Workbench’s slide-out regions',
+            'fixed overlays above page content that still stack normally — BottomSheet scrims, Affix, the Tour card, Workbench’s slide-out regions',
           ],
           [
             [code('--haze-z-overlay-fallback')],
@@ -7090,7 +7090,7 @@ const brand = createBrandTheme({
           [
             [code('--haze-z-overlay')],
             '100',
-            '页面上方仍常规层叠的固定浮层——BottomSheet / ConfirmDialog 遮罩、Affix、Tour 卡片、Workbench 滑出区域',
+            '页面上方仍常规层叠的固定浮层——BottomSheet 遮罩、Affix、Tour 卡片、Workbench 滑出区域',
           ],
           [
             [code('--haze-z-overlay-fallback')],

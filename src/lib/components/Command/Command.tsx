@@ -250,13 +250,13 @@ const listStyle = css`
 
 /**
  * Virtualized list port: same padding as the plain list, but the
- * VirtualList scrollport owns scrolling (Combobox's listboxVirtual
- * pattern — a second scroll box here could grow a second scrollbar).
- * The descendant rule stretches each CommandItem over its fixed-height
- * virtual row so hover/focus paint the full row (Combobox's
- * `virtualRow`, expressed as a selector so consumer items keep their
- * own `className` untouched; `[data-index]` matches only VirtualList's
- * row wrappers, never the items themselves).
+ * VirtualList scrollport owns scrolling (the picker family's
+ * `pickerListboxVirtual` pattern — a second scroll box here could grow
+ * a second scrollbar). The descendant rule stretches each CommandItem
+ * over its fixed-height virtual row so hover/focus paint the full row
+ * (the `pickerVirtualRow` contract, expressed as a selector so consumer
+ * items keep their own `className` untouched; `[data-index]` matches
+ * only VirtualList's row wrappers, never the items themselves).
  */
 const listVirtualPort = css`
   padding: var(--haze-space-1);

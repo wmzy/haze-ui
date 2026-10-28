@@ -10,8 +10,10 @@ import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
 
+import { classnames } from '../../utils/classnames';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { NativeHiddenFields } from '../../utils/native-form';
+import { panelSurface } from '../../utils/panel-skin';
 import { mergeRefs } from '../../utils/refs';
 
 import ColorPickerPanel from './ColorPickerPanel';
@@ -20,7 +22,7 @@ import { parseGradient, serializeGradient } from './gradient';
 
 import {
   checkerboard,
-  panelVisuals,
+  panelDeltas,
   swatchFill,
   trigger,
 } from './color-picker-styles';
@@ -224,7 +226,7 @@ export default function ColorPicker({
 
   if (inline) {
     return (
-      <div ref={ref as Ref<HTMLDivElement> | undefined} data-slot='color-picker' x-class={[panelVisuals, className]}>
+      <div ref={ref as Ref<HTMLDivElement> | undefined} data-slot='color-picker' x-class={[panelSurface, panelDeltas, className]}>
         {panel}
         <NativeHiddenFields name={name} values={[nativeValue]} />
       </div>
@@ -255,8 +257,8 @@ export default function ColorPicker({
         id={id}
         role='dialog'
         aria-label={label}
-        visualClass={panelVisuals}
-        className={className}
+        visualClass={panelSurface}
+        className={classnames(panelDeltas, className)}
       >
         {panel}
       </FloatingPanel>

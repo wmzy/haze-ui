@@ -17,8 +17,10 @@ import type {
 } from 'react-f0rm';
 
 
-import {useContext, useId} from 'react';
-import {FormContext, useField} from 'react-f0rm';
+import {useId} from 'react';
+import {useField} from 'react-f0rm';
+
+import {useResolvedForm} from './use-resolved-form';
 
 import {
   controlColumn,
@@ -496,13 +498,7 @@ export default function FormItem<
   // `form` prop first, then react-f0rm's form context (a mounted
   // <FormProvider value={form}>); neither — a descriptive error naming
   // both exits, instead of f0rm's bare internal "no form provided".
-  const formFromContext = useContext(FormContext);
-  const resolvedForm = form ?? formFromContext;
-  if (!resolvedForm) {
-    throw new Error(
-      'FormItem: no form provided — pass `form={form}` or render inside a <FormProvider value={form}>.'
-    );
-  }
+  const resolvedForm = useResolvedForm(form, 'FormItem');
 
   // react-f0rm's useField is the single binding layer: per-field value
   // subscription, user-change writes with mode gating, blur-scheduled

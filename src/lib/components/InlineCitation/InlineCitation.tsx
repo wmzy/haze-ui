@@ -7,6 +7,8 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { panelSurface } from '../../utils/panel-skin';
+import { citationIndexBadge, citationLink } from '../../utils/citation-skin';
 
 type InlineCitationProps = {
   /** Citation number shown in the badge and card header. */
@@ -62,29 +64,13 @@ const badge = css`
   }
 `;
 
-/** Visual skin applied on every rendering tier of the panel. */
-const panelVisuals = css`
-  /* min/max-width pairs with padding + border: border-box keeps both
-   * bounds covering the padding too (panel-family box-sizing
-   * contract). */
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * citation card's width bounds and padding step — the surface's
+ * border-box sizing keeps both bounds covering the padding too. */
+const panelDeltas = css`
   min-width: 200px;
   max-width: 320px;
   padding: var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 const cardHeader = css`
@@ -93,27 +79,17 @@ const cardHeader = css`
   gap: var(--haze-space-2);
 `;
 
-const cardIndex = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  flex-shrink: 0;
-  user-select: none;
+/* Call-site delta on the shared citation link (utils/citation-skin):
+   the card title keeps weight-medium whether it links out or not.
+   citationLink declares no font-weight, so the two classes compose
+   order-independently. */
+const titleWeight = css`
+  font-weight: var(--haze-weight-medium);
 `;
 
 const titleStyle = css`
   color: var(--haze-color-text);
   font-weight: var(--haze-weight-medium);
-`;
-
-const titleLink = css`
-  color: var(--haze-color-primary);
-  font-weight: var(--haze-weight-medium);
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 const snippetStyle = css`
@@ -166,11 +142,12 @@ export default function InlineCitation({
         behavior={floating}
         placement='bottom-span'
         id={id}
-        visualClass={panelVisuals}
+        visualClass={panelSurface}
+        className={panelDeltas}
       >
         <div data-slot='citation-header' x-class={cardHeader}>
           {/* Duplicates the trigger badge — decorative in the card. */}
-          <span data-slot='citation-index' aria-hidden='true' x-class={cardIndex}>
+          <span data-slot='citation-index' aria-hidden='true' x-class={citationIndexBadge}>
             [{index}]
           </span>
           {title !== undefined &&
@@ -180,7 +157,7 @@ export default function InlineCitation({
                 href={href}
                 target='_blank'
                 rel='noopener noreferrer'
-                x-class={titleLink}
+                x-class={[citationLink, titleWeight]}
               >
                 {title}
               </a>

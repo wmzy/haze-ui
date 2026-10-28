@@ -14,7 +14,11 @@ import {
 } from 'react';
 import { css } from '@linaria/core';
 
-import { getDirection } from '../../utils/direction';
+import { connectResizeObserver } from '../../utils/connect-resize-observer';
+import {
+  readLogicalScrollLeft,
+  writeLogicalScrollLeft,
+} from '../../utils/scroll-offset';
 import { useEndReached } from '../../utils/use-end-reached';
 
 /** Orientation of the scroll axis. */
@@ -252,15 +256,13 @@ function offsetAt(prefix: Float64Array, length: number, index: number): number {
 
 /**
  * Logical scroll offset along an axis: the distance scrolled from the
- * start edge (vertical: top; horizontal: inline-start). Horizontal RTL
- * reads `scrollLeft` negated — every evergreen engine reports RTL
- * `scrollLeft` as 0 at the start edge going negative toward the end
- * (CSSOM View), and the negation maps it onto the same
- * "distance from start" scale as LTR.
+ * start edge (vertical: top; horizontal: inline-start). Both axes
+ * delegate to utils/scroll-offset, which carries the evergreen RTL
+ * `scrollLeft` negation (CSSOM View: RTL reads 0 at the start edge
+ * going negative toward the end).
  */
 function readScrollOffset(el: HTMLElement, axis: 'x' | 'y'): number {
-  if (axis === 'y') return el.scrollTop;
-  return getDirection(el) === 'rtl' ? -el.scrollLeft : el.scrollLeft;
+  return axis === 'y' ? el.scrollTop : readLogicalScrollLeft(el);
 }
 
 /** Write a logical scroll offset, converting RTL horizontal negation. */
@@ -273,7 +275,7 @@ function writeScrollOffset(
     el.scrollTop = offset;
     return;
   }
-  el.scrollLeft = getDirection(el) === 'rtl' ? -offset : offset;
+  writeLogicalScrollLeft(el, offset);
 }
 
 type PrefixCache = {
@@ -348,6 +350,8 @@ export default function VirtualList<T>({
   const rowHeightsRef = useRef(new Map<number, number>());
   const headerHeightsRef = useRef(new Map<string, number>());
   const observerRef = useRef<ResizeObserver | null>(null);
+  /** Port-width observer (the single-target RO in the effect below). */
+  const portObserverRef = useRef<ResizeObserver | null>(null);
   const prefixCacheRef = useRef<PrefixCache | null>(null);
 
   // Infinite-scroll trigger (see useEndReached for the arm/fire
@@ -424,10 +428,16 @@ export default function VirtualList<T>({
     if (!el) return;
     const update = () => setPortWidth(el.clientWidth);
     update();
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => update());
-    observer.observe(el);
-    return () => observer.disconnect();
+    // RO lifecycle shared with useResizeObserver/useElementSize; jsdom
+    // has no ResizeObserver — the mount measure above covers it.
+    connectResizeObserver({
+      observerRef: portObserverRef,
+      node: el,
+      box: 'content-box',
+      enabled: true,
+      onEntry: update,
+    });
+    return () => portObserverRef.current?.disconnect();
   }, [horizontal, isGrid]);
 
   // Prefix sums: sums[i] is the start offset of unit i, sums[unitCount] the

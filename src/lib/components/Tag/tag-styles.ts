@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 /**
  * Shared Tag skin — the base, color and size classes the `Tag`
  * component wears. Living in their own module keeps the component file
@@ -21,32 +23,11 @@ export const base = css`
   white-space: nowrap;
 `;
 
-export const colors = {
-  default: css`
-    background: var(--haze-color-bg-muted);
-    color: var(--haze-color-text-secondary);
-  `,
-  primary: css`
-    background: var(--haze-color-primary-subtle);
-    color: var(--haze-color-primary);
-  `,
-  success: css`
-    background: var(--haze-color-success-subtle);
-    color: var(--haze-color-success);
-  `,
-  warning: css`
-    background: var(--haze-color-warning-subtle);
-    color: var(--haze-color-warning);
-  `,
-  danger: css`
-    background: var(--haze-color-danger-subtle);
-    color: var(--haze-color-danger);
-  `,
-  info: css`
-    background: var(--haze-color-info-subtle);
-    color: var(--haze-color-info);
-  `,
-} as const;
+/* The tinted surface/text pair comes from the shared status skin
+ * (utils/status-skin.ts) — the same subtle axis Tag historically
+ * declared inline; re-exported under the public `tagVariants`
+ * name. */
+export const colors = statusSubtleColors;
 
 export const tagSizes = {
   sm: css`
@@ -67,32 +48,14 @@ export const linkShape = css`
   text-decoration: none;
 `;
 
+/** Tag-local dismiss sizing layered over the shared dismiss skin
+ * (utils/status-skin.ts): a tag's × follows the tag's own font size
+ * (sm/md), not the shared text-lg default. The compound
+ * `&[data-slot]` selector keeps the override winning in any cascade
+ * order — a plain later class is not enough, dev-server injection
+ * order and dist split-css order disagree. */
 export const closeBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  /* The × glyph alone is far under the WCAG 2.5.8 target-size floor —
-     the button box itself carries the 24px minimum target. */
-  min-width: var(--haze-space-6);
-  min-height: var(--haze-space-6);
-  font-size: inherit;
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    opacity: 1;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-    border-radius: var(--haze-radius-sm);
+  &[data-slot='remove-button'] {
+    font-size: inherit;
   }
 `;

@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, KeyboardEvent, Ref, RefObject } from 'react';
 
-import type { TimeParts, TimePickerFormat } from './time';
+import type { TimeParts, TimePickerFormat } from '../../utils/time-math';
 
 import { useCallback, useEffect, useId, useRef } from 'react';
 
@@ -8,6 +8,17 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { mergeRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
+
+import {
+  formatTimeValue,
+  from12Hour,
+  hour12Values,
+  pad2,
+  parseTimeValue,
+  stepValue,
+  stepValues,
+  to12Hour,
+} from '../../utils/time-math';
 
 import {
   columnList,
@@ -22,16 +33,6 @@ import {
   trigger,
   wrapper,
 } from './time-picker-styles';
-import {
-  formatTimeValue,
-  from12Hour,
-  hour12Values,
-  pad2,
-  parseTimeValue,
-  stepValue,
-  stepValues,
-  to12Hour,
-} from './time';
 
 /** Which listbox a keyboard event landed on. */
 type ColumnKind = 'hour' | 'minute' | 'second' | 'period';

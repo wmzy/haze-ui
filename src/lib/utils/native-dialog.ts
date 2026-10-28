@@ -40,7 +40,7 @@ export type NativeDialogHandle = {
 
 /**
  * The shared lifecycle of the native-`<dialog>` modal family (Dialog,
- * Drawer): the keepMounted dormant tracking, the view-transition
+ * Drawer, ConfirmDialog): the keepMounted dormant tracking, the view-transition
  * open/close flip, opener capture, the focus scope, the imperative
  * handle, the showModal/animated-close effect and the native-event
  * close trio — everything both shells duplicated verbatim. The caller

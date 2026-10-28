@@ -13,7 +13,16 @@ import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider/useStrings';
 import { formatString } from '../LocaleProvider/locale';
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCw,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from '../../icons';
 import { useFocusScope } from '../../utils/focus-scope';
+import { capturePointer } from '../../utils/pointer-capture';
 import { whenExitSettles } from '../../utils/presence';
 
 /**
@@ -317,100 +326,6 @@ const thumbnailImg = css`
   object-fit: cover;
 `;
 
-const ZoomInIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <circle cx="11" cy="11" r="7" />
-    <line x1="16.5" y1="16.5" x2="21" y2="21" />
-    <line x1="8" y1="11" x2="14" y2="11" />
-    <line x1="11" y1="8" x2="11" y2="14" />
-  </svg>
-);
-
-const ZoomOutIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <circle cx="11" cy="11" r="7" />
-    <line x1="16.5" y1="16.5" x2="21" y2="21" />
-    <line x1="8" y1="11" x2="14" y2="11" />
-  </svg>
-);
-
-const RotateIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1" />
-    <polyline points="21 3 21 9 15 9" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <line x1="5" y1="5" x2="19" y2="19" />
-    <line x1="19" y1="5" x2="5" y2="19" />
-  </svg>
-);
-
-const ChevronLeftIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
-
 type DragState = {
   pointerId: number;
   startX: number;
@@ -510,10 +425,9 @@ export default function ImagePreview({
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLImageElement>) => {
     if (!zoom || event.button !== 0) return;
-    // jsdom has no pointer capture API — guard it so drag tests run there.
-    if (typeof event.currentTarget.setPointerCapture === 'function') {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }
+    // Guarded capture — jsdom and capture-less engines keep delivering
+    // moves bubbling through the image so drag tests run there.
+    capturePointer(event.currentTarget, event.pointerId);
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -623,7 +537,7 @@ export default function ImagePreview({
           aria-label={strings.prevImage}
           onClick={() => goToImage(activeIndex - 1)}
         >
-          <ChevronLeftIcon />
+          <ChevronLeft aria-hidden="true" focusable="false" />
         </button>
       )}
       {galleryMode && (
@@ -634,7 +548,7 @@ export default function ImagePreview({
           aria-label={strings.nextImage}
           onClick={() => goToImage(activeIndex + 1)}
         >
-          <ChevronRightIcon />
+          <ChevronRight aria-hidden="true" focusable="false" />
         </button>
       )}
       <div data-slot="toolbar" className={toolbar}>
@@ -648,7 +562,7 @@ export default function ImagePreview({
               disabled={scale >= SCALE_MAX}
               onClick={() => setScale(clampScale(scale + SCALE_STEP))}
             >
-              <ZoomInIcon />
+              <ZoomIn aria-hidden="true" focusable="false" />
             </button>
             <button
               data-slot="zoom-out-button"
@@ -658,7 +572,7 @@ export default function ImagePreview({
               disabled={scale <= SCALE_MIN}
               onClick={() => setScale(clampScale(scale - SCALE_STEP))}
             >
-              <ZoomOutIcon />
+              <ZoomOut aria-hidden="true" focusable="false" />
             </button>
             <button
               data-slot="reset-button"
@@ -679,7 +593,7 @@ export default function ImagePreview({
             aria-label={strings.rotate}
             onClick={() => setRotation((prev) => (prev + ROTATE_STEP) % 360)}
           >
-            <RotateIcon />
+            <RotateCw aria-hidden="true" focusable="false" />
           </button>
         )}
         {galleryMode && (
@@ -698,7 +612,7 @@ export default function ImagePreview({
           aria-label={strings.close}
           onClick={() => setOpen(false)}
         >
-          <CloseIcon />
+          <X aria-hidden="true" focusable="false" />
         </button>
       </div>
       {galleryImages !== null && total > 1 && showThumbnails && (

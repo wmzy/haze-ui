@@ -6,7 +6,7 @@ import { useControl } from 'react-use-control';
 
 import { NativeHiddenFields } from '../../utils/native-form';
 import { mergeRefs } from '../../utils/refs';
-import { formatTimeValue, parseTimeValue } from '../TimePicker/time';
+import { formatTimeValue, parseTimeValue } from '../../utils/time-math';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
 // the file basename, and a shared `styles` basename collides with

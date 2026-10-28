@@ -33,9 +33,13 @@ describe('Flex', () => {
     });
   });
 
-  it('applies numeric gap as px', () => {
-    const { container } = render(<Flex gap={16}>Content</Flex>);
-    expect(container.firstChild).toHaveStyle({ gap: '16px' });
+  it('maps numeric gap onto the space-token ladder', () => {
+    const { container } = render(<Flex gap={4}>Content</Flex>);
+    // jsdom leaves var() unevaluated in the inline style — assert the
+    // raw declaration (Grid/Masonry step convention, not px).
+    expect((container.firstChild as HTMLElement).style.gap).toBe(
+      'var(--haze-space-4)'
+    );
   });
 
   it('applies string gap as-is', () => {

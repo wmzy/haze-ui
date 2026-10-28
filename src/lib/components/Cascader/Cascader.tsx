@@ -14,8 +14,17 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getDirection } from '../../utils/direction';
 import { useFocusScope } from '../../utils/focus-scope';
-import { ChevronRight, PickerTrigger, pickerCaret } from '../../utils/picker-trigger';
+import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
+import {
+  ChevronRight,
+  PickerTrigger,
+  pickerCaret,
+  pickerEmptyBlock,
+  pickerLoadingBlock,
+  pickerSearchInput,
+} from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { usePendingFocus } from '../../utils/use-pending-focus';
 import { useSearchReport } from '../../utils/use-search-report';
 import { useStrings } from '../LocaleProvider';
 import Spinner from '../Spinner/Spinner';
@@ -177,44 +186,33 @@ const separator = css`
   color: var(--haze-color-text-muted);
 `;
 
-/** Panel skin: a horizontal strip of scrolling columns. */
+/** Panel deltas over the shared bare surface (`panelSurfaceBare`,
+ * utils/panel-skin): the horizontal strip of scrolling columns plus
+ * the typography the columns' items inherit. The popover re-hide rule
+ * lives in the shared `popoverPanelHidden` (the "author display
+ * outranks the UA sheet" contract) — composed alongside at the call
+ * site because this delta's `display: flex` is what re-opens the
+ * closed-popover hole. */
 const panel = css`
   display: flex;
   align-items: stretch;
   padding: var(--haze-space-1);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Author "display" outranks the UA sheet's closed-popover rule
-     (display none on non-open popovers — the ImagePreview dialog
-     lesson), so the closed state is re-hidden here for the native
-     tier: scoped to the popover attribute because the fallback tier's
-     floatingHidden class already owns hiding there, and to the
-     non-open pseudo-class so the exit animation — which runs while
-     the popover is still open — keeps playing. */
-  &[popover]:not(:popover-open) {
-    display: none;
-  }
 `;
 
 /**
- * Searchable panel chrome (`onSearch` set): same skin as `panel`, but a
- * plain block flow container — the search input stacks above the
- * columns wrapper, which owns the horizontal strip layout (an input
- * cannot live inside `role="menu"`).
+ * Searchable-panel deltas (`onSearch` set) over the shared bare
+ * surface: a plain block flow container — the search input
+ * (`pickerSearchInput`, utils/picker-trigger) stacks above the columns
+ * wrapper, which owns the horizontal strip layout (an input cannot
+ * live inside `role="menu"`). No `display` declaration of its own, so
+ * the UA sheet's closed-popover hiding already holds here.
  */
 const panelSearch = css`
   padding: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
-  box-shadow: var(--haze-shadow-lg);
 `;
 
 /**
@@ -225,49 +223,6 @@ const panelSearch = css`
 const columnsStrip = css`
   display: flex;
   align-items: stretch;
-`;
-
-/** Search input heading the searchable panel. */
-const searchInput = css`
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
-  padding: var(--haze-space-1) var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-/** Loading state of the column area — Spinner plus copy, centered. */
-const loadingBlock = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--haze-space-2);
-  padding: var(--haze-space-3);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-`;
-
-/** Empty-search state of the column area. */
-const emptyBlock = css`
-  padding: var(--haze-space-3);
-  color: var(--haze-color-text-muted);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  text-align: center;
 `;
 
 const column = css`
@@ -289,7 +244,8 @@ const column = css`
  * Virtualized column: same chrome (width floor, separators, padding),
  * but no scroll box of its own — the inner VirtualList scrollport owns
  * scrolling, avoiding a nested scroll container that could grow a
- * second scrollbar (the same trade-off as Combobox's listboxVirtual).
+ * second scrollbar (the same trade-off as the picker family's
+ * `pickerListboxVirtual`).
  */
 const columnVirtual = css`
   max-height: none;
@@ -421,16 +377,12 @@ export default function Cascader({
   // Transient drill-down position (which parent option each open column
   // descends from) — internal UI state, resynced from `value` on open.
   const [activePath, setActivePath] = useState<string[]>([]);
-  // Focus target requested by a keyboard step, applied after the
-  // matching columns (or their virtualized windows) have rendered.
-  const [pendingFocus, setPendingFocus] = useState<PendingFocus | null>(null);
   // Remote search mode: presence of `onSearch` swaps the panel for a
   // search input plus consumer-owned options (see the prop docs). The
   // query is internal UI state (never a prop), so useState is the
   // correct primitive here, not useControl.
   const searchMode = onSearch !== undefined;
   const [query, setQuery] = useState('');
-
   // `virtualized` resolution: object config enables and customizes,
   // `true` enables with defaults, anything else keeps the plain DOM.
   const virtual = virtualized !== undefined && virtualized !== false;
@@ -447,6 +399,21 @@ export default function Cascader({
     [triggerRef, ref]
   );
   const panelRef = useRef<HTMLDivElement>(null);
+  // Keyboard-requested focus targets, applied through the shared
+  // retry loop once the matching columns (or their virtualized
+  // windows) have rendered — the attempt resolves the pending step
+  // against the panel DOM and reports whether it landed.
+  const pendingFocus = usePendingFocus((pending: PendingFocus) => {
+    const items = itemsOf(columnsOf(panelRef.current)[pending.level]);
+    const index =
+      pending.value !== undefined
+        ? items.findIndex((el) => el.dataset.value === pending.value)
+        : pending.index;
+    const target = index >= 0 ? items[index] : items[0];
+    if (!target) return false;
+    target.focus();
+    return true;
+  });
   // Search input of the remote-search panel (search mode only).
   const searchRef = useRef<HTMLInputElement>(null);
   // VirtualList handles per column level (virtualized mode only) —
@@ -481,36 +448,22 @@ export default function Cascader({
   }, [open, value]);
 
   // Panel focus: one-shot initial focus when the panel opens (deepest
-  // selected item when a value exists, else the first option) plus
-  // keyboard-requested moves. Gated on `shown` — on the native path the
-  // popover is display:none until showPopover() runs, and focus on a
-  // hidden element is silently dropped. Depends on `activePath` because
-  // opening resyncs activePath from `value` in a separate (earlier)
-  // effect: on the just-opened commit the deeper columns are not rendered
-  // yet, so the deepest-selected target is absent and the effect must
-  // retry on the next commit instead of falling back to the first option.
-  // Depends on `pendingFocus` so virtualized keyboard steps re-run after
-  // their scrollToIndex commits the new window.
+  // selected item when a value exists, else the first option) — the
+  // keyboard-requested moves ride the pendingFocus retry loop above.
+  // Gated on `shown` — on the native path the popover is display:none
+  // until showPopover() runs, and focus on a hidden element is silently
+  // dropped. Depends on `activePath` because opening resyncs activePath
+  // from `value` in a separate (earlier) effect: on the just-opened
+  // commit the deeper columns are not rendered yet, so the
+  // deepest-selected target is absent and the effect must retry on the
+  // next commit instead of falling back to the first option.
   useEffect(() => {
     if (!open) {
       focusedOpenRef.current = false;
-      setPendingFocus(null);
+      pendingFocus.clear();
       return;
     }
     if (!floating.shown) return;
-
-    const pending = pendingFocus;
-    if (pending) {
-      setPendingFocus(null);
-      const items = itemsOf(columnsOf(panelRef.current)[pending.level]);
-      const index =
-        pending.value !== undefined
-          ? items.findIndex((el) => el.dataset.value === pending.value)
-          : pending.index;
-      (index >= 0 ? items[index] : items[0])?.focus();
-      return;
-    }
-
     if (focusedOpenRef.current) return;
     const panel = panelRef.current;
     if (!panel) return;
@@ -530,7 +483,8 @@ export default function Cascader({
       // Virtualized columns only mount the visible window: scroll the
       // deepest selected row into it first, then let the pending focus
       // land on the re-rendered window (the scroll state update and the
-      // pending focus commit together). Only once the target column has
+      // queued request commit together; the retry loop re-applies until
+      // the window mounts the target). Only once the target column has
       // rendered — earlier runs fall through to the DOM miss below and
       // retry on the next commit, before focusedOpenRef latches.
       if (virtual && listRefs.current.has(level)) {
@@ -543,7 +497,7 @@ export default function Cascader({
         if (index >= 0) {
           listRefs.current.get(level)?.scrollToIndex(index, 'auto');
           focusedOpenRef.current = true;
-          setPendingFocus({ level, index, value: last });
+          pendingFocus.request({ level, index, value: last });
           return;
         }
       }
@@ -559,7 +513,7 @@ export default function Cascader({
     if (!target) return;
     focusedOpenRef.current = true;
     target.focus();
-  }, [open, floating.shown, activePath, value, pendingFocus, virtual, options, searchMode]);
+  }, [open, floating.shown, activePath, value, virtual, options, searchMode, pendingFocus]);
 
   useSearchReport(onSearch, query);
 
@@ -601,15 +555,16 @@ export default function Cascader({
   // Move column focus to `index` (a data index, valid across the whole
   // column). Plain columns focus the mounted item directly; virtualized
   // columns scroll the row into the window first and route through
-  // pendingFocus, which the focus effect applies once the re-rendered
-  // window has mounted the target (scrollToIndex's internal state update
-  // batches with setPendingFocus, so one commit carries both).
+  // pendingFocus, whose retry loop applies the request once the
+  // re-rendered window has mounted the target (scrollToIndex's internal
+  // state update batches with the queued request, so one commit carries
+  // both).
   const focusColumnItem = (level: number, index: number) => {
     const option = columns[level]?.[index];
     if (!option) return;
     if (virtual) {
       listRefs.current.get(level)?.scrollToIndex(index, 'auto');
-      setPendingFocus({ level, index, value: option.value });
+      pendingFocus.request({ level, index, value: option.value });
       return;
     }
     const items = itemsOf(columnsOf(panelRef.current)[level]);
@@ -693,7 +648,7 @@ export default function Cascader({
         if (itemEl?.getAttribute('aria-haspopup') !== 'true') return;
         e.preventDefault();
         setActivePath([...activePath.slice(0, level), itemEl.dataset.value!]);
-        setPendingFocus({ level: level + 1, index: 0 });
+        pendingFocus.request({ level: level + 1, index: 0 });
         return;
       }
       case backKey: {
@@ -701,7 +656,7 @@ export default function Cascader({
         e.preventDefault();
         const removed = activePath[activePath.length - 1]!;
         setActivePath(activePath.slice(0, -1));
-        setPendingFocus({
+        pendingFocus.request({
           level: activePath.length - 1,
           index: 0,
           value: removed,
@@ -732,7 +687,7 @@ export default function Cascader({
         if (!option) return;
         if (option.children?.length) {
           setActivePath([...activePath.slice(0, level), option.value]);
-          setPendingFocus({ level: level + 1, index: 0 });
+          pendingFocus.request({ level: level + 1, index: 0 });
         } else {
           activate(option, level);
         }
@@ -816,12 +771,12 @@ export default function Cascader({
   ));
 
   const panelBody = loading ? (
-    <div data-slot='loading' x-class={[loadingBlock, classNames?.loading]}>
+    <div data-slot='loading' x-class={[pickerLoadingBlock, classNames?.loading]}>
       <Spinner size='sm' />
       <span>{searchStrings.loading}</span>
     </div>
   ) : searchMode && options.length === 0 ? (
-    <div data-slot='empty' x-class={[emptyBlock, classNames?.empty]}>{searchStrings.noMatch}</div>
+    <div data-slot='empty' x-class={[pickerEmptyBlock, classNames?.empty]}>{searchStrings.noMatch}</div>
   ) : (
     columnsBody
   );
@@ -866,7 +821,9 @@ export default function Cascader({
         id={searchMode ? undefined : id}
         role={searchMode || loading ? undefined : 'menu'}
         aria-busy={loading || undefined}
-        visualClass={searchMode ? panelSearch : panel}
+        visualClass={`${panelSurfaceBare} ${popoverPanelHidden} ${
+          searchMode ? panelSearch : panel
+        }`}
         onKeyDown={handlePanelKeyDown}
       >
         {searchMode ? (
@@ -877,7 +834,7 @@ export default function Cascader({
               type='text'
               aria-label={searchStrings.searchLabel}
               placeholder={searchStrings.searchPlaceholder}
-              x-class={[searchInput, classNames?.input]}
+              x-class={[pickerSearchInput, classNames?.input]}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

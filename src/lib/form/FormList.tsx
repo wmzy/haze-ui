@@ -8,9 +8,8 @@ import type {
   PathValueOf
 } from 'react-f0rm';
 
-import {useCallback, useContext, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {
-  FormContext,
   getValue,
   getValues,
   setValue,
@@ -18,6 +17,7 @@ import {
 } from 'react-f0rm';
 
 import {toSegments} from './path';
+import {useResolvedForm} from './use-resolved-form';
 
 /**
  * `fields` 数组的元素 —— react-f0rm `useFieldArray` 的行描述透传：
@@ -149,16 +149,10 @@ export default function FormList<
   className,
   children
 }: FormListProps<TValues, P, K>) {
-  // 与 FormItem 同一套解析顺序：显式 form 优先，其次 form context；
-  // 都没有时给出指出两条出路的错误，而不是让 f0rm 内部的
-  // "no form provided" 裸抛。
-  const formFromContext = useContext(FormContext);
-  const resolvedForm = form ?? formFromContext;
-  if (!resolvedForm) {
-    throw new Error(
-      'FormList: no form provided — pass `form={form}` or render inside a <FormProvider value={form}>.'
-    );
-  }
+  // 与 FormItem 同一套解析顺序（use-resolved-form）：显式 form 优先，
+  // 其次 form context；都没有时给出指出两条出路的错误，而不是让
+  // f0rm 内部的 "no form provided" 裸抛。
+  const resolvedForm = useResolvedForm(form, 'FormList');
 
   const raw = useFieldArray({
     form: resolvedForm,

@@ -20,6 +20,8 @@ import { ConfirmDialog, confirm } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/confirm-dialog.css';
+import 'haze-ui/css/button.css';
+import 'haze-ui/css/spinner.css';
 
 export { ConfirmDialog, confirm };
 export type { ConfirmDialogProps, ConfirmOptions } from 'haze-ui';

@@ -7,7 +7,7 @@
  * `buddhist`, which renders the locale's ordinary month names; the era
  * piece reports "BE" (sampled on June 15). Because the offset is
  * constant, every operation delegates to the shared Gregorian math in
- * `src/lib/components/Calendar/date.ts` after translating the year —
+ * `src/lib/utils/date-math.ts` after translating the year —
  * the +543 instance of `makeGregorianLikeAdapter`.
  */
 import type { HazeDateAdapter } from './adapter';

@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { statusSolidColors } from '../../utils/status-solid-skin';
+
 /**
  * Corner badge attached to a host element (avatar, icon button, tab) —
  * the notification-dot affordance. Render without `label` for a plain
@@ -90,16 +92,14 @@ const positions = {
   `,
 } as const;
 
+/* Badge tones come from the shared solid status skin (utils/status-skin.ts).
+ * Warning keeps a local arm: the yellow fill needs the normal text ink
+ * (white-on-warning fails contrast), so its declaration stays whole
+ * rather than composed. */
 const tones = {
-  primary: css`
-    background: var(--haze-color-primary);
-  `,
-  danger: css`
-    background: var(--haze-color-danger);
-  `,
-  success: css`
-    background: var(--haze-color-success);
-  `,
+  primary: statusSolidColors.primary,
+  danger: statusSolidColors.danger,
+  success: statusSolidColors.success,
   warning: css`
     background: var(--haze-color-warning);
     color: var(--haze-color-text);

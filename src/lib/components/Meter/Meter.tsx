@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
+import type { StatusColor } from '../../utils/status-skin';
 
 import { useId } from 'react';
 
@@ -23,10 +24,10 @@ type MeterThreshold = {
 };
 
 /** The resolved band color — the same six-value semantic axis the
- * display family exposes as its `color` prop. `primary` when no
- * threshold band contains the value (or the matching band omitted
- * its color). */
-type MeterTone = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+ * display family exposes as its `color` prop (the shared StatusColor,
+ * utils/status-skin.ts). `primary` when no threshold band contains the
+ * value (or the matching band omitted its color). */
+type MeterTone = StatusColor;
 
 /** Semantic slot classes for Meter (AntD v6 `classNames` shape; keys
  * follow the data-slot names). */

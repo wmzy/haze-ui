@@ -5,7 +5,9 @@ import type {
   ComponentProps,
   CSSProperties,
   Dispatch,
+  KeyboardEvent as ReactKeyboardEvent,
   ReactNode,
+  Ref,
   RefObject,
   SetStateAction,
 } from 'react';
@@ -1065,5 +1067,117 @@ export function FloatingPanel({
     >
       {children}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Trigger component
+// ---------------------------------------------------------------------------
+
+type FloatingTriggerSpanProps = {
+  /**
+   * Behavior record produced by `useFloating` at the floating root —
+   * supplies the trigger style (the anchor name) and the
+   * suppression-aware toggle handlers.
+   */
+  behavior: Pick<
+    FloatingBehavior,
+    'triggerStyle' | 'onTriggerPointerDown' | 'onTriggerClick'
+  >;
+  /** Whether the panel is open — drives `aria-expanded` (and the Escape arm below). */
+  open: boolean;
+  /** The panel's id — wires `aria-controls`. */
+  controlsId: string;
+  /**
+   * `aria-haspopup` value: 'true' for generic popover panels, 'dialog'
+   * when the panel carries the dialog role (Popconfirm).
+   */
+  haspopup?: 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog';
+  /**
+   * Inert trigger: no pointer or keyboard activation while set;
+   * `tabindex='-1'` + `aria-disabled` report the state (Popconfirm's
+   * `disabled`).
+   */
+  disabled?: boolean;
+  /**
+   * Plain `className` (not x-class): the span has no base class of its
+   * own, so an omitted slot must leave the attribute absent — undefined
+   * does exactly that, while x-class would compile to class="".
+   */
+  className?: string;
+  /**
+   * Escape pressed while the panel is open — the consumer's own close
+   * semantics for the trigger-focused case (Popconfirm cancels). The
+   * default and the propagation are already stopped, so neither the
+   * native tier's close-request nor a document-level Escape close
+   * fires underneath it.
+   */
+  onEscape?: () => void;
+  children: ReactNode;
+  ref?: Ref<HTMLSpanElement>;
+};
+
+/**
+ * The trigger element of a click-toggled floating pair: a span
+ * completing the button contract by hand (role + tabIndex,
+ * aria-haspopup/expanded/controls, pointerdown/click through the
+ * behavior's suppression-aware toggle, Enter/Space keydown activation).
+ * Popover and Popconfirm render it verbatim; hover-driven triggers
+ * (HoverCard) and native-button triggers (InlineCitation, ColorPicker)
+ * keep their own elements.
+ */
+export function FloatingTriggerSpan({
+  behavior,
+  open,
+  controlsId,
+  haspopup = 'true',
+  disabled = false,
+  className,
+  onEscape,
+  children,
+  ref,
+}: FloatingTriggerSpanProps) {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLSpanElement>) => {
+    if (disabled) return;
+    // The trigger is a span, not a button: Enter/Space have no native
+    // activation, so the button contract is completed here.
+    // preventDefault on Space keeps the page from scrolling.
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      behavior.onTriggerClick();
+      return;
+    }
+    if (event.key === 'Escape' && open && onEscape !== undefined) {
+      // Focus may sit on the trigger while the panel is open (Shift+Tab);
+      // Escape runs the consumer's close semantics from there too, on
+      // the same path as the panel's own handler.
+      event.preventDefault();
+      event.stopPropagation();
+      onEscape();
+    }
+  };
+
+  return (
+    <span
+      ref={ref}
+      data-slot='trigger'
+      className={className}
+      // aria-expanded requires an interactive role; a bare span resolves
+      // to role=generic, which ARIA 1.2 does not allow it on (axe
+      // aria-allowed-attr). The trigger span is the clickable trigger —
+      // role=button is its honest semantics.
+      role='button'
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled || undefined}
+      aria-haspopup={haspopup}
+      aria-expanded={open}
+      aria-controls={controlsId}
+      style={behavior.triggerStyle}
+      onPointerDown={disabled ? undefined : behavior.onTriggerPointerDown}
+      onClick={disabled ? undefined : behavior.onTriggerClick}
+      onKeyDown={handleKeyDown}
+    >
+      {children}
+    </span>
   );
 }

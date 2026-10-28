@@ -56,28 +56,18 @@ const circle = css`
   transition: all var(--haze-duration-normal);
 `;
 
-const activeCircle = css`
+/* The filled circle the active and the completed step both wear — the
+ * two former classes (activeCircle/completedCircle) were declaration-
+ * identical, collapsed into one. */
+const filledCircle = css`
   border-color: var(--haze-color-primary);
   background: var(--haze-color-primary);
   color: var(--haze-color-text-inverse);
 
-  /* Forced-colors: the primary fill flattens onto Canvas — the
-     current step would be indistinguishable from a pending one. The
-     Windows-native Highlight chip renders instead. */
-  @media (forced-colors: active) {
-    border-color: Highlight;
-    background: Highlight;
-    color: HighlightText;
-  }
-`;
-
-const completedCircle = css`
-  border-color: var(--haze-color-primary);
-  background: var(--haze-color-primary);
-  color: var(--haze-color-text-inverse);
-
-  /* Forced-colors: same Highlight chip as the active circle — the ✓
-     glyph rides in as HighlightText. */
+  /* Forced-colors: the primary fill flattens onto Canvas — the filled
+     step (current or completed) would be indistinguishable from a
+     pending one. The Windows-native Highlight chip renders instead; the
+     completed step's ✓ glyph rides in as HighlightText. */
   @media (forced-colors: active) {
     border-color: Highlight;
     background: Highlight;
@@ -115,7 +105,7 @@ export default function Step({ title, description, className, index = 0 }: StepP
 
   return (
     <div data-slot='step' x-class={[step, className]} role="listitem">
-      <div data-slot='icon' x-class={[circle, isActive && activeCircle, isCompleted && completedCircle]}>
+      <div data-slot='icon' x-class={[circle, (isActive || isCompleted) && filledCircle]}>
         {isCompleted ? '✓' : index + 1}
       </div>
       <div data-slot='title' x-class={[titleStyle, isActive && activeTitle, isCompleted && completedTitle]}>

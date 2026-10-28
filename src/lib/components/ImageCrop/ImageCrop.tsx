@@ -12,6 +12,9 @@ import { useCallback, useEffect, useId, useImperativeHandle, useRef, useState } 
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { quantize } from '../../utils/math';
+import { usePointerDrag } from '../../utils/use-pointer-drag';
+
 import {
   defaultRect,
   KEYBOARD_STEP,
@@ -85,9 +88,10 @@ type ImageCropHandle = {
   getCroppedCanvas: () => HTMLCanvasElement | null;
 };
 
-/** In-flight pointer gesture: box move or one corner handle resizing. */
+/** Geometry frozen at gesture start for an in-flight box move or one
+ * corner-handle resize. The active pointer's identity is gated by the
+ * shared usePointerDrag wiring, so only the origin math lives here. */
 type DragState = {
-  pointerId: number;
   mode: 'move' | CropCorner;
   start: CropRect;
   origin: { x: number; y: number };
@@ -238,8 +242,9 @@ const srOnly = css`
 `;
 
 /** Inline percentage free of binary-float noise (0.1 · 100 must render
- * as `10%`, not `10.000000000000002%`). */
-const percent = (value: number): string => `${Math.round(value * 10000) / 100}%`;
+ * as `10%`, not `10.000000000000002%`): the percentage itself, rounded
+ * to two decimals. */
+const percent = (value: number): string => `${quantize(value * 100, 100)}%`;
 
 export default function ImageCrop({
   src,
@@ -362,65 +367,54 @@ export default function ImageCrop({
   };
 
   // ── pointer: box drags translate, corner handles resize ───────────
-  const beginDrag = (
-    event: ReactPointerEvent<HTMLElement>,
-    mode: DragState['mode']
-  ) => {
-    if (disabled || rect === undefined) return;
-    if (event.button !== 0) return;
-    const frameBox = frameRef.current?.getBoundingClientRect();
-    if (frameBox === undefined) return;
-    event.preventDefault();
-    // a handle pointerdown must not also start a box move when it
-    // bubbles to the crop box.
-    event.stopPropagation();
-    dragRef.current = {
-      pointerId: event.pointerId,
-      mode,
-      start: rect,
-      origin: pointerToNormalized(event.clientX, event.clientY, frameBox),
-    };
-    const el = event.currentTarget;
-    if (typeof el.setPointerCapture === 'function') {
-      try {
-        el.setPointerCapture(event.pointerId);
-      } catch {
-        // pointer already released — the gesture still tracks
+  // Gesture plumbing rides the shared usePointerDrag hook (pointerId
+  // gate + guarded capture); the origin math stays local — pointerdown
+  // freezes {mode, start, origin} into dragRef, moves commit through it,
+  // release drops it. Mode derives from the surface the gesture started
+  // on (handle spans carry data-corner, the crop box means 'move').
+  const cropDrag = usePointerDrag<
+    HTMLElement,
+    { mode: DragState['mode']; x: number; y: number }
+  >(
+    (event) => {
+      // Start-only guards (primary button, enabled, a live rect); an
+      // open gesture always resolves so its up/cancel can finalize.
+      if (
+        dragRef.current === null &&
+        (event.button !== 0 || disabled || rect === undefined)
+      ) {
+        return null;
       }
-    }
-  };
-
-  const moveDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    const drag = dragRef.current;
-    if (drag?.pointerId !== event.pointerId) return;
-    if (natural === null) return;
-    const frameBox = frameRef.current?.getBoundingClientRect();
-    if (frameBox === undefined) return;
-    const pointer = pointerToNormalized(
-      event.clientX,
-      event.clientY,
-      frameBox
-    );
-    commit(
-      drag.mode === 'move'
-        ? moveRect(drag.start, pointer.x - drag.origin.x, pointer.y - drag.origin.y)
-        : resizeFromAnchor(drag.start, drag.mode, pointer, aspect, natural)
-    );
-  };
-
-  const endDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    const drag = dragRef.current;
-    if (drag?.pointerId !== event.pointerId) return;
-    dragRef.current = null;
-    const el = event.currentTarget;
-    if (typeof el.releasePointerCapture === 'function') {
-      try {
-        el.releasePointerCapture(event.pointerId);
-      } catch {
-        // capture already gone
+      const frameBox = frameRef.current?.getBoundingClientRect();
+      if (frameBox === undefined) return null;
+      const corner = event.currentTarget.dataset.corner as CropCorner | undefined;
+      const pointer = pointerToNormalized(event.clientX, event.clientY, frameBox);
+      return { mode: corner ?? 'move', x: pointer.x, y: pointer.y };
+    },
+    (value) => {
+      const drag = dragRef.current;
+      if (drag === null) {
+        if (rect === undefined) return;
+        dragRef.current = {
+          mode: value.mode,
+          start: rect,
+          origin: { x: value.x, y: value.y },
+        };
+        return;
       }
+      if (natural === null) return;
+      commit(
+        drag.mode === 'move'
+          ? moveRect(drag.start, value.x - drag.origin.x, value.y - drag.origin.y)
+          : resizeFromAnchor(drag.start, drag.mode, value, aspect, natural)
+      );
+    },
+    () => {
+      // Release: every frame already committed live, so ending the
+      // gesture is just dropping the frozen geometry.
+      dragRef.current = null;
     }
-  };
+  );
 
   /** A handle's captured move/up events bubble to the crop box; the box
    * handlers only own gestures that started (and target) the box. */
@@ -505,15 +499,15 @@ export default function ImageCrop({
             tabIndex={disabled ? -1 : 0}
             style={boxStyle}
             onKeyDown={handleKeyDown}
-            onPointerDown={(event) => beginDrag(event, 'move')}
+            onPointerDown={cropDrag.onPointerDown}
             onPointerMove={(event) => {
-              if (ownEvent(event)) moveDrag(event);
+              if (ownEvent(event)) cropDrag.onPointerMove(event);
             }}
             onPointerUp={(event) => {
-              if (ownEvent(event)) endDrag(event);
+              if (ownEvent(event)) cropDrag.onPointerUp(event);
             }}
             onPointerCancel={(event) => {
-              if (ownEvent(event)) endDrag(event);
+              if (ownEvent(event)) cropDrag.onPointerUp(event);
             }}
           >
             {CORNERS.map((corner) => (
@@ -523,10 +517,15 @@ export default function ImageCrop({
                 data-corner={corner}
                 aria-hidden="true"
                 x-class={[handleBase, handlePositions[corner]]}
-                onPointerDown={(event) => beginDrag(event, corner)}
-                onPointerMove={moveDrag}
-                onPointerUp={endDrag}
-                onPointerCancel={endDrag}
+                onPointerDown={(event) => {
+                  // a handle pointerdown must not also start a box move
+                  // when it bubbles to the crop box.
+                  event.stopPropagation();
+                  cropDrag.onPointerDown(event);
+                }}
+                onPointerMove={cropDrag.onPointerMove}
+                onPointerUp={cropDrag.onPointerUp}
+                onPointerCancel={cropDrag.onPointerUp}
               />
             ))}
           </div>

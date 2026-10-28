@@ -9,7 +9,12 @@ import type { Orientation } from './scroll-math';
 import { css } from '@linaria/core';
 import { useEffect, useRef } from 'react';
 
+import { connectResizeObserver } from '../../utils/connect-resize-observer';
 import { getDirection } from '../../utils/direction';
+import {
+  capturePointer,
+  releasePointerCaptureSafe,
+} from '../../utils/pointer-capture';
 import { mergeRefs } from '../../utils/refs';
 
 import { useScrollAreaContext } from './ScrollAreaContext';
@@ -93,6 +98,7 @@ export default function ScrollThumb({
   const thumbRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef(0);
   const hideTimerRef = useRef<number>(0);
+  const observerRef = useRef<ResizeObserver | null>(null);
   const dragRef = useRef<{
     pointerId: number;
     startPos: number;
@@ -173,17 +179,20 @@ export default function ScrollThumb({
     root?.addEventListener('pointerenter', onHoverShow);
     root?.addEventListener('pointerleave', onHoverHide);
 
-    let observer: ResizeObserver | undefined;
-    // jsdom has no ResizeObserver; mount + scroll updates cover it.
-    if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(schedule);
-      observer.observe(viewport);
-    }
+    // RO lifecycle shared with useResizeObserver/useElementSize; jsdom
+    // has no ResizeObserver — mount + scroll updates cover it.
+    connectResizeObserver({
+      observerRef,
+      node: viewport,
+      box: 'content-box',
+      enabled: true,
+      onEntry: schedule,
+    });
     return () => {
       viewport.removeEventListener('scroll', onScroll);
       root?.removeEventListener('pointerenter', onHoverShow);
       root?.removeEventListener('pointerleave', onHoverHide);
-      observer?.disconnect();
+      observerRef.current?.disconnect();
       cancelAnimationFrame(rafRef.current);
       window.clearTimeout(hideTimerRef.current);
     };
@@ -210,10 +219,9 @@ export default function ScrollThumb({
     el.dataset.active = 'true';
     el.dataset.visible = 'true';
     // Pointer capture keeps the drag alive outside the 8px track.
-    // Older engines/jsdom lack it — the thumb then only drags in range.
-    if (typeof el.setPointerCapture === 'function') {
-      el.setPointerCapture(event.pointerId);
-    }
+    // Older engines/jsdom lack it — the thumb then only drags in range
+    // (guards live in utils/pointer-capture).
+    capturePointer(el, event.pointerId);
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -242,14 +250,10 @@ export default function ScrollThumb({
     dragRef.current = null;
     if (!el) return;
     el.dataset.active = 'false';
-    // Mirror the setPointerCapture guard: engines without pointer capture
-    // (jsdom, older browsers) never captured, so there is nothing to release.
-    if (
-      typeof el.hasPointerCapture === 'function' &&
-      el.hasPointerCapture(event.pointerId)
-    ) {
-      el.releasePointerCapture(event.pointerId);
-    }
+    // Mirror of the capture guard (utils/pointer-capture): engines
+    // without pointer capture never captured, so there is nothing to
+    // release.
+    releasePointerCaptureSafe(el, event.pointerId);
     if (mode === 'scroll') {
       window.clearTimeout(hideTimerRef.current);
       hideTimerRef.current = window.setTimeout(() => {

@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import type { SegmentSpec } from '../DateField/segmented-field';
-import type { TimePickerFormat } from '../TimePicker/time';
+import type { TimePickerFormat } from '../../utils/time-math';
 
 import SegmentedField from '../DateField/segmented-field';
 import {
@@ -9,7 +9,7 @@ import {
   from12Hour,
   parseTimeValue,
   to12Hour,
-} from '../TimePicker/time';
+} from '../../utils/time-math';
 
 /** Per-segment placeholder strings for the empty state. */
 type TimePlaceholder = {

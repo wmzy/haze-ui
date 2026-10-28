@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 /**
  * Shared Badge skin — the base, color and size classes the `Badge`
  * component wears. Living in their own module keeps the component file
@@ -20,32 +22,11 @@ export const base = css`
   white-space: nowrap;
 `;
 
-export const colors = {
-  default: css`
-    background: var(--haze-color-bg-muted);
-    color: var(--haze-color-text-secondary);
-  `,
-  primary: css`
-    background: var(--haze-color-primary-subtle);
-    color: var(--haze-color-primary);
-  `,
-  success: css`
-    background: var(--haze-color-success-subtle);
-    color: var(--haze-color-success);
-  `,
-  warning: css`
-    background: var(--haze-color-warning-subtle);
-    color: var(--haze-color-warning);
-  `,
-  danger: css`
-    background: var(--haze-color-danger-subtle);
-    color: var(--haze-color-danger);
-  `,
-  info: css`
-    background: var(--haze-color-info-subtle);
-    color: var(--haze-color-info);
-  `,
-} as const;
+/* The tinted surface/text pair comes from the shared status skin
+ * (utils/status-skin.ts) — the same subtle axis Badge historically
+ * declared inline; re-exported under the public `badgeVariants`
+ * name. */
+export const colors = statusSubtleColors;
 
 export const sizes = {
   sm: css`

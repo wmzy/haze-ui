@@ -1,6 +1,6 @@
 /**
  * Gregorian adapter — a thin shim over the calendar math Calendar already
- * uses (`src/lib/components/Calendar/date.ts`, imported here, never
+ * uses (`src/lib/utils/date-math.ts`, imported here, never
  * duplicated). `fromGregorian`/`toGregorian` are identity mappings
  * between local-civil Dates and their parts; month-length and view-shift
  * semantics are date.ts's own, so a Calendar wired to this adapter
@@ -9,7 +9,7 @@
  */
 import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
-import { getDaysInMonth as monthLength } from '../components/Calendar/date';
+import { getDaysInMonth as monthLength } from '../utils/date-math';
 
 import { assertCivilDate, makeGregorianLikeAdapter } from './adapter';
 

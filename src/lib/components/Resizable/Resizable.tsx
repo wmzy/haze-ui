@@ -19,7 +19,14 @@ import {
 } from 'react';
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
-import { getDirection } from '../../utils/direction';
+import {
+  axisKeyDelta,
+  endPointerDrag,
+  gripMirrored,
+  PARK_DELTA,
+} from '../../utils/grip-gesture';
+import { gripBase, gripHorizontal, gripVertical } from '../../utils/grip-skin';
+import { capturePointer } from '../../utils/pointer-capture';
 
 /**
  * px size overrides per panel id. A panel without an entry falls back to
@@ -80,10 +87,6 @@ function useResizableContext() {
 /** Arrow-key step in px (WCAG 2.5.7: the drag-styled handle must be
  * fully operable without a pointer). */
 const KEYBOARD_STEP = 16;
-
-/** Home/End park the leading panel at its clamp — a delta so large the
- * clamp math saturates, without overflowing. */
-const PARK_DELTA = Number.MAX_SAFE_INTEGER;
 
 const noop = (): void => undefined;
 
@@ -444,95 +447,17 @@ type ResizableHandleProps = {
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'className'>;
 
-/* 24px hit strip (WCAG 2.5.8) carrying a 2px hairline: the
-   bar paints only the content box (background-clip) while the
-   padded element keeps the minimum target; hover and focus
-   flood the whole strip with a subtle wash and center a
-   primary hairline, so the drag affordance reads clearly
-   without widening the grip. Coarse pointers get 44px
-   (WCAG 2.5.5). */
-const handleBase = css`
-  flex: 0 0 auto;
-  background: var(--haze-color-border);
-  background-clip: content-box;
-  transition: background var(--haze-duration-fast);
+/* Resizable-local chrome layered on the shared grip skin
+   (utils/grip-skin): the bar owns the gesture itself, so it locks
+   touch-action, and it doubles as an expander affordance when the
+   panel ahead is collapsed. */
+const handleExtras = css`
   touch-action: none;
-
-  &:hover,
-  &:focus-visible {
-    background:
-      linear-gradient(
-          to right,
-          transparent 0,
-          var(--haze-color-primary) 50%,
-          transparent 100%
-        )
-        center / 2px 100% no-repeat,
-      var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
 
   /* A collapsed panel ahead turns the grip into an expander — the cursor
      swap is pure CSS so no render-time neighbour sniffing is needed. */
   &:has(+ [data-slot='resizable-panel'][data-collapsed]) {
     cursor: pointer;
-  }
-
-  @media (forced-colors: active) {
-    background: CanvasText;
-    background-clip: content-box;
-
-    &:hover,
-    &:focus-visible {
-      background: Highlight;
-      background-clip: content-box;
-    }
-
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-  }
-`;
-
-const handleHorizontal = css`
-  width: 2px;
-  height: 100%;
-  padding-inline: calc((var(--haze-space-6) - 2px) / 2);
-  cursor: col-resize;
-
-  @media (pointer: coarse) {
-    padding-inline: calc((44px - 2px) / 2);
-  }
-`;
-
-const handleVertical = css`
-  height: 2px;
-  width: 100%;
-  padding-block: calc((var(--haze-space-6) - 2px) / 2);
-  cursor: row-resize;
-
-  /* Horizontal grip: the centered hairline runs along the
-   * inline axis, so the gradient is vertical. */
-  &:hover,
-  &:focus-visible {
-    background:
-      linear-gradient(
-          to bottom,
-          transparent 0,
-          var(--haze-color-primary) 50%,
-          transparent 100%
-        )
-        center / 100% 2px no-repeat,
-      var(--haze-color-bg-subtle);
-  }
-
-  @media (pointer: coarse) {
-    padding-block: calc((44px - 2px) / 2);
   }
 `;
 
@@ -622,7 +547,7 @@ export function ResizableHandle({
    * column-resize separator does the same). Vertical groups are
    * direction-invariant. */
   const mirrored = (): boolean =>
-    direction === 'horizontal' && getDirection(handleRef.current) === 'rtl';
+    gripMirrored(direction, handleRef.current);
 
   // The separator's value mirrors the rendered basis of the leading
   // fixed panel (trailing as fallback). Sibling styles are committed
@@ -720,13 +645,7 @@ export function ResizableHandle({
       pairSum: lead !== null && trail !== null ? lead.start + trail.start : null,
     };
     dragChangedRef.current = false;
-    if (typeof el.setPointerCapture === 'function') {
-      try {
-        el.setPointerCapture(event.pointerId);
-      } catch {
-        // pointer already released — the gesture still tracks
-      }
-    }
+    capturePointer(el, event.pointerId);
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -743,17 +662,7 @@ export function ResizableHandle({
   };
 
   const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (drag?.pointerId !== event.pointerId) return;
-    dragRef.current = null;
-    const el = event.currentTarget;
-    if (typeof el.releasePointerCapture === 'function') {
-      try {
-        el.releasePointerCapture(event.pointerId);
-      } catch {
-        // capture already gone
-      }
-    }
+    if (!endPointerDrag(dragRef, event)) return;
     // pointercancel aborts the gesture: the sizes moved live, but the
     // consumer does not get a commit for an interrupted drag.
     if (event.type === 'pointerup' && dragChangedRef.current) {
@@ -766,8 +675,6 @@ export function ResizableHandle({
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const growKey = direction === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
-    const shrinkKey = direction === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
     const { key } = event;
     const el = event.currentTarget;
     const { lead, trail, expand } = sidesOf(el);
@@ -784,34 +691,16 @@ export function ResizableHandle({
       resetNeighbors(el);
       return;
     }
-    if (
-      key !== growKey &&
-      key !== shrinkKey &&
-      key !== 'Home' &&
-      key !== 'End'
-    ) {
-      return;
-    }
+    const delta = axisKeyDelta(key, {
+      orientation: direction,
+      rtl: mirrored(),
+      step: KEYBOARD_STEP,
+    });
+    if (delta === null) return;
     if (lead === null && trail === null) return;
     event.preventDefault();
     const pairSum =
       lead !== null && trail !== null ? lead.start + trail.start : null;
-    // Under RTL the horizontal grow/shrink keys swap: ArrowRight keeps
-    // its screen-space meaning (move the divider right), but that
-    // shrinks the lead panel painted on the divider's right.
-    const rtl = mirrored();
-    const delta =
-      key === growKey
-        ? rtl
-          ? -KEYBOARD_STEP
-          : KEYBOARD_STEP
-        : key === shrinkKey
-          ? rtl
-            ? KEYBOARD_STEP
-            : -KEYBOARD_STEP
-          : key === 'Home'
-            ? -PARK_DELTA
-            : PARK_DELTA;
     if (applySizes(resizePatch(lead, trail, pairSum, delta))) {
       commitSizes();
     }
@@ -838,8 +727,9 @@ export function ResizableHandle({
         if (el !== null) resetNeighbors(el);
       }}
       x-class={[
-        handleBase,
-        direction === 'horizontal' ? handleHorizontal : handleVertical,
+        gripBase,
+        handleExtras,
+        direction === 'horizontal' ? gripHorizontal : gripVertical,
         className,
       ]}
     />

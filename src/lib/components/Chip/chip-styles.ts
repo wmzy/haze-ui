@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 /**
  * Shared Chip skin — the base, color and close-button classes the
  * `Chip` component wears. Living in their own module keeps the
@@ -23,14 +25,10 @@ export const base = css`
   padding: var(--haze-space-1) var(--haze-space-3);
 `;
 
-export const solidColors = {
-  default: css`background: var(--haze-color-bg-muted); color: var(--haze-color-text-secondary);`,
-  primary: css`background: var(--haze-color-primary-subtle); color: var(--haze-color-primary);`,
-  success: css`background: var(--haze-color-success-subtle); color: var(--haze-color-success);`,
-  warning: css`background: var(--haze-color-warning-subtle); color: var(--haze-color-warning);`,
-  danger: css`background: var(--haze-color-danger-subtle); color: var(--haze-color-danger);`,
-  info: css`background: var(--haze-color-info-subtle); color: var(--haze-color-info);`,
-} as const;
+/* The solid axis is the shared subtle status skin (utils/status-skin.ts)
+ * — the same map Chip historically declared inline; aliased under its
+ * public `chipVariants.solid` name. */
+export const solidColors = statusSubtleColors;
 
 export const outlineColors = {
   default: css`border: 1px solid var(--haze-color-border); color: var(--haze-color-text-secondary);`,
@@ -56,24 +54,10 @@ export const iconStyle = css`
   align-items: center;
 `;
 
-export const closeBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* 20px target on the space scale (space-5 = 1.25rem). */
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
-  border: none;
-  border-radius: var(--haze-radius-full);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
+/** Chip-local dismiss offset layered over the shared dismiss skin
+ * (utils/status-skin.ts): the leading margin separating the × from the
+ * label. Margin is not part of the shared chrome, so a plain class
+ * composes order-independently. */
+export const closeBtnGap = css`
   margin-inline-start: var(--haze-space-1);
-
-  &:hover {
-    opacity: 1;
-  }
 `;

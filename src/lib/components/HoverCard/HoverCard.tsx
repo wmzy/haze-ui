@@ -9,8 +9,10 @@ import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
+import { classnames } from '../../utils/classnames';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getTabbables } from '../../utils/focus';
+import { panelSurface } from '../../utils/panel-skin';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
@@ -79,29 +81,13 @@ const container = css`
   display: inline-flex;
 `;
 
-/** Visual skin applied on every rendering tier of the panel. */
-const panelVisuals = css`
-  /* min/max-width pairs with padding + border: border-box keeps both
-   * bounds covering the padding too (panel-family box-sizing
-   * contract). */
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * hover-card width bounds and padding step — the surface's border-box
+ * sizing keeps both bounds covering the padding too. */
+const panelDeltas = css`
   min-width: var(--haze-hovercard-min-width, 240px);
   max-width: var(--haze-hovercard-max-width, 320px);
   padding: var(--haze-space-4);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 /** Built-in open dwell (ms): hover/focus time before the card shows. */
@@ -253,8 +239,8 @@ export default function HoverCard({
         behavior={floating}
         placement={placement}
         id={id}
-        visualClass={panelVisuals}
-        className={className}
+        visualClass={panelSurface}
+        className={classnames(panelDeltas, className)}
         onMouseEnter={() => intent.cancel()}
         onMouseLeave={interactive ? schedulePointerClose : () => intent.scheduleClose()}
       >

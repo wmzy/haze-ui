@@ -9,6 +9,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
 import Spinner from '../Spinner/Spinner';
+import {
+  capturePointer,
+  releasePointerCaptureSafe,
+} from '../../utils/pointer-capture';
 
 /** Gesture state machine: idle → pulling → ready → refreshing → idle. */
 type PullToRefreshPhase =
@@ -260,18 +264,19 @@ export default function PullToRefresh({
   );
 
   const takeGesture = (content: HTMLDivElement, pointerId: number) => {
-    try {
-      content.setPointerCapture(pointerId);
-    } catch {
-      // jsdom / engines without pointer capture: events keep bubbling
-      // to the content handlers anyway.
-    }
+    // jsdom / engines without pointer capture: events keep bubbling
+    // to the content handlers anyway.
+    capturePointer(content, pointerId);
     document.addEventListener('touchmove', stableGuard, {
       passive: false,
     });
   };
 
-  const releaseGesture = () => {
+  const releaseGesture = (pointerId: number) => {
+    // Some engines keep the implicit capture until the next tick —
+    // release it safely so it cannot swallow the following click.
+    const content = contentRef.current;
+    if (content) releasePointerCaptureSafe(content, pointerId);
     document.removeEventListener('touchmove', stableGuard);
   };
 
@@ -331,7 +336,7 @@ export default function PullToRefresh({
     const gesture = gestureRef.current;
     if (gesture?.pointerId !== e.pointerId) return;
     gestureRef.current = null;
-    releaseGesture();
+    releaseGesture(e.pointerId);
     if (!gesture.dragging) return; // plain tap: nothing to settle
     if (gesture.offset >= distance) {
       void startRefresh();
@@ -345,7 +350,7 @@ export default function PullToRefresh({
     const gesture = gestureRef.current;
     if (gesture?.pointerId !== e.pointerId) return;
     gestureRef.current = null;
-    releaseGesture();
+    releaseGesture(e.pointerId);
     // The engine stole the gesture (native scroll claimed it): spring
     // back, never refresh — the user never released deliberately.
     if (gesture.dragging) {

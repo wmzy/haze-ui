@@ -12,12 +12,21 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import {
   PickerCaret,
   PickerTrigger,
+  pickerEmptyBlock,
+  pickerGroupLabel,
+  pickerListbox,
+  pickerListboxVirtual,
+  pickerLoadingBlock,
+  pickerOptionRow,
   pickerOverflowBadge,
   pickerPanelWidth,
+  pickerSearchInput,
   pickerTrigger,
+  pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
+import { useListboxNavigation } from '../../utils/use-listbox-navigation';
 import { useSearchReport } from '../../utils/use-search-report';
 import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
@@ -35,8 +44,8 @@ type SelectVirtualizedConfig = {
    * natural box of an option row: space-1 padding top+bottom (4+4) plus
    * the taller of the text-sm line box (21px at leading-normal) and the
    * 1.125rem visual checkbox (18px). Virtualization math needs it as a
-   * JS number; rows are stretched to fill it (`virtualRow`), so the two
-   * cannot drift apart.
+   * JS number; rows are stretched to fill it (`pickerVirtualRow`,
+   * utils/picker-trigger), so the two cannot drift apart.
    */
   itemHeight?: number;
   /** Extra rows kept mounted above/below the visible window. Defaults
@@ -343,41 +352,13 @@ const caret = css`
 `;
 
 /**
- * Chrome of the plain (scrolling) listbox on top of the shared
- * tier-aware width cascade (`pickerPanelWidth`, which also re-pins
- * the panel to the trigger's width on the anchored tier): the scroll
- * cap and the surface chrome. Same chrome contract as Combobox's
- * listbox.
- */
-const listbox = css`
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-`;
-
-/**
- * Virtualized panel: same chrome, no scroll box — the VirtualList
- * scrollport owns scrolling. Keeping the plain class untouched avoids a
- * nested scroll container that could grow a second scrollbar (the same
- * trade-off as Combobox's listboxVirtual).
- */
-const listboxVirtual = css`
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-`;
-
-/**
  * Searchable panel chrome on top of the shared tier-aware width
  * cascade (`pickerPanelWidth`): the panel itself stays a plain
  * container (a `display` declaration here would override the UA
  * sheet's `[popover]:not(:popover-open) { display: none }` and paint
- * the closed popover into the document flow) — the search input and
- * the inner listbox stack as plain block flow inside the padding.
+ * the closed popover into the document flow) — the search input
+ * (`pickerSearchInput`, utils/picker-trigger) and the inner listbox
+ * stack as plain block flow inside the padding.
  */
 const panelSearch = css`
   border: 1px solid var(--haze-color-border);
@@ -394,59 +375,8 @@ const listboxInner = css`
   overflow-y: auto;
 `;
 
-/** Search input heading the searchable panel. */
-const searchInput = css`
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  line-height: var(--haze-leading-normal);
-  padding: var(--haze-space-1) var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-/** Loading state of the options area — Spinner plus copy, centered. */
-const loadingBlock = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--haze-space-2);
-  padding: var(--haze-space-3);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-`;
-
-/** Empty-search state of the options area. */
-const emptyBlock = css`
-  padding: var(--haze-space-3);
-  color: var(--haze-color-text-muted);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  text-align: center;
-`;
-
-/** Group heading typography (shared by the plain row and the sticky
- * virtualized header). */
-const groupLabelText = css`
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text-muted);
-`;
-
-/** Plain-path group heading row: typography plus the option-row inset. */
+/** Plain-path group heading row: the shared group-heading typography
+ * (`pickerGroupLabel`, utils/picker-trigger) plus the option-row inset. */
 const groupLabelRow = css`
   padding: var(--haze-space-1) var(--haze-space-3);
 `;
@@ -459,42 +389,13 @@ const LISTBOX_MAX_HEIGHT = 200;
 /** Fixed row height for the virtualized path: the natural option-row
  * box — space-1 padding top+bottom (4+4) plus max(text-sm line box at
  * leading-normal 21, checkbox 1.125rem = 18) = 29. Rows are stretched
- * to fill it (`virtualRow`), so the two cannot drift apart. */
+ * to fill it (`pickerVirtualRow`, utils/picker-trigger), so the two
+ * cannot drift apart. */
 const OPTION_ROW_HEIGHT = 29;
 
-/** Stretch a virtualized option over its absolutely-positioned,
- * fixed-height row wrapper so hover/highlight cover the full row. */
-const virtualRow = css`
-  height: 100%;
-  box-sizing: border-box;
-`;
-
-const optionRow = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-1) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-
-  /* maxCount cap: unselected options at the cap stay visible but
-     inert — no hover/active feedback, dimmed, not-allowed cursor. The
-     attribute gate keeps the plain rows byte-identical. */
-  &:hover:not([data-disabled]) {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active:not([data-disabled]) {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &[data-disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
+/** The shared option-row skeleton (`pickerOptionRow`,
+ * utils/picker-trigger) — this file adds only the highlighted state
+ * (the keyboard highlight is not hover) and the selected styles. */
 const optionActive = css`
   background: var(--haze-color-bg-subtle);
 `;
@@ -604,7 +505,6 @@ export default function SelectFloating<T extends string | number = string>({
   // Panel visibility stays internal to the trigger — the pointer-safe
   // open path lives in floating's onTriggerPointerDown/onTriggerClick.
   const [open, setOpen] = useControl(undefined, false);
-  const [activeIndex, setActiveIndex] = useState(-1);
   // The search query is internal UI state (never a prop), so useState
   // is the correct primitive here, not useControl.
   const [query, setQuery] = useState('');
@@ -698,6 +598,12 @@ export default function SelectFloating<T extends string | number = string>({
       ? [{ kind: 'option', option: createOption }, ...visibleEntries]
       : visibleEntries;
   const navigableOptions = flattenSelectEntries(panelEntries);
+
+  // The clamped flat-index highlight shared with Combobox
+  // (utils/use-listbox-navigation); every consumed navigation key also
+  // opens the panel from the closed state (a no-op while open).
+  const { activeIndex, setActiveIndex, handleNavigationKey } =
+    useListboxNavigation(navigableOptions.length, () => setOpen(true));
 
   // Flat index at which each entry's options begin — the bridge between
   // the grouped render structure and the flat keyboard/aria order.
@@ -829,39 +735,16 @@ export default function SelectFloating<T extends string | number = string>({
     returnFocus();
   };
 
-  const moveActive = (delta: 1 | -1) => {
-    setActiveIndex((i) =>
-      delta === 1
-        ? Math.min(i + 1, navigableOptions.length - 1)
-        : Math.max(i - 1, 0)
-    );
-  };
-
-  const jumpActive = (key: 'Home' | 'End') => {
-    setActiveIndex(
-      navigableOptions.length === 0
-        ? -1
-        : key === 'Home'
-          ? 0
-          : navigableOptions.length - 1
-    );
-  };
-
   const handleKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+    // The shared Arrow/Home/End skeleton (clamped highlight + open from
+    // the closed state) consumes the navigation keys; the site keys
+    // below compose after it.
+    if (handleNavigationKey(e)) return;
     // No typeahead on the trigger: options are also reachable by
     // scrolling the open panel, and searchable mode types into the
     // panel's search input — the single-mode native select keeps its
     // own typeahead.
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      // Arrows double as the keyboard open path from the closed state.
-      setOpen(true);
-      moveActive(e.key === 'ArrowDown' ? 1 : -1);
-    } else if (e.key === 'Home' || e.key === 'End') {
-      e.preventDefault();
-      setOpen(true);
-      jumpActive(e.key);
-    } else if (
+    if (
       // Space arrives as ' ' from real browsers; user-event's {Space}
       // reports the legacy 'Space' key name — accept both.
       (e.key === 'Enter' || e.key === ' ' || e.key === 'Space') &&
@@ -891,22 +774,16 @@ export default function SelectFloating<T extends string | number = string>({
   };
 
   // The tags trigger's inline input owns focus permanently (panel open
-  // or closed), so it drives the full navigation itself: arrows/Home/End
-  // also open the panel from the closed state, Enter commits the
-  // highlighted row (option or create row — both are plain rows in
-  // `navigableOptions`), Escape closes while keeping focus in the
-  // field, and Backspace on an empty query removes the last chip
-  // (Combobox parity — the pointer-only chip × has no keyboard twin).
+  // or closed), so it drives the full navigation itself: the shared
+  // skeleton's arrows/Home/End also open the panel from the closed
+  // state, Enter commits the highlighted row (option or create row —
+  // both are plain rows in `navigableOptions`), Escape closes while
+  // keeping focus in the field, and Backspace on an empty query removes
+  // the last chip (Combobox parity — the pointer-only chip × has no
+  // keyboard twin).
   const handleTagsKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      setOpen(true);
-      moveActive(e.key === 'ArrowDown' ? 1 : -1);
-    } else if (e.key === 'Home' || e.key === 'End') {
-      e.preventDefault();
-      setOpen(true);
-      jumpActive(e.key);
-    } else if (e.key === 'Enter') {
+    if (handleNavigationKey(e)) return;
+    if (e.key === 'Enter') {
       // Always suppressed — an unhandled Enter in the input would
       // submit an enclosing form.
       e.preventDefault();
@@ -923,17 +800,13 @@ export default function SelectFloating<T extends string | number = string>({
   };
 
   // The panel search input owns focus while the searchable popup is
-  // open, so it drives the same navigation: arrows move the highlight
-  // (caret motion suppressed), Enter picks, Escape closes and returns
-  // focus to the trigger. Plain typing filters through onChange.
+  // open, so it drives the same navigation: the shared skeleton's
+  // arrows/Home/End move the highlight (caret motion suppressed),
+  // Enter picks, Escape closes and returns focus to the trigger. Plain
+  // typing filters through onChange.
   const handleSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      moveActive(e.key === 'ArrowDown' ? 1 : -1);
-    } else if (e.key === 'Home' || e.key === 'End') {
-      e.preventDefault();
-      jumpActive(e.key);
-    } else if (e.key === 'Enter') {
+    if (handleNavigationKey(e)) return;
+    if (e.key === 'Enter') {
       // Always suppressed while the popup is open — an unhandled Enter
       // in the input would submit an enclosing form.
       e.preventDefault();
@@ -977,10 +850,10 @@ export default function SelectFloating<T extends string | number = string>({
         aria-setsize={navigableOptions.length}
         aria-posinset={i + 1}
         x-class={[
-          optionRow,
+          pickerOptionRow,
           i === activeIndex && optionActive,
           !isMulti && isSelected && optionSelected,
-          virtual && virtualRow,
+          virtual && pickerVirtualRow,
           classNames?.option,
         ]}
         onClick={() => {
@@ -1103,7 +976,7 @@ export default function SelectFloating<T extends string | number = string>({
                       startIndex: entryOffsets[ei] ?? 0,
                       key: `group-${entry.label}-${entryOffsets[ei] ?? 0}`,
                       render: () => (
-                        <div data-slot='group-label' x-class={groupLabelText}>{entry.label}</div>
+                        <div data-slot='group-label' x-class={pickerGroupLabel}>{entry.label}</div>
                       ),
                     },
                   ]
@@ -1124,7 +997,7 @@ export default function SelectFloating<T extends string | number = string>({
       }
       return (
         <div key={`group-${entry.label}`} data-slot='group' role='group' aria-label={entry.label}>
-          <div data-slot='group-label' x-class={[groupLabelRow, groupLabelText]}>{entry.label}</div>
+          <div data-slot='group-label' x-class={[groupLabelRow, pickerGroupLabel]}>{entry.label}</div>
           {entry.options.map((option, i) => renderOption(option, base + i))}
         </div>
       );
@@ -1132,12 +1005,12 @@ export default function SelectFloating<T extends string | number = string>({
   );
 
   const listboxBody = loading ? (
-    <div data-slot='loading' x-class={loadingBlock}>
+    <div data-slot='loading' x-class={pickerLoadingBlock}>
       <Spinner size='sm' />
       <span>{strings.loading}</span>
     </div>
   ) : (
-    <div data-slot='empty' x-class={emptyBlock}>{strings.noMatch}</div>
+    <div data-slot='empty' x-class={pickerEmptyBlock}>{strings.noMatch}</div>
   );
 
   // Tags mode: the forwardable `disabled` rides the input (a div has
@@ -1274,7 +1147,7 @@ export default function SelectFloating<T extends string | number = string>({
               'aria-autocomplete': 'list' as const,
             })}
             aria-activedescendant={activeDescendant}
-            x-class={[searchInput, classNames?.searchInput]}
+            x-class={[pickerSearchInput, classNames?.searchInput]}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
@@ -1306,8 +1179,8 @@ export default function SelectFloating<T extends string | number = string>({
           aria-busy={loading || undefined}
           visualClass={
             virtual
-              ? `${pickerPanelWidth} ${listboxVirtual}`
-              : `${pickerPanelWidth} ${listbox}`
+              ? `${pickerPanelWidth} ${pickerListboxVirtual}`
+              : `${pickerPanelWidth} ${pickerListbox}`
           }
           className={classNames?.content}
         >

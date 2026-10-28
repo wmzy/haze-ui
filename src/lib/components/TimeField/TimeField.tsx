@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import type { TimePickerFormat } from '../TimePicker/time';
+import type { TimePickerFormat } from '../../utils/time-math';
 import type { TimeLabels, TimePlaceholder } from './TimeFieldCore';
 
 import { useControl } from 'react-use-control';

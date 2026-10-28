@@ -4,6 +4,21 @@ import { expect } from 'vitest';
 
 import { confirm } from './confirm';
 
+beforeEach(() => {
+  // jsdom does not implement showModal/close for HTMLDialogElement (same
+  // stub shape as Dialog.test.tsx; ConfirmDialog now renders a native
+  // <dialog> through the shared shell).
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement
+  ) {
+    this.setAttribute('open', '');
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  });
+});
+
 describe('confirm()', () => {
   it('mounts a dialog into document.body', async () => {
     const pending = confirm({ title: 'Delete?', children: 'This cannot be undone.' });

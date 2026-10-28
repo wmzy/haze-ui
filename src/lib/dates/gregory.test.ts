@@ -1,4 +1,4 @@
-import { getDaysInMonth } from '../components/Calendar/date';
+import { getDaysInMonth } from '../utils/date-math';
 
 import { gregoryAdapter } from './gregory';
 

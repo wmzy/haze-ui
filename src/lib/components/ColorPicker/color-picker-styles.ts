@@ -10,21 +10,15 @@
 import { css } from '@linaria/core';
 
 /**
- * Card skin for the panel — the same visual recipe as Popover's panel,
- * at the AntD-aligned 240px picker width (a component dimension, like
- * Popover's `min-width: 200px`, not a themeable value).
+ * Card deltas on the shared panel surface (utils/panel-skin.ts): the
+ * AntD-aligned 240px picker width (a component dimension, like
+ * Popover's `min-width` floor, not a themeable value) and the padding
+ * step. The local skin this replaces had drifted out of the surface
+ * recipe's forced-colors border arm — the shared surface restores it.
  */
-export const panelVisuals = css`
-  padding: var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
+export const panelDeltas = css`
   width: 240px;
-  box-sizing: border-box;
+  padding: var(--haze-space-3);
 `;
 
 /** Content column inside the card (also the inline-mode root). */

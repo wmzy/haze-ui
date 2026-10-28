@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
-import { presetList, presetRow } from '../../utils/preset-list-skin';
+import { pickerFieldInput } from '../../utils/field-skin';
+import { PresetRows } from '../../utils/preset-list-rows';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -67,7 +68,13 @@ const inputsRow = css`
 const panel = css`
   margin-block-start: var(--haze-space-2);
   /* max-width pairs with the border: border-box keeps the boundary
-   * inside the 100% bound (panel-family box-sizing contract). */
+   * inside the 100% bound (panel-family box-sizing contract). Kept as a
+   * whole local skin rather than composed over utils/panel-skin's bare
+   * surface: the inline (non-floating) range panel floats one elevation
+   * step lower (shadow-md vs the popover surface's shadow-lg), and a
+   * same-property override layered over the shared class would resolve
+   * by stylesheet order — which differs between the dev server and the
+   * split-css dist. */
   box-sizing: border-box;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);
@@ -76,22 +83,11 @@ const panel = css`
   max-width: 100%;
 `;
 
+/* Start/end input deltas on the shared picker field skin
+   (utils/field-skin.ts): the native date inputs keep their inline pair
+   sizing (no width/leading overrides) and carry the disabled arm.
+   Composed with `pickerFieldInput` — additive properties only. */
 const input = css`
-  padding: var(--haze-space-2) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  outline: none;
-  transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -141,7 +137,7 @@ export default function DateRangePickerCore({
       <input
         data-slot='start-input'
         type="date"
-        x-class={[input]}
+        x-class={[pickerFieldInput, input]}
         aria-label={strings.startDate}
         value={startDate}
         onChange={(e) => onStartChange(e.target.value)}
@@ -150,7 +146,7 @@ export default function DateRangePickerCore({
       <input
         data-slot='end-input'
         type="date"
-        x-class={[input]}
+        x-class={[pickerFieldInput, input]}
         aria-label={strings.endDate}
         value={endDate}
         onChange={(e) => onEndChange(e.target.value)}
@@ -173,22 +169,15 @@ export default function DateRangePickerCore({
       <div data-slot='inputs' x-class={[inputsRow]}>{inputs}</div>
       <div data-slot='panel' x-class={[panel]}>
         {hasPresets && (
-          <div data-slot='presets' x-class={[presetList]}>
-            {presets.map((preset) => (
-              <button
-                key={`${preset.label}:${preset.range.join('~')}`}
-                data-slot='preset'
-                type='button'
-                x-class={[presetRow]}
-                onClick={() => {
-                  onStartChange(preset.range[0]);
-                  onEndChange(preset.range[1]);
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
+          <PresetRows
+            items={presets}
+            keyOf={(preset) => `${preset.label}:${preset.range.join('~')}`}
+            labelOf={(preset) => preset.label}
+            onPick={(preset) => {
+              onStartChange(preset.range[0]);
+              onEndChange(preset.range[1]);
+            }}
+          />
         )}
         {months === 2 && (
           <Calendar

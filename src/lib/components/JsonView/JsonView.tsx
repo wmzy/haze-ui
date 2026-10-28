@@ -4,8 +4,9 @@ import { css } from '@linaria/core';
 import { useCallback, useId, useState } from 'react';
 
 import { useClipboard } from '../../hooks/useClipboard';
-import { Check } from '../../icons';
-import { CopyGlyph } from '../../utils/copy-glyph';
+import { ChevronRight } from '../../icons';
+import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
+import { chevronPair } from '../../utils/timeline-skin';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -17,9 +18,6 @@ import {
   jsonEntries,
   sliceEntries,
 } from './json-view-utils';
-
-/** Feedback window for the copy success glyph (ChatMessage precedent). */
-const COPIED_FEEDBACK_MS = 1500;
 
 type MoreLabelFn = (count: number) => string;
 
@@ -122,18 +120,14 @@ const toggle = css`
   }
 `;
 
+/* The branch chevron: this family's own base (it sits inline on the
+   text baseline inside the toggle) + the shared rotation arm. The base
+   deliberately declares no `transform` — the shared open arm owns that
+   property so no cross-module emission order can flip the winner. */
 const chevron = css`
   flex-shrink: 0;
   align-self: center;
   transition: transform var(--haze-duration-fast) var(--haze-ease);
-`;
-
-const chevronCollapsed = css`
-  transform: rotate(0deg);
-`;
-
-const chevronExpanded = css`
-  transform: rotate(90deg);
 `;
 
 const childrenBlock = css`
@@ -177,23 +171,6 @@ const copyBtnCopied = css`
   color: var(--haze-color-success);
   border-color: var(--haze-color-success);
 `;
-
-const ChevronGlyph = () => (
-  <svg
-    width='12'
-    height='12'
-    viewBox='0 0 16 16'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M6 4l4 4-4 4' />
-  </svg>
-);
 
 type JsonNodeProps = {
   /** Entry key; `null` for the root node. */
@@ -286,8 +263,18 @@ function JsonNode({
           aria-expanded={false}
           onClick={() => onToggle(path, defaultCollapsed)}
         >
-          <span data-slot="icon" x-class={[chevron, chevronCollapsed]}>
-            <ChevronGlyph />
+          <span data-slot="icon" x-class={[chevron]}>
+            {/* lucide ChevronRight at 12px with a compensating 3-unit
+                stroke: the 24-unit viewBox renders at half the scale of
+                the former 16-unit inline glyph, so strokeWidth 3 keeps
+                the shipped 1.5px rendered stroke (StepTimeline
+                precedent). */}
+            <ChevronRight
+              size={12}
+              strokeWidth={3}
+              aria-hidden='true'
+              focusable='false'
+            />
           </span>
           {keyPrefix}
           <span data-slot="punctuation" x-class={[punct]}>
@@ -312,8 +299,13 @@ function JsonNode({
           aria-controls={childrenId}
           onClick={() => onToggle(path, defaultCollapsed)}
         >
-          <span data-slot="icon" x-class={[chevron, chevronExpanded]}>
-            <ChevronGlyph />
+          <span data-slot="icon" x-class={[chevron, chevronPair.open]}>
+            <ChevronRight
+              size={12}
+              strokeWidth={3}
+              aria-hidden='true'
+              focusable='false'
+            />
           </span>
           {keyPrefix}
           <span data-slot="punctuation" x-class={[punct]}>{open}</span>
@@ -394,11 +386,7 @@ export default function JsonView({
           aria-label={copyLabel ?? strings.copy}
           onClick={handleCopy}
         >
-          {copied ? (
-            <Check size={14} aria-hidden='true' focusable='false' />
-          ) : (
-            <CopyGlyph />
-          )}
+          <CopyFeedbackGlyph copied={copied} />
         </button>
       )}
       <JsonNode

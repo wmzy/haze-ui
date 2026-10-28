@@ -7,6 +7,8 @@ import type {
   SyntheticEvent,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { VirtualListHandle } from '../VirtualList';
+import type { SuggestMarker } from '../../utils/suggest-marker';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -16,6 +18,15 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
 import { pickerPanelWidth } from '../../utils/picker-trigger';
+import {
+  suggestHintRow,
+  suggestListbox,
+  suggestOption,
+  suggestOptionHighlighted,
+} from '../../utils/suggest-list-skin';
+import { spliceToken, suggestOptionId } from '../../utils/suggest-marker';
+import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
+import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
@@ -128,96 +139,13 @@ const textareaClass = css`
 `;
 
 /**
- * Chrome of the suggestion listbox on top of the shared tier-aware
- * width cascade (`pickerPanelWidth`, utils/picker-trigger — same
- * tier-aware width contract as Mentions' listbox): the height cap and
- * the surface chrome.
+ * Height cap of the suggestion listbox — PromptInput's token-overridable
+ * delta over the shared suggestion skin (utils/suggest-list-skin.ts),
+ * which owns the rest of the panel chrome.
  */
-const listbox = css`
+const listMaxHeight = css`
   max-height: var(--haze-prompt-input-list-max-height, 200px);
-  overflow-y: auto;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
 `;
-
-const option = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-`;
-
-const highlightedStyle = css`
-  background: var(--haze-color-bg-subtle);
-`;
-
-const hintRow = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-muted);
-`;
-
-/** The trigger token the caret currently sits in, if any. */
-type SuggestMarker = {
-  /** The trigger character that opened the token. */
-  trigger: string;
-  /** Index of the trigger character. */
-  start: number;
-  /** Caret position when the marker was recorded — the token's end. */
-  end: number;
-  /** Text between the trigger and the caret; the async query. */
-  query: string;
-};
-
-/**
- * Finds the trigger token at the caret: a trigger character at the
- * start of the text or right after whitespace, with nothing but
- * non-whitespace between it and the caret. The word-boundary rule keeps
- * email-like text ("a@b") from opening the panel.
- */
-function findSuggestMarker(
-  text: string,
-  caret: number,
-  triggers: string[]
-): SuggestMarker | null {
-  const head = Math.min(caret, text.length);
-  for (let i = head - 1; i >= 0; i -= 1) {
-    const ch = text[i];
-    // Unreachable (i < head <= length), but the checked index signature
-    // says otherwise — treat it as end-of-text.
-    if (ch === undefined) return null;
-    if (/\s/.test(ch)) return null;
-    // A trigger only opens a token at the start of the text or right
-    // after whitespace; "a@b" stays plain text.
-    const before = i > 0 ? text[i - 1] : undefined;
-    if (triggers.includes(ch) && (before === undefined || /\s/.test(before))) {
-      return {
-        trigger: ch,
-        start: i,
-        end: head,
-        query: text.slice(i + 1, head),
-      };
-    }
-  }
-  return null;
-}
 
 export default function PromptInput({
   value: valueControl,
@@ -239,40 +167,38 @@ export default function PromptInput({
   const [value, setValue] = useControl(valueControl, '');
   const [tags, setTags] = useControl(tagsControl, []);
 
-  const [marker, setMarker] = useState<SuggestMarker | null>(null);
   // The token an Escape dismissed — the panel stays closed for it until
   // the caret re-enters or the token changes (null = nothing dismissed).
   const [dismissedKey, setDismissedKey] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
 
   const id = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const activeRowRef = useRef<HTMLDivElement>(null);
+  // The listbox is never virtualized; useHighlightScroll still takes the
+  // handle (same call shape as Combobox/SelectFloating).
+  const listRef = useRef<VirtualListHandle>(null);
   // Request sequence for async getSuggestions: only the newest request's
   // response may land — stale ones are dropped on arrival.
   const requestSeqRef = useRef(0);
-  // After an insertion the caret must land right after the inserted
-  // token, but the DOM value re-renders from the committed `value` —
-  // stash the offset and apply it once that commit lands.
-  const pendingCaretRef = useRef<number | null>(null);
 
   const completionEnabled = Boolean(getSuggestions && triggers.length > 0);
-  const markerKey = marker
-    ? `${marker.trigger}:${marker.start}:${marker.query}`
-    : '';
+
+  // Shared token machinery (utils/use-textarea-suggest.ts): the marker
+  // state, the keyboard highlight and the post-insert caret restore.
+  const suggest = useTextareaSuggest({
+    enabled: completionEnabled,
+    triggers,
+    textareaRef,
+    value,
+  });
+  const { marker, markerKey, highlightIndex } = suggest;
+
   const open =
     completionEnabled && marker !== null && dismissedKey !== markerKey;
 
-  // Editing the token invalidates the highlight — adjust during render
-  // (React-endorsed reset) so the first filtered frame already drops a
-  // stale highlight. Caret moves that recompute the same token keep it.
-  const [prevMarkerKey, setPrevMarkerKey] = useState(markerKey);
-  if (markerKey !== prevMarkerKey) {
-    setPrevMarkerKey(markerKey);
-    setHighlightIndex(-1);
-  }
   // Any caret re-entry into a token re-arms the panel after Escape —
   // the dismissed key belongs to the previous caret visit only.
   const [prevMarker, setPrevMarker] = useState(marker);
@@ -296,6 +222,17 @@ export default function PromptInput({
     animated: true,
   });
 
+  // The keyboard highlight must follow into view — its rows are
+  // aria-activedescendant targets that never receive DOM focus, so the
+  // browser does not scroll to them on its own.
+  useHighlightScroll({
+    shown: floating.shown,
+    highlightIndex,
+    virtualized: false,
+    listRef,
+    rowRef: activeRowRef,
+  });
+
   // Auto-grow: one row tall, expanding with the content up to maxRows
   // (beyond it the textarea scrolls — overflow-y lives in its class).
   // External control writes land here too, so the height always tracks
@@ -311,22 +248,12 @@ export default function PromptInput({
     resize();
   }, [value, maxRows, disabled, resize]);
 
-  useEffect(() => {
-    const caret = pendingCaretRef.current;
-    if (caret === null) return;
-    pendingCaretRef.current = null;
-    const el = textareaRef.current;
-    if (!el) return;
-    el.focus();
-    el.setSelectionRange(caret, caret);
-  }, [value]);
-
   const label = ariaLabel ?? placeholder ?? strings.label;
 
   // Stable, SSR-safe DOM id per option row: listbox id + index. The
   // textarea's aria-activedescendant points here so screen readers
   // announce the keyboard highlight on rows that never receive focus.
-  const optionId = (index: number) => `${id}-option-${index}`;
+  const optionId = (index: number) => suggestOptionId(id, index);
   const current = suggestions[highlightIndex];
   // Only while the popup is open — a closed listbox must not own the
   // textarea's active descendant.
@@ -365,11 +292,7 @@ export default function PromptInput({
 
   /** Recomputes the token (and panel visibility) from the live caret. */
   const syncFromCaret = (text: string, caret: number) => {
-    const next = completionEnabled
-      ? findSuggestMarker(text, caret, triggers)
-      : null;
-    setMarker(next);
-    fetchSuggestions(next);
+    fetchSuggestions(suggest.syncFromCaret(text, caret));
   };
 
   const updateText = (next: string) => {
@@ -385,14 +308,17 @@ export default function PromptInput({
   const insertSuggestion = (suggestion: string) => {
     if (!marker) return;
     const text = textareaRef.current?.value ?? value;
-    const end = Math.min(marker.end, text.length);
-    const insertion = `${marker.trigger}${suggestion} `;
-    updateText(text.slice(0, marker.start) + insertion + text.slice(end));
-    pendingCaretRef.current = marker.start + insertion.length;
-    setMarker(null);
+    // The token (trigger + query) is replaced by trigger + word + space.
+    const spliced = spliceToken(
+      text,
+      marker,
+      `${marker.trigger}${suggestion} `
+    );
+    updateText(spliced.text);
+    suggest.stageCaretRestore(spliced.caret);
+    suggest.setMarker(null);
     fetchSuggestions(null);
     setDismissedKey(null);
-    setHighlightIndex(-1);
   };
 
   const submit = () => {
@@ -402,37 +328,18 @@ export default function PromptInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (open) {
-      if (e.key === 'ArrowDown') {
-        // Keep the caret put while navigating the suggestion list.
-        e.preventDefault();
-        setHighlightIndex((i) => Math.min(i + 1, suggestions.length - 1));
-        return;
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setHighlightIndex((i) => Math.max(i - 1, 0));
-        return;
-      }
-      if (e.key === 'Enter' || e.key === 'Tab') {
-        // Enter/Tab with the panel open commits a suggestion — the
-        // highlighted row when the user navigated, otherwise the first
-        // one (the AntD Mentions / GitHub convention). With nothing
-        // selectable the key keeps its native behavior: mid-token Enter
-        // is a newline, not a submit.
-        const selected = suggestions[highlightIndex] ?? suggestions[0];
-        if (selected !== undefined) {
-          e.preventDefault();
-          insertSuggestion(selected);
-        }
-        return;
-      }
-      if (e.key === 'Escape') {
-        // Close the panel but keep the text (and the token) intact.
-        setDismissedKey(markerKey);
-        return;
-      }
-    }
+    // Shared listbox keys first (arrows / Enter / Tab / Escape while the
+    // panel is open); consumed events never reach the composer keys.
+    const consumed = suggest.handleListKeyDown(e, {
+      open,
+      optionCount: suggestions.length,
+      onCommit: (index) => {
+        const selected = suggestions[index];
+        if (selected !== undefined) insertSuggestion(selected);
+      },
+      onEscape: () => setDismissedKey(markerKey),
+    });
+    if (consumed) return;
     // Backspace on empty text removes the last tag (composer habit —
     // focus and caret stay in the textarea).
     if (e.key === 'Backspace' && value === '' && tags.length > 0) {
@@ -525,7 +432,7 @@ export default function PromptInput({
           placement="bottom-span"
           id={id}
           role="listbox"
-          visualClass={`${pickerPanelWidth} ${listbox}`}
+          visualClass={`${pickerPanelWidth} ${suggestListbox} ${listMaxHeight}`}
         >
           {loading ? (
             // An aria-disabled option keeps the listbox's required owned
@@ -535,7 +442,7 @@ export default function PromptInput({
               data-slot='loading'
               aria-selected="false"
               aria-disabled="true"
-              x-class={[hintRow]}
+              x-class={[suggestHintRow]}
             >
               {strings.loading}
             </div>
@@ -545,7 +452,7 @@ export default function PromptInput({
               data-slot='empty'
               aria-selected="false"
               aria-disabled="true"
-              x-class={[hintRow]}
+              x-class={[suggestHintRow]}
             >
               {strings.noMatch}
             </div>
@@ -559,7 +466,8 @@ export default function PromptInput({
                 aria-selected={i === highlightIndex}
                 aria-setsize={suggestions.length}
                 aria-posinset={i + 1}
-                x-class={[option, i === highlightIndex && highlightedStyle]}
+                ref={i === highlightIndex ? activeRowRef : undefined}
+                x-class={[suggestOption, i === highlightIndex && suggestOptionHighlighted]}
                 onClick={() => insertSuggestion(suggestion)}
               >
                 {suggestion}

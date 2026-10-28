@@ -1,17 +1,20 @@
 import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { StatusColor } from '../../utils/status-skin';
 
 import { useControl } from 'react-use-control';
 
+import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
+
 import { useStrings } from '../LocaleProvider';
 
-import { base, colors, contentStyle, closeBtn } from './alert-styles';
+import { base, colors, borders, contentStyle } from './alert-styles';
 
 type AlertProps = {
   visible?: ControlOrValue<boolean>;
   onClose?: () => void;
   /** Semantic status color. */
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color?: StatusColor;
   closable?: boolean;
   className?: string;
   children: ReactNode;
@@ -39,13 +42,18 @@ export default function Alert({
   };
 
   return (
-    <div ref={ref} role='alert' data-slot='alert' x-class={[base, colors[color], className]}>
+    <div
+      ref={ref}
+      role={statusLiveRoles[color]}
+      data-slot='alert'
+      x-class={[base, colors[color], borders[color], className]}
+    >
       <div data-slot='content' className={contentStyle}>{children}</div>
       {closable && (
         <button
           type='button'
           data-slot='close'
-          className={closeBtn}
+          x-class={[dismissBtn]}
           aria-label={strings.close}
           onClick={handleClose}
         >

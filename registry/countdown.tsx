@@ -20,7 +20,6 @@ import { Countdown } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/countdown.css';
-import 'haze-ui/css/time-picker.css';
 
 export { Countdown };
 export type { CountdownProps, CountdownParts } from 'haze-ui';

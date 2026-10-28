@@ -34,6 +34,9 @@ describe('PasswordInput', () => {
     const { container } = render(<PasswordInput value="secret" />);
     expect(container.querySelector('input')).toHaveAttribute('type', 'password');
     const button = screen.getByRole('button');
+    // The glyph is a lucide svg (aria-hidden — the button's aria-label
+    // carries the semantics), swapped from the old emoji pair.
+    expect(button.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
     await user.click(button);
     expect(container.querySelector('input')).toHaveAttribute('type', 'text');
     await user.click(button);

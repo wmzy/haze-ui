@@ -7,6 +7,8 @@ import type { FloatingBehavior } from './floating';
 
 import { css } from '@linaria/core';
 
+import { pickerFieldInput } from './field-skin';
+
 /**
  * Shared trigger building block of the picker families (Select's
  * floating paths, Cascader, TreeSelect) and the native-select paths
@@ -15,13 +17,22 @@ import { css } from '@linaria/core';
  * tier-aware panel width cascade, the 12x12 stroke chevron glyphs,
  * the caret slot and the popup aria wiring of the trigger button.
  *
+ * Also hosts the shared panel-surface classes the picker families
+ * wear: the listbox chrome (plain and virtualized, Select/Combobox),
+ * the virtual row stretch, the searchable-panel search input
+ * (Select/Cascader/TreeSelect), the loading/empty state blocks, the
+ * group-heading typography, the option-row skeleton (+ density
+ * variant), and the readonly input trigger the date/time families
+ * anchor their popup panels on (PickerInputTrigger).
+ *
  * Deliberately NOT shared — genuinely drifted, they stay local to each
  * family (the drift discipline): gap/flex-wrap/padding/font-size per
  * trigger shape, the floating focus arm (`:focus, :focus-within` for
- * Select's tags box vs `:focus-visible` elsewhere) and per-site caret
- * deltas (centering, inline-end push). The native-select skin's
- * hover/focus/disabled arms are shared verbatim — SelectCore and
- * ModelPicker agree token for token.
+ * Select's tags box vs `:focus-visible` elsewhere), per-site caret
+ * deltas (centering, inline-end push), panel paddings/radius deltas
+ * and the per-family highlighted/selected decorations. The
+ * native-select skin's hover/focus/disabled arms are shared verbatim —
+ * SelectCore and ModelPicker agree token for token.
  */
 
 /**
@@ -133,6 +144,161 @@ export const pickerPanelWidth = css`
   box-sizing: border-box;
   min-width: 100%;
   min-width: anchor-size(width);
+`;
+
+/**
+ * Chrome of the plain (scrolling) listbox of the picker panels (Select's
+ * floating paths, Combobox) on top of the shared tier-aware width
+ * cascade (`pickerPanelWidth` — pass it ahead of this class): the
+ * scroll cap and the surface chrome. Mentions/PromptInput keep their
+ * own listbox skin (`utils/suggest-list-skin`) — their panels are
+ * textarea-width-anchored, a different containing-block contract.
+ */
+export const pickerListbox = css`
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  box-shadow: var(--haze-shadow-lg);
+`;
+
+/**
+ * Virtualized picker panel: same chrome, no scroll box — the
+ * VirtualList scrollport owns scrolling. Keeping the plain class
+ * untouched avoids a nested scroll container that could grow a second
+ * scrollbar under a border-box consumer (2px of panel border would
+ * overflow the cap).
+ */
+export const pickerListboxVirtual = css`
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  box-shadow: var(--haze-shadow-lg);
+`;
+
+/**
+ * Stretch a virtualized option over its absolutely-positioned,
+ * fixed-height row wrapper so hover/highlight cover the full row.
+ */
+export const pickerVirtualRow = css`
+  height: 100%;
+  box-sizing: border-box;
+`;
+
+/**
+ * Search input heading a searchable picker panel (Select's searchable
+ * panel, Cascader's remote-search panel, TreeSelect's showSearch
+ * panel) — three byte-identical copies before this module. Stacks
+ * above the options area through its `margin-block-end`; consumers
+ * compose their panel chrome separately.
+ */
+export const pickerSearchInput = css`
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-sm);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  line-height: var(--haze-leading-normal);
+  padding: var(--haze-space-1) var(--haze-space-2);
+  margin-block-end: var(--haze-space-2);
+
+  &:focus {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/**
+ * Loading state of the options area — the shared half of the Spinner
+ * row (the `<Spinner size='sm'/><span>{loading}</span>` JSX Select and
+ * Cascader both render): Spinner plus copy, centered.
+ */
+export const pickerLoadingBlock = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--haze-space-2);
+  padding: var(--haze-space-3);
+  color: var(--haze-color-text-secondary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+`;
+
+/** Empty-search state of the options area. */
+export const pickerEmptyBlock = css`
+  padding: var(--haze-space-3);
+  color: var(--haze-color-text-muted);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  text-align: center;
+`;
+
+/**
+ * Group-heading typography of the picker listboxes (Select's grouped
+ * options, Combobox's grouped options — shared by the plain row and
+ * the sticky virtualized header, whose chrome stays local per site).
+ * Hosted here rather than importing menu-skins' `menuGroupLabel`:
+ * the declaration set is identical but menu-skins is scoped to the
+ * menu families, and hosting in the picker layer keeps the shared css
+ * riding with families that already consume this module — no new
+ * sharedLayers wiring for either consumer.
+ */
+export const pickerGroupLabel = css`
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-xs);
+  font-weight: var(--haze-weight-medium);
+  color: var(--haze-color-text-muted);
+`;
+
+/**
+ * Option-row skeleton of the picker listboxes (Select's option rows,
+ * Combobox's options): row layout, typography, cursor and the
+ * hover/active/disabled arms. Selected/highlighted decorations stay
+ * local per family (Select's checkbox visual included — choice-skin
+ * keeps its decorations local by design).
+ */
+export const pickerOptionRow = css`
+  display: flex;
+  align-items: center;
+  padding: var(--haze-space-1) var(--haze-space-3);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  color: var(--haze-color-text);
+  cursor: pointer;
+
+  /* maxCount cap and option-level disabled: unselected options at the
+     cap stay visible but inert — no hover/active feedback, dimmed,
+     not-allowed cursor. The attribute gate keeps enabled rows
+     byte-identical. */
+  &:hover:not([data-disabled]) {
+    background: var(--haze-color-bg-subtle);
+  }
+
+  &:active:not([data-disabled]) {
+    background: var(--haze-color-bg-muted);
+  }
+
+  &[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/**
+ * The comfortable density Combobox's options wear over
+ * {@link pickerOptionRow}: one step more padding plus the background
+ * transition Select's dense rows never had. A literal sibling composed
+ * after the base, never contending with it in the cascade.
+ */
+export const pickerOptionRowComfortable = css`
+  padding: var(--haze-space-2) var(--haze-space-3);
+  transition: background var(--haze-duration-fast);
 `;
 
 /**
@@ -293,5 +459,66 @@ export function PickerTrigger({
       {children}
       <PickerCaret className={caretClassName} />
     </button>
+  );
+}
+
+type PickerInputTriggerProps = {
+  /** Floating wiring: the readonly input's inline anchor style plus
+   * the pointer-safe toggle handlers (utils/floating). */
+  behavior: FloatingBehavior;
+  /** `aria-haspopup` token naming the popup's role — `dialog` for the
+   * date/time panels (the default), a list role elsewhere. */
+  popup?: 'dialog' | 'listbox' | 'menu' | 'tree';
+  /** Open state driving `aria-expanded`. */
+  open: boolean;
+  /** id of the popup panel `aria-controls` points at. */
+  controlsId: string;
+  className?: string;
+  /** Forwarded to the `<input>` — the date-family consumers merge
+   * their own refs on top of it. */
+  ref?: Ref<HTMLInputElement>;
+} & Omit<
+  ComponentPropsWithoutRef<'input'>,
+  'type' | 'children' | 'className' | 'readOnly' | 'role'
+>;
+
+/**
+ * The readonly picker input trigger: the `readOnly` input the date/time
+ * families (Datepicker's trigger, TimePickerPanel's trigger — the
+ * DatepickerCore/TimePickerPanel pattern) anchor their popup panels on.
+ * The input is an implicit textbox, so `role='combobox'` is restated
+ * for the popup aria set (aria-expanded is not supported on the
+ * implicit textbox role, ARIA 1.2). The field surface is the shared md
+ * `pickerFieldInput` (utils/field-skin); family deltas (cursor,
+ * widths, tabular figures) ride `className` extension classes. Exported
+ * ahead of the date families' adoption — they still render their local
+ * copies today.
+ */
+export function PickerInputTrigger({
+  behavior,
+  popup = 'dialog',
+  open,
+  controlsId,
+  className,
+  ref,
+  ...rest
+}: PickerInputTriggerProps) {
+  return (
+    <input
+      // Spread first — the wiring below must win over a spread (the
+      // same ordering rationale the trigger button has always had).
+      {...rest}
+      ref={ref}
+      data-slot='input'
+      readOnly
+      style={behavior.triggerStyle}
+      role='combobox'
+      aria-haspopup={popup}
+      aria-expanded={open}
+      aria-controls={controlsId}
+      onPointerDown={behavior.onTriggerPointerDown}
+      onClick={behavior.onTriggerClick}
+      x-class={[pickerFieldInput, className]}
+    />
   );
 }

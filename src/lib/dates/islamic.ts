@@ -19,9 +19,9 @@ import type {
   MonthNameStyle,
 } from './adapter';
 
-import { addMonths as shiftMonth } from '../components/Calendar/date';
+import { addMonths as shiftMonth } from '../utils/date-math';
 
-import { DAY_MS, eraOfDate, sampleMonthNames } from './adapter';
+import { DAY_MS, eraOfDate, normalizeParts, sampleMonthNames } from './adapter';
 
 /** Mean synodic month in days — the linear estimate that seeds the
  * inverse-conversion search. */
@@ -95,16 +95,14 @@ function monthStartMs(year: number, month: number): number {
 
 /**
  * UTC-civil milliseconds of a Hijri date. Out-of-range month indices
- * normalize with carry first (date.ts constructor semantics: month 12 →
- * next January), the day offset rides whole days from the month start,
+ * normalize with carry first (date-math.ts constructor semantics: month
+ * 12 → next January), the day offset rides whole days from the month start,
  * and a final forward conversion verifies the landed date — a day that
  * exists in no Hijri month (31, or 30 in a 29-day month) throws
  * `RangeError` instead of silently rolling over.
  */
 function msFromParts(rawParts: CivilDateParts): number {
-  const total = rawParts.year * 12 + rawParts.month;
-  const year = Math.floor(total / 12);
-  const month = ((total % 12) + 12) % 12;
+  const { year, month } = normalizeParts(rawParts.year, rawParts.month);
   const ms = monthStartMs(year, month) + (rawParts.day - 1) * DAY_MS;
   const landed = partsFromMs(ms);
   if (landed.year !== year || landed.month !== month || landed.day !== rawParts.day) {
@@ -119,7 +117,7 @@ export const islamicUmalquraAdapter: HazeDateAdapter = {
   identifier: 'islamic-umalqura',
 
   fromGregorian(date) {
-    // Read the local civil date first (date.ts midnight semantics), then
+    // Read the local civil date first (date-math.ts midnight semantics), then
     // convert on the UTC civil timeline — zone-independent by
     // construction, even for zones far from UTC.
     return partsFromMs(

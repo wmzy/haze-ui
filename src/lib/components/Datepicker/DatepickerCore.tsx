@@ -5,21 +5,24 @@ import type { CalendarCellRender, CalendarPickerMode } from '../Calendar/Calenda
 import { css } from '@linaria/core';
 import { useCallback, useId, useRef, useState } from 'react';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
-import { presetList, presetRow } from '../../utils/preset-list-skin';
-import { mergeRefs } from '../../utils/refs';
-
-import { useStrings } from '../LocaleProvider';
-
-import Calendar from '../Calendar/Calendar';
 import {
-  formatDate,
+  formatDateOf,
   formatWeekValue,
   getISOWeek,
   getISOWeekStartDate,
   parseCivilDate,
   parseWeekValue,
-} from '../Calendar/date';
+} from '../../utils/date-math';
+import { pickerFieldInputSm } from '../../utils/field-skin';
+import { FloatingPanel, useFloating } from '../../utils/floating';
+import { panelSurfaceBare } from '../../utils/panel-skin';
+import { PickerInputTrigger } from '../../utils/picker-trigger';
+import { PresetRows } from '../../utils/preset-list-rows';
+import { mergeRefs } from '../../utils/refs';
+
+import { useStrings } from '../LocaleProvider';
+
+import Calendar from '../Calendar/Calendar';
 
 import {
   applyTimeToCivilDate,
@@ -101,41 +104,22 @@ const wrapper = css`
   display: inline-block;
 `;
 
+/* Trigger deltas on the shared picker field skin
+   (utils/field-skin.ts): the readonly combobox sizes like a full-width
+   block field, carries the leading the skin's typography pairs with,
+   and shows the pointer cursor a picker trigger earns. Composed with
+   `pickerFieldInput` at the trigger — additive properties only. */
 const input = css`
   display: block;
   width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  padding: var(--haze-space-2) var(--haze-space-3);
   line-height: var(--haze-leading-normal);
   cursor: pointer;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
   box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
-const dropdown = css`
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-`;
-
-/* Shortcut rows heading the panel: the shared option-row skin from
-   utils/preset-list-skin (SelectFloating's option-row style) — full-
-   width quiet rows on the list surface, a hairline separating them
-   from the calendar below. */
+/* The dropdown panel wears the shared bare picker surface
+   (utils/panel-skin.ts) verbatim — border, radius, fill, elevation and
+   the forced-colors border restatement. */
 
 /* Time footer (showTime): a hairline-separated row anchoring the
    hour/minute input to the panel's bottom edge, mirroring the preset
@@ -155,23 +139,12 @@ const timeLabel = css`
   color: var(--haze-color-text-muted);
 `;
 
+/* Time-input deltas on the shared sm picker field skin
+   (utils/field-skin.ts): strip the native time input's spinner chrome;
+   the leading pairs with the skin's typography. */
 const timeInput = css`
   appearance: none;
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-normal);
-  outline: none;
-  transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 export default function DatepickerCore({
@@ -244,11 +217,7 @@ export default function DatepickerCore({
     ? parsedWeek
       ? formatWeekValue(parsedWeek.year, parsedWeek.week)
       : parsedDate
-        ? formatDate(
-            parsedDate.getFullYear(),
-            parsedDate.getMonth(),
-            parsedDate.getDate()
-          )
+        ? formatDateOf(parsedDate)
         : ''
     : withTime
       ? (split?.date ?? '')
@@ -304,48 +273,36 @@ export default function DatepickerCore({
 
   return (
     <div x-class={[wrapper, className]} {...rest}>
-      <input
+      {/* The shared readonly combobox trigger (utils/picker-trigger):
+          same DOM the local input rendered — pickerFieldInput skin,
+          floating wiring, the popup aria set. Family deltas (width,
+          leading, cursor) ride the `input` extension class. */}
+      <PickerInputTrigger
         ref={setInputRef}
-        data-slot='input'
-        readOnly
-        style={floating.triggerStyle}
+        behavior={floating}
+        open={open}
+        controlsId={panelId}
         className={input}
         value={value}
         placeholder={placeholder}
-        // aria-expanded is not supported on the implicit textbox role
-        // (ARIA 1.2, axe aria-allowed-attr); combobox is the honest role
-        // for a readonly input that opens a popup panel.
-        role='combobox'
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onPointerDown={floating.onTriggerPointerDown}
-        onClick={floating.onTriggerClick}
       />
       <FloatingPanel
         ref={panelRef}
         behavior={floating}
         placement="bottom"
-        visualClass={dropdown}
+        visualClass={panelSurfaceBare}
         id={panelId}
       >
         {presets && presets.length > 0 && (
-          <div data-slot='presets' x-class={[presetList]}>
-            {presets.map((preset) => (
-              <button
-                key={`${preset.label}:${preset.value}`}
-                data-slot='preset'
-                type='button'
-                x-class={[presetRow]}
-                onClick={() => {
-                  onChange(preset.value);
-                  onOpenChange(false);
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
+          <PresetRows
+            items={presets}
+            keyOf={(preset) => `${preset.label}:${preset.value}`}
+            labelOf={(preset) => preset.label}
+            onPick={(preset) => {
+              onChange(preset.value);
+              onOpenChange(false);
+            }}
+          />
         )}
         <Calendar
           picker={picker}
@@ -375,7 +332,7 @@ export default function DatepickerCore({
               data-slot='time-input'
               type='time'
               step={withSeconds ? 1 : undefined}
-              x-class={[timeInput]}
+              x-class={[pickerFieldInputSm, timeInput]}
               aria-label={strings.time}
               value={timeValue}
               onChange={(e) => {

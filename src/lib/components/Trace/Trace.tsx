@@ -1,12 +1,30 @@
 import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
+import type { AgenticStatus } from '../../utils/agentic-status';
+
 import { css } from '@linaria/core';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
+import { ChevronRight } from '../../icons';
 import { srOnly } from '../../utils/sr-only';
+import { agenticStatusLabel } from '../../utils/agentic-status';
+import {
+  chevronPair,
+  disclosureMonoBody,
+  headerButton,
+  itemStacked,
+  panelBase,
+  statusDot,
+  statusDotDone,
+  statusDotError,
+  statusDotPending,
+  statusDotRunning,
+  statusGlyphs,
+  timelineList,
+} from '../../utils/timeline-skin';
 
 /**
  * Line-by-line reasoning trace for agentic UIs (the shadcn Trace shape):
@@ -16,7 +34,7 @@ import { srOnly } from '../../utils/sr-only';
  * readers through a per-item sr-only live region.
  */
 
-type TraceStatus = 'pending' | 'running' | 'done' | 'error';
+type TraceStatus = AgenticStatus;
 
 type TraceProps = {
   /** `TraceItem` steps composing the trace, one per line. */
@@ -44,16 +62,7 @@ type TraceDetailsProps = {
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
 
-const list = css`
-  display: flex;
-  flex-direction: column;
-  font-family: var(--haze-font-sans);
-`;
-
 const item = css`
-  display: flex;
-  align-items: flex-start;
-  gap: var(--haze-space-3);
   padding-block: var(--haze-space-2);
 
   &:first-child {
@@ -65,107 +74,15 @@ const item = css`
   }
 `;
 
-/* Expandable lines stack the header button above the panel instead of
-   laying the reveal out in the marker row. */
-const itemStacked = css`
-  display: block;
-`;
-
-const headerButton = css`
+/* Plain lines lay the marker and title out in a flex row; expandable
+   ones stack the shared header button above the panel (itemStacked in
+   utils/timeline-skin). The two display arms are applied exclusively —
+   a shared `block` arm could never win the same-specificity tie
+   against this file's flex row by stylesheet order alone. */
+const itemRow = css`
   display: flex;
   align-items: flex-start;
   gap: var(--haze-space-3);
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: start;
-  cursor: pointer;
-  border-radius: var(--haze-radius-md);
-
-  /* No inline padding on purpose: the marker must stay flush with the
-     line edge so the reveal stays visually anchored to its step. */
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-const marker = css`
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: var(--haze-radius-full);
-  border: 2px solid var(--haze-color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.5rem;
-  line-height: 1;
-`;
-
-const markerPending = css`
-  border-color: var(--haze-color-border);
-  background: var(--haze-color-bg);
-`;
-
-const markerRunning = css`
-  border-color: var(--haze-color-primary);
-  background: var(--haze-color-primary);
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: -0.3125rem;
-    border-radius: var(--haze-radius-full);
-    border: 2px solid var(--haze-color-primary);
-    /* Multi-second cycle on purpose: the motion tokens model transition
-       durations (120/200/300ms), not loops — same call as StepTimeline's
-       pulse period; reduced-motion parks it below. */
-    animation: trace-pulse 1.6s var(--haze-ease) infinite;
-  }
-
-  /* WCAG 2.3.3: a single 0.01ms iteration parks the pulse at its rest
-     frame — the ring settles as a static halo around the solid dot, so
-     the step still reads as in-flight without motion. */
-  @media (prefers-reduced-motion: reduce) {
-    &::after {
-      animation-duration: 0.01ms;
-      animation-iteration-count: 1;
-    }
-  }
-
-  @keyframes trace-pulse {
-    0% {
-      transform: scale(0.6);
-      opacity: 0.8;
-    }
-
-    70%,
-    100% {
-      transform: scale(1.4);
-      opacity: 0;
-    }
-  }
-`;
-
-const markerDone = css`
-  border-color: var(--haze-color-success);
-  background: var(--haze-color-success);
-  color: var(--haze-color-text-inverse);
-`;
-
-const markerError = css`
-  border-color: var(--haze-color-danger);
-  background: var(--haze-color-danger);
-  color: var(--haze-color-text-inverse);
 `;
 
 const titleStyle = css`
@@ -174,66 +91,15 @@ const titleStyle = css`
   color: var(--haze-color-text);
 `;
 
-const chevron = css`
-  display: inline-flex;
-  flex-shrink: 0;
-  margin-block-start: var(--haze-space-1);
-  color: var(--haze-color-text-muted);
-  transform: rotate(0deg);
-  transition: transform var(--haze-duration-fast) var(--haze-ease);
-`;
-
-const chevronOpen = css`
-  transform: rotate(90deg);
-`;
-
-/* Indent past the marker column (1.25rem marker + gap) so revealed
-   details align with the title. */
-const panelStyle = css`
-  padding-inline-start: calc(1.25rem + var(--haze-space-3));
-  padding-block: var(--haze-space-1) var(--haze-space-2);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-secondary);
-`;
-
-/* Monospace payload body for revealed details (ToolCallCard content
-   precedent) — wrap free-form payloads in TraceDetails. */
-const detailsBody = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  white-space: pre-wrap;
-  word-break: break-all;
-`;
-
-/** Glyphs inside the status marker; pending/running stay glyph-free. */
-const markerGlyphs: Partial<Record<TraceStatus, string>> = {
-  done: '✓',
-  error: '!',
-};
-
+/* The status ring rides the shared statusDot geometry and arm set
+   (utils/timeline-skin); only the Trace-specific row chrome above and
+   the sr-only announcement wiring below are local. */
 const markerMap: Record<TraceStatus, string> = {
-  pending: markerPending,
-  running: markerRunning,
-  done: markerDone,
-  error: markerError,
+  pending: statusDotPending,
+  running: statusDotRunning,
+  done: statusDotDone,
+  error: statusDotError,
 };
-
-const ChevronGlyph = () => (
-  <svg
-    width='12'
-    height='12'
-    viewBox='0 0 16 16'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-  >
-    <path d='M6 4l4 4-4 4' />
-  </svg>
-);
 
 export function TraceItem({
   title,
@@ -278,7 +144,7 @@ export function TraceItem({
     // Prefix the announcement with the line's text so concurrent steps
     // stay distinguishable ("read_file: Done", not a bare "Done").
     const titleText = titleRef.current?.textContent.trim();
-    const word = strings[status];
+    const word = agenticStatusLabel(status, strings);
     setAnnounced(titleText ? `${titleText}: ${word}` : word);
   }, [status, strings]);
 
@@ -289,9 +155,9 @@ export function TraceItem({
     <span
       data-slot='indicator'
       aria-hidden='true'
-      x-class={[marker, markerMap[status]]}
+      x-class={[statusDot, markerMap[status]]}
     >
-      {Icon ? <Icon /> : markerGlyphs[status]}
+      {Icon ? <Icon /> : statusGlyphs[status]}
     </span>
   );
 
@@ -305,7 +171,7 @@ export function TraceItem({
     <div
       data-slot='item'
       data-status={status}
-      x-class={[item, expandable && itemStacked, className]}
+      x-class={[item, expandable ? itemStacked : itemRow, className]}
       {...rest}
     >
       {/* The live region sits outside the disclosure button on purpose:
@@ -328,9 +194,19 @@ export function TraceItem({
           <span
             data-slot='icon'
             aria-hidden='true'
-            x-class={[chevron, open && chevronOpen]}
+            x-class={[chevronPair.closed, open && chevronPair.open]}
           >
-            <ChevronGlyph />
+            {/* lucide ChevronRight at 12px with a compensating 3-unit
+                stroke: the 24-unit viewBox renders at half the scale of
+                the former 16-unit inline glyph, so strokeWidth 3 keeps
+                the shipped 1.5px rendered stroke (StepTimeline
+                precedent). */}
+            <ChevronRight
+              size={12}
+              strokeWidth={3}
+              aria-hidden='true'
+              focusable='false'
+            />
           </span>
         </button>
       ) : (
@@ -344,7 +220,7 @@ export function TraceItem({
           data-slot='panel'
           id={panelId}
           hidden={!open}
-          x-class={[panelStyle]}
+          x-class={[panelBase]}
         >
           {details}
         </div>
@@ -355,7 +231,7 @@ export function TraceItem({
 
 export function TraceDetails({ children, className, ...rest }: TraceDetailsProps) {
   return (
-    <div data-slot='details' x-class={[detailsBody, className]} {...rest}>
+    <div data-slot='details' x-class={[disclosureMonoBody, className]} {...rest}>
       {children}
     </div>
   );
@@ -363,7 +239,7 @@ export function TraceDetails({ children, className, ...rest }: TraceDetailsProps
 
 export default function Trace({ children, className, ...rest }: TraceProps) {
   return (
-    <div data-slot='trace' x-class={[list, className]} {...rest}>
+    <div data-slot='trace' x-class={[timelineList, className]} {...rest}>
       {children}
     </div>
   );

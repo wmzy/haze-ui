@@ -4,6 +4,10 @@ import type { ToastAction } from './ToastContext';
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useRef } from 'react';
 
+import { dismissBtn } from '../../utils/status-skin';
+import { SpinnerGlyph, spinAnimation } from '../../utils/spinner-glyph';
+import { usePausableTimeout } from '../../utils/use-pausable-timeout';
+
 import { useStrings } from '../LocaleProvider';
 
 /**
@@ -155,33 +159,15 @@ const contentStyle = css`
   flex: 1;
 `;
 
-/* Spinner glyph for the `loading` variant — same geometry as the Spinner
- * component, inlined as aria-hidden art: the toast root is already the
- * live region, so a nested role="status" would announce the message
- * twice. */
+/* Spinner glyph sizing for the `loading` variant — the glyph geometry
+ * and the spin loop come from utils/spinner-glyph.tsx (shared with the
+ * Spinner component, byte-identical pair). The glyph stays aria-hidden
+ * art: the toast root is already the live region, so a nested
+ * role="status" would announce the message twice. */
 const spinnerIcon = css`
   flex-shrink: 0;
   width: var(--haze-text-base);
   height: var(--haze-text-base);
-  /* Literal loop period on purpose, matching Spinner: multi-second spin
-   * cycles sit outside the motion token scale, so reduced-motion needs
-   * this explicit collapse. A single 0.01ms iteration parks the arc at
-   * its rest frame — still readable as loading next to the copy. */
-  animation: toastSpin 0.8s linear infinite;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-  }
-
-  @keyframes toastSpin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 const titleStyle = css`
@@ -241,30 +227,6 @@ function runToastAction(action: ToastAction, onClose: () => void) {
   if (action.close !== false) onClose();
 }
 
-const closeBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  font-size: var(--haze-text-lg);
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
-  /* WCAG 2.5.8 target size: the × glyph alone is ~18px — box it out to
-   * the 24px minimum with the glyph centered. */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-
-  &:hover {
-    opacity: 1;
-  }
-`;
-
 export default function Toast({
   variant = 'info',
   action,
@@ -277,9 +239,6 @@ export default function Toast({
   ...rest
 }: ToastProps) {
   const strings = useStrings('toast');
-  const remainingRef = useRef(duration);
-  const startedAtRef = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoveredRef = useRef(false);
   const focusedRef = useRef(false);
   const onCloseRef = useRef(onClose);
@@ -290,26 +249,14 @@ export default function Toast({
     onCloseRef.current = onClose;
   }, [onClose]);
 
-  const pauseTimer = useCallback(() => {
-    if (timerRef.current === null) return;
-    clearTimeout(timerRef.current);
-    timerRef.current = null;
-    // Bank the elapsed slice so resuming uses the remaining budget, not the
-    // full duration again. Re-entrant: a no-op while already paused.
-    remainingRef.current = Math.max(
-      0,
-      remainingRef.current - (Date.now() - startedAtRef.current)
-    );
-  }, []);
-
-  const resumeTimer = useCallback(() => {
-    if (timerRef.current !== null || remainingRef.current <= 0) return;
-    startedAtRef.current = Date.now();
-    timerRef.current = setTimeout(() => {
-      timerRef.current = null;
-      onCloseRef.current();
-    }, remainingRef.current);
-  }, []);
+  // Banks at 0: a consumed countdown is simply over (the shared hook's
+  // other flavors — recurring re-arm, 1ms stall floor — belong to
+  // Carousel's autoplay engine).
+  const { pause: pauseTimer, resume: resumeTimer } = usePausableTimeout({
+    delay: duration,
+    onFire: () => onCloseRef.current(),
+    enabled: duration > 0,
+  });
 
   // WCAG 2.2.1: hover or focus (both bubbling to the toast root) freezes the
   // countdown; leaving/unfocusing resumes it with whatever budget is left.
@@ -320,14 +267,6 @@ export default function Toast({
       resumeTimer();
     }
   }, [pauseTimer, resumeTimer]);
-
-  useEffect(() => {
-    if (duration <= 0) return;
-    remainingRef.current = duration;
-    if (!hoveredRef.current && !focusedRef.current) resumeTimer();
-    // Cleanup banks elapsed time so the budget stays accurate.
-    return pauseTimer;
-  }, [duration, resumeTimer, pauseTimer]);
 
   return (
     <div
@@ -353,27 +292,10 @@ export default function Toast({
       {...rest}
     >
       {variant === 'loading' && (
-        <svg
+        <SpinnerGlyph
           data-slot='icon'
-          x-class={spinnerIcon}
-          viewBox='0 0 24 24'
-          fill='none'
-          aria-hidden='true'
-        >
-          <circle
-            cx='12'
-            cy='12'
-            r='10'
-            stroke='var(--haze-color-border)'
-            strokeWidth='3'
-          />
-          <path
-            d='M12 2a10 10 0 0 1 10 10'
-            stroke='var(--haze-color-primary)'
-            strokeWidth='3'
-            strokeLinecap='round'
-          />
-        </svg>
+          x-class={[spinAnimation, spinnerIcon]}
+        />
       )}
       <div data-slot='content' x-class={[contentStyle, classNames?.content]}>
         {title === undefined ? (
@@ -398,7 +320,7 @@ export default function Toast({
       <button
         type='button'
         data-slot='close'
-        x-class={[closeBtn, classNames?.close]}
+        x-class={[dismissBtn, classNames?.close]}
         aria-label={strings.close}
         onClick={onClose}
       >

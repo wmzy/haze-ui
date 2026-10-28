@@ -6,6 +6,9 @@ type FlexProps = {
   direction?: 'row' | 'column';
   align?: CSSProperties['alignItems'];
   justify?: CSSProperties['justifyContent'];
+  /** Space-scale step (Grid/Masonry convention): a number resolves to
+   * `var(--haze-space-N)`; strings pass through untouched (arbitrary
+   * values, e.g. `'var(--haze-space-2)'`). */
   gap?: string | number;
   wrap?: boolean;
   className?: string;
@@ -31,7 +34,10 @@ export default function Flex({
     flexDirection: direction,
     alignItems: align,
     justifyContent: justify,
-    gap: typeof gap === 'number' ? `${gap}px` : gap,
+    // Numeric gap is a space-scale step, same as Grid/Masonry — the
+    // inline style stays token-based so compact density and theme
+    // overrides keep working (a raw `${gap}px` bypassed both).
+    gap: typeof gap === 'number' ? `var(--haze-space-${gap})` : gap,
     flexWrap: wrap ? 'wrap' : undefined,
     ...styleProp,
   };

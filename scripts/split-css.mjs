@@ -122,26 +122,53 @@ const sharedLayers = {
   // InputCore compositor is covered automatically through the input
   // family's css via the css-manifest dependency closure, not listed.
   'utils/field-skin': [
+    'combobox',
+    'date-range-picker',
+    'datepicker',
     'file-input',
+    'inline-edit',
     'input',
+    'mentions',
     'number-input',
     'otp-input',
     'prompt-input',
     'tag-input',
     'textarea',
+    'time-picker',
   ],
   // Shared tag skin (utils/tag-skin.ts): the tag list/chip/remove-button
   // classes TagInput and PromptInput both wear; the sortable-mode drag
   // classes stay in tag-input's own tag-input-styles.ts.
   'utils/tag-skin': ['prompt-input', 'tag-input'],
+  // Shared suggest listbox skin (utils/suggest-list-skin.ts): the
+  // anchored listbox chrome plus option/highlighted/hint rows the two
+  // textarea-suggest surfaces (PromptInput tokens, Mentions mentions)
+  // render; max-height stays a per-site local override.
+  'utils/suggest-list-skin': ['mentions', 'prompt-input'],
+  // Shared quiet-button skin (utils/quiet-button-skin.ts): the bordered
+  // transparent hover-wash button recipe (reset + border + bg-subtle
+  // hover + typography) the inline affordances wear; the md/sm density
+  // pair and per-site extras (forced-colors companions, icon gaps) ride
+  // as local x-class companions. First adopters: AsyncSection's retry
+  // and ErrorBoundary's fallback (byte-identical pair at extraction).
+  'utils/quiet-button-skin': ['async-section', 'error-boundary'],
   // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
   // the details/summary header + content typography shared by
   // Accordion's items and Disclosure ride with both families' css.
   'utils/disclosure-skin': ['accordion', 'disclosure'],
   // Shared timeline skeleton (utils/timeline-skin.ts): list/row/dot
-  // geometry and the muted text skins shared by Timeline and
-  // StepTimeline ride with both families' css.
-  'utils/timeline-skin': ['timeline', 'step-timeline'],
+  // geometry, the muted text skins, the status-marker ring arms and
+  // glyph map, and the expandable-disclosure layer shared by Timeline,
+  // StepTimeline, Trace, Plan, JsonView and ToolCallCard ride with
+  // every consuming family's css.
+  'utils/timeline-skin': [
+    'json-view',
+    'plan',
+    'step-timeline',
+    'timeline',
+    'tool-call-card',
+    'trace',
+  ],
   // Shared preset shortcut rows (utils/preset-list-skin.ts) heading
   // the Datepicker and DateRangePicker panels ride with both css.
   'utils/preset-list-skin': ['datepicker', 'date-range-picker'],
@@ -167,6 +194,69 @@ const sharedLayers = {
   // and the label base Checkbox and Radio both wear; the :checked
   // decorations (checkmark vs dot) stay local per component.
   'utils/choice-skin': ['checkbox', 'radio'],
+  // Shared resize-grip skin (utils/grip-skin.ts): the 24/44px hit strip
+  // + 2px hairline chrome (hover/focus wash, focus ring, forced-colors
+  // baseline, per-orientation geometry) that Splitter's dividers and
+  // Resizable's handles wear; component-local extras (collapse-trigger
+  // reveal / touch-action + expander cursor) stay in their families.
+  'utils/grip-skin': ['resizable', 'splitter'],
+  // Shared status skin (utils/status-skin.ts): the semantic
+  // subtle/solid/stroke color axes, the live-region role map and the
+  // dismiss (×) button chrome shared by the status display family.
+  // Alert composes its color-mix border layer locally; Tag layers its
+  // font-size:inherit glyph arm and Banner its 2.5rem trigger box over
+  // the shared box via specificity-armed overrides (cascade order
+  // differs between dev injection and this split). Meter imports the
+  // type only — no css, so it is not a consumer here.
+  'utils/status-skin': [
+    'alert',
+    'banner',
+    'badge',
+    'chip',
+    'notification-center',
+    'tag',
+    'toast',
+  ],
+  // Solid/stroke status axes (progress bar fill, circle stroke,
+  // indicator tone dots) — separate modules from status-skin because
+  // same-keyed css maps in one file collide under Linaria's member-key
+  // class naming (see utils/status-skin.ts header). Progress/Indicator
+  // reference status-skin types only (build-time elided, no css ride).
+  'utils/status-solid-skin': ['indicator', 'progress'],
+  'utils/status-stroke-skin': ['progress'],
+  // Shared spinner glyph (utils/spinner-glyph.tsx): the ring+arc svg
+  // and the spin loop (reduced-motion collapsed to a single 0.01ms
+  // iteration) that Spinner and Toast's loading variant both render.
+  // Renders DOM — no rsc-safe entry.
+  'utils/spinner-glyph': ['spinner', 'toast'],
+  // Shared citation chrome (utils/citation-skin.ts): the mono [N] index
+  // badge and the outbound-title link Sources' list rows and
+  // InlineCitation's card header both render; InlineCitation's medium
+  // title weight stays a call-site delta composed on citationLink.
+  'utils/citation-skin': ['sources', 'inline-citation'],
+  // Shared floating-panel surface (utils/panel-skin.ts): the border +
+  // radius-lg + bg + shadow-lg chrome (with the forced-colors
+  // CanvasText border restatement) every overlay panel wears; width
+  // bounds and padding stay call-site deltas composed via x-class.
+  // The bare variant (no typography) serves the picker/date panels.
+  // DateRangePicker deliberately not a consumer: its inline panel
+  // floats one shadow step lower (shadow-md) and a layered override
+  // would resolve by stylesheet order, which differs between dev
+  // injection and this split.
+  'utils/panel-skin': [
+    'cascader',
+    'color-picker',
+    'confirm-dialog',
+    'datepicker',
+    'hover-card',
+    'inline-citation',
+    'navigation-menu',
+    'notification-center',
+    'popconfirm',
+    'popover',
+    'time-picker',
+    'tree-select',
+  ],
 };
 
 /**

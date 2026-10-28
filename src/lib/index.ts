@@ -13,7 +13,7 @@ export type { MotionPreset } from './tokens/motion';
 export { TOKEN_REGISTRY, COMPONENT_TOKENS } from './tokens/registry';
 export type { TokenDef } from './tokens/registry';
 
-// dates (multi-calendar adapter layer over Calendar/date.ts + Intl)
+// dates (multi-calendar adapter layer over utils/date-math.ts + Intl)
 export {
   gregoryAdapter,
   islamicUmalquraAdapter,

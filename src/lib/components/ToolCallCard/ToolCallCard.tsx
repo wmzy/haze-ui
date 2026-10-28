@@ -1,10 +1,14 @@
 import type { ReactNode } from 'react';
 
+import type { AgenticStatus, AgenticStatusTone } from '../../utils/agentic-status';
+
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { agenticStatusLabel, agenticStatusTone } from '../../utils/agentic-status';
+import { disclosureMonoBody } from '../../utils/timeline-skin';
 
-type ToolCallStatus = 'pending' | 'running' | 'done' | 'error';
+type ToolCallStatus = AgenticStatus;
 
 type ToolCallCardProps = {
   name: string;
@@ -39,12 +43,17 @@ const statusIcon = css`
   flex-shrink: 0;
 `;
 
-const statusPending = css`background: var(--haze-color-text-muted);`;
-// No pulse animation: `pulse` keyframes were never defined, so the
-// declaration never ran — the running state stays a solid primary dot.
-const statusRunning = css`background: var(--haze-color-primary);`;
-const statusDone = css`background: var(--haze-color-success);`;
-const statusError = css`background: var(--haze-color-danger);`;
+/* Flat header discs — this family's own marker geometry (borderless,
+   half the ring size), filled through the shared agentic tone map. No
+   pulse animation: `pulse` keyframes were never defined, so the
+   declaration never ran — the running state stays a solid primary
+   disc. */
+const toneFill: Record<AgenticStatusTone, string> = {
+  muted: css`background: var(--haze-color-text-muted);`,
+  primary: css`background: var(--haze-color-primary);`,
+  success: css`background: var(--haze-color-success);`,
+  danger: css`background: var(--haze-color-danger);`,
+};
 
 const body = css`
   padding: var(--haze-space-3);
@@ -62,27 +71,17 @@ const sectionLabel = css`
   letter-spacing: 0.05em;
 `;
 
+/* Mono payload body: the shared disclosureMonoBody skin plus this
+   card's explicit text tone (Trace's TraceDetails inherits instead). */
 const content = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  white-space: pre-wrap;
-  word-break: break-all;
   color: var(--haze-color-text);
 `;
 
-/* Status label pinned to the header's trailing edge in the muted tone
-   (tokens only — the former inline style as a neighboring class). */
+/* Status label pinned to the header's trailing edge in the muted tone. */
 const statusLabel = css`
   margin-inline-start: auto;
   color: var(--haze-color-text-muted);
 `;
-
-const statusClassMap: Record<ToolCallStatus, string> = {
-  pending: statusPending,
-  running: statusRunning,
-  done: statusDone,
-  error: statusError,
-};
 
 export default function ToolCallCard({
   name,
@@ -92,20 +91,17 @@ export default function ToolCallCard({
   className,
 }: ToolCallCardProps) {
   const strings = useStrings('toolCallCard');
-  const statusLabelMap: Record<ToolCallStatus, string> = {
-    pending: strings.pending,
-    running: strings.running,
-    done: strings.done,
-    error: strings.error,
-  };
 
   return (
     <div data-slot='tool-call-card' x-class={[card, className]}>
       <div data-slot='header' x-class={[header]}>
-        <span data-slot='indicator' x-class={[statusIcon, statusClassMap[status]]} />
+        <span
+          data-slot='indicator'
+          x-class={[statusIcon, toneFill[agenticStatusTone[status]]]}
+        />
         <span data-slot='tool-name'>{name}</span>
         <span data-slot='status' x-class={[statusLabel]}>
-          {statusLabelMap[status]}
+          {agenticStatusLabel(status, strings)}
         </span>
       </div>
       {(input || output) && (
@@ -113,13 +109,13 @@ export default function ToolCallCard({
           {input && (
             <div data-slot='params' x-class={[section]}>
               <div data-slot='label' x-class={[sectionLabel]}>{strings.inputLabel}</div>
-              <div data-slot='content' x-class={[content]}>{input}</div>
+              <div data-slot='content' x-class={[disclosureMonoBody, content]}>{input}</div>
             </div>
           )}
           {output && (
             <div data-slot='result' x-class={[section]}>
               <div data-slot='label' x-class={[sectionLabel]}>{strings.outputLabel}</div>
-              <div data-slot='content' x-class={[content]}>{output}</div>
+              <div data-slot='content' x-class={[disclosureMonoBody, content]}>{output}</div>
             </div>
           )}
         </div>

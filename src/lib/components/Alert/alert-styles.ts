@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 /**
  * Shared Alert skin — the base and color classes the `Alert`
  * component wears. Living in their own module keeps the component file
@@ -21,39 +23,43 @@ export const base = css`
   line-height: var(--haze-leading-normal);
 `;
 
+/* The tinted surface/text pair comes from the shared status skin
+ * (utils/status-skin.ts — byte-identical to Badge/Tag/Banner/Chip's
+ * subtle axis); Alert's own layer below is the color-mix border
+ * composed on top. Key order preserved from the historical map (the
+ * public `alertVariants` shape). */
 export const colors = {
+  default: statusSubtleColors.default,
+  primary: statusSubtleColors.primary,
+  info: statusSubtleColors.info,
+  success: statusSubtleColors.success,
+  warning: statusSubtleColors.warning,
+  danger: statusSubtleColors.danger,
+} as const;
+
+/** The border layer Alert composes over the shared subtle skin — the
+ * 25% color-mix edge that frames the message with its accent. */
+export const borders = {
   default: css`
-    background: var(--haze-color-bg-muted);
-    color: var(--haze-color-text-secondary);
     border: 1px solid var(--haze-color-border);
   `,
   primary: css`
-    background: var(--haze-color-primary-subtle);
-    color: var(--haze-color-primary);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-primary) 25%, transparent);
   `,
   info: css`
-    background: var(--haze-color-info-subtle);
-    color: var(--haze-color-info);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-info) 25%, transparent);
   `,
   success: css`
-    background: var(--haze-color-success-subtle);
-    color: var(--haze-color-success);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-success) 25%, transparent);
   `,
   warning: css`
-    background: var(--haze-color-warning-subtle);
-    color: var(--haze-color-warning);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
   `,
   danger: css`
-    background: var(--haze-color-danger-subtle);
-    color: var(--haze-color-danger);
     border: 1px solid
       color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
   `,
@@ -61,36 +67,4 @@ export const colors = {
 
 export const contentStyle = css`
   flex: 1;
-`;
-
-export const closeBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  font-size: var(--haze-text-lg);
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
-
-  &:hover {
-    opacity: 1;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-    border-radius: var(--haze-radius-sm);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     a Highlight outline replaces it (media-gated, normal rendering
-     untouched). */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-    }
-  }
 `;

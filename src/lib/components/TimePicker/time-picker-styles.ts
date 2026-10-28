@@ -6,35 +6,29 @@
 
 import { css } from '@linaria/core';
 
+import { classnames } from '../../utils/classnames';
+import { pickerFieldInput } from '../../utils/field-skin';
+import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
+
 export const wrapper = css`
   position: relative;
   display: inline-block;
 `;
 
-/** Readonly trigger input (Datepicker's trigger look). */
-export const trigger = css`
+/* Trigger deltas over the shared picker field skin
+   (utils/field-skin.ts): the readonly combobox sizes like a full-width
+   block field, shows the pointer cursor a picker trigger earns, and
+   keeps its figures tabular so the panel's columns align on focus.
+   `trigger` composes the shared class ahead of these — additive
+   properties only, both classes riding the time-picker family css
+   through the sharedLayers registration. */
+const triggerDeltas = css`
   display: block;
   width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  padding: var(--haze-space-2) var(--haze-space-3);
   line-height: var(--haze-leading-normal);
   cursor: pointer;
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
   box-sizing: border-box;
   font-variant-numeric: tabular-nums;
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   &:disabled {
     opacity: 0.5;
@@ -46,16 +40,24 @@ export const trigger = css`
   }
 `;
 
-/** Panel visual skin applied on every rendering tier. */
-export const panel = css`
+/** Readonly trigger input — the shared picker field skin plus the
+ * deltas above. */
+export const trigger = classnames(pickerFieldInput, triggerDeltas);
+
+/* Panel chrome deltas over the shared bare panel surface
+   (utils/panel-skin.ts): the column layout and its inset. */
+const panelDeltas = css`
   display: flex;
   flex-direction: column;
   padding: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
 `;
+
+/** Panel visual skin applied on every rendering tier — the shared bare
+ * panel surface plus the deltas above. `popoverPanelHidden` restates
+ * the UA closed-state hiding because `panelDeltas`' author `display`
+ * would otherwise outrank the UA sheet and paint the closed popover
+ * as an invisible hit-targetable box (Cascader/TreeSelect precedent). */
+export const panel = classnames(panelSurfaceBare, popoverPanelHidden, panelDeltas);
 
 export const columns = css`
   display: flex;

@@ -25,7 +25,12 @@ export type Hsl = {h: number; s: number; l: number; a?: number};
 
 export type ParsedColor = {format: ColorFormat; rgb: Rgb};
 
-function clamp01(value: number): number {
+/**
+ * Constrain into the normalized `[0, 1]` range — shared by the math
+ * here and the panel's pointer/keyboard extraction (formerly a second
+ * private copy in ColorPickerPanel).
+ */
+export function clamp01(value: number): number {
   return clamp(value, 0, 1);
 }
 

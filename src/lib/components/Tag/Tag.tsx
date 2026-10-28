@@ -1,10 +1,13 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
+import type { StatusColor } from '../../utils/status-skin';
+
+import { dismissBtn } from '../../utils/status-skin';
 
 import { base, colors, tagSizes, closeBtn, linkShape } from './tag-styles';
 
 type TagOwnProps = {
   /** Semantic status color. */
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color?: StatusColor;
   size?: 'sm' | 'md';
   closable?: boolean;
   onClose?: () => void;
@@ -65,7 +68,7 @@ export default function Tag<T extends ElementType = 'span'>({
         <button
           data-slot="remove-button"
           type='button'
-          className={closeBtn}
+          x-class={[dismissBtn, closeBtn]}
           aria-label={removeLabel}
           onClick={onClose}
         >

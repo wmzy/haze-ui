@@ -93,14 +93,14 @@ describe('RTL rendering smoke (dir=rtl)', () => {
     );
   });
 
-  it('renders Alert with the alert role and close button intact', async () => {
+  it('renders Alert with a polite live-region role and close button intact', async () => {
     const { axe } = await import('jest-axe');
     renderRtl(
       <Alert color='warning' closable>
         Storage almost full
       </Alert>
     );
-    expect(screen.getByRole('alert')).toHaveTextContent('Storage almost full');
+    expect(screen.getByRole('status')).toHaveTextContent('Storage almost full');
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     expect(await axe(document.body, axeOptions)).toEqual(
       expect.objectContaining({ violations: [] })

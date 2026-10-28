@@ -24,6 +24,7 @@ import { Component } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { quietButton } from '../../utils/quiet-button-skin';
 
 /** Arguments handed to a render-prop fallback. */
 type FallbackRenderArgs = {
@@ -104,40 +105,16 @@ const fallbackMessage = css`
   overflow-wrap: anywhere;
 `;
 
-const fallbackButton = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-2);
-  padding: var(--haze-space-1) var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  line-height: var(--haze-leading-tight);
-  cursor: pointer;
-  user-select: none;
-  transition:
-    background var(--haze-duration-fast),
-    border-color var(--haze-duration-fast);
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     a Highlight outline replaces it (media-gated, normal rendering
-     untouched). */
+/* The fallback button's chrome lives in the shared quiet-button skin
+ * (utils/quiet-button-skin.ts); only the forced-colors focus outline —
+ * the box-shadow ring the UA drops under forced colors — stays here.
+ * The compound `&[data-slot]` selector keeps the arm winning over the
+ * shared base's `outline: none` in any cascade order (dev-server
+ * injection order and the dist split disagree — Banner's closeBtnSize
+ * precedent). */
+const fallbackButtonForcedColors = css`
   @media (forced-colors: active) {
-    &:focus-visible {
+    &[data-slot='retry-button']:focus-visible {
       outline: 2px solid Highlight;
     }
   }
@@ -167,7 +144,7 @@ function DefaultFallback({
         </p>
       )}
       <button
-        x-class={fallbackButton}
+        x-class={[quietButton, fallbackButtonForcedColors]}
         type="button"
         data-slot="retry-button"
         onClick={onReset}

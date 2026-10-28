@@ -11,9 +11,19 @@ import { useControl } from 'react-use-control';
 
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { pickerOverflowBadge, pickerPanelWidth } from '../../utils/picker-trigger';
+import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
+import {
+  pickerGroupLabel,
+  pickerListbox,
+  pickerListboxVirtual,
+  pickerOverflowBadge,
+  pickerPanelWidth,
+  pickerVirtualRow,
+} from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { findMatchRanges } from '../../utils/text-match';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
+import { useListboxNavigation } from '../../utils/use-listbox-navigation';
 import { useSearchReport } from '../../utils/use-search-report';
 import Chip from '../Chip/Chip';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
@@ -32,8 +42,8 @@ type ComboboxVirtualizedConfig = {
    * Row height in px of one option row. Defaults to 37 —
    * ComboboxOption's natural box: space-2 padding top+bottom + text-sm
    * at leading-normal = 8 + 21 + 8. Virtualization math needs it as a
-   * JS number; rows are stretched to fill it (`virtualRow`), so the two
-   * cannot drift apart.
+   * JS number; rows are stretched to fill it (`pickerVirtualRow`,
+   * utils/picker-trigger), so the two cannot drift apart.
    */
   itemHeight?: number;
   /** Extra rows kept mounted above/below the visible window. Defaults
@@ -188,27 +198,15 @@ const wrapper = css`
   width: 100%;
 `;
 
+/**
+ * The single-mode trigger input over the shared field recipe
+ * (utils/field-skin: `fieldChrome` + `nativeFieldChrome` +
+ * `fieldSizes.md`): only the box-sizing delta Input keeps local — the
+ * shared classes carry the surface, sizing, typography, focus ring,
+ * placeholder token, hover and disabled arms.
+ */
 const input = css`
-  display: block;
-  width: 100%;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  padding: var(--haze-space-2) var(--haze-space-3);
-  line-height: var(--haze-leading-normal);
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
   box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /**
@@ -286,80 +284,37 @@ const stateRow = css`
   cursor: default;
 `;
 
-/**
- * Group-heading text for the virtualized path — VirtualList's sticky
- * header wrapper supplies the chrome (background, border, padding);
- * this mirrors the plain path's heading text style.
- */
-const groupHeadingText = css`
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-`;
-
-/**
- * Chrome of the plain (scrolling) listbox on top of the shared
- * tier-aware width cascade (`pickerPanelWidth` — see its doc for the
- * fallback/anchored tier rationale; `border-box` there makes the
- * re-pin match the trigger's border-box width exactly): the scroll cap
- * and the surface chrome.
- */
-const listbox = css`
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-`;
-
-/**
- * Virtualized panel: same chrome, no scroll box — the VirtualList
- * scrollport owns scrolling. Keeping the plain class untouched avoids a
- * nested scroll container that could grow a second scrollbar under a
- * border-box consumer (2px of panel border would overflow the cap).
- */
-const listboxVirtual = css`
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
-`;
-
 /** Scrollport height of the virtualized list — the plain listbox's
- * `max-height` cap, so both modes are equally tall at the limit;
- * shorter lists size to their rows (min at the call site), matching the
- * non-virtualized content-driven height. */
+ * `max-height` cap (`pickerListbox`, utils/picker-trigger), so both
+ * modes are equally tall at the limit; shorter lists size to their rows
+ * (min at the call site), matching the non-virtualized content-driven
+ * height. */
 const VIRTUAL_LIST_HEIGHT = 200;
 
 /** Fixed row height for the virtualized path: ComboboxOption's natural
  * box — space-2 padding top+bottom + text-sm at leading-normal =
  * 8 + 21 + 8. Virtualization math needs it as a JS number; rows are
- * stretched to fill it (`virtualRow`), so the two cannot drift apart. */
+ * stretched to fill it (`pickerVirtualRow`, utils/picker-trigger), so
+ * the two cannot drift apart. */
 const OPTION_ROW_HEIGHT = 37;
-
-/** Stretch a virtualized option over its absolutely-positioned,
- * fixed-height row wrapper so hover/highlight cover the full row. */
-const virtualRow = css`
-  height: 100%;
-  box-sizing: border-box;
-`;
 
 /**
  * Wraps the first case-insensitive occurrence of `query` inside
- * `label` with a token-styled `<mark>`. An empty query or a miss
- * returns the label verbatim — the un-highlighted DOM stays
- * byte-identical to the historical plain-text children.
+ * `label` with a token-styled `<mark>` — the first range of the shared
+ * matcher (utils/text-match, the same primitive Highlight and Tree
+ * search use). An empty query or a miss returns the label verbatim —
+ * the un-highlighted DOM stays byte-identical to the historical
+ * plain-text children.
  */
 function highlightLabel(label: string, query: string): ReactNode {
-  if (query === '') return label;
-  const index = label.toLowerCase().indexOf(query.toLowerCase());
-  if (index < 0) return label;
+  const [range] = findMatchRanges(label, query);
+  if (!range) return label;
+  const [start, end] = range;
   return (
     <>
-      {label.slice(0, index)}
-      <mark data-slot='match' x-class={[matchMark]}>{label.slice(index, index + query.length)}</mark>
-      {label.slice(index + query.length)}
+      {label.slice(0, start)}
+      <mark data-slot='match' x-class={[matchMark]}>{label.slice(start, end)}</mark>
+      {label.slice(end)}
     </>
   );
 }
@@ -417,7 +372,6 @@ export default function Combobox<T extends string | number = string>({
   const [created, setCreated] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [open, setOpen] = useControl(openControl, false);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
   const [prevQuery, setPrevQuery] = useState(query);
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -501,6 +455,13 @@ export default function Combobox<T extends string | number = string>({
       // top of T-typed options (see the creatable note above).
       [{ value: trimmedQuery as T, label: trimmedQuery }, ...filtered]
     : filtered;
+
+  // The clamped flat-index highlight shared with Select
+  // (utils/use-listbox-navigation); every consumed navigation key also
+  // opens the panel from the closed state (a no-op while open). Home/
+  // End join the skeleton here — Select always had them.
+  const { activeIndex: highlightIndex, setActiveIndex: setHighlightIndex, handleNavigationKey } =
+    useListboxNavigation(listItems.length, () => setOpen(true));
 
   // Explicit `virtualized` override: object config enables at any
   // length and customizes metrics, `true` enables with defaults,
@@ -630,17 +591,11 @@ export default function Combobox<T extends string | number = string>({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      // Arrows are also the keyboard open path — focus alone no longer
-      // opens the list (see the trigger comment).
-      setOpen(true);
-      setHighlightIndex((i) => Math.min(i + 1, listItems.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setOpen(true);
-      setHighlightIndex((i) => Math.max(i - 1, 0));
-    } else if (
+    // The shared Arrow/Home/End skeleton (clamped highlight + open from
+    // the closed state) consumes the navigation keys; the site keys
+    // below compose after it.
+    if (handleNavigationKey(e)) return;
+    if (
       e.key === 'Enter' &&
       highlightIndex >= 0 &&
       listItems[highlightIndex]
@@ -685,7 +640,7 @@ export default function Combobox<T extends string | number = string>({
       highlighted={i === highlightIndex}
       selected={isSelected(o.value)}
       onSelect={handleSelect}
-      x-class={[virtual && virtualRow, resolvedClassNames?.item]}
+      x-class={[virtual && pickerVirtualRow, resolvedClassNames?.item]}
     >
       {showCreateItem && i === 0
         ? createText
@@ -710,7 +665,17 @@ export default function Combobox<T extends string | number = string>({
       aria-autocomplete="list"
       aria-activedescendant={activeDescendant}
       aria-busy={loading || undefined}
-      x-class={[multiple ? multiInput : input, resolvedClassNames?.input]}
+      x-class={
+        multiple
+          ? [multiInput, resolvedClassNames?.input]
+          : [
+              fieldChrome,
+              nativeFieldChrome,
+              fieldSizes.md,
+              input,
+              resolvedClassNames?.input,
+            ]
+      }
       value={query}
       placeholder={placeholder}
       onChange={(e) => {
@@ -790,8 +755,8 @@ export default function Combobox<T extends string | number = string>({
         aria-multiselectable={multiple ? 'true' : undefined}
         visualClass={
           virtualized
-            ? `${pickerPanelWidth} ${listboxVirtual}`
-            : `${pickerPanelWidth} ${listbox}`
+            ? `${pickerPanelWidth} ${pickerListboxVirtual}`
+            : `${pickerPanelWidth} ${pickerListbox}`
         }
         style={
           maxHeight !== undefined && !virtualized
@@ -838,7 +803,7 @@ export default function Combobox<T extends string | number = string>({
                       startIndex: s.rows[0]?.index ?? 0,
                       key: s.key,
                       render: () => (
-                        <div data-slot='group-label' x-class={[groupHeadingText]}>{s.label}</div>
+                        <div data-slot='group-label' x-class={[pickerGroupLabel]}>{s.label}</div>
                       ),
                     }))
                 : undefined

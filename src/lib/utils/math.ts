@@ -17,3 +17,14 @@
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
+
+/**
+ * Round `value` to the nearest multiple of `1 / magnitude` (default
+ * 1e-6), stripping float noise before a value is stored or serialized
+ * (0.1 + 0.2 → 0.3). Formerly the `Math.round(x * N) / N` idiom
+ * re-implemented at every drag/step/percent call site with drifting
+ * magnitudes (1e-6/1e-10/100/10000).
+ */
+export function quantize(value: number, magnitude = 1e6): number {
+  return Math.round(value * magnitude) / magnitude;
+}

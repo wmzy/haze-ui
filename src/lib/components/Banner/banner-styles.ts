@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 /**
  * Shared Banner skin — the base and color classes the `Banner`
  * component wears. Living in their own module keeps the component file
@@ -28,57 +30,30 @@ export const banner = css`
   }
 `;
 
+/* The tinted surface/text pair comes from the shared status skin
+ * (utils/status-skin.ts — byte-identical to Badge/Tag/Chip's subtle
+ * axis). Key order preserved from the historical map (the public
+ * `bannerVariants` shape). */
 export const colors = {
-  default: css`
-    background: var(--haze-color-bg-muted);
-    color: var(--haze-color-text-secondary);
-  `,
-  primary: css`
-    background: var(--haze-color-primary-subtle);
-    color: var(--haze-color-primary);
-  `,
-  info: css`
-    background: var(--haze-color-info-subtle);
-    color: var(--haze-color-info);
-  `,
-  success: css`
-    background: var(--haze-color-success-subtle);
-    color: var(--haze-color-success);
-  `,
-  warning: css`
-    background: var(--haze-color-warning-subtle);
-    color: var(--haze-color-warning);
-  `,
-  danger: css`
-    background: var(--haze-color-danger-subtle);
-    color: var(--haze-color-danger);
-  `,
-};
+  default: statusSubtleColors.default,
+  primary: statusSubtleColors.primary,
+  info: statusSubtleColors.info,
+  success: statusSubtleColors.success,
+  warning: statusSubtleColors.warning,
+  danger: statusSubtleColors.danger,
+} as const;
 
-export const closeBtn = css`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  opacity: 0.7;
-  font-size: var(--haze-text-lg);
-  padding: var(--haze-space-2);
-  min-width: 2.5rem;
-  min-height: 2.5rem;
-  line-height: 1;
-
-  &:hover {
-    opacity: 1;
-  }
-
-  /* Forced-colors: the × glyph keeps its CanvasText rendering through
-     color:inherit; the UA drops nothing here except a focus ring this
-     button never had — give keyboard focus a media-gated Highlight
-     outline (normal rendering untouched). */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-    }
+/** Banner-local dismiss geometry layered over the shared dismiss skin
+ * (utils/status-skin.ts): the roomier 2.5rem trigger-row box with its
+ * generous padding. The compound `&[data-slot]` selector keeps the
+ * override winning in any cascade order — a plain later class is not
+ * enough, dev-server injection order and dist split-css order
+ * disagree. */
+export const closeBtnSize = css`
+  &[data-slot='close'] {
+    padding: var(--haze-space-2);
+    min-width: 2.5rem;
+    min-height: 2.5rem;
   }
 `;
 

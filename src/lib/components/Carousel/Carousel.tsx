@@ -21,6 +21,9 @@ import {
 } from 'react';
 import { useControl } from 'react-use-control';
 
+import { capturePointer } from '../../utils/pointer-capture';
+import { usePausableTimeout } from '../../utils/use-pausable-timeout';
+
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { getDirection } from '../../utils/direction';
@@ -66,8 +69,6 @@ type CarouselProps = {
 const DRAG_SLOP = 4;
 /** 释放翻页阈值：轨道可见宽度的 25%。 */
 const DRAG_PAGE_RATIO = 0.25;
-/** 空操作占位（暂停/恢复入口在引擎停用时的哨兵值）。 */
-const noop = (): void => undefined;
 
 type DragState = {
   pointerId: number;
@@ -255,70 +256,34 @@ export default function Carousel({
     [goNext, goPrev, count, setCurrent]
   );
 
-  // ── autoPlay 引擎（Toast 的剩余预算模式）────────────────────
+  // ── autoPlay 引擎（Toast 同款的剩余预算模式，共享
+  // use-pausable-timeout）────────────────────────────
   // 暂停源：拖拽/按压会话恒暂停（手势优先于放映）；悬停与焦点仅在
   // pauseOnHover 时暂停。未传 pauseOnHover 且无拖拽时引擎退化为普通
-  // 定时推进，与旧的 setInterval 行为一致。
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startedAtRef = useRef(0);
-  const remainingRef = useRef(0);
+  // 定时推进，与旧的 setInterval 行为一致。recurring 重挂完整预算、
+  // 下限 1ms——预算恰好耗尽的边界上不让恢复变成永久停摆；resetKey
+  // 让幻灯片数量变化时按完整间隔重置。
   const pausedRef = useRef(false);
   const hoveredRef = useRef(false);
   const focusedRef = useRef(false);
   const draggingRef = useRef(false);
-  const pauseRef = useRef<() => void>(noop);
-  const resumeRef = useRef<() => void>(noop);
 
-  useEffect(() => {
-    if (!autoPlay || count <= 1) {
-      // 引擎停用：清空入口，避免旧闭包用旧配置重启定时器
-      pauseRef.current = noop;
-      resumeRef.current = noop;
-      return;
-    }
-
-    const advance = () => setCurrent((prev) => (prev + 1) % count);
-
-    const arm = () => {
-      startedAtRef.current = Date.now();
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        advance();
-        remainingRef.current = interval; // 下一张的完整预算
-        if (!pausedRef.current) arm();
-      }, remainingRef.current);
-    };
-
-    const pause = () => {
-      if (timerRef.current === null) return; // 已暂停时幂等
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-      // 把已流逝的切片入账：恢复时用剩余预算，而非完整间隔重计。
-      // 下限 1ms——预算恰好耗尽的边界上不让恢复变成永久停摆。
-      remainingRef.current = Math.max(
-        1,
-        remainingRef.current - (Date.now() - startedAtRef.current)
-      );
-    };
-
-    pauseRef.current = pause;
-    resumeRef.current = () => {
-      if (timerRef.current === null && remainingRef.current > 0) arm();
-    };
-
-    remainingRef.current = interval;
-    if (!pausedRef.current) arm();
-    // 配置变化/卸载时入账已流逝时间，预算保持准确
-    return pause;
-  }, [autoPlay, interval, count, setCurrent]);
+  const { pause, resume } = usePausableTimeout({
+    delay: interval,
+    onFire: () => setCurrent((prev) => (prev + 1) % count),
+    enabled: autoPlay && count > 1,
+    recurring: true,
+    minRemaining: 1,
+    resetKey: count,
+  });
 
   const syncPlay = useCallback(() => {
     pausedRef.current =
       draggingRef.current ||
       (pauseOnHover && (hoveredRef.current || focusedRef.current));
-    if (pausedRef.current) pauseRef.current();
-    else resumeRef.current();
-  }, [pauseOnHover]);
+    if (pausedRef.current) pause();
+    else resume();
+  }, [pauseOnHover, pause, resume]);
 
   // ── 指针拖拽翻页 ────────────────────────────────────────────
   // slide 形态：触摸已有原生 scroll-snap，不接管、不 preventDefault；
@@ -327,11 +292,9 @@ export default function Carousel({
   const suppressClickRef = useRef(false);
 
   const takeDragGesture = (el: HTMLDivElement, pointerId: number) => {
-    try {
-      el.setPointerCapture(pointerId);
-    } catch {
-      // jsdom/无指针捕获的引擎：事件继续以冒泡形式送达轨道
-    }
+    // 安全捕获（utils/pointer-capture）：jsdom/无指针捕获的引擎静默
+    // 穿透，事件继续以冒泡形式送达轨道
+    capturePointer(el, pointerId);
     el.style.userSelect = 'none'; // 拖拽期间不选中文本
     if (!fade) {
       el.style.scrollBehavior = 'auto'; // 跟手位移，禁用平滑滚动

@@ -22,9 +22,10 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { SortableHandleContext, useSortableHandle } from '../../utils/sortable-handle';
 import { sortableItemStyle, useSortableSensors } from '../../utils/sortable-shared';
+import { findNodeByKey } from '../../utils/tree-utils';
 
 import Tree from './Tree';
-import { filterTreeByQuery, findNodeByKey, flattenVisibleTree } from './utils';
+import { filterTreeByQuery, flattenVisibleTree } from './utils';
 import { resolveTreeMove, subtreeKeys } from './sortable-tree-utils';
 import {
   grip,

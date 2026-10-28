@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { connectResizeObserver } from '../../utils/connect-resize-observer';
 import { mergeRefs } from '../../utils/refs';
 
 import { useScrollAreaContext } from './ScrollAreaContext';
@@ -49,6 +50,7 @@ export default function ScrollViewport({
   // Purely internal UI state: whether the content overflows (drives the
   // focusability contract + data-scrollable) — never a controlled prop.
   const [scrollable, setScrollable] = useState(false);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     const el = innerRef.current;
@@ -60,15 +62,18 @@ export default function ScrollViewport({
     };
     measure();
     el.addEventListener('scroll', measure, { passive: true });
-    let observer: ResizeObserver | undefined;
-    // jsdom has no ResizeObserver; mount + scroll re-measure covers it.
-    if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(measure);
-      observer.observe(el);
-    }
+    // RO lifecycle shared with useResizeObserver/useElementSize; jsdom
+    // has no ResizeObserver — mount + scroll re-measure covers it.
+    connectResizeObserver({
+      observerRef,
+      node: el,
+      box: 'content-box',
+      enabled: true,
+      onEntry: measure,
+    });
     return () => {
       el.removeEventListener('scroll', measure);
-      observer?.disconnect();
+      observerRef.current?.disconnect();
     };
   }, []);
 

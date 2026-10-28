@@ -12,17 +12,18 @@
  *
  * Like the other algorithmic adapters (hebrew, ethiopic), all math runs
  * on integer Julian Day Numbers (whole days, no DST drift) and results
- * materialize as local-midnight Dates per the date.ts civil semantics.
+ * materialize as local-midnight Dates per the date-math.ts civil semantics.
  */
 import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
 
-import { addMonths as shiftMonth } from '../components/Calendar/date';
+import { addMonths as shiftMonth } from '../utils/date-math';
 
 import {
   assertCivilDate,
   DAY_MS,
   eraOfDate,
   localMidnightOf,
+  normalizeParts,
   sampleMonthNames,
   UNIX_EPOCH_JDN,
   utcCivilMs,
@@ -166,7 +167,7 @@ export const persianAdapter: HazeDateAdapter = {
   },
 
   toGregorian(parts) {
-    const shifted = shiftMonth(parts.year, parts.month, 0);
+    const shifted = normalizeParts(parts.year, parts.month);
     assertCivilDate(parts, shifted, monthLength, 'a persian');
     const g = jdnToGregorian(
       jalaliToJdn(shifted.year, shifted.month + 1, parts.day)
@@ -175,7 +176,7 @@ export const persianAdapter: HazeDateAdapter = {
   },
 
   getDaysInMonth(year, month) {
-    const shifted = shiftMonth(year, month, 0);
+    const shifted = normalizeParts(year, month);
     return monthLength(shifted.year, shifted.month);
   },
 

@@ -1,8 +1,23 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import ConfirmDialog from './ConfirmDialog';
+
+beforeEach(() => {
+  // jsdom does not implement showModal/close for HTMLDialogElement (same
+  // stub shape as Dialog.test.tsx: showModal sets the open attribute,
+  // close removes it and dispatches the native close event).
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement
+  ) {
+    this.setAttribute('open', '');
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  });
+});
 
 describe('ConfirmDialog', () => {
   it('renders when open', () => {
@@ -15,10 +30,12 @@ describe('ConfirmDialog', () => {
     expect(screen.getByText('Confirm Action')).toBeInTheDocument();
   });
 
-  it('has dialog role with aria-modal and labels itself via the title', () => {
+  it('is a native modal dialog labeling itself via the title', () => {
     render(<ConfirmDialog open title="Confirm Action">Body</ConfirmDialog>);
     const dialog = screen.getByRole('dialog', { name: 'Confirm Action' });
-    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog.tagName).toBe('DIALOG');
+    // showModal path: the open attribute is only set by the modal effect
+    expect(dialog).toHaveAttribute('open');
   });
 
   it('renders default button text', () => {
@@ -49,39 +66,49 @@ describe('ConfirmDialog', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
-  it('unmounts after the exit settles when confirmed', async () => {
-    const user = userEvent.setup();
-    render(<ConfirmDialog open>Body</ConfirmDialog>);
-    await user.click(screen.getByText('Confirm'));
-    // Presence 退场跨 rAF，jsdom 无 CSS 时长也需异步等待卸载
-    await waitFor(() =>
-      expect(screen.queryByText('Body')).not.toBeInTheDocument()
-    );
-  });
-
-  it('closes on overlay click after the exit settles', async () => {
+  it('fires onClose exactly once on confirm, after the exit settles', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     render(<ConfirmDialog open onClose={onClose}>Body</ConfirmDialog>);
-    await user.click(screen.getByRole('dialog').parentElement!);
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    await user.click(screen.getByText('Confirm'));
+    // 状态已翻 closed，退场期间 open 属性保留（等待 whenExitSettles）；
+    // onClose 由 el.close() 触发的原生 close 事件统一发出
+    expect(dialog).toHaveAttribute('data-state', 'closed');
+    expect(dialog).toHaveAttribute('open');
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
     expect(onClose).toHaveBeenCalledTimes(1);
-    await waitFor(() =>
-      expect(screen.queryByText('Body')).not.toBeInTheDocument()
-    );
   });
 
-  it('closes on Escape', async () => {
+  it('closes on backdrop click after the exit settles', async () => {
+    const onClose = vi.fn();
+    render(<ConfirmDialog open onClose={onClose}>Body</ConfirmDialog>);
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    // 真实浏览器里 ::backdrop 上的点击以 dialog 元素自身为 target
+    act(() => {
+      fireEvent.click(dialog);
+    });
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+  });
+
+  it('closes through the animated path when Esc requests a cancel', async () => {
     const onClose = vi.fn();
     render(
       <ConfirmDialog open onClose={onClose}>
         Body
       </ConfirmDialog>
     );
-    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
-    expect(onClose).toHaveBeenCalledTimes(1);
-    await waitFor(() =>
-      expect(screen.queryByText('Body')).not.toBeInTheDocument()
-    );
+    const dialog = screen.getByRole<HTMLDialogElement>('dialog');
+    const cancel = new Event('cancel', { cancelable: true });
+    act(() => {
+      // 模拟浏览器 Esc 行为：先发 cancel 请求关闭
+      dialog.dispatchEvent(cancel);
+    });
+    // 原生立即关闭被拦截，统一改走 React 状态 → 退场动画 → el.close()
+    expect(cancel.defaultPrevented).toBe(true);
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
   });
 
   it('moves initial focus to the first action when opened', () => {
@@ -108,25 +135,11 @@ describe('ConfirmDialog', () => {
     expect(screen.getByText('Cancel')).toHaveFocus();
     await user.click(screen.getByText('Cancel'));
     expect(opener).toHaveFocus();
-    await waitFor(() =>
-      expect(screen.queryByText('Body')).not.toBeInTheDocument()
-    );
   });
 
-  it('traps Tab focus within the dialog', () => {
-    render(<ConfirmDialog open>Body</ConfirmDialog>);
-    const cancel = screen.getByText('Cancel');
-    const confirm = screen.getByText('Confirm');
-    confirm.focus();
-    fireEvent.keyDown(document, { key: 'Tab' });
-    expect(cancel).toHaveFocus();
-    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
-    expect(confirm).toHaveFocus();
-  });
-
-  it('applies className', () => {
-    const { container } = render(<ConfirmDialog open className="custom">Body</ConfirmDialog>);
-    expect(container.firstChild).toHaveClass('custom');
+  it('applies className to the dialog panel', () => {
+    render(<ConfirmDialog open className="custom">Body</ConfirmDialog>);
+    expect(screen.getByRole('dialog')).toHaveClass('custom');
   });
 
   it('has no axe violations', async () => {

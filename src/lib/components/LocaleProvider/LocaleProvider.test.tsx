@@ -24,6 +24,20 @@ function DirectionProbe() {
   return <output data-testid="direction">{useDirection()}</output>;
 }
 
+beforeEach(() => {
+  // ConfirmDialog renders a native <dialog> through the shared shell;
+  // jsdom does not implement showModal/close (Dialog.test.tsx stub shape).
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement
+  ) {
+    this.setAttribute('open', '');
+  });
+  HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  });
+});
+
 describe('LocaleProvider', () => {
   it('renders default copy with no provider mounted', () => {
     render(<Pagination total={20} />);

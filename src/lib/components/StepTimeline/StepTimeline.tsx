@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
+import type { AgenticStatus } from '../../utils/agentic-status';
+
 import { useId } from 'react';
 
 import { css } from '@linaria/core';
@@ -9,6 +11,17 @@ import { useControl } from 'react-use-control';
 
 import { ChevronRight } from '../../icons';
 import {
+  chevronPair,
+  headerButton,
+  itemStacked,
+  panelBase,
+  statusDot,
+  statusDotActive,
+  statusDotDone,
+  statusDotError,
+  statusDotPending,
+  statusDotRunning,
+  statusGlyphs,
   timelineDescription,
   timelineDot,
   timelineLabel,
@@ -16,7 +29,7 @@ import {
   timelineRow,
 } from '../../utils/timeline-skin';
 
-type StepStatus = 'pending' | 'active' | 'running' | 'done' | 'error';
+type StepStatus = AgenticStatus | 'active';
 
 type StepTimelineProps = {
   children: ReactNode;
@@ -65,115 +78,10 @@ const connectorRow = css`
   }
 `;
 
-/* Collapsible rows stack the header button above the panel instead of
-   laying children out in the connector row. */
-const itemStacked = css`
-  display: block;
-`;
-
-const headerButton = css`
-  display: flex;
-  align-items: flex-start;
-  gap: var(--haze-space-3);
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: start;
-  cursor: pointer;
-  border-radius: var(--haze-radius-md);
-
-  /* No inline padding on purpose: the marker must stay flush with the
-     item edge so the connector line keeps hitting its center. */
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-/* Local half of the shared dot geometry (timelineDot carries the round
-   shape, shrink guard and z-lift): the status ring's size, border and
-   the centered glyph cell. The 0.5rem glyph size is a documented keep
-   — no type token that small exists (text-xs is the floor); the ✓/!
-   marks are intentionally sub-token. */
-const markerStyle = css`
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
-  border: 2px solid var(--haze-color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.5rem;
-`;
-
-const markerPending = css`
-  border-color: var(--haze-color-border);
-  background: var(--haze-color-bg);
-`;
-
-const markerActive = css`
-  border-color: var(--haze-color-primary);
-  background: var(--haze-color-primary);
-`;
-
-const markerRunning = css`
-  border-color: var(--haze-color-primary);
-  background: var(--haze-color-primary);
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: -0.3125rem;
-    border-radius: var(--haze-radius-full);
-    border: 2px solid var(--haze-color-primary);
-    /* Multi-second cycle on purpose: the motion tokens model transition
-       durations (120/200/300ms), not loops — same call as Spinner's
-       spin period; reduced-motion parks it below. */
-    animation: step-timeline-pulse 1.6s var(--haze-ease) infinite;
-  }
-
-  /* WCAG 2.3.3: a single 0.01ms iteration parks the pulse at its rest
-     frame — the ring settles as a static halo around the solid dot, so
-     the step still reads as in-flight without motion. */
-  @media (prefers-reduced-motion: reduce) {
-    &::after {
-      animation-duration: 0.01ms;
-      animation-iteration-count: 1;
-    }
-  }
-
-  @keyframes step-timeline-pulse {
-    0% {
-      transform: scale(0.6);
-      opacity: 0.8;
-    }
-
-    70%,
-    100% {
-      transform: scale(1.4);
-      opacity: 0;
-    }
-  }
-`;
-
-const markerDone = css`
-  border-color: var(--haze-color-success);
-  background: var(--haze-color-success);
-  color: var(--haze-color-text-inverse);
-`;
-
-const markerError = css`
-  border-color: var(--haze-color-danger);
-  background: var(--haze-color-danger);
-  color: var(--haze-color-text-inverse);
-`;
+/* The status ring rides the shared statusDot geometry and arm set
+   (utils/timeline-skin); timelineDot stays in the mix for the z-lift
+   that keeps the ring above this family's absolutely positioned
+   connector line. */
 
 const body = css`
   flex: 1;
@@ -201,42 +109,16 @@ const timeStyle = css`
   white-space: nowrap;
 `;
 
-const chevron = css`
-  display: inline-flex;
-  flex-shrink: 0;
-  margin-block-start: var(--haze-space-1);
-  color: var(--haze-color-text-muted);
-  transform: rotate(0deg);
-  transition: transform var(--haze-duration-fast) var(--haze-ease);
-`;
-
-const chevronOpen = css`
-  transform: rotate(90deg);
-`;
-
-/* Indent past the marker column (space-5 marker + the row gap) so
-   revealed content aligns with the label; the item's own connector
-   line stays in the marker gutter beside it. */
-const panelStyle = css`
-  padding-inline-start: calc(var(--haze-space-5) + var(--haze-space-3));
-  padding-block: var(--haze-space-1) var(--haze-space-2);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-secondary);
-`;
-
 const subSteps = css`
   margin-block-start: var(--haze-space-2);
 `;
 
-/* lucide ChevronRight at 12px with a compensating 3-unit stroke: the
-   24-unit viewBox renders at half the scale of the old 16-unit inline
-   glyph, so strokeWidth 3 keeps the shipped 1.5px rendered stroke. */
 const markerMap: Record<StepStatus, string> = {
-  pending: markerPending,
-  active: markerActive,
-  running: markerRunning,
-  done: markerDone,
-  error: markerError,
+  pending: statusDotPending,
+  active: statusDotActive,
+  running: statusDotRunning,
+  done: statusDotDone,
+  error: statusDotError,
 };
 
 function StepTimelineItem({
@@ -267,10 +149,10 @@ function StepTimelineItem({
 
   const glyph =
     icon ??
-    (status === 'done' ? '✓' : status === 'error' ? '!' : undefined);
+    (status === 'done' || status === 'error' ? statusGlyphs[status] : undefined);
 
   const indicator = (
-    <div data-slot='dot' x-class={[timelineDot, markerStyle, markerMap[status]]}>
+    <div data-slot='dot' x-class={[timelineDot, statusDot, markerMap[status]]}>
       {glyph}
     </div>
   );
@@ -309,8 +191,12 @@ function StepTimelineItem({
           <span
             data-slot='icon'
             aria-hidden='true'
-            x-class={[chevron, open && chevronOpen]}
+            x-class={[chevronPair.closed, open && chevronPair.open]}
           >
+            {/* lucide ChevronRight at 12px with a compensating 3-unit
+                stroke: the 24-unit viewBox renders at half the scale of
+                the old 16-unit inline glyph, so strokeWidth 3 keeps the
+                shipped 1.5px rendered stroke. */}
             <ChevronRight
               size={12}
               strokeWidth={3}
@@ -330,7 +216,7 @@ function StepTimelineItem({
           data-slot='panel'
           id={expandable ? panelId : undefined}
           hidden={expandable && !open}
-          x-class={[panelStyle]}
+          x-class={[panelBase]}
         >
           {content}
           {children != null && (

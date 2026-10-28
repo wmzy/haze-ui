@@ -6,14 +6,10 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { useClipboard } from '../../hooks/useClipboard';
 import { useStreamingAnnouncements } from '../../hooks/useStreamingAnnouncements';
-import { Check } from '../../icons';
 import { srOnly } from '../../utils/sr-only';
-import { CopyGlyph } from '../../utils/copy-glyph';
+import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
 
 type ChatMessageRole = 'user' | 'assistant' | 'system';
-
-/** Feedback window for the copy success glyph. */
-const COPIED_FEEDBACK_MS = 1500;
 
 type ChatMessageProps = {
   role: ChatMessageRole;
@@ -80,6 +76,12 @@ const wrapperUser = css`
   flex-direction: row-reverse;
 `;
 
+/* Deliberately not the Avatar component: its `sm` box matches this
+   slot (32px = 2rem), but Avatar types the fallback letter at
+   text-xs/weight-medium (plus user-select:none) while this slot renders
+   it at text-sm/normal — composing Avatar would shift those pixels, and
+   overriding back via an equal-specificity class resolves by stylesheet
+   order, which differs between dev injection and the split css. */
 const avatarSlot = css`
   flex-shrink: 0;
   width: 2rem;
@@ -283,11 +285,7 @@ export default function ChatMessage({
                 onClick={handleCopy}
                 aria-label={chatStrings.copy}
               >
-                {copied ? (
-                  <Check size={14} aria-hidden='true' focusable='false' />
-                ) : (
-                  <CopyGlyph />
-                )}
+                <CopyFeedbackGlyph copied={copied} />
               </button>
             )}
             {actions}

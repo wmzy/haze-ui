@@ -18,13 +18,13 @@ import {
   addDays,
   addMinutes,
   addMonthsToDate,
-  formatDate,
+  formatDateOf,
   getLeadingDays,
   getWeekdayLabels,
   isSameDay,
   resolveWeekStart,
   startOfDay,
-} from '../Calendar/date';
+} from '../../utils/date-math';
 import { LocaleContext } from '../LocaleProvider/LocaleContext';
 import Segmented from '../Segmented/Segmented';
 
@@ -1184,11 +1184,7 @@ export default function Schedule({
     const eventsByDay = new Map<string, ScheduleEvent[]>();
     events.forEach((event) => {
       const start = startOfDay(toDate(event.start));
-      const key = formatDate(
-        start.getFullYear(),
-        start.getMonth(),
-        start.getDate()
-      );
+      const key = formatDateOf(start);
       const list = eventsByDay.get(key);
       if (list) {
         list.push(event);
@@ -1223,11 +1219,7 @@ export default function Schedule({
               const index = week * 7 + i;
               const outside = day.getMonth() !== anchor.getMonth();
               const today = isSameDay(day, now);
-              const dayKey = formatDate(
-                day.getFullYear(),
-                day.getMonth(),
-                day.getDate()
-              );
+              const dayKey = formatDateOf(day);
               const dayEvents = eventsByDay.get(dayKey) ?? [];
               const visible = dayEvents.slice(0, MAX_MONTH_CHIPS);
               const hiddenCount = dayEvents.length - visible.length;

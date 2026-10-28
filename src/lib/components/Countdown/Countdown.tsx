@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
-import { pad2 } from '../TimePicker/time';
+import { pad2 } from '../../utils/time-math';
 
 /** Decomposed remaining time handed to `format`/`render`. */
 type CountdownParts = {

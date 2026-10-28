@@ -1,11 +1,14 @@
 import type { ReactNode, Ref } from 'react';
+import type { StatusColor } from '../../utils/status-skin';
 
-import { base, solidColors, outlineColors, iconStyle, closeBtn } from './chip-styles';
+import { dismissBtn } from '../../utils/status-skin';
+
+import { base, solidColors, outlineColors, iconStyle, closeBtnGap } from './chip-styles';
 
 type ChipProps = {
   variant?: 'solid' | 'outline';
   /** Semantic status color. */
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color?: StatusColor;
   icon?: ReactNode;
   onClose?: () => void;
   /**
@@ -37,7 +40,13 @@ export default function Chip({
       {icon && <span data-slot="icon" x-class={[iconStyle]}>{icon}</span>}
       {children}
       {onClose && (
-        <button data-slot="remove-button" type="button" x-class={[closeBtn]} onClick={onClose} aria-label={removeLabel}>
+        <button
+          data-slot="remove-button"
+          type="button"
+          x-class={[dismissBtn, closeBtnGap]}
+          onClick={onClose}
+          aria-label={removeLabel}
+        >
           ×
         </button>
       )}

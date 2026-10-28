@@ -5,6 +5,7 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { fieldChrome, fieldSizes } from '../../utils/field-skin';
 
 type InlineEditProps = {
   value?: ControlOrValue<string>;
@@ -21,8 +22,11 @@ const display = css`
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
+  /* Floors keep the empty/placeholder affordance clickable: 2rem is
+   * exactly space-8; 1.75rem has no ladder step (there is no space-7),
+   * so the literal stays. */
   min-height: 1.75rem;
-  min-width: 2rem;
+  min-width: var(--haze-space-8);
   border: 1px solid transparent;
   transition: background var(--haze-duration-fast);
 
@@ -31,17 +35,28 @@ const display = css`
   }
 `;
 
+/* The field surface (border/radius/fill) and the sm size tier
+ * (padding/typography) come from utils/field-skin.ts — the local class
+ * keeps only the inline-editor deltas (ink, the content floor, the
+ * focus skin). The primary border + ring ride a :focus arm: editing IS
+ * the focused state (the input carries `autoFocus` so focus lands at
+ * commit time — before the first paint — and blur commits), and the
+ * pseudo specificity beats fieldChrome's border shorthand under any
+ * stylesheet emission order — split-css concatenates groups
+ * alphabetically, so utils/ layers land AFTER the consuming
+ * component's own module CSS. */
 const editing = css`
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border: 1px solid var(--haze-color-primary);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
   font-family: var(--haze-font-sans);
   outline: none;
-  box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  min-width: 2rem;
+  /* Content floor: an emptied draft keeps the field's footprint
+   * (space-8 is the exact 2rem token). */
+  min-width: var(--haze-space-8);
+
+  &:focus {
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
 `;
 
 const placeholderStyle = css`
@@ -99,7 +114,8 @@ export default function InlineEdit({
       <input
         ref={inputRef}
         data-slot='inline-edit'
-        x-class={[editing, className]}
+        autoFocus
+        x-class={[fieldChrome, fieldSizes.sm, editing, className]}
         aria-label={placeholderLabel}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -116,7 +132,18 @@ export default function InlineEdit({
       onClick={startEditing}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') startEditing(); }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') startEditing();
+        // Space follows the native button contract: keydown only
+        // swallows the page-scroll default (and the character insert),
+        // activation fires on keyup — moving focus to the input
+        // mid-keystroke would otherwise let the same Space land in
+        // the draft.
+        if (e.key === ' ') e.preventDefault();
+      }}
+      onKeyUp={(e) => {
+        if (e.key === ' ') startEditing();
+      }}
     >
       {value || placeholderLabel}
     </span>

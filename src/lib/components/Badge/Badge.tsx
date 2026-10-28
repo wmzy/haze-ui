@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode, Ref } from 'react';
+import type { StatusColor } from '../../utils/status-skin';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
 // the file basename, and a shared `styles` basename collides with
@@ -8,7 +9,7 @@ import { base, sizes, colors } from './badge-styles';
 
 type BadgeProps = {
   /** Semantic status color. */
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color?: StatusColor;
   size?: 'sm' | 'md';
   className?: string;
   style?: CSSProperties;

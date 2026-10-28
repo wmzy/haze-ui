@@ -102,6 +102,7 @@ export { Play } from 'lucide-react';
 export { Plus } from 'lucide-react';
 export { QrCode } from 'lucide-react';
 export { RefreshCw } from 'lucide-react';
+export { RotateCw } from 'lucide-react';
 export { Save } from 'lucide-react';
 export { Search } from 'lucide-react';
 export { Send } from 'lucide-react';

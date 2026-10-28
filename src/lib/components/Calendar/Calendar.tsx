@@ -1,30 +1,19 @@
-import type {
-  ComponentPropsWithoutRef,
-  KeyboardEvent as ReactKeyboardEvent,
-  ReactNode,
-  Ref,
-  RefObject,
-} from 'react';
-import type { ControlOrValue } from 'react-use-control';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
-import { css } from '@linaria/core';
+import type { CalendarProps, HeaderPanelView } from './types';
+
+import type { MonthPaneView, PeriodGridView } from './grids';
+
 import { useControl } from 'react-use-control';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { getDirection } from '../../utils/direction';
-import { mergeRefs } from '../../utils/refs';
-import { useStrings } from '../LocaleProvider';
-
 import {
   addMonths,
-  buildMonthCells,
   formatDate,
   formatMonthValue,
   formatQuarterValue,
-  formatWeekValue,
   formatYearValue,
   getDaysInMonth,
-  getISOWeek,
   getISOWeekStartDate,
   getWeekdayLabels,
   parseCivilDate,
@@ -33,621 +22,33 @@ import {
   parseWeekValue,
   parseYearValue,
   resolveWeekStart,
-} from './date';
+} from '../../utils/date-math';
+import { mergeRefs } from '../../utils/refs';
+import { useStrings } from '../LocaleProvider';
 
-/** Granularity Calendar picks at. Each mode serializes its `value` and
- * `onSelect` payload to a plain string: `"YYYY-MM-DD"` (date), an ISO
- * 8601 week `"YYYY-Www"` (week), `"YYYY-MM"` (month), `"YYYY-Qn"` with
- * n 1–4 (quarter) or `"YYYY"` (year). */
-type CalendarPickerMode = 'date' | 'week' | 'month' | 'quarter' | 'year';
+import { dayButtons, useGridKeyboard, useSelectorGridKeyboard } from './grid-roving';
+import { renderMonthGrid, renderMonthPane, renderQuarterGrid, renderYearGrid } from './grids';
+import {
+  calendarWrapper,
+  header,
+  headerBtn,
+  headerTitle,
+  headerTitles,
+  headerTrailing,
+  monthPanel,
+  monthPanels,
+  paneHeader,
+  quickSelect,
+  quickToolbar,
+  titleBtn,
+} from './styles';
 
-/**
- * Extra render position appended inside picker cells (day numbers, month
- * / quarter / year labels) — schedule dots, badges, custom chrome. Called
- * with the cell's representative civil date (`day` 1 for the
- * month/quarter/year cells) and the picker mode the cell renders in, so
- * one callback can decorate a date grid and the header drill-down grids
- * differently.
- */
-type CalendarCellRender = (
-  date: { year: number; month: number; day: number },
-  mode: CalendarPickerMode
-) => ReactNode;
-
-/** Which grid the date-mode panel currently shows: the day grid itself,
- * the quick-select month grid, or the decade year grid drilled from the
- * header's year title or the quick-select toolbar. */
-type HeaderPanelView = 'days' | 'months' | 'years';
-
-/**
- * Semantic slot classes (AntD v6 `classNames` shape): keys mirror the
- * data-slot each part carries (`today-button`-style kebab slots surface
- * as camelCase keys). Consumer classes are appended at the end of each
- * part's class list (able to override component defaults) and compose
- * with the root `className`; slots not rendered by the current
- * `picker`/view (drill-down toolbars, quarter grid, dual-month panels,
- * …) are ignored.
- */
-type CalendarClassNames = {
-  /** The root wrapper `<div>` (`data-slot='calendar'`). */
-  root?: string;
-  /** The navigation header (`data-slot='header'`) — every mode's main
-   * header and the dual-month second pane's header. */
-  header?: string;
-  /** Every title node (`data-slot='title'`) — the header's drill-down
-   * month/year titles, the drill toolbars' decade/year titles and the
-   * dual-month pane titles, spans and buttons alike. */
-  title?: string;
-  /** Every ‹ previous button (`data-slot='prev'`). */
-  prev?: string;
-  /** Every › next button (`data-slot='next'`). */
-  next?: string;
-  /** The header's trailing actions cluster (`data-slot='actions'`) —
-   * Today button + next in the mode pickers. */
-  actions?: string;
-  /** The header's Today button (`data-slot='today-button'`). */
-  todayButton?: string;
-  /** Toolbar of a drill-down view (`data-slot='toolbar'`) — the
-   * quick-select month grid's year stepper and the decade grid's
-   * decade stepper. */
-  toolbar?: string;
-  /** One month pane's day grid (`data-slot='month'`, `role='grid'`). */
-  month?: string;
-  /** The weekday header row (`data-slot='weekday-row'`, `role='row'`). */
-  weekdayRow?: string;
-  /** One weekday column header (`data-slot='weekday'`). */
-  weekday?: string;
-  /** The week-number column header and row cells
-   * (`data-slot='week-number'`). */
-  weekNumber?: string;
-  /** One day cell button (`data-slot='day'`). */
-  day?: string;
-  /** Dual-month layout: the panes wrapper (`data-slot='months'`). */
-  months?: string;
-  /** Dual-month layout: one pane wrapper (`data-slot='month-panel'`). */
-  monthPanel?: string;
-  /** A month-cell grid (`data-slot='month-grid'`) — the quick-select
-   * month grid and the month picker mode's grid. */
-  monthGrid?: string;
-  /** One month cell button (`data-slot='month-cell'`). */
-  monthCell?: string;
-  /** The quarter picker mode's grid (`data-slot='quarter-grid'`). */
-  quarterGrid?: string;
-  /** One quarter cell button (`data-slot='quarter-cell'`). */
-  quarterCell?: string;
-  /** A year-cell grid (`data-slot='year-grid'`) — the decade drill-down
-   * and the year picker mode's grid. */
-  yearGrid?: string;
-  /** One year cell button (`data-slot='year-cell'`). */
-  yearCell?: string;
-};
-
-type CalendarProps = {
-  /**
-   * Granularity the calendar picks at. `"date"` (default) renders the
-   * day grid; `"week"` the same day grid with whole-ISO-week row
-   * selection (rows run Monday–Sunday, the week-number column is always
-   * shown and `weekStartsOn` is ignored — ISO weeks are Monday-first by
-   * definition); `"month"` a 3×4 month grid over one year; `"quarter"`
-   * a 4-quarter grid over one year; `"year"` a 12-year grid stepped a
-   * decade at a time. Values follow each mode's serialization (see
-   * {@link CalendarPickerMode}); `months`, `showWeekNumbers`,
-   * `weekStartsOn` and the range props apply to the day grid only.
-   * @default 'date'
-   */
-  picker?: CalendarPickerMode;
-  /**
-   * Selected value as a plain string whose format follows `picker`:
-   * "YYYY-MM-DD" (date, the default), an ISO week "YYYY-Www" (week),
-   * "YYYY-MM" (month), "YYYY-Qn" (quarter) or "YYYY" (year). Empty
-   * string means nothing selected.
-   */
-  value?: ControlOrValue<string>;
-  /**
-   * Earliest selectable date ("YYYY-MM-DD"). In the month/quarter/year
-   * modes a cell is disabled only when its whole period lies before
-   * `min` (the period's last day < `min`).
-   */
-  min?: string;
-  /**
-   * Latest selectable date ("YYYY-MM-DD"). In the month/quarter/year
-   * modes a cell is disabled only when its whole period lies after
-   * `max` (the period's first day > `max`).
-   */
-  max?: string;
-  /**
-   * Disables individual cells by predicate, alongside `min`/`max` (a
-   * cell is disabled when either hits). Called with the cell's
-   * representative date as a local-midnight `Date`: the day itself in
-   * the date mode, day 1 of the month in the month mode, day 1 of the
-   * quarter's first month in the quarter mode, January 1 in the year
-   * mode. Disabled cells render natively disabled (inert to clicks,
-   * skipped by keyboard roving).
-   */
-  disabledDate?: (date: Date) => boolean;
-  /** BCP 47 locale used for month and weekday formatting. */
-  locale?: string;
-  /** Explicit first day of the week: 0 = Sunday, 1 = Monday. */
-  weekStartsOn?: 0 | 1;
-  /**
-   * Render a leading ISO 8601 week-number column on every month grid
-   * (labeled "Wk" / localized via the `calendar.weekNumber` string).
-   * @default false
-   */
-  showWeekNumbers?: boolean;
-  /**
-   * Number of adjacent month grids rendered side by side. Both grids
-   * share one navigation state: prev/next, the Today button and the
-   * month quick-select move every grid together, and each grid keeps
-   * its own keyboard roving.
-   * @default 1
-   */
-  months?: 1 | 2;
-  /**
-   * Start of a highlighted date range ("YYYY-MM-DD"), drawn as a filled
-   * endpoint on its day. Purely presentational — range picking logic
-   * stays with the caller (see DateRangePicker's dual-month panel).
-   */
-  rangeStart?: string;
-  /**
-   * End of a highlighted date range ("YYYY-MM-DD"); together with
-   * `rangeStart` fills every day in between with a subtle background.
-   */
-  rangeEnd?: string;
-  /**
-   * Called with the picked value — "YYYY-MM-DD" (date), an ISO week
-   * "YYYY-Www" (week), "YYYY-MM" (month), "YYYY-Qn" (quarter) or "YYYY"
-   * (year), matching `picker`. Still fires alongside the controllable
-   * `value` for callers that prefer event-style wiring.
-   */
-  onSelect?: (date: string) => void;
-  /**
-   * Appends a custom render inside every picker cell — day numbers,
-   * month/quarter/year labels and the header drill-down grids alike
-   * (schedule dots, badges). Receives the cell's representative civil
-   * date (`day` 1 for month/quarter/year cells) and the mode the cell
-   * renders in. Opt-in: without it the cells render exactly as before.
-   */
-  cellRender?: CalendarCellRender;
-  /** Slot classes (see {@link CalendarClassNames}); each key lands on
-   * the parts carrying the matching data-slot, after the component
-   * defaults. */
-  classNames?: CalendarClassNames;
-  /**
-   * Forwarded to the root wrapper `<div>` (`data-slot='calendar'`) —
-   * the element tests and `ref.current.focus()` reach.
-   */
-  ref?: Ref<HTMLDivElement>;
-} & Omit<ComponentPropsWithoutRef<'div'>, 'onSelect'>;
-
-const calendarWrapper = css`
-  padding: var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-`;
-
-const header = css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-`;
-
-const headerBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--haze-color-text);
-  cursor: pointer;
-  padding: var(--haze-space-1);
-  border-radius: var(--haze-radius-sm);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  line-height: 1;
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-const headerTitle = css`
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
-/* The date-mode header carries two drill-down titles (month and year);
-   they sit inline in the header's center slot, ordered per the locale's
-   own month/year part order. */
-const headerTitles = css`
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--haze-space-1);
-`;
-
-/* The month title doubles as the quick-select trigger. Inheriting the
-   font longhands and zeroing padding keeps the button's box identical to
-   the plain span it replaced, so the default rendering is visually
-   unchanged; headerTitle keeps owning weight and color. */
-const titleBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  margin: 0;
-  padding: 0;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  cursor: pointer;
-  border-radius: var(--haze-radius-sm);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-`;
-
-const headerTrailing = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-1);
-`;
-
-const grid = css`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  text-align: center;
-`;
-
-/* Rows and cells participate in the parent grid through `display: contents`
-   so the 7-column layout stays driven by the grid container while the ARIA
-   tree gets the row → columnheader/gridcell structure `role="grid"`
-   requires (axe aria-required-children). */
-const rowContents = css`
-  display: contents;
-`;
-
-const cellContents = css`
-  display: contents;
-`;
-
-const weekday = css`
-  padding: var(--haze-space-1);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-`;
-
-const weekNumber = css`
-  padding: var(--haze-space-2);
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-`;
-
-/* Week mode: the row label of the selected week picks up the primary
-   color to match the filled day cells beside it. */
-const weekNumberSelected = css`
-  color: var(--haze-color-primary);
-  font-weight: var(--haze-weight-medium);
-`;
-
-/* cellRender slot: stacks the custom content under the day number.
-   Only mounted when a cellRender is provided, so default cells keep
-   their plain text-only content. */
-const dayContent = css`
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--haze-space-1);
-`;
-
-const dayBtn = css`
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--haze-color-text);
-  cursor: pointer;
-  padding: var(--haze-space-2);
-  border-radius: var(--haze-radius-sm);
-  font-size: var(--haze-text-sm);
-  line-height: 1.5;
-  transition: background var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-`;
-
-const daySelected = css`
-  background: var(--haze-color-primary);
-  color: var(--haze-color-text-inverse);
-
-  &:hover {
-    background: var(--haze-color-primary-hover);
-  }
-`;
-
-const dayInRange = css`
-  background: var(--haze-color-primary-subtle);
-`;
-
-const dayOutside = css`
-  color: var(--haze-color-text-muted);
-`;
-
-/* Two-grid layout (months={2}): panes sit side by side, each keeping the
-   header + grid column structure of the single-month calendar. */
-const monthPanels = css`
-  display: flex;
-  align-items: flex-start;
-  gap: var(--haze-space-4);
-`;
-
-const monthPanel = css`
-  display: flex;
-  flex-direction: column;
-`;
-
-/* Static label above the second pane — centered like pane 1's title
-   sits between its nav buttons. */
-const paneHeader = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-`;
-
-/* Quick-select view: shared year toolbar above a 3×4 month grid. */
-const quickSelect = css`
-  display: flex;
-  flex-direction: column;
-`;
-
-const quickToolbar = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--haze-space-2);
-  margin-block-end: var(--haze-space-2);
-`;
-
-const quickGrid = css`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  text-align: center;
-`;
-
-/* Quarter picker grid: one row of four quarter cells (same cell
-   chrome as the month grid, one column per quarter). */
-const quarterGrid = css`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  text-align: center;
-`;
-
-/** Day buttons of the rendered grid in DOM order (outside months and
- * disabled days included — `focusFrom` skips the disabled ones). */
-function dayButtons(grid: HTMLElement | null): HTMLButtonElement[] {
-  return Array.from(
-    grid?.querySelectorAll<HTMLButtonElement>('button') ?? []
-  );
-}
-
-/**
- * Move focus by `delta` slots on the 7-column grid, skipping disabled
- * days in the direction of travel and stopping at the grid's edges (the
- * month boundary is a real boundary — outside-month cells are rendered
- * on both sides of it).
- */
-function focusFrom(
-  buttons: HTMLButtonElement[],
-  from: number,
-  delta: number
-): number | null {
-  let index = from + delta;
-  while (index >= 0 && index < buttons.length && buttons[index]!.disabled) {
-    index += delta;
-  }
-  if (index < 0 || index >= buttons.length) return null;
-  return index;
-}
-
-/**
- * Date-grid keyboard roving (WAI-ARIA grid pattern): ←/→ move one day,
- * ↑/↓ one week, Home/End jump to the row's first/last day, PageUp/
- * PageDown switch the month view keeping the same day (clamped to the
- * month's length). Under `dir="rtl"` the horizontal arrows mirror (←
- * moves to the next day), read from the DOM at event time so the keys
- * follow the mirrored grid.
- */
-function useGridKeyboard(
-  gridRef: RefObject<HTMLDivElement | null>,
-  view: { year: number; month: number },
-  setView: (next: { year: number; month: number }) => void,
-  pendingFocusRef: RefObject<string | null>
-) {
-  return (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    const buttons = dayButtons(grid);
-    if (buttons.length === 0) return;
-    const current = buttons.indexOf(
-      (event.target as HTMLElement).closest('button')!
-    );
-
-    const forward =
-      getDirection(grid) === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const backward = forward === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
-    const move = (delta: number) => {
-      const index = focusFrom(buttons, current < 0 ? 0 : current, delta);
-      if (index !== null) {
-        event.preventDefault();
-        buttons[index]!.focus();
-      }
-    };
-
-    switch (event.key) {
-      case forward:
-        move(1);
-        return;
-      case backward:
-        move(-1);
-        return;
-      case 'ArrowDown':
-        move(7);
-        return;
-      case 'ArrowUp':
-        move(-7);
-        return;
-      case 'Home': {
-        const rowStart = current < 0 ? 0 : current - (current % 7);
-        const index = focusFrom(buttons, rowStart - 1, 1);
-        if (index !== null) {
-          event.preventDefault();
-          buttons[index]!.focus();
-        }
-        return;
-      }
-      case 'End': {
-        const rowEnd = current < 0 ? 6 : current - (current % 7) + 6;
-        const index = focusFrom(buttons, rowEnd + 1, -1);
-        if (index !== null) {
-          event.preventDefault();
-          buttons[index]!.focus();
-        }
-        return;
-      }
-      case 'PageUp':
-      case 'PageDown': {
-        event.preventDefault();
-        const delta = event.key === 'PageDown' ? 1 : -1;
-        const next = addMonths(view.year, view.month, delta);
-        // Keep the focused day (clamped to the target month's length);
-        // falls back to the first day when nothing was focused.
-        const fromDay =
-          current >= 0
-            ? Number(buttons[current]!.textContent)
-            : 1;
-        const day = Math.min(
-          Math.max(fromDay, 1),
-          getDaysInMonth(next.year, next.month)
-        );
-        setView(next);
-        pendingFocusRef.current = formatDate(next.year, next.month, day);
-        return;
-      }
-    }
-  };
-}
-
-/**
- * Selector-grid keyboard roving (WAI-ARIA grid pattern over a
- * `columns`-column cell grid — the quick-select month view and the
- * month/quarter/year picker modes): ←/→ move one cell, ↑/↓ one row,
- * Home/End jump to the row's first/last cell skipping disabled cells
- * (the day grid's `focusFrom`), PageUp/PageDown step the period (year
- * or decade) keeping the focused cell — `pendingCellIndexRef` hands the
- * index to the effect that re-focuses after the view commits.
- * Enter/Space pick via the button's native activation. Mirrors the day
- * grid's `dir="rtl"` arrow mirroring.
- */
-function useSelectorGridKeyboard(
-  gridRef: RefObject<HTMLDivElement | null>,
-  columns: number,
-  step: (delta: number) => void,
-  pendingCellIndexRef: RefObject<number | null>
-) {
-  return (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    const buttons = dayButtons(grid);
-    if (buttons.length === 0) return;
-    const current = buttons.indexOf(
-      (event.target as HTMLElement).closest('button')!
-    );
-
-    const forward =
-      getDirection(grid) === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const backward = forward === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
-    const move = (delta: number) => {
-      const index = focusFrom(buttons, current < 0 ? 0 : current, delta);
-      if (index !== null) {
-        event.preventDefault();
-        buttons[index]!.focus();
-      }
-    };
-
-    switch (event.key) {
-      case forward:
-        move(1);
-        return;
-      case backward:
-        move(-1);
-        return;
-      case 'ArrowDown':
-        move(columns);
-        return;
-      case 'ArrowUp':
-        move(-columns);
-        return;
-      case 'Home': {
-        const rowStart = current < 0 ? 0 : current - (current % columns);
-        const index = focusFrom(buttons, rowStart - 1, 1);
-        if (index !== null) {
-          event.preventDefault();
-          buttons[index]!.focus();
-        }
-        return;
-      }
-      case 'End': {
-        const rowEnd =
-          current < 0
-            ? columns - 1
-            : Math.min(
-                current - (current % columns) + columns - 1,
-                buttons.length - 1
-              );
-        const index = focusFrom(buttons, rowEnd + 1, -1);
-        if (index !== null) {
-          event.preventDefault();
-          buttons[index]!.focus();
-        }
-        return;
-      }
-      case 'PageUp':
-      case 'PageDown': {
-        event.preventDefault();
-        pendingCellIndexRef.current = current < 0 ? 0 : current;
-        step(event.key === 'PageDown' ? 1 : -1);
-        return;
-      }
-    }
-  };
-}
+export type {
+  CalendarCellRender,
+  CalendarClassNames,
+  CalendarPickerMode,
+  CalendarProps,
+} from './types';
 
 export default function Calendar({
   picker = 'date',
@@ -1081,190 +482,38 @@ export default function Calendar({
     </button>
   );
 
-  /** One month pane: weekday header row + chunked week rows. Shared by
-   * the single- and dual-month layouts; `pane` is the pane's own view so
-   * keyboard month hops anchor on the focused grid. In the week mode
-   * every row of the (Monday-first) grid is one ISO week: the week
-   * column is always shown, a day pick commits the row's
-   * `"YYYY-Www"` value and the whole selected week renders selected. */
-  const renderMonthPane = (
-    pane: { year: number; month: number },
-    paneRef: RefObject<HTMLDivElement | null>,
-    handleKeyDown: (event: ReactKeyboardEvent<HTMLDivElement>) => void
-  ) => {
-    const cells = buildMonthCells(pane.year, pane.month, weekStart);
-    // Chunk the flat 7-aligned cell list into week rows (display:
-    // contents, so layout is unchanged) — `role="grid"` requires row →
-    // columnheader / gridcell structure (ARIA 1.2, axe
-    // aria-required-children).
-    const weeks: typeof cells[] = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      weeks.push(cells.slice(i, i + 7));
-    }
-    const paneLabel = titleFormatter.format(new Date(pane.year, pane.month));
-
-    return (
-      <div
-        ref={paneRef}
-        data-slot='month'
-        x-class={[grid, classNames?.month]}
-        style={showWeekColumn ? { gridTemplateColumns: 'repeat(8, 1fr)' } : undefined}
-        role='grid'
-        aria-label={paneLabel}
-        onKeyDown={handleKeyDown}
-      >
-        <div role='row' data-slot='weekday-row' x-class={[rowContents, classNames?.weekdayRow]}>
-          {showWeekColumn && (
-            <span role='columnheader' data-slot='week-number' x-class={[weekday, classNames?.weekNumber]}>
-              {strings.weekNumber}
-            </span>
-          )}
-          {weekdayLabels.map((label, i) => (
-            <span key={i} role='columnheader' data-slot='weekday' x-class={[weekday, classNames?.weekday]}>
-              {label}
-            </span>
-          ))}
-        </div>
-        {weeks.map((week, weekIndex) => {
-          // The row's ISO week: with the week mode's Monday-first grid
-          // the first cell is the week's Monday, so the whole row shares
-          // one identity.
-          const rowWeek = getISOWeek(
-            week[0]!.year,
-            week[0]!.month,
-            week[0]!.day
-          );
-          const rowSelected =
-            weekMode &&
-            weekValue !== null &&
-            weekValue.year === rowWeek.year &&
-            weekValue.week === rowWeek.week;
-          return (
-            <div role='row' key={weekIndex} x-class={[rowContents]}>
-              {showWeekColumn && (
-                <span
-                  role='gridcell'
-                  data-slot='week-number'
-                  x-class={[weekNumber, rowSelected && weekNumberSelected, classNames?.weekNumber]}
-                >
-                  {rowWeek.week}
-                </span>
-              )}
-              {week.map((c) => {
-                const dateStr = formatDate(c.year, c.month, c.day);
-                const endpoint = isRangeEndpoint(dateStr);
-                const selected = weekMode
-                  ? rowSelected
-                  : dateStr === value || endpoint;
-                const extra = cellRender?.(
-                  { year: c.year, month: c.month, day: c.day },
-                  picker
-                );
-                return (
-                  <span
-                    role='gridcell'
-                    key={dateStr}
-                    aria-selected={selected || isInRange(dateStr)}
-                    x-class={[cellContents]}
-                  >
-                    <button
-                      type='button'
-                      data-slot='day'
-                      data-haze-day={dateStr}
-                      x-class={[
-                        dayBtn,
-                        selected && daySelected,
-                        !selected && isInRange(dateStr) && dayInRange,
-                        c.outside && dayOutside,
-                        classNames?.day,
-                      ]}
-                      disabled={isCellDisabled(c.year, c.month, c.day)}
-                      onClick={() => {
-                        if (weekMode) {
-                          pickModeValue(
-                            formatWeekValue(rowWeek.year, rowWeek.week)
-                          );
-                        } else {
-                          setValue(dateStr);
-                          onSelect?.(dateStr);
-                        }
-                      }}
-                    >
-                      {extra === undefined ? (
-                        c.day
-                      ) : (
-                        <span x-class={[dayContent]}>
-                          {c.day}
-                          {extra}
-                        </span>
-                      )}
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
+  /* Explicit render context for the sibling grid module (grids.tsx):
+   * the day panes and the period grids read Calendar's props and state
+   * through these objects instead of closures, keeping the extracted
+   * renders pure functions of their arguments. */
+  const paneView: MonthPaneView = {
+    weekStart,
+    showWeekColumn,
+    weekdayLabels,
+    titleFormatter,
+    weekNumberLabel: strings.weekNumber,
+    weekMode,
+    weekValue,
+    classNames,
+    value,
+    isRangeEndpoint,
+    isInRange,
+    cellRender,
+    picker,
+    isCellDisabled,
+    pickModeValue,
+    setValue,
+    onSelect,
   };
 
-  /* Decade year grid shared by every drill-down path — the date header's
-   * year title, the quick-select toolbar's year button and the
-   * month/quarter modes' year title. `highlightedYear` marks the
-   * currently viewed year; cells disable through the same
-   * min/max/disabledDate gate as the picker="year" mode. */
-  const renderYearsGrid = (
-    decadeStart: number,
-    highlightedYear: number,
-    onPick: (year: number) => void,
-    handleKeyDown: (event: ReactKeyboardEvent<HTMLDivElement>) => void
-  ) => (
-    <div
-      ref={quickGridRef}
-      data-slot='year-grid'
-      x-class={[quickGrid, classNames?.yearGrid]}
-      role='grid'
-      aria-label={strings.selectYear}
-      onKeyDown={handleKeyDown}
-    >
-      {[0, 1, 2, 3].map((rowIndex) => (
-        <div role='row' key={rowIndex} x-class={[rowContents]}>
-          {[0, 1, 2].map((column) => {
-            const year = decadeStart + rowIndex * 3 + column;
-            const current = year === highlightedYear;
-            const extra = cellRender?.({ year, month: 0, day: 1 }, 'year');
-            return (
-              <span
-                role='gridcell'
-                key={year}
-                aria-selected={current}
-                x-class={[cellContents]}
-              >
-                <button
-                  type='button'
-                  data-slot='year-cell'
-                  data-haze-year={year}
-                  x-class={[dayBtn, current && daySelected, classNames?.yearCell]}
-                  disabled={isYearCellDisabled(year)}
-                  onClick={() => onPick(year)}
-                >
-                  {extra === undefined ? (
-                    year
-                  ) : (
-                    <span x-class={[dayContent]}>
-                      {year}
-                      {extra}
-                    </span>
-                  )}
-                </button>
-              </span>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
+  const periodView: PeriodGridView = {
+    selectMonthLabel: strings.selectMonth,
+    selectYearLabel: strings.selectYear,
+    selectQuarterLabel: strings.selectQuarter,
+    monthNames,
+    classNames,
+    cellRender,
+  };
 
   /* Built lazily: when the day grid is showing, neither drill grid is
    * constructed — cellRender must not fire for cells that are not
@@ -1295,11 +544,16 @@ export default function Calendar({
             ›
           </button>
         </div>
-        {renderYearsGrid(
-          yearsDecadeStart,
-          viewYear,
-          chooseYear,
-          handleYearsGridKeyDown
+        {renderYearGrid(
+          {
+            decadeStart: yearsDecadeStart,
+            gridRef: quickGridRef,
+            onKeyDown: handleYearsGridKeyDown,
+            isActive: (year) => year === viewYear,
+            isDisabled: isYearCellDisabled,
+            onPick: chooseYear,
+          },
+          periodView
         )}
       </div>
     ) : null;
@@ -1338,52 +592,16 @@ export default function Calendar({
             ›
           </button>
         </div>
-        <div
-          ref={quickGridRef}
-          data-slot='month-grid'
-          x-class={[quickGrid, classNames?.monthGrid]}
-          role='grid'
-          aria-label={strings.selectMonth}
-          onKeyDown={handleQuickGridKeyDown}
-        >
-          {[0, 1, 2, 3].map((rowIndex) => (
-            <div role='row' key={rowIndex} x-class={[rowContents]}>
-              {[0, 1, 2].map((column) => {
-                const month = rowIndex * 3 + column;
-                const current = quickYear === viewYear && month === viewMonth;
-                const extra = cellRender?.(
-                  { year: quickYear, month, day: 1 },
-                  'month'
-                );
-                return (
-                  <span
-                    role='gridcell'
-                    key={month}
-                    aria-selected={current}
-                    x-class={[cellContents]}
-                  >
-                    <button
-                      type='button'
-                      data-slot='month-cell'
-                      data-haze-month={month}
-                      x-class={[dayBtn, current && daySelected, classNames?.monthCell]}
-                      onClick={() => chooseMonth(month)}
-                    >
-                      {extra === undefined ? (
-                        monthNames[month]
-                      ) : (
-                        <span x-class={[dayContent]}>
-                          {monthNames[month]}
-                          {extra}
-                        </span>
-                      )}
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        {renderMonthGrid(
+          {
+            year: quickYear,
+            gridRef: quickGridRef,
+            onKeyDown: handleQuickGridKeyDown,
+            isActive: (month) => quickYear === viewYear && month === viewMonth,
+            onPick: chooseMonth,
+          },
+          periodView
+        )}
       </div>
     ) : null;
 
@@ -1434,155 +652,54 @@ export default function Calendar({
           }
         }}
       >
-        {renderYearsGrid(
-          modeYearsDecadeStart,
-          viewYear,
-          chooseModeYear,
-          handleModeYearsGridKeyDown
+        {renderYearGrid(
+          {
+            decadeStart: modeYearsDecadeStart,
+            gridRef: quickGridRef,
+            onKeyDown: handleModeYearsGridKeyDown,
+            isActive: (year) => year === viewYear,
+            isDisabled: isYearCellDisabled,
+            onPick: chooseModeYear,
+          },
+          periodView
         )}
       </div>
     ) : picker === 'month' ? (
-      <div
-        ref={modeGridRef}
-        data-slot='month-grid'
-        x-class={[quickGrid, classNames?.monthGrid]}
-        role='grid'
-        aria-label={strings.selectMonth}
-        onKeyDown={handleModeGridKeyDown}
-      >
-        {[0, 1, 2, 3].map((rowIndex) => (
-          <div role='row' key={rowIndex} x-class={[rowContents]}>
-            {[0, 1, 2].map((column) => {
-              const month = rowIndex * 3 + column;
-              const selected = value === formatMonthValue(viewYear, month);
-              const extra = cellRender?.(
-                { year: viewYear, month, day: 1 },
-                'month'
-              );
-              return (
-                <span
-                  role='gridcell'
-                  key={month}
-                  aria-selected={selected}
-                  x-class={[cellContents]}
-                >
-                  <button
-                    type='button'
-                    data-slot='month-cell'
-                    data-haze-month={month}
-                    x-class={[dayBtn, selected && daySelected, classNames?.monthCell]}
-                    disabled={isMonthCellDisabled(viewYear, month)}
-                    onClick={() =>
-                      pickModeValue(formatMonthValue(viewYear, month))
-                    }
-                  >
-                    {extra === undefined ? (
-                      monthNames[month]
-                    ) : (
-                      <span x-class={[dayContent]}>
-                        {monthNames[month]}
-                        {extra}
-                      </span>
-                    )}
-                  </button>
-                </span>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      renderMonthGrid(
+        {
+          year: viewYear,
+          gridRef: modeGridRef,
+          onKeyDown: handleModeGridKeyDown,
+          isActive: (month) => value === formatMonthValue(viewYear, month),
+          isDisabled: (month) => isMonthCellDisabled(viewYear, month),
+          onPick: (month) => pickModeValue(formatMonthValue(viewYear, month)),
+        },
+        periodView
+      )
     ) : picker === 'quarter' ? (
-      <div
-        ref={modeGridRef}
-        data-slot='quarter-grid'
-        x-class={[quarterGrid, classNames?.quarterGrid]}
-        role='grid'
-        aria-label={strings.selectQuarter}
-        onKeyDown={handleModeGridKeyDown}
-      >
-        <div role='row' x-class={[rowContents]}>
-          {[1, 2, 3, 4].map((quarter) => {
-            const selected = value === formatQuarterValue(viewYear, quarter);
-            const extra = cellRender?.(
-              { year: viewYear, month: quarter * 3 - 3, day: 1 },
-              'quarter'
-            );
-            return (
-              <span
-                role='gridcell'
-                key={quarter}
-                aria-selected={selected}
-                x-class={[cellContents]}
-              >
-                <button
-                  type='button'
-                  data-slot='quarter-cell'
-                  data-haze-quarter={quarter}
-                  x-class={[dayBtn, selected && daySelected, classNames?.quarterCell]}
-                  disabled={isQuarterCellDisabled(viewYear, quarter)}
-                  onClick={() =>
-                    pickModeValue(formatQuarterValue(viewYear, quarter))
-                  }
-                >
-                  {extra === undefined ? (
-                    `Q${quarter}`
-                  ) : (
-                    <span x-class={[dayContent]}>
-                      Q{quarter}
-                      {extra}
-                    </span>
-                  )}
-                </button>
-              </span>
-            );
-          })}
-        </div>
-      </div>
+      renderQuarterGrid(
+        {
+          year: viewYear,
+          gridRef: modeGridRef,
+          onKeyDown: handleModeGridKeyDown,
+          isActive: (quarter) => value === formatQuarterValue(viewYear, quarter),
+          isDisabled: (quarter) => isQuarterCellDisabled(viewYear, quarter),
+          onPick: (quarter) => pickModeValue(formatQuarterValue(viewYear, quarter)),
+        },
+        periodView
+      )
     ) : (
-      <div
-        ref={modeGridRef}
-        data-slot='year-grid'
-        x-class={[quickGrid, classNames?.yearGrid]}
-        role='grid'
-        aria-label={strings.selectYear}
-        onKeyDown={handleModeGridKeyDown}
-      >
-        {[0, 1, 2, 3].map((rowIndex) => (
-          <div role='row' key={rowIndex} x-class={[rowContents]}>
-            {[0, 1, 2].map((column) => {
-              const year = decadeStart + rowIndex * 3 + column;
-              const selected = value === formatYearValue(year);
-              const extra = cellRender?.({ year, month: 0, day: 1 }, 'year');
-              return (
-                <span
-                  role='gridcell'
-                  key={year}
-                  aria-selected={selected}
-                  x-class={[cellContents]}
-                >
-                  <button
-                    type='button'
-                    data-slot='year-cell'
-                    data-haze-year={year}
-                    x-class={[dayBtn, selected && daySelected, classNames?.yearCell]}
-                    disabled={isYearCellDisabled(year)}
-                    onClick={() => pickModeValue(formatYearValue(year))}
-                  >
-                    {extra === undefined ? (
-                      year
-                    ) : (
-                      <span x-class={[dayContent]}>
-                        {year}
-                        {extra}
-                      </span>
-                    )}
-                  </button>
-                </span>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      renderYearGrid(
+        {
+          decadeStart,
+          gridRef: modeGridRef,
+          onKeyDown: handleModeGridKeyDown,
+          isActive: (year) => value === formatYearValue(year),
+          isDisabled: isYearCellDisabled,
+          onPick: (year) => pickModeValue(formatYearValue(year)),
+        },
+        periodView
+      )
     );
 
     return (
@@ -1714,7 +831,8 @@ export default function Calendar({
                   {renderMonthPane(
                     { year: viewYear, month: viewMonth },
                     gridRef,
-                    handleGridKeyDown
+                    handleGridKeyDown,
+                    paneView
                   )}
                 </div>
                 <div data-slot='month-panel' x-class={[monthPanel, classNames?.monthPanel]}>
@@ -1728,7 +846,8 @@ export default function Calendar({
                   {renderMonthPane(
                     secondPane,
                     secondGridRef,
-                    handleSecondGridKeyDown
+                    handleSecondGridKeyDown,
+                    paneView
                   )}
                 </div>
               </div>
@@ -1736,10 +855,9 @@ export default function Calendar({
           : renderMonthPane(
               { year: viewYear, month: viewMonth },
               gridRef,
-              handleGridKeyDown
+              handleGridKeyDown,
+              paneView
             )}
     </div>
   );
 }
-
-export type { CalendarProps, CalendarPickerMode, CalendarCellRender, CalendarClassNames };

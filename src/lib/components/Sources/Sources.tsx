@@ -6,6 +6,8 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { ChevronRight } from '../../icons';
+import { citationIndexBadge, citationLink } from '../../utils/citation-skin';
 
 /** One cited source: a numbered entry whose title optionally links out. */
 type SourceItem = {
@@ -59,23 +61,6 @@ const item = css`
   align-items: baseline;
   flex-wrap: wrap;
   column-gap: var(--haze-space-2);
-`;
-
-const badge = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  flex-shrink: 0;
-  user-select: none;
-`;
-
-const link = css`
-  color: var(--haze-color-primary);
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 const title = css`
@@ -169,26 +154,6 @@ const compactBadge = css`
   }
 `;
 
-/** Explicit width/height: a viewBox-only inline svg contributes zero
- * content size in flex containers and collapses to 0×0. */
-const ChevronGlyph = () => (
-  <svg
-    width='10'
-    height='10'
-    viewBox='0 0 10 10'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='1.5'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    aria-hidden='true'
-    focusable='false'
-    x-class={[chevron]}
-  >
-    <path d='M3 1.5 6.5 5 3 8.5' />
-  </svg>
-);
-
 /** The badge alone is a poor accessible name for a link; prefer the
  * source title when it is a plain string. */
 function compactBadgeLabel(itemTitle: ReactNode, number: number): string {
@@ -265,7 +230,7 @@ export default function Sources({
             data-state={itemExpanded ? 'expanded' : 'collapsed'}
             x-class={[item]}
           >
-            <span data-slot='index' x-class={[badge]} aria-hidden='true'>
+            <span data-slot='index' x-class={[citationIndexBadge]} aria-hidden='true'>
               [{number}]
             </span>
             {source.url ? (
@@ -274,7 +239,7 @@ export default function Sources({
                 href={source.url}
                 target='_blank'
                 rel='noopener noreferrer'
-                x-class={[link]}
+                x-class={[citationLink]}
               >
                 {source.title}
               </a>
@@ -292,7 +257,20 @@ export default function Sources({
                   onClick={() => toggle(source.id)}
                   x-class={[toggleBtn]}
                 >
-                  <ChevronGlyph />
+                  {/* lucide ChevronRight at 10px with a compensating
+                      stroke: the 24-unit viewBox renders at 10/24 the
+                      scale of the former 10-unit inline glyph, so
+                      strokeWidth 3.6 keeps the shipped 1.5px rendered
+                      stroke (JsonView/StepTimeline precedent). The
+                      transition class rides the icon itself — the
+                      rotate transform targets `svg` from toggleBtn. */}
+                  <ChevronRight
+                    size={10}
+                    strokeWidth={3.6}
+                    aria-hidden='true'
+                    focusable='false'
+                    x-class={[chevron]}
+                  />
                 </button>
                 <div
                   id={snippetId}

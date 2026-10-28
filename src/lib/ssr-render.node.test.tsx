@@ -239,7 +239,7 @@ const CASES: [name: string, element: ReactElement, expects: string[]][] = [
   [
     'Banner',
     <Banner>Scheduled maintenance</Banner>,
-    ['role="alert"', 'Scheduled maintenance'],
+    ['role="status"', 'Scheduled maintenance'],
   ],
   [
     'FormItem',

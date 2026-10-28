@@ -18,8 +18,15 @@ import {
 } from 'react';
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
-import { getDirection } from '../../utils/direction';
+import {
+  axisKeyDelta,
+  endPointerDrag,
+  gripMirrored,
+  PARK_DELTA,
+} from '../../utils/grip-gesture';
+import { gripBase, gripHorizontal, gripVertical } from '../../utils/grip-skin';
 import { clamp } from '../../utils/math';
+import { capturePointer } from '../../utils/pointer-capture';
 import { useStrings } from '../LocaleProvider';
 
 /** Membership marker only — per-pane data (size, index) is injected by the
@@ -35,10 +42,6 @@ function useSplitterMembership() {
 /** Arrow-key step in percent points of the pane area (WCAG 2.5.1: the
  * drag-styled divider is fully operable without a pointer). */
 const KEYBOARD_STEP = 5;
-
-/** Home/End park the leading pane at its clamp — a delta so large the
- * clamp math saturates, without overflowing. */
-const PARK_DELTA = Number.MAX_SAFE_INTEGER;
 
 /** Sizes are emitted rounded to 2 decimals so consumer payloads stay
  * clean; the trailing pane is derived (pairSum − lead) so the pair sum
@@ -224,8 +227,7 @@ export function Splitter({
    * src/lib/utils/direction convention). Vertical splitters are
    * direction-invariant. */
   const mirrored = (): boolean =>
-    orientation === 'horizontal' &&
-    getDirection(containerRef.current) === 'rtl';
+    gripMirrored(orientation, containerRef.current);
 
   const applyDivider = (
     leadIndex: number,
@@ -279,7 +281,6 @@ export function Splitter({
       pairSum
     );
     event.preventDefault();
-    const el = event.currentTarget;
     dragRef.current = {
       pointerId: event.pointerId,
       origin: axisOf(event),
@@ -291,13 +292,7 @@ export function Splitter({
       hi,
       lastLead: paneSize(index),
     };
-    if (typeof el.setPointerCapture === 'function') {
-      try {
-        el.setPointerCapture(event.pointerId);
-      } catch {
-        // pointer already released — the gesture still tracks
-      }
-    }
+    capturePointer(event.currentTarget, event.pointerId);
   };
 
   const moveDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -318,34 +313,19 @@ export function Splitter({
   };
 
   const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (drag?.pointerId !== event.pointerId) return;
-    dragRef.current = null;
-    const el = event.currentTarget;
-    if (typeof el.releasePointerCapture === 'function') {
-      try {
-        el.releasePointerCapture(event.pointerId);
-      } catch {
-        // capture already gone
-      }
-    }
+    endPointerDrag(dragRef, event);
   };
 
   const handleDividerKeyDown = (
     index: number,
     event: ReactKeyboardEvent<HTMLDivElement>
   ) => {
-    const growKey = orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown';
-    const shrinkKey = orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp';
-    const { key } = event;
-    if (
-      key !== growKey &&
-      key !== shrinkKey &&
-      key !== 'Home' &&
-      key !== 'End'
-    ) {
-      return;
-    }
+    const delta = axisKeyDelta(event.key, {
+      orientation,
+      rtl: mirrored(),
+      step: KEYBOARD_STEP,
+    });
+    if (delta === null) return;
     const pairSum = paneSize(index) + paneSize(index + 1);
     const { lo, hi } = dividerBounds(
       declarationWith(index),
@@ -354,22 +334,6 @@ export function Splitter({
     );
     const current = paneSize(index);
     event.preventDefault();
-    // Under RTL the horizontal grow/shrink keys swap: ArrowRight keeps
-    // its screen-space meaning (move the divider right), but that
-    // shrinks the lead pane painted on the divider's right.
-    const rtl = mirrored();
-    const delta =
-      key === growKey
-        ? rtl
-          ? -KEYBOARD_STEP
-          : KEYBOARD_STEP
-        : key === shrinkKey
-          ? rtl
-            ? KEYBOARD_STEP
-            : -KEYBOARD_STEP
-          : key === 'Home'
-            ? -PARK_DELTA
-            : PARK_DELTA;
     const nextLead = clampRange(current + delta, lo, hi);
     if (nextLead === current) return;
     applyDivider(index, nextLead, pairSum);
@@ -394,8 +358,9 @@ export function Splitter({
           key={`splitter-divider-${index}`}
           data-slot="divider"
           x-class={[
-            dividerBase,
-            orientation === 'horizontal' ? dividerHorizontal : dividerVertical,
+            gripBase,
+            dividerShell,
+            orientation === 'horizontal' ? gripHorizontal : gripVertical,
           ]}
         >
           <div
@@ -539,40 +504,13 @@ export function SplitterPane({
 }
 
 // Splitter divider
-/* 24px hit strip (WCAG 2.5.8) carrying a 2px hairline: the bar paints
-   only the content box (background-clip) while the padded element
-   keeps the minimum target; hover and focus flood the whole strip
-   with a subtle wash and center a primary hairline, so the drag
-   affordance reads clearly without widening the grip. Coarse
-   pointers get 44px (WCAG 2.5.5). The strip relies on the default
-   content-box sizing — see css-box-sizing.test.ts REMOVED_FAMILIES.
-   The bar is a positioning context for the drag handle (which owns
-   role=separator) and the collapse triggers — focus styling keys off
-   the focused descendant via :has since the bar itself is inert. */
-const dividerBase = css`
+/* Splitter-local chrome layered on the shared grip skin
+   (utils/grip-skin): the bar is a positioning context for the drag
+   handle (which owns role=separator) and the collapse triggers — focus
+   styling keys off the focused descendant via :has since the bar
+   itself is inert. */
+const dividerShell = css`
   position: relative;
-  flex: 0 0 auto;
-  background: var(--haze-color-border);
-  background-clip: content-box;
-  transition: background var(--haze-duration-fast);
-
-  &:hover,
-  &:has(> :focus-visible) {
-    background:
-      linear-gradient(
-          to right,
-          transparent 0,
-          var(--haze-color-primary) 50%,
-          transparent 100%
-        )
-        center / 2px 100% no-repeat,
-      var(--haze-color-bg-subtle);
-  }
-
-  &:has(> :focus-visible) {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
 
   /* Collapse triggers stay keyboard-reachable while hidden (opacity,
    * not display) and surface on bar hover, on any focused descendant
@@ -583,59 +521,6 @@ const dividerBase = css`
   > [data-slot='divider-collapse']:focus-visible {
     opacity: 1;
     pointer-events: auto;
-  }
-
-  @media (forced-colors: active) {
-    background: CanvasText;
-    background-clip: content-box;
-
-    &:hover,
-    &:has(> :focus-visible) {
-      background: Highlight;
-      background-clip: content-box;
-    }
-
-    &:has(> :focus-visible) {
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-  }
-`;
-
-const dividerHorizontal = css`
-  width: 2px;
-  height: 100%;
-  padding-inline: calc((var(--haze-space-6) - 2px) / 2);
-  cursor: col-resize;
-
-  @media (pointer: coarse) {
-    padding-inline: calc((44px - 2px) / 2);
-  }
-`;
-
-const dividerVertical = css`
-  height: 2px;
-  width: 100%;
-  padding-block: calc((var(--haze-space-6) - 2px) / 2);
-  cursor: row-resize;
-
-  /* Horizontal grip: the centered hairline runs along the
-   * inline axis, so the gradient is vertical. */
-  &:hover,
-  &:focus-visible {
-    background:
-      linear-gradient(
-          to bottom,
-          transparent 0,
-          var(--haze-color-primary) 50%,
-          transparent 100%
-        )
-        center / 100% 2px no-repeat,
-      var(--haze-color-bg-subtle);
-  }
-
-  @media (pointer: coarse) {
-    padding-block: calc((44px - 2px) / 2);
   }
 `;
 

@@ -1,13 +1,15 @@
-import type { ReactNode, ComponentPropsWithoutRef  } from 'react';
+import type { ReactNode, ComponentPropsWithoutRef } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 import { useId } from 'react';
 
-import { useFocusScope } from '../../utils/focus-scope';
-import { Presence } from '../../utils/presence';
+import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
+
+import { panelSurface } from '../../utils/panel-skin';
+import { useNativeDialogShell } from '../../utils/native-dialog';
 
 type ConfirmDialogProps = {
   open?: ControlOrValue<boolean>;
@@ -20,58 +22,49 @@ type ConfirmDialogProps = {
   cancelText?: string;
   variant?: 'default' | 'danger';
   className?: string;
-} & Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'title'>;
+} & Omit<
+  ComponentPropsWithoutRef<'dialog'>,
+  'children' | 'title' | 'open' | 'onClose' | 'onCancel'
+>;
 
-const overlay = css`
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--haze-color-scrim);
-  z-index: var(--haze-z-overlay);
+/**
+ * Sheet deltas on the shared panel surface (utils/panel-skin): the modal
+ * lane (space-6 padding, 480px max, full width up to it) plus the
+ * enter/exit animations, driven by the native-dialog shell's data-state
+ * on the panel itself (the `open` attribute guard keeps a closed panel
+ * from animating once `close()` lands). Border, radius, elevation,
+ * typography and the forced-colors arm come from the surface — the
+ * hand-rolled sheet this replaces carried no forced-colors border at all.
+ *
+ * The scrim the old self-drawn mask div painted is the native
+ * `::backdrop` now: same token, same fades, and the showModal top layer
+ * replaces the z-index tier.
+ */
+const sheet = css`
+  padding: var(--haze-space-6);
+  max-width: 480px;
+  width: 100%;
 
-  /* Presence 注入的 data-state 驱动 backdrop 与内容各自的进退场 */
-  &[data-state='open'] {
+  &[open][data-state='open'] {
+    animation: haze-confirm-in var(--haze-duration-normal) var(--haze-ease);
+  }
+
+  &[open][data-state='closed'] {
+    animation: haze-confirm-out var(--haze-duration-fast) var(--haze-ease);
+  }
+
+  &::backdrop {
+    background: var(--haze-color-scrim);
+  }
+
+  &[open][data-state='open']::backdrop {
     animation: haze-confirm-backdrop-in var(--haze-duration-normal)
       var(--haze-ease);
   }
 
-  &[data-state='closed'] {
+  &[open][data-state='closed']::backdrop {
     animation: haze-confirm-backdrop-out var(--haze-duration-fast)
       var(--haze-ease);
-  }
-
-  @keyframes haze-confirm-backdrop-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-confirm-backdrop-out {
-    to {
-      opacity: 0;
-    }
-  }
-`;
-
-const dialog = css`
-  background: var(--haze-color-bg);
-  border-radius: var(--haze-radius-xl);
-  padding: var(--haze-space-6);
-  box-shadow: var(--haze-shadow-xl);
-  max-width: 480px;
-  width: 100%;
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
-
-  /* 退场时长须不大于 overlay 的退场（overlay 卸载即整树消失） */
-  [data-state='open'] & {
-    animation: haze-confirm-in var(--haze-duration-normal) var(--haze-ease);
-  }
-
-  [data-state='closed'] & {
-    animation: haze-confirm-out var(--haze-duration-fast) var(--haze-ease);
   }
 
   @keyframes haze-confirm-in {
@@ -85,6 +78,18 @@ const dialog = css`
     to {
       opacity: 0;
       transform: scale(0.97);
+    }
+  }
+
+  @keyframes haze-confirm-backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes haze-confirm-backdrop-out {
+    to {
+      opacity: 0;
     }
   }
 `;
@@ -108,52 +113,17 @@ const footer = css`
   gap: var(--haze-space-3);
 `;
 
-const btn = css`
-  padding: var(--haze-space-2) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  font-weight: var(--haze-weight-medium);
-  cursor: pointer;
-  transition:
-    background var(--haze-duration-fast) var(--haze-ease),
-    border-color var(--haze-duration-fast) var(--haze-ease);
-`;
-
-const cancelBtn = css`
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  color: var(--haze-color-text);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-`;
-
-const confirmBtn = css`
-  background: var(--haze-color-primary);
-  border: 1px solid var(--haze-color-primary);
-  color: var(--haze-color-bg);
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const dangerBtn = css`
-  background: var(--haze-color-danger);
-  border: 1px solid var(--haze-color-danger);
-  color: var(--haze-color-text-inverse);
-
-  &:hover {
-    background: var(--haze-color-danger-hover);
-    border-color: var(--haze-color-danger-hover);
-  }
-
-  &:active {
-    background: var(--haze-color-danger-active);
-    border-color: var(--haze-color-danger-active);
-  }
+/**
+ * `variant='danger'`: remaps the solid Button skin's primary tokens
+ * onto the danger family on the confirm button itself (Popconfirm's
+ * `okDangerTokens` pattern — custom-property remapping sidesteps any
+ * specificity fight with Button's variant classes; hover/active derive
+ * at the theme element, so all three states are remapped explicitly).
+ */
+const confirmDangerTokens = css`
+  --haze-color-primary: var(--haze-color-danger);
+  --haze-color-primary-hover: var(--haze-color-danger-hover);
+  --haze-color-primary-active: var(--haze-color-danger-active);
 `;
 
 export default function ConfirmDialog({
@@ -173,65 +143,67 @@ export default function ConfirmDialog({
   const strings = useStrings('confirmDialog');
   const confirmLabel = confirmText ?? strings.confirm;
   const cancelLabel = cancelText ?? strings.cancel;
-  const setScope = useFocusScope({ enabled: open, trapped: true });
+  // 面板生命周期（showModal、退场动画→close、Esc/背景点击关闭三件套、
+  // 焦点域与归还）与 Dialog/Drawer 共用同一原语；ConfirmDialog 不暴露
+  // viewTransition/keepMounted/handle——两参固定关闭，公开 API 不变。
+  const {setDialogRef, dialogProps} = useNativeDialogShell({
+    open,
+    setOpen,
+    viewTransition: false,
+    onClose,
+    keepMounted: false,
+  });
   // 标题作为 dialog 的可访问名（aria-dialog-name），与 Dialog 同一模式
   const titleId = `haze-confirm-title-${useId()}`;
 
-  const handleClose = () => {
-    setOpen(false);
-    onClose?.();
-  };
-
+  // onClose 不在这里直接调：所有出口（按钮/Esc/背景点击）只写状态，
+  // 退场动画落地 el.close() 触发的原生 close 事件是唯一 onClose 出口
+  // （每个关闭路径恰好回调一次）。
   const handleCancel = () => {
     onCancel?.();
-    handleClose();
+    setOpen(false);
   };
 
   const handleConfirm = () => {
     onConfirm?.();
-    handleClose();
+    setOpen(false);
   };
 
   return (
-    <Presence present={open}>
-      <div
-        data-slot='mask'
-        x-class={[overlay, className]}
-        onClick={() => {
-          // 退场期间（已 setOpen(false)、Presence 尚未卸载）不再重复关闭
-          if (open) handleClose();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && open) handleClose();
-        }}
-      >
-        <div
-          ref={setScope}
-          data-slot='content'
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={title !== undefined ? titleId : undefined}
-          x-class={[dialog]}
-          {...rest}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {title && (
-            <div id={titleId} data-slot='title' x-class={[header]}>
-              {title}
-            </div>
-          )}
-          <div data-slot='description' x-class={[body]}>{children}</div>
-          <div data-slot='footer' x-class={[footer]}>
-            <button data-slot='cancel-button' x-class={[btn, cancelBtn]} type="button" onClick={handleCancel}>
-              {cancelLabel}
-            </button>
-            <button data-slot='confirm-button' x-class={[btn, variant === 'danger' ? dangerBtn : confirmBtn]} type="button" onClick={handleConfirm}>
-              {confirmLabel}
-            </button>
-          </div>
+    <dialog
+      ref={setDialogRef}
+      data-slot='content'
+      {...dialogProps}
+      aria-labelledby={title !== undefined ? titleId : undefined}
+      x-class={[panelSurface, sheet, className]}
+      {...rest}
+    >
+      {title && (
+        <div id={titleId} data-slot='title' x-class={[header]}>
+          {title}
         </div>
+      )}
+      <div data-slot='description' x-class={[body]}>{children}</div>
+      <div data-slot='footer' x-class={[footer]}>
+        <Button
+          data-slot='cancel-button'
+          variant='outline'
+          size='md'
+          onClick={handleCancel}
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          data-slot='confirm-button'
+          variant='solid'
+          size='md'
+          className={variant === 'danger' ? confirmDangerTokens : undefined}
+          onClick={handleConfirm}
+        >
+          {confirmLabel}
+        </Button>
       </div>
-    </Presence>
+    </dialog>
   );
 }
 

@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
+import type { StatusColor } from '../../utils/status-skin';
 
 import {
   barBase,
@@ -17,7 +18,7 @@ type ProgressProps = {
   variant?: 'bar' | 'circle';
   size?: 'sm' | 'md' | 'lg';
   /** Semantic fill color. */
-  color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color?: StatusColor;
   className?: string;
   /** Forwarded to the root element (data-slot='progress'). */
   ref?: Ref<HTMLDivElement>;

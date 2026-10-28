@@ -11,8 +11,10 @@ import { css } from '@linaria/core';
 import { useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
+import { classnames } from '../../utils/classnames';
+import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
+import { panelSurface } from '../../utils/panel-skin';
 import { mergeRefs } from '../../utils/refs';
 import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
@@ -86,29 +88,13 @@ const triggerDisabled = css`
   }
 `;
 
-/** Visual skin applied on every rendering tier of the panel. */
-const panelVisuals = css`
-  /* min/max-width pairs with padding + border: border-box keeps both
-   * bounds covering the padding too (panel-family box-sizing
-   * contract). */
-  box-sizing: border-box;
+/* Call-site deltas on the shared panel surface (utils/panel-skin): the
+ * popconfirm width bounds and padding step — the surface's border-box
+ * sizing keeps both bounds covering the padding too. */
+const panelDeltas = css`
   padding: var(--haze-space-4);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  box-shadow: var(--haze-shadow-lg);
   min-width: var(--haze-popconfirm-min-width, 220px);
   max-width: var(--haze-popconfirm-max-width, 320px);
-
-  /* Forced-colors: the UA keeps the author border visible by forcing
-     its color to CanvasText — restated so the panel stays separated
-     from the Canvas behind it deterministically. */
-  @media (forced-colors: active) {
-    border-color: CanvasText;
-  }
 `;
 
 const body = css`
@@ -292,45 +278,20 @@ export default function Popconfirm({
 
   return (
     <span data-slot='popconfirm' className={container}>
-      <span
+      <FloatingTriggerSpan
         ref={triggerRef}
-        data-slot='trigger'
-        x-class={[triggerDisabled]}
-        // aria-expanded requires an interactive role; a bare span is
-        // role=generic, which ARIA 1.2 does not allow it on (same
-        // reasoning as Popover's trigger).
-        role='button'
-        tabIndex={disabled ? -1 : 0}
-        aria-disabled={disabled || undefined}
-        aria-haspopup='dialog'
-        aria-expanded={open}
-        aria-controls={id}
-        style={floating.triggerStyle}
-        onPointerDown={disabled ? undefined : floating.onTriggerPointerDown}
-        onClick={disabled ? undefined : floating.onTriggerClick}
-        onKeyDown={(event) => {
-          if (disabled) return;
-          if (event.key === 'Enter' || event.key === ' ') {
-            // The trigger is a span, not a button: Enter/Space have no
-            // native activation, so the button contract is completed
-            // here. preventDefault on Space keeps the page from
-            // scrolling.
-            event.preventDefault();
-            floating.onTriggerClick();
-            return;
-          }
-          if (event.key === 'Escape' && open) {
-            // Focus may sit on the trigger while the panel is open
-            // (Shift+Tab); Escape cancels from there too, on the same
-            // path as the panel's own handler.
-            event.preventDefault();
-            event.stopPropagation();
-            runAction('cancel');
-          }
-        }}
+        behavior={floating}
+        open={open}
+        controlsId={id}
+        haspopup='dialog'
+        disabled={disabled}
+        // The disabled skin's arm only matches while `aria-disabled` is
+        // set (see triggerDisabled above).
+        className={triggerDisabled}
+        onEscape={() => runAction('cancel')}
       >
         {children}
-      </span>
+      </FloatingTriggerSpan>
       {/* {...rest} first, wiring after: consumer attributes ride along on
        * the panel, but the component's own contract (id, role, aria
        * wiring, keyboard model) always wins — the same precedence as
@@ -339,8 +300,8 @@ export default function Popconfirm({
         ref={mergeRefs(panelRef, setScope)}
         behavior={floating}
         placement={placement}
-        visualClass={panelVisuals}
-        className={className}
+        visualClass={panelSurface}
+        className={classnames(panelDeltas, className)}
         {...rest}
         id={id}
         role='dialog'

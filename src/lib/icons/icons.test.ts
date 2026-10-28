@@ -86,6 +86,7 @@ const CURATED_ICONS = [
   'Plus',
   'QrCode',
   'RefreshCw',
+  'RotateCw',
   'Save',
   'Search',
   'Send',
@@ -113,10 +114,10 @@ const CURATED_ICONS = [
 ];
 
 describe('haze-ui/icons', () => {
-  it('exports exactly the curated 100 icons, alphabetically', () => {
+  it('exports exactly the curated 101 icons, alphabetically', () => {
     const exported = Object.keys(icons).filter((key) => key !== 'hazeIconSize');
     expect(exported).toEqual(CURATED_ICONS);
-    expect(CURATED_ICONS).toHaveLength(100);
+    expect(CURATED_ICONS).toHaveLength(101);
   });
 
   it('imports every curated icon from lucide-react as a renderable component', () => {

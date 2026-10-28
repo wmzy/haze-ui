@@ -6,7 +6,7 @@ import type { MenuClassNames } from '../Menu/MenuContext';
 import type { NotificationCenterClassNames } from '../NotificationCenter/NotificationCenter';
 import type { ToastPlacement } from '../Toast/ToastContainer';
 import type { CalendarPickerMode } from '../Calendar/Calendar';
-import type { TimePickerFormat } from '../TimePicker/time';
+import type { TimePickerFormat } from '../../utils/time-math';
 
 import { createContext } from 'react';
 

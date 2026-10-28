@@ -20,7 +20,6 @@ import { DateField, DateFieldCore } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/date-field.css';
-import 'haze-ui/css/calendar.css';
 
 export { DateField, DateFieldCore };
 export type { DateFieldProps, DateFieldCoreProps, DatePlaceholder, DateLabels } from 'haze-ui';

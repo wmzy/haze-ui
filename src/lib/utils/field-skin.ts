@@ -112,3 +112,63 @@ export const fieldSizes = {
     font-size: var(--haze-text-base);
   `,
 } as const;
+
+/**
+ * Shared picker field input — the input surface every date/time picker
+ * family puts an `<input>` behind (Datepicker's readonly trigger and
+ * `showTime` footer input at the sm size, TimePicker's readonly trigger
+ * and native core input, DateRangePicker's start/end inputs). Split out
+ * of five per-component copies that had drifted into near-identical
+ * blocks; the classes ride with every consuming family's css through
+ * sharedLayers (split-css.mjs).
+ *
+ * Drift discipline as above: only what every picker input ships — the
+ * surface, typography and the focus ring. The readonly triggers'
+ * `cursor: pointer`, widths, `line-height`, tabular figures and the
+ * :disabled/::placeholder arms only some sites carry stay local to
+ * their components as companion classes (composed additively — no
+ * property overlaps).
+ */
+export const pickerFieldInput = css`
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  padding: var(--haze-space-2) var(--haze-space-3);
+  transition:
+    border-color var(--haze-duration-fast),
+    box-shadow var(--haze-duration-fast);
+
+  &:focus {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/**
+ * The sm variant of {@link pickerFieldInput}: `radius-sm` and one step
+ * tighter padding — Datepicker's `showTime` footer input. A literal
+ * sibling (not an override class) so the two sizes never contend in
+ * the cascade, mirroring the `fieldSizes` map above.
+ */
+export const pickerFieldInputSm = css`
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-sm);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  padding: var(--haze-space-1) var(--haze-space-2);
+  transition:
+    border-color var(--haze-duration-fast),
+    box-shadow var(--haze-duration-fast);
+
+  &:focus {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;

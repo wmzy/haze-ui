@@ -62,12 +62,28 @@ export const RSC_SAFE_MODULES = new Set([
   // class constants. Required for the RSC-safe closure: Timeline.tsx
   // (safe-listed) imports this module.
   'utils/timeline-skin.ts',
+  // Shared agentic status vocabulary (utils/agentic-status.ts): pure
+  // union/tone/label constants with zero imports. The safe-listed
+  // timeline-skin references it type-only (elided in dist), but the
+  // module is pure either way and the agentic components consume it at
+  // runtime.
+  'utils/agentic-status.ts',
   // Shared preset rows (utils/preset-list-skin.ts): pure Linaria class
   // constants.
   'utils/preset-list-skin.ts',
   // Shared choice-input skin (utils/choice-skin.ts): the Checkbox/Radio
   // box + label bases — same purity class as menu-skins above.
   'utils/choice-skin.ts',
+  // Shared status skin (utils/status-skin.ts): pure Linaria class
+  // constants + plain color/role records — no hooks, no DOM access.
+  // Required for the RSC-safe closure: the safe-listed Badge/Tag/Chip/
+  // Progress/Indicator style modules import it. The solid/stroke
+  // siblings (status-solid-skin / status-stroke-skin) are the same
+  // purity class, split per the one-css-map-per-module rule Linaria's
+  // member-key display naming forces (see status-skin.ts header).
+  'utils/status-skin.ts',
+  'utils/status-solid-skin.ts',
+  'utils/status-stroke-skin.ts',
   // Design tokens: pure constants plus OKLCH math. In-package imports stay
   // within the group (palette -> oklch, registry -> oklch + palette,
   // brands -> palette; density/zoom import spacing's SPACE_PX and zoom

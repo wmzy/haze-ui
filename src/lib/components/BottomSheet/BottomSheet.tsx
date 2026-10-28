@@ -12,6 +12,10 @@ import { css } from '@linaria/core';
 import { useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 
 import { useFocusScope } from '../../utils/focus-scope';
+import {
+  capturePointer,
+  releasePointerCaptureSafe,
+} from '../../utils/pointer-capture';
 import { Presence } from '../../utils/presence';
 import { useViewTransitionFlip } from '../../utils/view-transition';
 import { useVisualViewportInset } from '../../utils/viewport';
@@ -301,11 +305,8 @@ export default function BottomSheet({
   }, []);
 
   const takeGesture = (sheet: HTMLDivElement, pointerId: number) => {
-    try {
-      sheet.setPointerCapture(pointerId);
-    } catch {
-      // jsdom/无指针捕获的引擎：事件继续以冒泡形式送达 sheet
-    }
+    // jsdom/无指针捕获的引擎：事件继续以冒泡形式送达 sheet
+    capturePointer(sheet, pointerId);
     sheet.style.transition = 'none'; // 拖拽跟手，不做过渡
     sheet.style.userSelect = 'none'; // 鼠标拖拽不选中文本
     document.addEventListener('touchmove', preventNativeScroll, {
@@ -313,7 +314,10 @@ export default function BottomSheet({
     });
   };
 
-  const releaseGesture = (sheet: HTMLDivElement) => {
+  const releaseGesture = (sheet: HTMLDivElement, pointerId: number) => {
+    // 某些引擎把隐式捕获留到下一 tick 才放——显式安全释放，避免吞掉
+    // 松手后的 click；已丢失的捕获是 no-op
+    releasePointerCaptureSafe(sheet, pointerId);
     sheet.style.userSelect = '';
     document.removeEventListener('touchmove', preventNativeScroll);
   };
@@ -359,7 +363,7 @@ export default function BottomSheet({
     const sheet = sheetRef.current;
     if (!swipe || !sheet || swipe.pointerId !== e.pointerId) return;
     swipeRef.current = null;
-    releaseGesture(sheet);
+    releaseGesture(sheet, e.pointerId);
     if (!swipe.dragging) return; // 普通点击：从未接管，零副作用
     const threshold = Math.max(
       1,
@@ -381,7 +385,7 @@ export default function BottomSheet({
     const sheet = sheetRef.current;
     if (!swipe || !sheet || swipe.pointerId !== e.pointerId) return;
     swipeRef.current = null;
-    releaseGesture(sheet);
+    releaseGesture(sheet, e.pointerId);
     // 引擎接管（多指/原生滚动抢走）：一律不关闭，直接回弹
     if (swipe.dragging) springBack(sheet);
   };

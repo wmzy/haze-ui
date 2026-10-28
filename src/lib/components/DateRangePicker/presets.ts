@@ -1,8 +1,8 @@
 /**
  * Built-in range presets for DateRangePicker's `presets='common'` set.
  *
- * Date arithmetic follows Calendar/date.ts semantics: every value is a
- * local civil date realized at midnight (`new Date(year, month, day)`),
+ * Date arithmetic follows utils/date-math.ts semantics: every value is
+ * a local civil date realized at midnight (`new Date(year, month, day)`),
  * and day shifts ride the Date constructor's day-rollover — DST never
  * moves midnight, so a shifted local midnight always round-trips its
  * civil date.
@@ -10,7 +10,12 @@
 
 import type { DateRangePickerPreset } from './DateRangePickerCore';
 
-import { addMonths, formatDate, getDaysInMonth } from '../Calendar/date';
+import {
+  addMonths,
+  formatDate,
+  formatDateOf,
+  getDaysInMonth,
+} from '../../utils/date-math';
 
 /** Localized labels for the built-in rows (LocaleProvider's
  * `dateRangePicker` section). */
@@ -30,7 +35,7 @@ function shiftDays(date: Date, delta: number): Date {
 
 /** Serialize a local-midnight civil date as "YYYY-MM-DD". */
 function toValue(date: Date): string {
-  return formatDate(date.getFullYear(), date.getMonth(), date.getDate());
+  return formatDateOf(date);
 }
 
 /** First → last day of a month, as "YYYY-MM-DD" values. */

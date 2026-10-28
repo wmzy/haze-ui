@@ -5,10 +5,11 @@
  * directly (the signature-points precedent).
  */
 
-// clamp comes from utils/math; its inverted-range rule (max < min → the
-// max wins) is the semantics the anchor paths rely on — an anchor with
-// no room floors to its own space.
-import { clamp } from '../../utils/math';
+// clamp/quantize come from utils/math; clamp's inverted-range rule
+// (max < min → the max wins) is the semantics the anchor paths rely on —
+// an anchor with no room floors to its own space. quantize's default
+// 1e-6 magnitude is the JSON-clean rounding this module always used.
+import { clamp, quantize } from '../../utils/math';
 
 /** Normalized crop rectangle: top-left corner (x, y) and size, every
  * field 0..1 relative to the image's own pixel box. */
@@ -32,10 +33,6 @@ export const MIN_CROP = 0.05;
 /** Keyboard step for arrow keys: 1% of the image per press (the Resizable
  * handle's fully-pointer-free contract, scaled to normalized space). */
 export const KEYBOARD_STEP = 0.01;
-
-/** Round to 6 decimals so committed rects stay JSON-clean (binary float
- * noise like 0.30000000000000004 never escapes the component). */
-const quantize = (value: number): number => Math.round(value * 1e6) / 1e6;
 
 const isLocked = (aspect: number | undefined): aspect is number =>
   aspect !== undefined && aspect > 0;

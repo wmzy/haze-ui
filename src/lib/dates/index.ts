@@ -1,3 +1,10 @@
+/**
+ * Multi-calendar date adapters — a standalone published surface, not
+ * wired into any component yet: Calendar renders Gregorian only. A
+ * future Calendar `calendar` prop is the planned consumer of
+ * `getAdapter`; until then import adapters directly from
+ * 'haze-ui/dates'.
+ */
 export { gregoryAdapter } from './gregory';
 export { islamicUmalquraAdapter } from './islamic';
 export { persianAdapter } from './persian';

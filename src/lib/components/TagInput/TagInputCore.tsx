@@ -25,6 +25,26 @@ type TagListSlot = {
   onMove: (from: number, to: number) => void;
 };
 
+/** The FormItem-bridge surface every TagInput wrapper (TagInput,
+ * SortableTagInput) forwards to the inner text input alongside the
+ * Core's own field props — declared once so the wrappers' prop types
+ * cannot drift from the Core's. */
+type FieldBridgeProps = {
+  /**
+   * 字段 id（FormItem 桥生成）：必须挂到内部可聚焦的 input 上而非根
+   * div，<label htmlFor> 与错误 span 的 aria 链路才能接到焦点元素——
+   * 根 div 不聚焦，挂那里等于断链。
+   */
+  id?: string;
+  /** 由 FormItem 桥传入，随字段错误态变化，透传给内部 input。 */
+  'aria-invalid'?: boolean;
+  /** 指向 FormItem 渲染的错误 span（id={errorId}），透传给内部 input。 */
+  'aria-describedby'?: string;
+  /** Forwarded to the inner text `<input>` (not the root div) — the
+   * element form bridges and `ref.current.focus()` reach. */
+  ref?: Ref<HTMLInputElement>;
+};
+
 type TagInputCoreProps = {
   value: string[];
   onChange: (value: string[]) => void;
@@ -46,20 +66,7 @@ type TagInputCoreProps = {
    */
   wrapTagList?: (list: ReactNode, slot: TagListSlot) => ReactNode;
   className?: string;
-  /**
-   * 字段 id（FormItem 桥生成）：必须挂到内部可聚焦的 input 上而非根
-   * div，<label htmlFor> 与错误 span 的 aria 链路才能接到焦点元素——
-   * 根 div 不聚焦，挂那里等于断链。
-   */
-  id?: string;
-  /** 由 FormItem 桥传入，随字段错误态变化，透传给内部 input。 */
-  'aria-invalid'?: boolean;
-  /** 指向 FormItem 渲染的错误 span（id={errorId}），透传给内部 input。 */
-  'aria-describedby'?: string;
-  /** Forwarded to the inner text `<input>` (not the root div) — the
-   * element form bridges and `ref.current.focus()` reach. */
-  ref?: Ref<HTMLInputElement>;
-};
+} & FieldBridgeProps;
 
 /* The field surface (border/radius/fill) and the :focus-within ring
  * come from utils/field-skin.ts; the container keeps only its flex
@@ -251,4 +258,4 @@ export default function TagInputCore({
   );
 }
 
-export type { TagInputCoreProps, TagSlot, TagListSlot };
+export type { TagInputCoreProps, TagSlot, TagListSlot, FieldBridgeProps };
