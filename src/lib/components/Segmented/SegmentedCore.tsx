@@ -33,6 +33,8 @@ const container = css`
   display: inline-flex;
   background: var(--haze-color-bg-muted);
   border-radius: var(--haze-radius-md);
+  /* 2px sits below the scale's first step (4px) — the hairline inset
+     between the track and its chips; literal on purpose. */
   padding: 2px;
   gap: 2px;
   font-family: var(--haze-font-sans);

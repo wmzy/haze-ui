@@ -116,23 +116,26 @@ const sharedLayers = {
   // Menu-family shared skins (utils/menu-skins.ts): the item base/state
   // skins, slot skins, panel surfaces and divider shared by the three
   // menu families ride with each family's css.
-  'utils/menu-skins': ['menu', 'dropdown-menu', 'context-menu'],
+  'utils/menu-skins': ['menu', 'dropdown-menu', 'context-menu', 'cascader', 'command'],
   // Shared field skin (utils/field-skin.ts): the surface chrome, the
   // :focus-within focus ring, the native input/textarea chrome and the
   // field size map the field families wear. masked-input and any other
   // InputCore compositor is covered automatically through the input
   // family's css via the css-manifest dependency closure, not listed.
   'utils/field-skin': [
+    'color-picker',
     'combobox',
     'date-range-picker',
     'datepicker',
     'file-input',
+    'inline-completion',
     'inline-edit',
     'input',
     'mentions',
     'number-input',
     'otp-input',
     'prompt-input',
+    'signature',
     'tag-input',
     'textarea',
     'time-picker',
@@ -140,7 +143,7 @@ const sharedLayers = {
   // Shared tag skin (utils/tag-skin.ts): the tag list/chip/remove-button
   // classes TagInput and PromptInput both wear; the sortable-mode drag
   // classes stay in tag-input's own tag-input-styles.ts.
-  'utils/tag-skin': ['prompt-input', 'tag-input'],
+  'utils/tag-skin': ['prompt-input', 'tag-input', 'tag-group'],
   // Shared suggest listbox skin (utils/suggest-list-skin.ts): the
   // anchored listbox chrome plus option/highlighted/hint rows the two
   // textarea-suggest surfaces (PromptInput tokens, Mentions mentions)
@@ -152,7 +155,16 @@ const sharedLayers = {
   // pair and per-site extras (forced-colors companions, icon gaps) ride
   // as local x-class companions. First adopters: AsyncSection's retry
   // and ErrorBoundary's fallback (byte-identical pair at extraction).
-  'utils/quiet-button-skin': ['async-section', 'error-boundary'],
+  'utils/quiet-button-skin': [
+    'async-section',
+    'chat-message',
+    'error-boundary',
+    'image',
+    'notification-center',
+    'queue',
+    'sidebar',
+    'sources',
+  ],
   // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
   // the details/summary header + content typography shared by
   // Accordion's items and Disclosure ride with both families' css.
@@ -243,19 +255,19 @@ const sharedLayers = {
   // local (genuine geometry differences, not spelling drift). The
   // status tint classes and dismiss chrome ride via utils/status-skin;
   // no rsc-safe entry: nothing RSC-listed imports this module.
-  'utils/callout-skin': ['alert', 'banner'],
+  'utils/callout-skin': ['alert', 'banner', 'async-section'],
   // Solid/stroke status axes (progress bar fill, circle stroke,
   // indicator tone dots) — separate modules from status-skin because
   // same-keyed css maps in one file collide under Linaria's member-key
   // class naming (see utils/status-skin.ts header). Progress/Indicator
   // reference status-skin types only (build-time elided, no css ride).
-  'utils/status-solid-skin': ['indicator', 'progress'],
-  'utils/status-stroke-skin': ['progress'],
+  'utils/status-solid-skin': ['indicator', 'progress', 'token-counter'],
+  'utils/status-stroke-skin': ['progress', 'sparkline'],
   // Shared spinner glyph (utils/spinner-glyph.tsx): the ring+arc svg
   // and the spin loop (reduced-motion collapsed to a single 0.01ms
   // iteration) that Spinner and Toast's loading variant both render.
   // Renders DOM — no rsc-safe entry.
-  'utils/spinner-glyph': ['spinner', 'toast'],
+  'utils/spinner-glyph': ['spinner', 'toast', 'async-section', 'tree'],
   // Shared citation chrome (utils/citation-skin.ts): the mono [N] index
   // badge and the outbound-title link Sources' list rows and
   // InlineCitation's card header both render; InlineCitation's medium
@@ -282,6 +294,7 @@ const sharedLayers = {
     'popconfirm',
     'popover',
     'time-picker',
+    'tooltip',
     'tree-select',
   ],
   // Shared danger remap (utils/danger-remap.ts): the custom-property
@@ -297,7 +310,52 @@ const sharedLayers = {
   // [open][data-state] ::backdrop, BottomSheet's Presence-driven div
   // arms its own fade; Drawer's placement slide and BottomSheet's
   // sheet slide stay family-local.
-  'utils/dialog-skin': ['dialog', 'drawer', 'confirm-dialog', 'bottom-sheet'],
+  'utils/dialog-skin': ['dialog', 'drawer', 'confirm-dialog', 'bottom-sheet', 'tour'],
+  // Shared keyboard focus ring (utils/focus-ring.ts): the pure
+  // :focus-visible box-shadow ring + forced-colors Highlight fallback
+  // every interactive family composes; field-shaped :focus sites use
+  // field-skin's fieldFocusRing/focusWithinRing instead, pseudo-element
+  // thumbs stay local.
+  'utils/focus-ring': [
+    'breadcrumb',
+    'button',
+    'chat-container',
+    'color-picker',
+    'data-table',
+    'drawer',
+    'float-button',
+    'image',
+    'inline-citation',
+    'navigation-menu',
+    'pagination',
+    'rating',
+    'sidebar',
+    'signature',
+    'status-bar',
+    'switch',
+    'tab-bar',
+    'tabs',
+    'time-picker',
+    'toggle',
+    'toolbar',
+  ],
+  // Shared attached-row seam (utils/seam-skin.ts): the -1px seam +
+  // corner collapse + focus z-lift recipe InputGroup/PhoneInput rows
+  // and ButtonGroup (both orientations) wear.
+  'utils/seam-skin': ['input-group', 'phone-input', 'button-group'],
+  // Shared prose typography (utils/prose-skin.ts): the heading ladder,
+  // list/code/pre/blockquote rules RichTextEditor's content area and
+  // MarkdownRenderer both render (MarkdownRenderer wins conflicts).
+  'utils/prose-skin': ['rich-text-editor', 'markdown-renderer'],
+  // Shared thin meter bar (utils/meter-skin.ts): track + fill + width
+  // transition for Plan's progress strip and TokenCounter's budget bar
+  // (colors/timing tones stay per-family deltas).
+  'utils/meter-skin': ['plan', 'token-counter'],
+  // The segmented date/time input engine (utils/segmented-field.tsx):
+  // moved out of the DateField component dir so TimeField's
+  // cross-family consumption rides a registered shared layer instead
+  // of a sibling component directory.
+  'utils/segmented-field': ['date-field', 'time-field'],
 };
 
 /**

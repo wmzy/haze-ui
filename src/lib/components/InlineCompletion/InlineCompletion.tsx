@@ -7,6 +7,7 @@ import { css } from '@linaria/core';
 
 import { mergeRefs } from '../../utils/refs';
 import { srOnly } from '../../utils/sr-only';
+import { focusWithinRing } from '../../utils/field-skin';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -50,10 +51,9 @@ const wrapper = css`
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
 
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Focus ring: the shared field wrapper arm (utils/field-skin's
+     focusWithinRing) composed below — the host input inside owns the
+     focus, the wrapper paints the ring. */
 `;
 
 /* The host paints above the ghost (both positioned, host later in DOM)
@@ -216,7 +216,7 @@ export default function InlineCompletion({
   };
 
   return (
-    <div data-slot='inline-completion' x-class={[wrapper, className]}>
+    <div data-slot='inline-completion' x-class={[wrapper, focusWithinRing, className]}>
       {active && (
         <div
           ref={ghostRef}

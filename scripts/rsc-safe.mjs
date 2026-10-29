@@ -49,6 +49,10 @@ export const RSC_SAFE_MODULES = new Set([
   // :focus-within ring, native input/textarea chrome, size map) — no
   // hooks, no DOM access, only the externalized @linaria/core import.
   'utils/field-skin.ts',
+  // Shared keyboard focus ring (utils/focus-ring.ts): pure Linaria
+  // class constants — imported by RSC-safe BreadcrumbItem, StatusBar
+  // and TabBar.
+  'utils/focus-ring.ts',
   // Shared tag skin (tag list/chip/remove button): the same purity
   // class as menu-skins above.
   'utils/tag-skin.ts',

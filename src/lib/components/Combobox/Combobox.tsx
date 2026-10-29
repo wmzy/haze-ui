@@ -429,11 +429,17 @@ export default function Combobox<T extends string | number = string>({
   // Remote mode (onSearch set) never filters locally — the visible
   // list is exactly the consumer's current options, refetched per
   // query. Creatable's local layering still applies on top.
+  // Local filtering mirrors Select's filterSelectEntries contract:
+  // the needle trims first, so a blank (whitespace-only) query keeps
+  // the full list instead of matching nothing.
+  const trimmedQuery = query.trim();
   const filtered = onSearch
     ? effectiveOptions
-    : effectiveOptions.filter((o) =>
-        o.label.toLowerCase().includes(query.toLowerCase())
-      );
+    : trimmedQuery === ''
+      ? effectiveOptions
+      : effectiveOptions.filter((o) =>
+          o.label.toLowerCase().includes(trimmedQuery.toLowerCase())
+        );
 
   // Creatable row: offered only when nothing matches a non-blank query
   // (an exact label match is itself an `includes` match, so it suppresses
@@ -447,7 +453,6 @@ export default function Combobox<T extends string | number = string>({
     !maxCountReached &&
     query.trim() !== '' &&
     filtered.length === 0;
-  const trimmedQuery = query.trim();
   const createText = formatString(strings.create, { query: trimmedQuery });
   const listItems: ComboboxOptionData<T>[] = showCreateItem
     ? // The creatable row's value is the raw string query layered on

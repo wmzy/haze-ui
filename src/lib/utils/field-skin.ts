@@ -183,3 +183,21 @@ export const pickerFieldInputSm = css`
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
+
+/**
+ * The field-flavored focus ring as a standalone leaf: `:focus` (not
+ * :focus-visible — text entry IS pointer focus) repaints the border
+ * primary and wears the ring. `nativeFieldChrome` and the
+ * `pickerFieldInput` pair above carry the same arm inline (each stays
+ * a self-contained single class); leaf sites that compose their own
+ * surface — OTP cells and future field-shaped leaves — consume this
+ * instead of hand-rolling. Border-less leaf surfaces keep their local
+ * `border-color` delta arm.
+ */
+export const fieldFocusRing = css`
+  &:focus {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;

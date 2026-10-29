@@ -51,6 +51,54 @@ export function getChildKeys(
   return childKeys;
 }
 
+/**
+ * Cascade-check resolution: given the raw checked keys, derive the
+ * checked/half-checked split — a parent is checked only when every
+ * descendant is checked, half-checked when some are (and dropped from
+ * checked), unchecked when none are. One post-order walk carrying each
+ * subtree's totals; the previous shape called `getChildKeys` per
+ * parent, which re-walks the whole tree from the root (O(n²) on wide
+ * trees). `halfChecked` insertion order mirrors that post-order walk
+ * (deepest parents first) and `keys` order is preserved minus the
+ * removed parents. `checkStrictly` stays with the caller — no
+ * cascade there, the raw keys are the answer.
+ */
+export function computeCheckedState(
+  data: TreeNodeData[],
+  keys: string[]
+): { checked: string[]; halfChecked: string[] } {
+  const checkedSet = new Set(keys);
+  const halfCheckedSet = new Set<string>();
+  const toRemove = new Set<string>();
+
+  const walk = (nodes: TreeNodeData[]): { total: number; hit: number } => {
+    let total = 0;
+    let hit = 0;
+    for (const node of nodes) {
+      total += 1;
+      if (checkedSet.has(node.key)) hit += 1;
+      if (node.children?.length) {
+        const stats = walk(node.children);
+        total += stats.total;
+        hit += stats.hit;
+        if (stats.hit === 0) {
+          toRemove.add(node.key);
+        } else if (stats.hit < stats.total) {
+          halfCheckedSet.add(node.key);
+          toRemove.add(node.key);
+        }
+      }
+    }
+    return { total, hit };
+  };
+  walk(data);
+
+  return {
+    checked: keys.filter((key) => !toRemove.has(key)),
+    halfChecked: Array.from(halfCheckedSet),
+  };
+}
+
 export function getParentKey(
   data: TreeNodeData[],
   targetKey: string,

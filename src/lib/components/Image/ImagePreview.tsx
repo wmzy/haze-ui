@@ -1,6 +1,5 @@
 import type {
   KeyboardEvent as ReactKeyboardEvent,
-  MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
@@ -21,9 +20,10 @@ import {
   ZoomIn,
   ZoomOut,
 } from '../../icons';
-import { useFocusScope } from '../../utils/focus-scope';
+import { focusRingVisible } from '../../utils/focus-ring';
+import { useNativeDialogShell } from '../../utils/native-dialog';
 import { capturePointer } from '../../utils/pointer-capture';
-import { whenExitSettles } from '../../utils/presence';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 
 /**
  * Fullscreen preview overlay for Image (`preview` prop) and for
@@ -31,11 +31,12 @@ import { whenExitSettles } from '../../utils/presence';
  * the directory barrel: it has no standalone use, every knob rides on
  * Image's `preview` config or the group's.
  *
- * Rendered as a native `<dialog>` driven by `showModal()`: top layer for
- * free, implicit `role="dialog"` + modal semantics, native Esc handling
- * (intercepted via `cancel` so every exit runs through the same animated
- * path as Dialog.tsx). The shared `open` control comes from the parent
- * (Image or the group) so the thumbnail's click can drive it.
+ * Rendered as a native `<dialog>` whose lifecycle (focus scope,
+ * showModal/animated close, Esc/backdrop/native-close trio) rides
+ * utils/native-dialog's `useNativeDialogShell` — the same primitive as
+ * Dialog.tsx — with `onShown` keeping the custom initial focus. The
+ * shared `open` control comes from the parent (Image or the group) so
+ * the thumbnail's click can drive it.
  */
 
 const SCALE_MIN = 0.25;
@@ -193,74 +194,54 @@ const toolbar = css`
   padding: var(--haze-space-1);
 `;
 
+/* Toolbar tools + close: the quietIconButton chrome (borderless,
+   muted→text ink, bg-muted hover, keyboard ring) plus the local
+   geometry/typography delta. The disabled arms re-mute the shared wash —
+   quietIconButton's :hover is not guarded by :not(:disabled), so
+   :hover:disabled (0,2,0) outspecifies it instead of trusting source
+   order. */
 const toolButton = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: var(--haze-space-8);
   height: var(--haze-space-8);
   padding: 0;
-  border: none;
   border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   font-weight: var(--haze-weight-medium);
   line-height: 1;
-  cursor: pointer;
 
   & svg {
     width: var(--haze-space-5);
     height: var(--haze-space-5);
   }
 
-  &:hover:not(:disabled) {
-    background: var(--haze-color-bg-muted);
-  }
-
   &:disabled {
-    color: var(--haze-color-text-muted);
     cursor: not-allowed;
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  &:hover:disabled {
+    background: none;
+    color: var(--haze-color-text-muted);
   }
 `;
 
 /* Flanking prev/next arrows (gallery mode), vertically centered at the
    viewport edges — absolutely positioned so they never join the flex
-   centering that places the image. */
+   centering that places the image. The interaction chrome rides
+   quietIconButton; only the circle geometry and the edge offsets stay
+   local. */
 const navButton = css`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: var(--haze-space-10);
   height: var(--haze-space-10);
   padding: 0;
-  border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  cursor: pointer;
 
   & svg {
     width: var(--haze-space-5);
     height: var(--haze-space-5);
-  }
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -296,6 +277,8 @@ const thumbnailStrip = css`
   overflow-x: auto;
 `;
 
+/* Keyboard ring composes focusRingVisible — adds the forced-colors
+   Highlight arm the local copy never had. */
 const thumbnailButton = css`
   display: block;
   flex-shrink: 0;
@@ -307,11 +290,6 @@ const thumbnailButton = css`
   background: var(--haze-color-bg-muted);
   overflow: hidden;
   cursor: pointer;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const thumbnailActive = css`
@@ -365,41 +343,40 @@ export default function ImagePreview({
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
 
-  // Declared before the showModal effect on purpose (same ordering note as
-  // Dialog.tsx): the scope captures the opener — the thumbnail image Image
-  // focused before flipping open — while activeElement still points at it.
-  // Native modal dialog semantics already contain Tab, so trapped: false.
-  const setScope = useFocusScope({ enabled: open, trapped: false });
+  const resetTransform = () => {
+    setScale(1);
+    setRotation(0);
+    setOffset({ x: 0, y: 0 });
+  };
 
-  const setDialogRef = useCallback(
+  // The native-<dialog> lifecycle (focus scope, showModal/animated
+  // close, Esc/backdrop/native-close trio) rides the shared shell
+  // Dialog uses. onShown keeps the custom initial-focus contract — the
+  // toolbar's close button, not the first tabbable the scope's
+  // autoFocus would land on; it runs after showModal so focus lands
+  // inside the now-revealed dialog. The transform reset rides onClose:
+  // the native close event stays the single funnel every exit path
+  // runs through. viewTransition stays off (the overlay animates via
+  // its own keyframes) and the always-mounted dialog needs no
+  // keepMounted dormant markers.
+  const {setDialogRef, dialogProps} = useNativeDialogShell({
+    open,
+    setOpen,
+    viewTransition: false,
+    onClose: resetTransform,
+    keepMounted: false,
+    onShown: () => closeRef.current?.focus(),
+  });
+
+  // The non-passive wheel listener below needs the node as well — merge
+  // the shell's ref callback with a local copy.
+  const setPreviewRef = useCallback(
     (node: HTMLDialogElement | null) => {
       internalRef.current = node;
-      setScope(node);
+      setDialogRef(node);
     },
-    [setScope]
+    [setDialogRef]
   );
-
-  useEffect(() => {
-    const el = internalRef.current;
-    if (!el) return;
-    if (open && !el.open) {
-      el.showModal();
-      // Initial-focus contract: the toolbar's close button, not the first
-      // tabbable (native modal focus steps would land on zoom-in). Focus
-      // runs after showModal so it lands inside the now-revealed dialog.
-      closeRef.current?.focus();
-    } else if (!open && el.open) {
-      // Mirror Dialog.tsx: let the closing animation finish, then close
-      // for real. jsdom reports no CSS durations, so the settle completes
-      // across the double rAF of whenExitSettles.
-      const settle = whenExitSettles(el);
-      const finish = () => {
-        if (el.getAttribute('data-state') === 'closed') el.close();
-      };
-      if (settle) void settle.then(finish);
-      else finish();
-    }
-  }, [open]);
 
   // Wheel zoom as a native non-passive listener: React's onWheel is
   // passive at the root, so preventDefault (stop the page behind the
@@ -415,12 +392,6 @@ export default function ImagePreview({
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
   }, [open, zoom]);
-
-  const handleDialogClick = (event: ReactMouseEvent<HTMLDialogElement>) => {
-    // Only clicks that land on the dialog itself (the letterbox around
-    // the image) close — backdrop-click parity with antd's mask.
-    if (event.target === internalRef.current) setOpen(false);
-  };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLImageElement>) => {
     if (!zoom || event.button !== 0) return;
@@ -452,12 +423,6 @@ export default function ImagePreview({
     setDragging(false);
   };
 
-  const resetTransform = () => {
-    setScale(1);
-    setRotation(0);
-    setOffset({ x: 0, y: 0 });
-  };
-
   /** Single funnel for every gallery navigation path. */
   const goToImage = (next: number) => {
     // Wrap-around at both ends: any offset lands inside 0..total-1.
@@ -487,28 +452,11 @@ export default function ImagePreview({
   return (
     <dialog
       data-slot="image-preview"
-      ref={setDialogRef}
+      ref={setPreviewRef}
       aria-label={active.alt}
-      data-state={open ? 'open' : 'closed'}
-      x-class={[overlay]}
-      onCancel={(event) => {
-        // Esc would otherwise bypass the exit animation — route it through
-        // the same state flip as every other close path.
-        event.preventDefault();
-        setOpen(false);
-      }}
-      onClose={() => {
-        // Native close reached: sync React state back to fact (idempotent
-        // for the paths that already drove it), and start the next
-        // viewing from the untouched image — the close event is the
-        // single funnel every exit path runs through.
-        setOpen(false);
-        setScale(1);
-        setRotation(0);
-        setOffset({ x: 0, y: 0 });
-      }}
-      onClick={handleDialogClick}
+      {...dialogProps}
       onKeyDown={handleKeyDown}
+      x-class={[overlay]}
     >
       <img
         data-slot="img"
@@ -532,7 +480,7 @@ export default function ImagePreview({
         <button
           data-slot="prev-button"
           type="button"
-          x-class={[navButton, navPrev]}
+          x-class={[quietIconButton, navButton, navPrev]}
           aria-label={strings.prevImage}
           onClick={() => goToImage(activeIndex - 1)}
         >
@@ -543,7 +491,7 @@ export default function ImagePreview({
         <button
           data-slot="next-button"
           type="button"
-          x-class={[navButton, navNext]}
+          x-class={[quietIconButton, navButton, navNext]}
           aria-label={strings.nextImage}
           onClick={() => goToImage(activeIndex + 1)}
         >
@@ -556,7 +504,7 @@ export default function ImagePreview({
             <button
               data-slot="zoom-in-button"
               type="button"
-              x-class={[toolButton]}
+              x-class={[quietIconButton, toolButton]}
               aria-label={strings.zoomIn}
               disabled={scale >= SCALE_MAX}
               onClick={() => setScale(clampScale(scale + SCALE_STEP))}
@@ -566,7 +514,7 @@ export default function ImagePreview({
             <button
               data-slot="zoom-out-button"
               type="button"
-              x-class={[toolButton]}
+              x-class={[quietIconButton, toolButton]}
               aria-label={strings.zoomOut}
               disabled={scale <= SCALE_MIN}
               onClick={() => setScale(clampScale(scale - SCALE_STEP))}
@@ -576,7 +524,7 @@ export default function ImagePreview({
             <button
               data-slot="reset-button"
               type="button"
-              x-class={[toolButton]}
+              x-class={[quietIconButton, toolButton]}
               aria-label={strings.reset}
               onClick={resetTransform}
             >
@@ -588,7 +536,7 @@ export default function ImagePreview({
           <button
             data-slot="rotate-button"
             type="button"
-            x-class={[toolButton]}
+            x-class={[quietIconButton, toolButton]}
             aria-label={strings.rotate}
             onClick={() => setRotation((prev) => (prev + ROTATE_STEP) % 360)}
           >
@@ -607,7 +555,7 @@ export default function ImagePreview({
           ref={closeRef}
           data-slot="close"
           type="button"
-          x-class={[toolButton]}
+          x-class={[quietIconButton, toolButton]}
           aria-label={strings.close}
           onClick={() => setOpen(false)}
         >
@@ -621,7 +569,7 @@ export default function ImagePreview({
               key={`${image.src}-${i}`}
               data-slot="thumbnail"
               type="button"
-              x-class={[thumbnailButton, i === activeIndex && thumbnailActive]}
+              x-class={[thumbnailButton, i === activeIndex && thumbnailActive, focusRingVisible]}
               aria-label={formatString(strings.thumbnail, {
                 index: i + 1,
                 total,

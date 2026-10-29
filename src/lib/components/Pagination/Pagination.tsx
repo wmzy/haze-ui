@@ -8,6 +8,7 @@ import { useControl } from 'react-use-control';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { focusRingVisible } from '../../utils/focus-ring';
 
 import { sizes } from './pagination-styles';
 
@@ -40,26 +41,6 @@ const nav = css`
   font-family: var(--haze-font-sans);
 `;
 
-/* Shared keyboard focus treatment — the box-shadow ring every
-   interactive surface (page buttons, jump markers, size select,
-   jumper input) wears verbatim, plus its forced-colors Highlight
-   fallback. Per-surface deltas layer on top with `outline-offset`
-   and base outlines only; none restates the ring itself. */
-const pgFocusRing = css`
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     a Highlight outline replaces it. */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-    }
-  }
-`;
-
 const btn = css`
   display: inline-flex;
   align-items: center;
@@ -85,7 +66,7 @@ const btn = css`
     cursor: not-allowed;
   }
 
-  /* Forced-colors deltas over pgFocusRing: the page button's
+  /* Forced-colors deltas over focusRingVisible: the page button's
      Highlight ring is inset; disabled pages drop the dim and render
      GrayText. */
   @media (forced-colors: active) {
@@ -149,7 +130,7 @@ const ellipsisJumpBtn = css`
     color: var(--haze-color-primary);
   }
 
-  /* Forced-colors deltas over pgFocusRing: a transparent no-border
+  /* Forced-colors deltas over focusRingVisible: a transparent no-border
      button gets nothing from the UA — an inset CanvasText outline adds
      the boundary without shifting layout, upgrading to the inset
      Highlight ring on keyboard focus. */
@@ -172,8 +153,8 @@ const auxText = css`
 
 /* Shared field skin for the size changer and the page inputs —
    metrics, border, surface and typography they hold in common; the
-   focus treatment rides along via `pgFocusRing`, and each delta keeps
-   only its padding/width/cursor/text-align specifics. */
+   focus treatment rides along via `focusRingVisible`, and each delta
+   keeps only its padding/width/cursor/text-align specifics. */
 const pgFieldBase = css`
   height: calc(var(--haze-space-8) + var(--haze-space-1));
   border: 1px solid var(--haze-color-border);
@@ -283,7 +264,7 @@ export default function Pagination({
     <input
       data-slot='input'
       type="text"
-      x-class={[pgFieldBase, pgFocusRing, jumperInput]}
+      x-class={[pgFieldBase, focusRingVisible, jumperInput]}
       value={draft}
       aria-label={strings.jumperLabel}
       onChange={(e) => setDraft(e.target.value)}
@@ -308,7 +289,7 @@ export default function Pagination({
       <button
         data-slot='prev'
         type="button"
-        x-class={[btn, pgFocusRing]}
+        x-class={[btn, focusRingVisible]}
         disabled={page <= 1}
         onClick={() => navigate(page - 1, pageSize)}
         aria-label={strings.previous}
@@ -328,7 +309,7 @@ export default function Pagination({
                 key={`e${i}`}
                 data-slot='ellipsis'
                 type="button"
-                x-class={[ellipsis, ellipsisJumpBtn, pgFocusRing]}
+                x-class={[ellipsis, ellipsisJumpBtn, focusRingVisible]}
                 aria-label={formatString(
                   pages.indexOf(page) > i
                     ? strings.ellipsisBackward
@@ -352,7 +333,7 @@ export default function Pagination({
               key={p}
               data-slot='item'
               type="button"
-              x-class={[btn, pgFocusRing, p === page && activeBtn]}
+              x-class={[btn, focusRingVisible, p === page && activeBtn]}
               aria-current={p === page ? 'page' : undefined}
               onClick={() => navigate(p, pageSize)}
             >
@@ -364,7 +345,7 @@ export default function Pagination({
       <button
         data-slot='next'
         type="button"
-        x-class={[btn, pgFocusRing]}
+        x-class={[btn, focusRingVisible]}
         disabled={page >= totalPages}
         onClick={() => navigate(page + 1, pageSize)}
         aria-label={strings.next}
@@ -374,7 +355,7 @@ export default function Pagination({
       {showSizeChanger ? (
         <select
           data-slot='size-changer'
-          x-class={[pgFieldBase, pgFocusRing, control]}
+          x-class={[pgFieldBase, focusRingVisible, control]}
           value={String(pageSize)}
           aria-label={strings.sizeLabel}
           onChange={(e) => navigate(1, parseInt(e.target.value, 10))}

@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { meterFill, meterTrack } from '../../utils/meter-skin';
+import { statusSolidColors } from '../../utils/status-solid-skin';
 import { useStrings } from '../LocaleProvider';
 
 type TokenCounterProps = {
@@ -15,23 +17,15 @@ const wrapper = css`
   color: var(--haze-color-text-muted);
 `;
 
-const bar = css`
-  height: 0.25rem;
+/* The meter's geometry comes from utils/meter-skin (track pill +
+   full-height fill); only the tone stays local — the track rides
+   bg-muted and sits a step below the info row. The fill's width
+   transition historically ran slow + a bare `ease`; it now follows
+   the shared normal/haze-ease curve — an intentional unification. */
+const trackTone = css`
   background: var(--haze-color-bg-muted);
-  border-radius: var(--haze-radius-full);
-  overflow: hidden;
   margin-top: var(--haze-space-1);
 `;
-
-const fill = css`
-  height: 100%;
-  border-radius: var(--haze-radius-full);
-  transition: width var(--haze-duration-slow) ease;
-`;
-
-const fillNormal = css`background: var(--haze-color-primary);`;
-const fillWarning = css`background: var(--haze-color-warning);`;
-const fillDanger = css`background: var(--haze-color-danger);`;
 
 const info = css`
   display: flex;
@@ -45,7 +39,10 @@ const count = css`
 
 export default function TokenCounter({ used, max, label, className }: TokenCounterProps) {
   const pct = max > 0 ? Math.min(100, (used / max) * 100) : 0;
-  const fillClass = pct > 90 ? fillDanger : pct > 70 ? fillWarning : fillNormal;
+  /* The fill tone axis is the shared solid status skin
+     (utils/status-solid-skin) — primary/warning/danger are its
+     literal arms, so no local color classes. */
+  const fillClass = pct > 90 ? statusSolidColors.danger : pct > 70 ? statusSolidColors.warning : statusSolidColors.primary;
   const strings = useStrings('tokenCounter');
 
   return (
@@ -54,8 +51,8 @@ export default function TokenCounter({ used, max, label, className }: TokenCount
         <span data-slot='label'>{label || strings.label}</span>
         <span data-slot='value' x-class={[count]}>{used.toLocaleString()} / {max.toLocaleString()}</span>
       </div>
-      <div data-slot='track' x-class={[bar]}>
-        <div data-slot='fill' x-class={[fill, fillClass]} style={{ width: `${pct}%` }} />
+      <div data-slot='track' x-class={[meterTrack, trackTone]}>
+        <div data-slot='fill' x-class={[meterFill, fillClass]} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

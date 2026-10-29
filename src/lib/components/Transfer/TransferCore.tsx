@@ -37,6 +37,8 @@ const container = css`
 
 const panel = css`
   flex: 1;
+  /* 200px has no ladder step — the panel's readability floor next to
+     its sibling, not a spacing rhythm; literal on purpose. */
   min-width: 200px;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
@@ -53,6 +55,8 @@ const panelHeader = css`
 `;
 
 const panelBody = css`
+  /* 200px has no ladder step — the list's scroll clamp, chosen to keep
+     short panels compact; literal on purpose. */
   max-height: 200px;
   overflow-y: auto;
   padding: var(--haze-space-1);
@@ -84,6 +88,8 @@ const actionBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* 2.25rem (36px) sits between the space steps (32/40) — literal on
+     purpose (InlineEdit's 1.75rem precedent). */
   width: 2.25rem;
   height: 2.25rem;
   border: 1px solid var(--haze-color-border);
@@ -104,6 +110,41 @@ const actionBtn = css`
   }
 `;
 
+/** Pure list toggle shared by both panels — returns the next list. */
+const toggleIn = (list: string[], key: string): string[] =>
+  list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
+
+/** One list panel: header count plus checkbox rows. Source and target
+ * render the same shape — only items, selection, toggle and title
+ * differ, so the duplicated JSX folds into one parameterized helper. */
+function renderPanel(
+  items: TransferItem[],
+  selected: string[],
+  toggle: (key: string) => void,
+  title: string
+) {
+  return (
+    <div data-slot="panel" x-class={[panel]}>
+      <div data-slot="header" x-class={[panelHeader]}>{title}</div>
+      <div data-slot="list" x-class={[panelBody]}>
+        {items.map((item) => (
+          <label key={item.key} data-slot="item" x-class={[itemStyle]}>
+            <input
+              data-slot="checkbox"
+              type="checkbox"
+              checked={selected.includes(item.key)}
+              disabled={item.disabled}
+              onChange={() => toggle(item.key)}
+              aria-label={item.title}
+            />
+            {item.title}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function TransferCore({
   dataSource,
   value: targetKeys,
@@ -117,18 +158,6 @@ export default function TransferCore({
 
   const sourceItems = dataSource.filter((item) => !targetKeys.includes(item.key));
   const targetItems = dataSource.filter((item) => targetKeys.includes(item.key));
-
-  const toggleSource = (key: string) => {
-    setSelectedSource((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
-  };
-
-  const toggleTarget = (key: string) => {
-    setSelectedTarget((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
-  };
 
   const moveToTarget = () => {
     if (selectedSource.length === 0) return;
@@ -146,24 +175,12 @@ export default function TransferCore({
 
   return (
     <div data-slot="transfer" x-class={[container, className]} {...rest}>
-      <div data-slot="panel" x-class={[panel]}>
-        <div data-slot="header" x-class={[panelHeader]}>{formatString(strings.source, { count: sourceItems.length })}</div>
-        <div data-slot="list" x-class={[panelBody]}>
-          {sourceItems.map((item) => (
-            <label key={item.key} data-slot="item" x-class={[itemStyle]}>
-              <input
-                data-slot="checkbox"
-                type="checkbox"
-                checked={selectedSource.includes(item.key)}
-                disabled={item.disabled}
-                onChange={() => toggleSource(item.key)}
-                aria-label={item.title}
-              />
-              {item.title}
-            </label>
-          ))}
-        </div>
-      </div>
+      {renderPanel(
+        sourceItems,
+        selectedSource,
+        (key) => setSelectedSource((prev) => toggleIn(prev, key)),
+        formatString(strings.source, { count: sourceItems.length })
+      )}
       <div data-slot="actions" x-class={[actions]}>
         <button
           type="button"
@@ -186,24 +203,12 @@ export default function TransferCore({
           ‹
         </button>
       </div>
-      <div data-slot="panel" x-class={[panel]}>
-        <div data-slot="header" x-class={[panelHeader]}>{formatString(strings.target, { count: targetItems.length })}</div>
-        <div data-slot="list" x-class={[panelBody]}>
-          {targetItems.map((item) => (
-            <label key={item.key} data-slot="item" x-class={[itemStyle]}>
-              <input
-                data-slot="checkbox"
-                type="checkbox"
-                checked={selectedTarget.includes(item.key)}
-                disabled={item.disabled}
-                onChange={() => toggleTarget(item.key)}
-                aria-label={item.title}
-              />
-              {item.title}
-            </label>
-          ))}
-        </div>
-      </div>
+      {renderPanel(
+        targetItems,
+        selectedTarget,
+        (key) => setSelectedTarget((prev) => toggleIn(prev, key)),
+        formatString(strings.target, { count: targetItems.length })
+      )}
     </div>
   );
 }

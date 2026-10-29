@@ -7,6 +7,7 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { panelSurface } from '../../utils/panel-skin';
 import { citationIndexBadge, citationLink } from '../../utils/citation-skin';
 
@@ -51,10 +52,9 @@ const badge = css`
     background: var(--haze-color-primary-subtle);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the trigger's x-class — it also brings the forced-colors
+     Highlight arm the local copy never had. */
 
   /* Forced-colors: the UA would force the border onto CanvasText while
      the subtle background collapses — keep the badge separated from the
@@ -133,7 +133,7 @@ export default function InlineCitation({
         aria-controls={id}
         onPointerDown={floating.onTriggerPointerDown}
         onClick={floating.onTriggerClick}
-        x-class={badge}
+        x-class={[badge, focusRingVisible]}
       >
         [{index}]
       </button>

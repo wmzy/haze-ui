@@ -5,6 +5,7 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { Button } from '../Button';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 
 type ChatInputProps = {
@@ -58,29 +59,14 @@ const textarea = css`
   padding: 0;
 `;
 
+/** Local icon-square delta over Button's solid square-md skin: the fixed
+ * 2rem box keeps the ↑/stop glyph centered in the composer row. The rem
+ * literal is deliberate — it scales with the user's font size and no
+ * rem-valued size token exists (ChatMessage avatars use the same one). */
 const sendBtn = css`
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 2rem;
   height: 2rem;
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-primary);
-  color: var(--haze-color-bg);
-  border: none;
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-  transition: opacity var(--haze-duration-fast);
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &:hover:not(:disabled) {
-    opacity: 0.9;
-  }
 `;
 
 /** Explicit width/height: a viewBox-only inline svg contributes zero
@@ -155,16 +141,18 @@ export default function ChatInput({
         maxLength={maxLength}
         rows={1}
       />
-      <button
+      <Button
         data-slot={generating ? 'stop-button' : 'send-button'}
-        x-class={[sendBtn]}
-        type="button"
+        variant='solid'
+        size='md'
+        square
+        className={sendBtn}
         onClick={handleSend}
         disabled={disabled || (!generating && !value.trim())}
         aria-label={generating ? chatStrings.stopGeneration : strings.send}
       >
         {generating ? <StopGlyph /> : <>&uarr;</>}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { Badge } from '../Badge';
 
 // ---------------------------------------------------------------------------
@@ -101,10 +103,11 @@ const item = css`
     background: var(--haze-color-bg-muted);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 var(--haze-space-1) var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the item below — a deliberate convergence: the local copy wore a
+     var(--haze-space-1) (4px) ring, the one width variant across the
+     library, now unified on the shared 3px ring (and it gains the
+     forced-colors Highlight arm the local copy never had). */
 `;
 
 const itemActive = css`
@@ -174,7 +177,7 @@ export function TabBarItem({
         if (active) onReselect?.();
         else onSelect?.();
       }}
-      x-class={[item, active && itemActive, className]}
+      x-class={[item, focusRingVisible, active && itemActive, className]}
       {...rest}
     >
       <span data-slot='tab-bar-item-icon' x-class={itemIcon} aria-hidden='true'>

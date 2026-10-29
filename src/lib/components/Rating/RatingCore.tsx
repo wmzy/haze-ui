@@ -4,6 +4,7 @@ import { css } from '@linaria/core';
 import { useCallback, useRef, useState } from 'react';
 
 import { getDirection } from '../../utils/direction';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -46,22 +47,20 @@ const star = css`
     transform: scale(1.1);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the star below. */
 
   /* Forced-colors: star glyphs draw with currentColor (fill for the
      active state, stroke for the rest), which the UA already resolves
      to CanvasText — the fill/stroke shape keeps active and inactive
      stars distinguishable with no extra boxes. The system color is
-     restated for determinism; the box-shadow focus ring is dropped
-     by the UA, so a Highlight outline replaces it. */
+     restated for determinism; only the ring's outline-offset delta
+     rides here (the Highlight outline itself comes from the shared
+     focusRingVisible). */
   @media (forced-colors: active) {
     color: CanvasText;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: 2px;
     }
   }
@@ -168,7 +167,7 @@ export default function RatingCore({
             key={i}
             ref={isStop ? attachStop : undefined}
             data-slot="item"
-            x-class={[star, (filled || halfFilled) && starActive]}
+            x-class={[star, focusRingVisible, (filled || halfFilled) && starActive]}
             role="radio"
             aria-checked={value >= i + 1 ? 'true' : 'false'}
             aria-label={formatString(i > 0 ? strings.stars : strings.star, { count: i + 1 })}

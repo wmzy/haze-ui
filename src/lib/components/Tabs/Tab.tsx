@@ -9,6 +9,7 @@ import type {
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
 import { srOnly } from '../../utils/sr-only';
 
 import { useStrings } from '../LocaleProvider';
@@ -143,21 +144,18 @@ const base = css`
     color: var(--haze-color-text);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     both tab shapes below. */
 
   /* Forced-colors: the UA forces the transparent inactive underline to
      CanvasText (transparent borders do not survive), so every tab
      gains an underline that merges with the strip line — acceptable
      noise, but it also means selection can no longer ride the
-     underline. The box-shadow focus ring is dropped by the UA — an
-     inset Highlight outline replaces it (the strip scrolls, an outer
-     outline would clip). */
+     underline. Only the ring's inset outline-offset delta rides here —
+     the Highlight outline itself comes from the shared focusRingVisible
+     (the strip scrolls, an outer outline would clip). */
   @media (forced-colors: active) {
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
@@ -402,6 +400,7 @@ export default function Tab<T extends ElementType = 'button'>({
         data-haze-tab-value={value}
         x-class={[
           base,
+          focusRingVisible,
           skin.idle,
           isActive && activeFloor,
           isActive && skin.active,
@@ -444,6 +443,7 @@ export default function Tab<T extends ElementType = 'button'>({
       data-haze-tab-value={value}
       x-class={[
         base,
+        focusRingVisible,
         skin.idle,
         isActive && activeFloor,
         isActive && skin.active,

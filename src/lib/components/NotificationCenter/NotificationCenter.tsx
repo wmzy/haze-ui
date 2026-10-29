@@ -11,6 +11,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { panelSurface, popoverPanelHidden } from '../../utils/panel-skin';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 import { statusSubtleColors } from '../../utils/status-skin';
 import { Badge } from '../Badge';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
@@ -136,31 +137,23 @@ const container = css`
   display: inline-flex;
 `;
 
+/* Bell trigger: the shared quietIconButton chrome (utils/quiet-button-skin)
+ * plus the local seat geometry — the badge wrapper anchors to this relative
+ * box. Ring and ink converge on the skin: the old 2px offset outline and the
+ * text-secondary ink give way to the shared 3px box-shadow ring and the
+ * muted→text shift (deliberate unification across the quiet buttons). The
+ * forced-colors Highlight-outline fallback stays local (the skin ships none)
+ * and doubles :focus-visible so it outspecifies the skin's outline:none
+ * instead of trusting cross-module source order. */
 const triggerBtn = css`
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--haze-space-2);
-  border: none;
   border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
-    outline-offset: 2px;
-  }
 
   @media (forced-colors: active) {
-    &:focus-visible {
-      outline-color: Highlight;
+    &:focus-visible:focus-visible {
+      outline: 2px solid Highlight;
+      box-shadow: none;
     }
   }
 `;
@@ -308,35 +301,34 @@ const panelActions = css`
   border-top: 1px solid var(--haze-color-border);
 `;
 
+/* Footer actions: the shared quietIconButton chrome plus the compact
+ * text-button metrics. Disabled handling stays local — the skin's :hover
+ * wash is not guarded by :not(:disabled), so :hover:disabled (0,3,0)
+ * re-mutes it instead of trusting source order (ImagePreview's toolButton
+ * precedent); the disabled ink itself now rides the skin's muted base.
+ * Ring convergence as on the trigger: 2px offset outline → the shared 3px
+ * box-shadow ring; the forced-colors Highlight fallback stays local with
+ * the doubled-pseudo specificity. */
 const actionBtn = css`
   appearance: none;
-  border: none;
-  border-radius: var(--haze-radius-sm);
-  background: transparent;
   padding: var(--haze-space-1) var(--haze-space-2);
+  border-radius: var(--haze-radius-sm);
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
-    outline-offset: 1px;
-  }
 
   &:disabled {
-    color: var(--haze-color-text-muted);
     cursor: not-allowed;
   }
 
+  &:hover:disabled {
+    background: none;
+    color: var(--haze-color-text-muted);
+  }
+
   @media (forced-colors: active) {
-    &:focus-visible {
-      outline-color: Highlight;
+    &:focus-visible:focus-visible {
+      outline: 2px solid Highlight;
+      box-shadow: none;
     }
   }
 `;
@@ -507,7 +499,7 @@ export default function NotificationCenter({
         ref={triggerRef}
         type='button'
         data-slot='trigger'
-        x-class={[triggerBtn, resolvedClassNames?.trigger]}
+        x-class={[quietIconButton, triggerBtn, resolvedClassNames?.trigger]}
         style={floating.triggerStyle}
         aria-haspopup='dialog'
         aria-expanded={open}
@@ -627,7 +619,7 @@ export default function NotificationCenter({
             type='button'
             data-slot='mark-all-read'
             tabIndex={-1}
-            x-class={[actionBtn, resolvedClassNames?.markAllRead]}
+            x-class={[quietIconButton, actionBtn, resolvedClassNames?.markAllRead]}
             disabled={unreadCount === 0}
             onClick={onMarkAllRead}
           >
@@ -637,7 +629,7 @@ export default function NotificationCenter({
             type='button'
             data-slot='clear-all'
             tabIndex={-1}
-            x-class={[actionBtn, resolvedClassNames?.clearAll]}
+            x-class={[quietIconButton, actionBtn, resolvedClassNames?.clearAll]}
             disabled={items.length === 0}
             onClick={onClearAll}
           >

@@ -75,6 +75,22 @@ const removedPrefix = css`
   color: var(--haze-color-danger);
 `;
 
+/* Look-ahead distance (lines) used to re-sync the two walks once they
+ * diverge: a common line within this window marks the end of a pure
+ * insertion/deletion run, so a single mid-document edit no longer
+ * cascades into paired removed/added rows all the way down. */
+const SYNC_WINDOW = 5;
+
+/** Index of the next occurrence of `target` within the sync window
+ * after `start`, or -1 when the line does not reappear nearby. */
+function findAnchor(lines: string[], start: number, target: string): number {
+  const end = Math.min(start + SYNC_WINDOW, lines.length - 1);
+  for (let i = start + 1; i <= end; i++) {
+    if (lines[i] === target) return i;
+  }
+  return -1;
+}
+
 function computeDiff(oldText: string, newText: string): DiffLine[] {
   const oldLines = oldText.split('\n');
   const newLines = newText.split('\n');
@@ -83,7 +99,7 @@ function computeDiff(oldText: string, newText: string): DiffLine[] {
   let oldIdx = 0;
   let newIdx = 0;
 
-  // Simple line-by-line diff
+  // Line-by-line diff with windowed re-synchronization
   while (oldIdx < oldLines.length || newIdx < newLines.length) {
     const oldLine = oldLines[oldIdx]!;
     const newLine = newLines[newIdx]!;
@@ -99,10 +115,33 @@ function computeDiff(oldText: string, newText: string): DiffLine[] {
       oldIdx++;
       newIdx++;
     } else {
-      result.push({ type: 'removed', content: oldLine, oldLine: oldIdx + 1 });
-      result.push({ type: 'added', content: newLine, newLine: newIdx + 1 });
-      oldIdx++;
-      newIdx++;
+      // Before pairing the diverging lines as a modification, look for
+      // a re-sync anchor: the old line reappearing ahead in the new
+      // text marks a pure insertion, the new line reappearing ahead in
+      // the old text a pure deletion (the nearer anchor wins). Only
+      // when neither side re-syncs within the window do the lines pair
+      // up as a single modification.
+      const insertAt = findAnchor(newLines, newIdx, oldLine);
+      const deleteAt = findAnchor(oldLines, oldIdx, newLine);
+      if (
+        insertAt !== -1 &&
+        (deleteAt === -1 || insertAt - newIdx <= deleteAt - oldIdx)
+      ) {
+        for (let i = newIdx; i < insertAt; i++) {
+          result.push({ type: 'added', content: newLines[i]!, newLine: i + 1 });
+        }
+        newIdx = insertAt;
+      } else if (deleteAt !== -1) {
+        for (let i = oldIdx; i < deleteAt; i++) {
+          result.push({ type: 'removed', content: oldLines[i]!, oldLine: i + 1 });
+        }
+        oldIdx = deleteAt;
+      } else {
+        result.push({ type: 'removed', content: oldLine, oldLine: oldIdx + 1 });
+        result.push({ type: 'added', content: newLine, newLine: newIdx + 1 });
+        oldIdx++;
+        newIdx++;
+      }
     }
   }
 

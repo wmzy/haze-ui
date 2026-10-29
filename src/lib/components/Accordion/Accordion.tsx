@@ -7,6 +7,7 @@ import {css} from '@linaria/core';
 import {cloneElement, useCallback} from 'react';
 import {useControl} from 'react-use-control';
 
+import {useOpenWithChange} from '../../utils/floating';
 import {walkChildren} from '../../utils/walk-children';
 
 import {AccordionProvider} from './AccordionContext';
@@ -83,10 +84,16 @@ export default function Accordion({
 }: AccordionProps) {
   const [openKeys, setOpenKeys] = useControl(openControl, []);
 
-  // Single state-change exit (DropdownMenu pattern): every item
-  // activation funnels through here, so onOpenChange fires exactly once
-  // per transition. Exclusive mode replaces the array — opening one
-  // item closes the rest while keeping the array semantics (≤ 1 key).
+  // Every item activation funnels through this setter (useOpenWithChange:
+  // the shared open seam), so onOpenChange fires exactly once per
+  // transition. Exclusive mode replaces the array — opening one item
+  // closes the rest while keeping the array semantics (≤ 1 key).
+  const setOpenKeysWithChange = useOpenWithChange(
+    openKeys,
+    setOpenKeys,
+    onOpenChange
+  );
+
   const toggleItem = useCallback(
     (key: string) => {
       const isOpen = openKeys.includes(key);
@@ -97,10 +104,9 @@ export default function Accordion({
         : isOpen
           ? openKeys.filter((k) => k !== key)
           : [...openKeys, key];
-      setOpenKeys(next);
-      onOpenChange?.(next);
+      setOpenKeysWithChange(next);
     },
-    [openKeys, setOpenKeys, onOpenChange, exclusive]
+    [openKeys, setOpenKeysWithChange, exclusive]
   );
 
   return (

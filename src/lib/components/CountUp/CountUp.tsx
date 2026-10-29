@@ -38,14 +38,13 @@ const base = css`
 const groupFormatters = new Map<number, Intl.NumberFormat>();
 
 function defaultFormat(value: number, decimals: number): string {
-  let formatter = groupFormatters.get(decimals);
-  if (!formatter) {
-    formatter = new Intl.NumberFormat(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-    groupFormatters.set(decimals, formatter);
-  }
+  const cached = groupFormatters.get(decimals);
+  if (cached) return cached.format(value);
+  const formatter = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+  groupFormatters.set(decimals, formatter);
   return formatter.format(value);
 }
 

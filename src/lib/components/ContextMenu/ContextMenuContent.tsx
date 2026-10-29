@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { css } from '@linaria/core';
 import { useCallback } from 'react';
 
+import { classnames } from '../../utils/classnames';
 import { FloatingPanel } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
@@ -73,9 +74,7 @@ export default function ContextMenuContent({
       behavior={floating}
       role="menu"
       visualClass={`${menuPanel} ${positioned}`}
-      className={
-        [className, classNames?.content].filter(Boolean).join(' ') || undefined
-      }
+      className={classnames(className, classNames?.content)}
       style={{ left: x, top: y }}
       onKeyDown={handleKeyDown}
     >

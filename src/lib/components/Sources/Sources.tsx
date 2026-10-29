@@ -8,6 +8,7 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { citationIndexBadge, citationLink } from '../../utils/citation-skin';
 import { DisclosureChevron } from '../../utils/disclosure-chevron';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 import { chevronPair } from '../../utils/timeline-skin';
 
 /** One cited source: a numbered entry whose title optionally links out. */
@@ -68,24 +69,18 @@ const title = css`
   color: var(--haze-color-text);
 `;
 
+/* Excerpt toggle: the shared quietIconButton chrome
+ * (utils/quiet-button-skin) plus the compact 20px seat. Deliberate
+ * convergence: the skin's bg-muted hover wash and 3px keyboard ring
+ * replace what was a color-only hover with no focus indicator at all;
+ * the transition timing converges on the skin's plain ease (was
+ * var(--haze-ease)). */
 const toggleBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: var(--haze-space-5);
   height: var(--haze-space-5);
   padding: 0;
   align-self: center;
-  border: none;
   border-radius: var(--haze-radius-sm);
-  background: none;
-  color: var(--haze-color-text-muted);
-  cursor: pointer;
-  transition: color var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
 `;
 
 const snippetBase = css`
@@ -245,7 +240,7 @@ export default function Sources({
                   aria-controls={snippetId}
                   aria-label={itemExpanded ? resolvedCollapseLabel : resolvedExpandLabel}
                   onClick={() => toggle(source.id)}
-                  x-class={[toggleBtn]}
+                  x-class={[quietIconButton, toggleBtn]}
                 >
                   {/* Rotation rides the glyph itself: the transition is
                       built into DisclosureChevron, the open arm is

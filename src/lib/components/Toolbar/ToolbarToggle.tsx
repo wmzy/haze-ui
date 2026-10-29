@@ -4,6 +4,7 @@ import type { ControlOrValue } from 'react-use-control';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { focusRingVisible } from '../../utils/focus-ring';
 import { base, sizes, squareSizes, variants } from '../Button/styles';
 
 /**
@@ -80,7 +81,7 @@ export default function ToolbarToggle<T extends ElementType = 'button'>({
       data-haze-toolbar-item=""
       tabIndex={-1}
       aria-pressed={pressed}
-      x-class={[base, variants[variant], sizeClass, toolbarItem, className]}
+      x-class={[base, focusRingVisible, variants[variant], sizeClass, toolbarItem, className]}
       onClick={(event: MouseEvent<HTMLElement>) => {
         setPressed(!pressed);
         // Element-agnostic event: whatever element `as` rendered, the

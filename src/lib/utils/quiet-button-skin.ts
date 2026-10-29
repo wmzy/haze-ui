@@ -55,3 +55,38 @@ export const quietButton = css`
   }
 `;
 
+/**
+ * The icon-button flavor: borderless chrome over the muted→text ink
+ * shift and bg-muted hover wash, plus the standard keyboard ring.
+ * NotificationCenter's trigger/action buttons, Sidebar's icon toggle,
+ * ImagePreview's tool/nav buttons and the ChatMessage/Sources/Queue
+ * icon actions used to hand-roll this per family with drifting ring
+ * geometry (2px / 3px / none). Geometry (box size, padding), radius,
+ * disabled handling and extra forced-colors arms stay local deltas —
+ * and per the drift discipline above, a local arm that must differ
+ * from one of these declarations raises specificity instead of
+ * trusting source order.
+ */
+export const quietIconButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--haze-color-text-muted);
+  transition:
+    background var(--haze-duration-fast),
+    color var(--haze-duration-fast);
+
+  &:hover {
+    color: var(--haze-color-text);
+    background: var(--haze-color-bg-muted);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+

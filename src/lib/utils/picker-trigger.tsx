@@ -31,19 +31,28 @@ import { pickerFieldInput } from './field-skin';
  *
  * Deliberately NOT shared — genuinely drifted, they stay local to each
  * family (the drift discipline): gap/flex-wrap/padding/font-size per
- * trigger shape, the floating focus arm (`:focus, :focus-within` for
- * Select's tags box vs `:focus-visible` elsewhere), per-site caret
- * deltas (centering, inline-end push), panel paddings/radius deltas
- * and the per-family highlighted/selected decorations. The
- * native-select skin's hover/focus/disabled arms are shared verbatim —
- * SelectCore and ModelPicker agree token for token.
+ * trigger shape, the hover and disabled arms (TreeSelect and Select's
+ * floating trigger ship them verbatim, Cascader's trigger ships
+ * neither — hoisting them would add hover feedback Cascader never
+ * had), Select's tags-box focus delta (`:focus, :focus-within` for
+ * the box whose inline input owns focus, broader than the shared
+ * `:focus-visible`), per-site caret deltas (centering, inline-end
+ * push), panel paddings/radius deltas and the per-family
+ * highlighted/selected decorations. The native-select skin's
+ * hover/focus/disabled arms are shared verbatim — SelectCore and
+ * ModelPicker agree token for token.
  */
 
 /**
  * Trigger button base: the declaration set shared verbatim by the
- * Select (floating), Cascader and TreeSelect triggers. Extension
- * classes layered after it add only properties it does not declare,
- * so cascade order between the two can never matter.
+ * Select (floating), Cascader and TreeSelect triggers, including the
+ * keyboard focus arm — the one state arm every consumer's local delta
+ * shipped verbatim (Select's tags box keeps its own broader
+ * `:focus, :focus-within` delta for the inline input, which draws the
+ * same declarations). Extension classes layered after it add only
+ * properties it does not declare — where selectors do overlap the
+ * declarations are identical, so cascade order between the two can
+ * never matter.
  */
 export const pickerTrigger = css`
   display: flex;
@@ -61,6 +70,12 @@ export const pickerTrigger = css`
   transition:
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--haze-color-primary);
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
 `;
 
 /**

@@ -3,7 +3,13 @@ import type { ReactNode } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import {
+  calloutBorders,
+  calloutColors,
+  calloutSurface,
+} from '../../utils/callout-skin';
 import { quietButton } from '../../utils/quiet-button-skin';
+import { SpinnerGlyph, spinAnimation } from '../../utils/spinner-glyph';
 
 type AsyncSectionProps = {
   /**
@@ -40,44 +46,23 @@ const placeholder = css`
   font-size: var(--haze-text-sm);
 `;
 
-const spin = css`
+/* The glyph and the spin loop (incl. the reduced-motion collapse)
+ * come from utils/spinner-glyph.tsx — shared with Spinner and Toast's
+ * loading variant; this box owns only the 24px geometry. */
+const spinnerBox = css`
   display: inline-flex;
   width: 24px;
   height: 24px;
-  animation: spin 0.8s linear infinite;
-
-  /* WCAG 2.3.3: the loop period is a literal on purpose (the motion
-     tokens model transition durations, not multi-second cycles), so
-     reduced-motion needs this explicit collapse. A single 0.01ms
-     iteration parks the spinner at its rest frame beside the loading
-     text — still recognizably a busy section. */
-  @media (prefers-reduced-motion: reduce) {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
-// 与 Alert danger 变体同一套配色（subtle 背景 + 25% color-mix 边框），保持错误语义的视觉一致。
-const errorBox = css`
-  display: flex;
+// 与 Alert danger 变体同一套配色（共享 callout 皮肤：subtle 背景 + 25%
+// color-mix 边框），保持错误语义的视觉一致。本地 delta 只留纵向堆叠布局：
+// message 在上、Retry 在下，flex-start 对齐，多行 message 走 normal 行高。
+// 属性与 calloutSurface / 调色层 / 边框层完全不相交，注入顺序无关。
+const errorBoxDelta = css`
   flex-direction: column;
   align-items: flex-start;
   gap: var(--haze-space-4);
-  padding: var(--haze-space-3) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-danger-subtle);
-  border: 1px solid
-    color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
-  font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-normal);
 `;
 
@@ -107,22 +92,8 @@ export default function AsyncSection({
     return (
       <section data-slot='async-section' x-class={[base, className]} aria-busy="true">
         <div data-slot='loading' x-class={[placeholder]} role="status">
-          <span data-slot='spinner' x-class={[spin]} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="var(--haze-color-border)"
-                strokeWidth="3"
-              />
-              <path
-                d="M12 2a10 10 0 0 1 10 10"
-                stroke="var(--haze-color-primary)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
+          <span data-slot='spinner' x-class={[spinnerBox, spinAnimation]} aria-hidden="true">
+            <SpinnerGlyph />
           </span>
           {loadingLabel}
         </div>
@@ -137,7 +108,16 @@ export default function AsyncSection({
       strings.error;
     return (
       <section data-slot='async-section' x-class={[base, className]}>
-        <div data-slot='error' x-class={[errorBox]} role="alert">
+        <div
+          data-slot='error'
+          x-class={[
+            calloutSurface,
+            calloutColors.danger,
+            calloutBorders.danger,
+            errorBoxDelta,
+          ]}
+          role="alert"
+        >
           <p data-slot='message' x-class={[errorMessage]}>{message}</p>
           {onRetry && (
             <button data-slot='retry-button' type="button" x-class={[quietButton]} onClick={onRetry}>

@@ -116,6 +116,10 @@ const itIT: HazeStrings = {
     addStop: 'Aggiungi fermata',
     removeStop: 'Rimuovi fermata',
   },
+  copyButton: {
+    copy: 'Copia',
+    copied: 'Copiato',
+  },
   confirmDialog: {
     confirm: 'Conferma',
     cancel: 'Annulla',
@@ -247,6 +251,14 @@ const itIT: HazeStrings = {
     clear: 'Cancella',
     undo: 'Annulla',
     unsupported: 'La firma non è supportata in questo browser.',
+  },
+  schedule: {
+    today: 'Oggi',
+    previous: 'Precedente',
+    next: 'Successivo',
+    day: 'Giorno',
+    week: 'Settimana',
+    month: 'Mese',
   },
   select: {
     placeholder: 'Seleziona…',

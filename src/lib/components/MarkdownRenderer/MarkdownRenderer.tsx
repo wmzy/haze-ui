@@ -1,6 +1,8 @@
 import { useMemo, useRef } from 'react';
 import { css } from '@linaria/core';
 
+import { proseContent } from '../../utils/prose-skin';
+
 import { parseMarkdown, splitBlocks } from './markdown-blocks';
 
 type MarkdownRendererProps = {
@@ -8,70 +10,16 @@ type MarkdownRendererProps = {
   className?: string;
 };
 
+/* Container base only — the typographic document rules (headings,
+   paragraphs, lists, code, quotes, links, rules) come from the shared
+   utils/prose-skin `proseContent` class composed below; the table and
+   img arms are markdown-only surfaces and stay here. */
 const wrapper = css`
   font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-relaxed);
   color: var(--haze-color-text);
   word-break: break-word;
-
-  & h1, & h2, & h3, & h4, & h5, & h6 {
-    font-weight: var(--haze-weight-semibold);
-    margin-top: var(--haze-space-4);
-    margin-bottom: var(--haze-space-2);
-    line-height: var(--haze-leading-tight);
-  }
-
-  & h1 { font-size: var(--haze-text-2xl); }
-  & h2 { font-size: var(--haze-text-xl); }
-  & h3 { font-size: var(--haze-text-lg); }
-  & h4 { font-size: var(--haze-text-base); }
-
-  & p {
-    margin-bottom: var(--haze-space-3);
-  }
-
-  & ul, & ol {
-    margin-bottom: var(--haze-space-3);
-    padding-inline-start: var(--haze-space-6);
-  }
-
-  & li {
-    margin-bottom: var(--haze-space-1);
-  }
-
-  & code {
-    font-family: var(--haze-font-mono);
-    font-size: 0.875em;
-    background: var(--haze-color-bg-muted);
-    padding: 0.125em 0.375em;
-    border-radius: var(--haze-radius-sm);
-  }
-
-  & pre {
-    margin-bottom: var(--haze-space-3);
-    padding: var(--haze-space-4);
-    background: var(--haze-color-bg-muted);
-    border-radius: var(--haze-radius-md);
-    overflow-x: auto;
-
-    & code {
-      background: none;
-      padding: 0;
-    }
-  }
-
-  & blockquote {
-    margin-bottom: var(--haze-space-3);
-    padding-inline-start: var(--haze-space-4);
-    border-inline-start: 3px solid var(--haze-color-border);
-    color: var(--haze-color-text-muted);
-  }
-
-  & a {
-    color: var(--haze-color-primary);
-    text-decoration: underline;
-  }
 
   & table {
     width: 100%;
@@ -88,12 +36,6 @@ const wrapper = css`
   & th {
     background: var(--haze-color-bg-muted);
     font-weight: var(--haze-weight-medium);
-  }
-
-  & hr {
-    margin: var(--haze-space-4) 0;
-    border: none;
-    border-top: 1px solid var(--haze-color-border);
   }
 
   & img {
@@ -132,7 +74,7 @@ export default function MarkdownRenderer({ content, className }: MarkdownRendere
   return (
     <div
       data-slot='markdown'
-      x-class={[wrapper, className]}
+      x-class={[wrapper, proseContent, className]}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

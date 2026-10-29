@@ -4,6 +4,7 @@ import { Children, isValidElement, useId } from 'react';
 
 import { css } from '@linaria/core';
 
+import { meterFill, meterTrack } from '../../utils/meter-skin';
 import {
   statusDot,
   statusDotActive,
@@ -69,18 +70,15 @@ const summaryStyle = css`
   flex-shrink: 0;
 `;
 
-const progressTrack = css`
-  height: 4px;
-  border-radius: var(--haze-radius-full);
+/* The progress meter's geometry comes from utils/meter-skin; only
+   the tones stay local — the track rides the page-adjacent
+   bg-subtle, the fill the primary accent. */
+const progressTrackTone = css`
   background: var(--haze-color-bg-subtle);
-  overflow: hidden;
 `;
 
-const progressFill = css`
-  height: 100%;
-  border-radius: inherit;
+const progressFillTone = css`
   background: var(--haze-color-primary);
-  transition: width var(--haze-duration-normal) var(--haze-ease);
 `;
 
 const list = css`
@@ -211,11 +209,11 @@ function Plan({ title, summary, children, className, ...rest }: PlanProps) {
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={done}
-          x-class={progressTrack}
+          x-class={[meterTrack, progressTrackTone]}
         >
           <div
             data-slot='plan-progress-fill'
-            x-class={progressFill}
+            x-class={[meterFill, progressFillTone]}
             style={{ width: `${Math.round((done / total) * 100)}%` }}
           />
         </div>

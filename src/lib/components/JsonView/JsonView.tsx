@@ -147,8 +147,8 @@ const copyBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   padding: 0;
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-sm);

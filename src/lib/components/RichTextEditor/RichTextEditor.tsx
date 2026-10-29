@@ -10,6 +10,7 @@ import { Fragment, useEffect, useImperativeHandle, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { NativeHiddenFields } from '../../utils/native-form';
+import { proseContent } from '../../utils/prose-skin';
 import { Toolbar, ToolbarButton, ToolbarSeparator } from '../Toolbar';
 
 /**
@@ -140,74 +141,6 @@ const contentArea = css`
     float: left;
     height: 0;
     pointer-events: none;
-  }
-
-  /* ── Typographic content — tokens only, MarkdownRenderer lineage ── */
-  & h1, & h2, & h3, & h4, & h5, & h6 {
-    font-weight: var(--haze-weight-semibold);
-    margin-block-start: var(--haze-space-4);
-    margin-block-end: var(--haze-space-2);
-    line-height: var(--haze-leading-tight);
-  }
-
-  & h1 { font-size: var(--haze-text-2xl); }
-  & h2 { font-size: var(--haze-text-xl); }
-  & h3 { font-size: var(--haze-text-lg); }
-  & h4 { font-size: var(--haze-text-base); }
-
-  & h1:first-child, & h2:first-child, & h3:first-child,
-  & h4:first-child, & p:first-child, & blockquote:first-child,
-  & pre:first-child, & ul:first-child, & ol:first-child {
-    margin-block-start: 0;
-  }
-
-  & p, & ul, & ol, & blockquote, & pre {
-    margin-block-end: var(--haze-space-3);
-  }
-
-  & ul, & ol {
-    padding-inline-start: var(--haze-space-6);
-  }
-
-  & li {
-    margin-block-end: var(--haze-space-1);
-  }
-
-  & code {
-    font-family: var(--haze-font-mono);
-    font-size: 0.875em;
-    background: var(--haze-color-bg-muted);
-    padding: 0.125em 0.375em;
-    border-radius: var(--haze-radius-sm);
-  }
-
-  & pre {
-    padding: var(--haze-space-4);
-    background: var(--haze-color-bg-muted);
-    border-radius: var(--haze-radius-md);
-    overflow-x: auto;
-
-    & code {
-      background: none;
-      padding: 0;
-    }
-  }
-
-  & blockquote {
-    padding-inline-start: var(--haze-space-4);
-    border-inline-start: 3px solid var(--haze-color-border);
-    color: var(--haze-color-text-secondary);
-  }
-
-  & a {
-    color: var(--haze-color-primary);
-    text-decoration: underline;
-  }
-
-  & hr {
-    margin: var(--haze-space-4) 0;
-    border: none;
-    border-block-start: 1px solid var(--haze-color-border);
   }
 `;
 
@@ -537,7 +470,7 @@ export default function RichTextEditor({
       <EditorContent
         editor={editor}
         data-slot='rich-text-content'
-        x-class={[contentArea]}
+        x-class={[contentArea, proseContent]}
       />
       <NativeHiddenFields name={name} values={[value]} />
     </div>

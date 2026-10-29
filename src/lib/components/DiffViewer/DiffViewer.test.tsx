@@ -68,6 +68,36 @@ describe('DiffViewer', () => {
     expect(screen.getByText('-')).toBeInTheDocument();
   });
 
+  it('marks a mid-document insertion as a single added line', () => {
+    const { container } = render(
+      <DiffViewer oldValue={'a\nb\nc\nd'} newValue={'a\nb\nX\nc\nd'} />
+    );
+    const rows = [...container.querySelectorAll('[data-slot="line"]')];
+    expect(rows).toHaveLength(5);
+    const changed = rows.filter((row) => /added|removed/.test(row.className));
+    // The inserted line is the only edit; the surrounding lines must
+    // not cascade into spurious paired modifications.
+    expect(changed).toHaveLength(1);
+    expect(changed[0]?.className).toContain('added');
+    expect(changed[0]?.textContent).toContain('X');
+    expect(screen.getByText('c').closest('div')?.className).not.toContain('removed');
+    expect(screen.getByText('d').closest('div')?.className).not.toContain('added');
+  });
+
+  it('marks a mid-document deletion as a single removed line', () => {
+    const { container } = render(
+      <DiffViewer oldValue={'a\nb\nc\nd\ne'} newValue={'a\nb\nd\ne'} />
+    );
+    const rows = [...container.querySelectorAll('[data-slot="line"]')];
+    expect(rows).toHaveLength(5);
+    const changed = rows.filter((row) => /added|removed/.test(row.className));
+    expect(changed).toHaveLength(1);
+    expect(changed[0]?.className).toContain('removed');
+    expect(changed[0]?.textContent).toContain('c');
+    expect(screen.getByText('d').closest('div')?.className).not.toContain('removed');
+    expect(screen.getByText('e').closest('div')?.className).not.toContain('added');
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(<DiffViewer oldValue={'a\nb'} newValue={'a\nc'} />);

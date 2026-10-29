@@ -15,7 +15,7 @@ import { classnames } from '../../utils/classnames';
 import { dangerRemapTokens } from '../../utils/danger-remap';
 import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
-import { panelSurface } from '../../utils/panel-skin';
+import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
 import { mergeRefs } from '../../utils/refs';
 import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
@@ -74,11 +74,6 @@ type PopconfirmProps = {
   /** Imperative handle (`open`/`close`/`focusTrigger`) — the overlay family's React 19 command-object ref. */
   ref?: Ref<PopconfirmHandle>;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'title' | 'className'>;
-
-const container = css`
-  position: relative;
-  display: inline-flex;
-`;
 
 /** Disabled trigger skin — the arm only matches while `aria-disabled` is set. */
 const triggerDisabled = css`
@@ -270,7 +265,7 @@ export default function Popconfirm({
   };
 
   return (
-    <span data-slot='popconfirm' x-class={[container]}>
+    <span data-slot='popconfirm' x-class={[floatingPairHost]}>
       <FloatingTriggerSpan
         ref={triggerRef}
         behavior={floating}

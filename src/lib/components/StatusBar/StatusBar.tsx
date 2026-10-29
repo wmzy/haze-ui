@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 type StatusBarProps = {
   /** Items pinned to the leading edge of the bar. */
   left?: ReactNode;
@@ -68,10 +70,9 @@ const item = css`
     color: var(--haze-color-text);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible (composed into
+     the shared class array both render branches wear) — it also brings
+     the forced-colors Highlight arm the local copy never had. */
 
   /* Same mobile breakpoint as AppShell: informational items fold away,
    * priority items stay on screen. Attribute-driven so the rule needs no
@@ -112,7 +113,7 @@ function StatusItem({
   children,
   ...rest
 }: StatusItemProps) {
-  const classes = [item, onSelect != null && itemAction, className];
+  const classes = [item, focusRingVisible, onSelect != null && itemAction, className];
   const priorityAttr = priority ? 'true' : undefined;
 
   if (onSelect != null) {

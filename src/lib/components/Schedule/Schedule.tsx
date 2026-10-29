@@ -26,7 +26,10 @@ import {
   startOfDay,
 } from '../../utils/date-math';
 import { LocaleContext } from '../LocaleProvider/LocaleContext';
+import { useStrings } from '../LocaleProvider';
 import Segmented from '../Segmented/Segmented';
+import { capturePointer, releasePointerCaptureSafe } from '../../utils/pointer-capture';
+import { reactNodeText } from '../../utils/text';
 
 type ScheduleView = 'day' | 'week' | 'month';
 
@@ -99,9 +102,20 @@ type ScheduleProps = {
   /** Fired when a month-view day cell (or its "+N" overflow chip) is
    * activated. Cells stay inert unless this is provided. */
   onDayClick?: (date: Date) => void;
+  /** Row height of one hour in the day/week grid, px (default 56 —
+   * sized so a 30-minute block fits the chip's two-line content). */
+  hourHeight?: number;
+  /** Today button text; defaults to the `schedule.today` locale pack
+   *  entry ('Today'). */
   todayLabel?: string;
+  /** Previous nav button's accessible name; defaults to the
+   *  `schedule.previous` pack entry ('Previous'). */
   prevLabel?: string;
+  /** Next nav button's accessible name; defaults to the
+   *  `schedule.next` pack entry ('Next'). */
   nextLabel?: string;
+  /** Per-view Segmented labels; keys absent here fall back to the
+   *  matching `schedule.day` / `week` / `month` pack entry. */
   viewLabels?: ScheduleViewLabels;
   /** BCP 47 locale for weekday/month/time formatting; falls back to the
    * LocaleProvider chain, then the browser default. */
@@ -160,8 +174,13 @@ type DragState = {
 
 const MS_PER_MINUTE = 60_000;
 const HOURS_PER_DAY = 24;
+/**
+ * Default row height of one hour in the day/week grid, px. 56 keeps a
+ * `slotMinutes`-snapped 30-minute block (~28px) tall enough for the
+ * event chip's two-line time+title content at `--haze-text-xs` with
+ * its 1-line vertical gap — thinner rows clip the title line.
+ */
 const HOUR_HEIGHT = 56;
-const DAY_HEIGHT = HOURS_PER_DAY * HOUR_HEIGHT;
 const MINUTES_PER_DAY = HOURS_PER_DAY * 60;
 const MAX_MONTH_CHIPS = 3;
 const DRAG_THRESHOLD_PX = 4;
@@ -178,25 +197,6 @@ function endOfDay(date: Date): Date {
 
 function minutesOfDay(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
-}
-
-/** Plain-text projection of a ReactNode title, for aria-labels. */
-function reactNodeText(node: ReactNode): string {
-  if (node === null || node === undefined || typeof node === 'boolean') {
-    return '';
-  }
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(reactNodeText).filter(Boolean).join(' ');
-  }
-  if (typeof node === 'object' && 'props' in (node as object)) {
-    return reactNodeText(
-      (node as { props?: { children?: ReactNode } }).props?.children
-    );
-  }
-  return '';
 }
 
 /** Snap to the nearest `slotMinutes` boundary of the day — minute
@@ -663,9 +663,10 @@ export default function Schedule({
   onEventClick,
   onEventChange,
   onDayClick,
-  todayLabel = 'Today',
-  prevLabel = 'Previous',
-  nextLabel = 'Next',
+  hourHeight = HOUR_HEIGHT,
+  todayLabel,
+  prevLabel,
+  nextLabel,
   viewLabels,
   locale,
   classNames,
@@ -675,6 +676,11 @@ export default function Schedule({
 }: ScheduleProps) {
   const [view, setView] = useControl(viewControl, 'week');
   const [date, setDate] = useControl<Date>(dateControl, new Date());
+  const strings = useStrings('schedule');
+  const todayText = todayLabel ?? strings.today;
+  const prevText = prevLabel ?? strings.previous;
+  const nextText = nextLabel ?? strings.next;
+  const dayHeight = HOURS_PER_DAY * hourHeight;
   const contextLocale = useContext(LocaleContext)?.locale;
   const resolvedLocale = locale ?? contextLocale;
   const direction = useDirection();
@@ -799,7 +805,7 @@ export default function Schedule({
     const rect = grid.getBoundingClientRect();
     if (rect.width <= 0) return null;
     const minutes = clamp(
-      ((clientY - rect.top) / HOUR_HEIGHT) * 60,
+      ((clientY - rect.top) / hourHeight) * 60,
       0,
       MINUTES_PER_DAY - 1
     );
@@ -844,9 +850,7 @@ export default function Schedule({
       end,
     };
     movedRef.current = false;
-    if (typeof pe.currentTarget.setPointerCapture === 'function') {
-      pe.currentTarget.setPointerCapture(pe.pointerId);
-    }
+    capturePointer(pe.currentTarget, pe.pointerId);
   };
 
   const handleChipPointerMove = (pe: ReactPointerEvent<HTMLButtonElement>) => {
@@ -870,6 +874,7 @@ export default function Schedule({
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain -- 保持 drag 的非空收窄，optional chain 写法会丢失 narrowing
     if (!drag || pe.pointerId !== drag.pointerId) return;
     dragRef.current = null;
+    releasePointerCaptureSafe(pe.currentTarget, pe.pointerId);
     const position = pointerToPosition(pe.clientX, pe.clientY);
     if (movedRef.current && position) {
       const { start, end } = computeDropTime(position, dropContext(drag));
@@ -969,11 +974,11 @@ export default function Schedule({
 
   const viewOptions = useMemo(
     () => [
-      { value: 'day', label: viewLabels?.day ?? 'Day' },
-      { value: 'week', label: viewLabels?.week ?? 'Week' },
-      { value: 'month', label: viewLabels?.month ?? 'Month' },
+      { value: 'day', label: viewLabels?.day ?? strings.day },
+      { value: 'week', label: viewLabels?.week ?? strings.week },
+      { value: 'month', label: viewLabels?.month ?? strings.month },
     ],
-    [viewLabels]
+    [viewLabels, strings]
   );
 
   /** Physical left edge for one column of a day's overlap split — RTL
@@ -1051,7 +1056,7 @@ export default function Schedule({
           <div
             data-slot='time-gutter'
             x-class={[gutter]}
-            style={{ blockSize: DAY_HEIGHT }}
+            style={{ blockSize: dayHeight }}
             aria-hidden
           >
             {hours.map((h) => (
@@ -1059,7 +1064,7 @@ export default function Schedule({
                 key={h}
                 data-slot='gutter-label'
                 x-class={[gutterLabel]}
-                style={{ top: h * HOUR_HEIGHT }}
+                style={{ top: h * hourHeight }}
               >
                 {timeFormatters.hour.format(new Date(2026, 0, 1, h))}
               </span>
@@ -1069,7 +1074,7 @@ export default function Schedule({
             data-slot='grid-body'
             ref={gridRef}
             x-class={[gridBody]}
-            style={{ blockSize: DAY_HEIGHT }}
+            style={{ blockSize: dayHeight }}
           >
             {hours.map((h) => {
               const off =
@@ -1081,7 +1086,7 @@ export default function Schedule({
                   data-slot='time-row'
                   data-off-hours={off ? '' : undefined}
                   x-class={[timeRow, off && timeRowOff]}
-                  style={{ top: h * HOUR_HEIGHT, blockSize: HOUR_HEIGHT }}
+                  style={{ top: h * hourHeight, blockSize: hourHeight }}
                   aria-hidden
                 />
               );
@@ -1110,10 +1115,10 @@ export default function Schedule({
                     classNames?.event,
                   ]}
                   style={{
-                    top: (minutesOfDay(start) / 60) * HOUR_HEIGHT,
+                    top: (minutesOfDay(start) / 60) * hourHeight,
                     blockSize:
                       ((end.getTime() - start.getTime()) / MS_PER_MINUTE / 60) *
-                      HOUR_HEIGHT,
+                      hourHeight,
                     left: `${columnLeft(dayIndex, placement.column, spanColumns)}%`,
                     inlineSize: `${columnWidth}%`,
                   }}
@@ -1153,7 +1158,7 @@ export default function Schedule({
                 data-slot='now-indicator'
                 x-class={[nowLine]}
                 style={{
-                  top: (minutesOfDay(now) / 60) * HOUR_HEIGHT,
+                  top: (minutesOfDay(now) / 60) * hourHeight,
                   left: `${columnLeft(nowDayIndex, 0, 1)}%`,
                   inlineSize: `${colPct}%`,
                 }}
@@ -1296,7 +1301,7 @@ export default function Schedule({
           variant='ghost'
           size='sm'
           square
-          aria-label={prevLabel}
+          aria-label={prevText}
           data-slot='prev'
           onClick={() => step(-1)}
         >
@@ -1308,13 +1313,13 @@ export default function Schedule({
           data-slot='today'
           onClick={goToday}
         >
-          {todayLabel}
+          {todayText}
         </Button>
         <Button
           variant='ghost'
           size='sm'
           square
-          aria-label={nextLabel}
+          aria-label={nextText}
           data-slot='next'
           onClick={() => step(1)}
         >

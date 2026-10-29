@@ -6,6 +6,7 @@ import { Children, createContext, useContext, useEffect, useId, useMemo, useRef 
 import { useControl } from 'react-use-control';
 
 import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { menuOptionStates } from '../../utils/menu-skins';
 import { mergeRefs } from '../../utils/refs';
 import Kbd from '../Kbd/Kbd';
 import { useStrings } from '../LocaleProvider';
@@ -484,6 +485,9 @@ type CommandItemProps = {
   onSelect?: () => void;
 };
 
+/** Item chrome: padding/radius/typography — the hover/press/focus
+ * interaction states ride `menuOptionStates` (utils/menu-skins),
+ * composed ahead of this delta at the call site. */
 const itemStyle = css`
   padding: var(--haze-space-2) var(--haze-space-3);
   border-radius: var(--haze-radius-md);
@@ -491,20 +495,6 @@ const itemStyle = css`
   color: var(--haze-color-text);
   cursor: pointer;
   transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    background: var(--haze-color-bg-subtle);
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
 `;
 
 /** Row layout only while a shortcut badge is present — plain items keep the historical block flow. */
@@ -537,7 +527,7 @@ export function CommandItem({
   return (
     <div
       data-slot='item'
-      x-class={[itemStyle, shortcut !== undefined && itemWithShortcut, className]}
+      x-class={[menuOptionStates, itemStyle, shortcut !== undefined && itemWithShortcut, className]}
       role="option"
       tabIndex={-1}
       onClick={activate}

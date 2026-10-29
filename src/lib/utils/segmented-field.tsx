@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, FocusEvent, KeyboardEvent, Ref } from 'r
 import { css } from '@linaria/core';
 import { Fragment, useRef, useState } from 'react';
 
-import { mergeRefs } from '../../utils/refs';
+import { mergeRefs } from './refs';
 
 /**
  * Shared segmented-input engine behind DateField and TimeField: a
@@ -96,6 +96,9 @@ const field = css`
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
 
+  /* Focus lands on the inner spinbutton spans, so the field ring rides
+   * :focus-within — field-skin's fieldFocusRing is a :focus leaf arm
+   * and never fires on this group container. */
   &:focus-within {
     outline: none;
     border-color: var(--haze-color-primary);

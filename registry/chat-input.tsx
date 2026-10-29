@@ -20,6 +20,8 @@ import { ChatInput } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/chat-input.css';
+import 'haze-ui/css/button.css';
+import 'haze-ui/css/spinner.css';
 
 export { ChatInput };
 export type { ChatInputProps } from 'haze-ui';

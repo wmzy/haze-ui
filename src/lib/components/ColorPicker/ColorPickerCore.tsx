@@ -4,6 +4,8 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 
+import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
+
 type ColorPickerCoreProps = {
   value: string;
   onChange: (value: string) => void;
@@ -30,8 +32,9 @@ const previewRow = css`
 `;
 
 const colorInput = css`
-  width: 40px;
-  height: 40px;
+  /* Square with the field height next to it (space-10 = 40px). */
+  width: var(--haze-space-10);
+  height: var(--haze-space-10);
   border: 2px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   padding: 0;
@@ -48,21 +51,20 @@ const colorInput = css`
   }
 `;
 
+/* The hex field's surface, native chrome (hover/:focus/:disabled,
+ * forced-colors) and md size are the shared field skin — see
+ * utils/field-skin.ts. Local: the flex share, the fixed height keeping
+ * the field as tall as the swatch input beside it, and the mono font.
+ * The font override rides a `&[data-slot]` compound because it must
+ * beat the chrome's sans in any cascade order — dev-server injection
+ * order and dist split-css order disagree (Banner's closeBtnSize
+ * precedent). */
 const textInput = css`
   flex: 1;
-  height: 40px;
-  padding: 0 var(--haze-space-3);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-mono);
-  outline: none;
+  height: var(--haze-space-10);
 
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  &[data-slot='text-input'] {
+    font-family: var(--haze-font-mono);
   }
 `;
 
@@ -113,7 +115,7 @@ export default function ColorPickerCore({
         <input
           type="text"
           data-slot="text-input"
-          x-class={[textInput]}
+          x-class={[fieldChrome, nativeFieldChrome, fieldSizes.md, textInput]}
           value={value}
           aria-label={strings.hexColor}
           onChange={(e) => onChange(e.target.value)}

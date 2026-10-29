@@ -2,7 +2,7 @@ import type { ControlOrValue } from 'react-use-control';
 
 import type { DatepickerPreset } from '../Datepicker/DatepickerCore';
 import type { CalendarCellRender } from '../Calendar/Calendar';
-import type { Ref } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import Datepicker from '../Datepicker/Datepicker';
 
@@ -35,7 +35,7 @@ type DateTimePickerProps = {
   className?: string;
   /** Forwarded to the trigger `<input>`. */
   ref?: Ref<HTMLInputElement>;
-};
+} & Omit<ComponentPropsWithoutRef<'div'>, 'onChange' | 'children'>;
 
 export default function DateTimePicker({
   value: valueControl,
@@ -51,6 +51,7 @@ export default function DateTimePicker({
   placeholder,
   className,
   ref,
+  ...rest
 }: DateTimePickerProps) {
   return (
     <Datepicker
@@ -68,6 +69,7 @@ export default function DateTimePicker({
       cellRender={cellRender}
       placeholder={placeholder}
       className={className}
+      {...rest}
       data-slot='datetime-picker'
     />
   );

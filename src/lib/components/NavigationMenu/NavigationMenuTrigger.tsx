@@ -8,6 +8,8 @@ import type {
 
 import {css} from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import {
   useNavigationMenuContext,
   useNavigationMenuItemContext,
@@ -46,17 +48,14 @@ const base = css`
     color: var(--haze-color-text);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the trigger's x-class. */
 
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA — an
-     inset Highlight outline replaces it (the strip may scroll sideways,
-     an outer outline would clip). */
+  /* Forced-colors: the Highlight outline comes from that composed
+     ring — only the inset offset stays local (the strip may scroll
+     sideways, an outer outline would clip). */
   @media (forced-colors: active) {
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
@@ -175,7 +174,7 @@ export default function NavigationMenuTrigger({
       }}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      x-class={[base, open && active, classNames?.trigger, className]}
+      x-class={[base, focusRingVisible, open && active, classNames?.trigger, className]}
       {...rest}
     >
       {children}

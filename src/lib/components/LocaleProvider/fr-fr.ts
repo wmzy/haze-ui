@@ -116,6 +116,10 @@ const frFR: HazeStrings = {
     addStop: 'Ajouter un départ',
     removeStop: 'Supprimer le départ',
   },
+  copyButton: {
+    copy: 'Copier',
+    copied: 'Copié',
+  },
   confirmDialog: {
     confirm: 'Confirmer',
     cancel: 'Annuler',
@@ -247,6 +251,14 @@ const frFR: HazeStrings = {
     clear: 'Effacer',
     undo: 'Annuler',
     unsupported: 'La signature n’est pas prise en charge par ce navigateur.',
+  },
+  schedule: {
+    today: 'Aujourd’hui',
+    previous: 'Précédent',
+    next: 'Suivant',
+    day: 'Jour',
+    week: 'Semaine',
+    month: 'Mois',
   },
   select: {
     placeholder: 'Sélectionner…',

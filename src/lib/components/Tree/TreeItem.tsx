@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 import { useId } from 'react';
 
 import { choiceBase } from '../../utils/choice-skin';
+import { spinAnimation } from '../../utils/spinner-glyph';
 import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
 import { useStrings } from '../LocaleProvider';
 
@@ -198,28 +199,17 @@ const title = css`
   white-space: nowrap;
 `;
 
+/* The spin loop (incl. the reduced-motion collapse) comes from
+ * utils/spinner-glyph.tsx — the shared 0.8s period Spinner, Toast and
+ * AsyncSection all run; this node spinner used to spin at 1s and now
+ * converges on the shared cadence on purpose (one motion rhythm
+ * across every loading affordance). Local keeps only the inline-flex
+ * box — the glyph itself is sized by the switcher's svg rule above.
+ * The glyph stays the local 16×16 SpinnerIcon below: it is a
+ * currentColor two-path disc, not the shared ring+arc token stroke,
+ * so it must not ride SpinnerGlyph. */
 const loadingIcon = css`
   display: inline-flex;
-  animation: spin 1s linear infinite;
-
-  /* WCAG 2.3.3: the loop period is a literal on purpose (the motion
-     tokens model transition durations, not multi-second cycles), so
-     reduced-motion needs this explicit collapse. A single 0.01ms
-     iteration parks the spinner at its rest frame next to the loading
-     text — still recognizably a busy node. */
-  @media (prefers-reduced-motion: reduce) {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 /* Search-hit highlight: warning-subtle on warning mirrors the Badge
@@ -455,7 +445,7 @@ export default function TreeItem({
             }}
           >
             {loading ? (
-              <span data-slot='spinner' className={loadingIcon}>
+              <span data-slot='spinner' x-class={[loadingIcon, spinAnimation]}>
                 {loadingIconProp ?? <SpinnerIcon />}
               </span>
             ) : switcherIcon ? (

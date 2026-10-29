@@ -1,10 +1,10 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
-import type { SegmentSpec } from './segmented-field';
+import type { SegmentSpec } from '../../utils/segmented-field';
 
 import { formatDate, getDaysInMonth, parseCivilDate } from '../../utils/date-math';
 
-import SegmentedField from './segmented-field';
+import SegmentedField from '../../utils/segmented-field';
 
 /** Per-segment placeholder strings for the empty state. */
 type DatePlaceholder = { year?: string; month?: string; day?: string };

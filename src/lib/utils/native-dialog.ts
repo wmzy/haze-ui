@@ -1,6 +1,6 @@
 import type {DialogHTMLAttributes, Dispatch, Ref, SetStateAction} from 'react';
 
-import {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import {useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState} from 'react';
 
 import {useFocusScope} from './focus-scope';
 import {whenExitSettles} from './presence';
@@ -123,6 +123,10 @@ export function useOverlayHandle({
  * @param viewTransition The component's `viewTransition` prop.
  * @param onClose The component's `onClose` callback, fired from the
  *   native close event only.
+ * @param onShown Fires synchronously right after `showModal()` — the
+ *   custom-initial-focus hook (ImagePreview focuses its toolbar close
+ *   button instead of the first tabbable the focus scope's autoFocus
+ *   lands on). Optional; absent callers keep the scope's default.
  * @param keepMounted The component's `keepMounted` prop.
  * @param ref The component's imperative `ref` prop.
  */
@@ -131,6 +135,7 @@ export function useNativeDialogShell({
   setOpen,
   viewTransition,
   onClose,
+  onShown,
   keepMounted,
   ref,
 }: {
@@ -138,6 +143,8 @@ export function useNativeDialogShell({
   setOpen: Dispatch<SetStateAction<boolean>>;
   viewTransition: boolean;
   onClose?: () => void;
+  /** Fires synchronously right after `showModal()` (see JSDoc above). */
+  onShown?: () => void;
   keepMounted: boolean;
   ref?: Ref<NativeDialogHandle>;
 }): {
@@ -180,11 +187,21 @@ export function useNativeDialogShell({
     [setScope]
   );
 
+  // onShown 经 ref 转发（focus-scope 的 optionsRef 先例）：showModal effect
+  // 的依赖保持 [open]，调用方每次渲染换新闭包不会重跑该 effect（退场窗口
+  // 内重跑会二次调度 settle/close）。layout 阶段刷新，保证 showModal 的
+  // 那次 commit 读到的是最新回调。
+  const onShownRef = useRef(onShown);
+  useLayoutEffect(() => {
+    onShownRef.current = onShown;
+  });
+
   useEffect(() => {
     const el = internalRef.current;
     if (!el) return;
     if (open && !el.open) {
       el.showModal();
+      onShownRef.current?.();
     } else if (!open && el.open) {
       // 退场动画（data-state=closed 驱动 CSS animation）结束后再真正
       // close()，原生 close 事件（onClose 回调链路）保持由 close 触发。

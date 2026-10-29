@@ -20,6 +20,8 @@ import { Tour } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tour.css';
+import 'haze-ui/css/button.css';
+import 'haze-ui/css/spinner.css';
 
 export { Tour };
 export type { TourProps, TourStep, TourCloseReason, TourPlacement } from 'haze-ui';

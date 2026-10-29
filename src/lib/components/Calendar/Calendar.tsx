@@ -800,15 +800,7 @@ export default function Calendar({
   return (
     <div ref={setRootRef} data-slot='calendar' x-class={[calendarWrapper, className, classNames?.root]} {...rest}>
       <div data-slot='header' x-class={[header, classNames?.header]}>
-        <button
-          data-slot='prev'
-          type='button'
-          x-class={[headerBtn, classNames?.prev]}
-          onClick={goPrevMonth}
-          aria-label={strings.previousMonth}
-        >
-          ‹
-        </button>
+        {renderStepButton('prev', goPrevMonth, strings.previousMonth)}
         {/* Two drill-down titles in the locale's own month/year order:
             the month title opens the quick-select month grid, the year
             title the decade year grid — picking navigates the day view
@@ -835,15 +827,7 @@ export default function Calendar({
           >
             {strings.today}
           </button>
-          <button
-            data-slot='next'
-            type='button'
-            x-class={[headerBtn, classNames?.next]}
-            onClick={goNextMonth}
-            aria-label={strings.nextMonth}
-          >
-            ›
-          </button>
+          {renderStepButton('next', goNextMonth, strings.nextMonth)}
         </span>
       </div>
       {panelView !== 'days'

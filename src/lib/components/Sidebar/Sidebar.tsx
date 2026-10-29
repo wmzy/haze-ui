@@ -3,16 +3,19 @@ import type {
   Dispatch,
   MouseEvent,
   ReactNode,
+  Ref,
   SetStateAction,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { createContext, forwardRef, useContext, useId } from 'react';
+import { createContext, useContext, useId } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
 import { Tooltip } from '../Tooltip';
+import { focusRingVisible } from '../../utils/focus-ring';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 
 type SidebarContextValue = {
   collapsed: boolean;
@@ -159,6 +162,8 @@ type SidebarItemProps = {
    */
   onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
   className?: string;
+  /** Ref to the underlying anchor (React 19 ref-as-prop). */
+  ref?: Ref<HTMLAnchorElement>;
 } & Omit<ComponentPropsWithoutRef<'a'>, 'children' | 'onClick' | 'className'>;
 
 const item = css`
@@ -183,10 +188,8 @@ const item = css`
     background: var(--haze-color-bg-muted);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* The keyboard ring composes utils/focus-ring's focusRingVisible
+   * (adds the forced-colors Highlight arm the local copy never had). */
 
   /* Icon mode: the Tooltip wrapper span blockifies into a row flex item;
    * fill it and center the icon instead of stacking icon + hidden label. */
@@ -245,61 +248,57 @@ const itemLabel = css`
   }
 `;
 
-export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
-  function SidebarItem(
-    {
-      icon,
-      active,
-      href = '#',
-      onClick,
-      className,
-      children,
-      'aria-current': ariaCurrent,
-      ...rest
-    },
-    ref,
-  ) {
-    const { collapsed } = useSidebarContext();
-    const isActive = active ?? ariaCurrent === 'page';
+export function SidebarItem({
+  icon,
+  active,
+  href = '#',
+  onClick,
+  className,
+  children,
+  'aria-current': ariaCurrent,
+  ref,
+  ...rest
+}: SidebarItemProps) {
+  const { collapsed } = useSidebarContext();
+  const isActive = active ?? ariaCurrent === 'page';
 
-    const anchor = (
-      <a
-        ref={ref}
-        data-slot="item"
-        x-class={[item, isActive && itemActive, className]}
-        href={href}
-        aria-current={isActive ? 'page' : ariaCurrent}
-        onClick={(event) => {
-          // A missing or '#' href means button semantics: keep the
-          // default suppressed so the page does not jump to '#'.
-          if (href === '#') {
-            event.preventDefault();
-          }
-          onClick?.(event);
-        }}
-        {...rest}
-      >
-        {icon && (
-          <span data-slot="icon" x-class={itemIcon} aria-hidden="true">
-            {icon}
-          </span>
-        )}
-        <span data-slot="label" x-class={itemLabel}>{children}</span>
-      </a>
-    );
+  const anchor = (
+    <a
+      ref={ref}
+      data-slot="item"
+      x-class={[item, focusRingVisible, isActive && itemActive, className]}
+      href={href}
+      aria-current={isActive ? 'page' : ariaCurrent}
+      onClick={(event) => {
+        // A missing or '#' href means button semantics: keep the
+        // default suppressed so the page does not jump to '#'.
+        if (href === '#') {
+          event.preventDefault();
+        }
+        onClick?.(event);
+      }}
+      {...rest}
+    >
+      {icon && (
+        <span data-slot="icon" x-class={itemIcon} aria-hidden="true">
+          {icon}
+        </span>
+      )}
+      <span data-slot="label" x-class={itemLabel}>{children}</span>
+    </a>
+  );
 
-    if (!collapsed) return anchor;
+  if (!collapsed) return anchor;
 
-    /* Physical placement follows the repo floating convention (RTL apps
-     * mirror the rail and would pass the mirrored side themselves when
-     * composing Tooltip directly). */
-    return (
-      <Tooltip content={children} position="right">
-        {anchor}
-      </Tooltip>
-    );
-  },
-);
+  /* Physical placement follows the repo floating convention (RTL apps
+   * mirror the rail and would pass the mirrored side themselves when
+   * composing Tooltip directly). */
+  return (
+    <Tooltip content={children} position="right">
+      {anchor}
+    </Tooltip>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // SidebarFooter
@@ -336,31 +335,15 @@ type SidebarToggleProps = {
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'button'>, 'type' | 'onClick' | 'className'>;
 
+/* Collapse toggle: the shared quietIconButton chrome (utils/quiet-button-skin)
+ * plus the rail's square seat — align-self/width/height are local layout
+ * geometry, radius is the local delta. The transition timing converges on
+ * the skin's plain ease (was var(--haze-ease)). */
 const toggle = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   align-self: flex-end;
   width: var(--haze-space-8);
   height: var(--haze-space-8);
-  border: none;
   border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text-muted);
-  cursor: pointer;
-  transition:
-    color var(--haze-duration-fast) var(--haze-ease),
-    background var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const toggleIcon = css`
@@ -397,7 +380,7 @@ export function SidebarToggle({ onClick, className, ...rest }: SidebarToggleProp
     <button
       type="button"
       data-slot="toggle-button"
-      x-class={[toggle, className]}
+      x-class={[quietIconButton, toggle, className]}
       aria-label={collapsed ? strings.expand : strings.collapse}
       aria-expanded={!collapsed}
       aria-controls={navId}

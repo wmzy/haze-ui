@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { quietIconButton } from '../../utils/quiet-button-skin';
 import Spinner from '../Spinner/Spinner';
 
 type QueueStatus = 'queued' | 'sending' | 'failed';
@@ -103,32 +104,23 @@ const descriptionStyle = css`
   margin-top: var(--haze-space-1);
 `;
 
+/* Remove control: the shared quietIconButton chrome
+ * (utils/quiet-button-skin) plus the glyph seat. The keyboard ring is
+ * the skin's 3px box-shadow arm itself (the former local copy was
+ * declaration-identical, so utils/focus-ring is not composed here); the
+ * transition timing converges on the skin's plain ease (was
+ * var(--haze-ease)). The forced-colors Highlight-backdrop focus
+ * indicator stays local — the skin ships no forced-colors arm and this
+ * site's backdrop treatment deliberately replaces an outline. */
 const removeBtn = css`
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 1.25rem;
   height: 1.25rem;
   margin-top: 0.0625rem;
   padding: 0;
-  border: none;
   border-radius: var(--haze-radius-sm);
-  background: none;
-  color: var(--haze-color-text-muted);
   font-size: var(--haze-text-md);
   line-height: 1;
-  cursor: pointer;
-  transition: color var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   /* Forced-colors: the box-shadow focus ring is dropped by the UA —
      the system Highlight backdrop keeps a visible focus indicator. */
@@ -181,7 +173,7 @@ function QueueItem({
           data-slot='queue-remove-button'
           aria-label={removeLabel}
           onClick={onRemove}
-          x-class={removeBtn}
+          x-class={[quietIconButton, removeBtn]}
         >
           ×
         </button>

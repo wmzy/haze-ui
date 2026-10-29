@@ -4,11 +4,12 @@ import type { CollisionPadding } from '../../utils/collision';
 import type { MenuDataItem } from '../../utils/menuItems';
 import type { DropdownMenuClassNames } from './DropdownMenuContext';
 
-import { useCallback, useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
-import { useFloating } from '../../utils/floating';
+import { toCollisionStrategy } from '../../utils/collision';
+import { useFloating, useOpenWithChange } from '../../utils/floating';
 import { renderMenuDataItems } from '../../utils/menuItems';
 
 import DropdownMenuCheckboxItem from './DropdownMenuCheckboxItem';
@@ -112,14 +113,7 @@ export default function DropdownMenu({
   const contentId = useId();
   const focusRequestRef = useRef<'first' | 'last' | null>(null);
 
-  const handleSetOpen = useCallback(
-    (value: boolean | ((prev: boolean) => boolean)) => {
-      const next = typeof value === 'function' ? value(open) : value;
-      setOpen(next);
-      onOpenChange?.(next);
-    },
-    [open, setOpen, onOpenChange]
-  );
+  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
 
   // Imperative surface: `ref.current?.open()/close()/focusTrigger()`.
   // open/close share handleSetOpen with the trigger and items, so
@@ -143,7 +137,7 @@ export default function DropdownMenu({
   // Stable identity: useFloatingPosition re-runs its effect on every
   // change of this object.
   const collision = useMemo(
-    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    () => toCollisionStrategy(collisionPadding),
     [collisionPadding]
   );
 

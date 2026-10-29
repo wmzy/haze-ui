@@ -10,9 +10,10 @@ import { useControl } from 'react-use-control';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { classnames } from '../../utils/classnames';
+import { toCollisionStrategy } from '../../utils/collision';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getTabbables } from '../../utils/focus';
-import { panelSurface } from '../../utils/panel-skin';
+import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
@@ -76,11 +77,6 @@ type HoverCardProps = {
   children: ReactNode;
 };
 
-const container = css`
-  position: relative;
-  display: inline-flex;
-`;
-
 /* Call-site deltas on the shared panel surface (utils/panel-skin): the
  * hover-card width bounds and padding step — the surface's border-box
  * sizing keeps both bounds covering the padding too. */
@@ -128,7 +124,7 @@ export default function HoverCard({
   // Stable identity: useFloatingPosition re-runs its effect on every
   // change of this object.
   const collision = useMemo(
-    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    () => toCollisionStrategy(collisionPadding),
     [collisionPadding]
   );
   const floating = useFloating({
@@ -219,7 +215,7 @@ export default function HoverCard({
   return (
     <span
       data-slot='hover-card'
-      x-class={[container]}
+      x-class={[floatingPairHost]}
       onBlur={interactive ? handleFocusOut : undefined}
     >
       <span

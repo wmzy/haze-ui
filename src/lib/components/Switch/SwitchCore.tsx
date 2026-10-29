@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { trackSizes, thumbSizes, thumbCheckedSizes } from './switch-styles';
 
 type SwitchCoreProps = {
@@ -29,11 +31,8 @@ const track = css`
   padding: calc(var(--haze-space-1) / 2);
   transition: background var(--haze-duration-normal);
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the switch button below. */
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -44,12 +43,13 @@ const track = css`
      would disappear. The track keeps a CanvasText boundary with a
      CanvasText thumb; when on, the Windows-native rendering takes
      over (Highlight track, HighlightText thumb). Disabled tracks drop
-     the dim and render GrayText. */
+     the dim and render GrayText. Only the ring's outline-offset delta
+     rides here — the Highlight outline itself comes from the shared
+     focusRingVisible. */
   @media (forced-colors: active) {
     border: 1px solid CanvasText;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: 2px;
     }
 
@@ -113,7 +113,13 @@ export default function SwitchCore({
       role='switch'
       data-slot='switch'
       aria-checked={checked}
-      x-class={[track, trackSizes[size], checked && trackChecked, className]}
+      x-class={[
+        track,
+        focusRingVisible,
+        trackSizes[size],
+        checked && trackChecked,
+        className,
+      ]}
       onClick={(e) => {
         onChange(!checked);
         onNativeClick?.(e);

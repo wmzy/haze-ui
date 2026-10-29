@@ -2,6 +2,8 @@ import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 type BreadcrumbItemOwnProps = {
   /** Link URL; omit for the current page (renders a non-link span). */
   href?: string;
@@ -43,9 +45,11 @@ const link = css`
     text-decoration: underline;
   }
 
+  /* Keyboard ring: utils/focus-ring's focusRingVisible (composed on
+     the link shape below, which alone is focusable); only the
+     rounded-corner delta stays — the ring and its forced-colors
+     Highlight outline follow the element's radius. */
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
     border-radius: var(--haze-radius-sm);
   }
 `;
@@ -72,7 +76,7 @@ export default function BreadcrumbItem<T extends ElementType = 'a'>({
     <Tag
       {...(href !== undefined ? { href } : {})}
       data-slot='breadcrumb-item'
-      x-class={[isLink ? link : current, className]}
+      x-class={[isLink ? link : current, isLink && focusRingVisible, className]}
       {...rest}
     >
       {children}

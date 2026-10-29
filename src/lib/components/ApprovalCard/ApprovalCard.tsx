@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { Button } from '../Button';
 import { useStrings } from '../LocaleProvider';
 
 type ApprovalCardProps = {
@@ -52,35 +53,10 @@ const actions = css`
   border-top: 1px solid var(--haze-color-border);
 `;
 
-const btn = css`
+/** Local delta over Button's md skin: both actions stretch to share the
+ * row's width equally (Button owns the rest of the chrome). */
+const actionBtn = css`
   flex: 1;
-  padding: var(--haze-space-2) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  font-weight: var(--haze-weight-medium);
-  cursor: pointer;
-  transition: background var(--haze-duration-fast);
-`;
-
-const denyBtn = css`
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  color: var(--haze-color-text);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-`;
-
-const approveBtn = css`
-  background: var(--haze-color-primary);
-  border: 1px solid var(--haze-color-primary);
-  color: var(--haze-color-bg);
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 export default function ApprovalCard({
@@ -105,12 +81,24 @@ export default function ApprovalCard({
         {children && <div data-slot='content' x-class={[content]}>{children}</div>}
       </div>
       <div data-slot='actions' x-class={[actions]}>
-        <button data-slot='deny-button' x-class={[btn, denyBtn]} type="button" onClick={onDeny}>
+        <Button
+          data-slot='deny-button'
+          variant='outline'
+          size='md'
+          className={actionBtn}
+          onClick={onDeny}
+        >
           {denyLabel}
-        </button>
-        <button data-slot='approve-button' x-class={[btn, approveBtn]} type="button" onClick={onApprove}>
+        </Button>
+        <Button
+          data-slot='approve-button'
+          variant='solid'
+          size='md'
+          className={actionBtn}
+          onClick={onApprove}
+        >
           {approveLabel}
-        </button>
+        </Button>
       </div>
     </div>
   );

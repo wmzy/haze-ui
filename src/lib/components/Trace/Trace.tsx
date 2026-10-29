@@ -7,6 +7,9 @@ import { css } from '@linaria/core';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
+import { usePrevious } from '../../hooks/usePrevious';
+import { useOpenWithChange } from '../../utils/floating';
+
 import { useStrings } from '../LocaleProvider';
 import { srOnly } from '../../utils/sr-only';
 import { agenticStatusLabel } from '../../utils/agentic-status';
@@ -112,6 +115,7 @@ export function TraceItem({
   ...rest
 }: TraceItemProps) {
   const [open, setOpen] = useControl(openControl, false);
+  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
   // Screen-reader status words come from the toolCallCard locale section
   // — the same localized copy ToolCallCard's status label ships, so a
   // localized app announces localized words. Trace itself carries no
@@ -123,11 +127,7 @@ export function TraceItem({
   // line carrying details becomes one.
   const expandable = details != null;
 
-  const toggleOpen = () => {
-    const next = !open;
-    setOpen(next);
-    onOpenChange?.(next);
-  };
+  const toggleOpen = () => handleSetOpen(!open);
 
   // Screen-reader mirror of the status (StreamingText/ChatMessage
   // pattern): a transition rewrites the hidden role='status' region
@@ -135,18 +135,19 @@ export function TraceItem({
   // change, and re-renders that keep the status never touch the region,
   // so a settled trace stays silent instead of re-announcing per render.
   const [announced, setAnnounced] = useState('');
-  const prevStatusRef = useRef(status);
+  const prevStatus = usePrevious(status);
   const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (prevStatusRef.current === status) return;
-    prevStatusRef.current = status;
+    // usePrevious yields undefined on the first render: content present
+    // at mount is not a live-region change (see the comment above).
+    if (prevStatus === undefined || prevStatus === status) return;
     // Prefix the announcement with the line's text so concurrent steps
     // stay distinguishable ("read_file: Done", not a bare "Done").
     const titleText = titleRef.current?.textContent.trim();
     const word = agenticStatusLabel(status, strings);
     setAnnounced(titleText ? `${titleText}: ${word}` : word);
-  }, [status, strings]);
+  }, [status, prevStatus, strings]);
 
   /* Decorative marker: the glyph/icon duplicates what the live region
      announces on change; data-status on the line carries the state for

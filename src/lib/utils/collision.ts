@@ -70,6 +70,18 @@ export function resolvePadding(
   };
 }
 
+/**
+ * Adapt a component's `collisionPadding` prop to the strategy object
+ * `useFloating` takes — `undefined` stays `undefined` (strategy
+ * untouched). Popover/Tooltip/HoverCard/DropdownMenu wore this as
+ * four identical inline useMemo blocks.
+ */
+export function toCollisionStrategy(
+  collisionPadding?: CollisionPadding
+): CollisionStrategy | undefined {
+  return collisionPadding === undefined ? undefined : { collisionPadding };
+}
+
 /** Clamp into [min, max]; an inverted range (viewport smaller than panel) pins to min. */
 function clamp(value: number, min: number, max: number): number {
   return clampToRange(value, min, Math.max(min, max));

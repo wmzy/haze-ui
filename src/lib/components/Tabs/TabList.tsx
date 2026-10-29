@@ -13,6 +13,7 @@ import { useControl } from 'react-use-control';
 
 import { useResizeObserver } from '../../hooks/useResizeObserver';
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { mergeRefs } from '../../utils/refs';
 
 import { Menu } from '../Menu';
@@ -119,16 +120,14 @@ const stripButton = css`
     background: var(--haze-color-bg-subtle);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     both strip buttons below. */
 
-  /* Forced-colors: the box-shadow ring is dropped by the UA — an
-     inset Highlight outline replaces it. */
+  /* Forced-colors deltas over the shared ring: only the inset
+     outline-offset rides here — the Highlight outline itself comes
+     from focusRingVisible. */
   @media (forced-colors: active) {
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
@@ -323,7 +322,7 @@ export default function TabList({
               <button
                 type='button'
                 aria-label={overflowLabel ?? strings.moreTabs}
-                x-class={stripButton}
+                x-class={[stripButton, focusRingVisible]}
               >
                 <span aria-hidden='true'>⋯</span>
               </button>
@@ -351,7 +350,7 @@ export default function TabList({
             type='button'
             aria-label={addable.addLabel ?? strings.addTab}
             onClick={() => addable.onAdd?.()}
-            x-class={stripButton}
+            x-class={[stripButton, focusRingVisible]}
           >
             <span aria-hidden='true'>+</span>
           </button>

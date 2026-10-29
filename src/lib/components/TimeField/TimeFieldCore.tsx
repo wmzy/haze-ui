@@ -1,9 +1,9 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
-import type { SegmentSpec } from '../DateField/segmented-field';
+import type { SegmentSpec } from '../../utils/segmented-field';
 import type { TimePickerFormat } from '../../utils/time-math';
 
-import SegmentedField from '../DateField/segmented-field';
+import SegmentedField from '../../utils/segmented-field';
 import {
   formatTimeValue,
   from12Hour,

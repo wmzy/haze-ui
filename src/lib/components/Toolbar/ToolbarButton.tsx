@@ -2,6 +2,7 @@ import type { ComponentPropsWithRef, ElementType } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
 import { base, sizes, squareSizes, variants } from '../Button/styles';
 
 /**
@@ -71,7 +72,7 @@ export default function ToolbarButton<T extends ElementType = 'button'>({
       data-slot="toolbar-button"
       data-haze-toolbar-item=""
       tabIndex={-1}
-      x-class={[base, variants[variant], sizeClass, toolbarItem, className]}
+      x-class={[base, focusRingVisible, variants[variant], sizeClass, toolbarItem, className]}
       {...rest}
     />
   );

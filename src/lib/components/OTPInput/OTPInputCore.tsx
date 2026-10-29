@@ -6,7 +6,7 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { mergeRefs } from '../../utils/refs';
-import { fieldChrome } from '../../utils/field-skin';
+import { fieldChrome, fieldFocusRing } from '../../utils/field-skin';
 
 type OTPInputCoreProps = {
   length?: number;
@@ -23,11 +23,13 @@ const container = css`
   font-family: var(--haze-font-sans);
 `;
 
-/* The cell surface (border/radius/fill) comes from utils/field-skin.ts;
- * the cell keeps its own box (space-10 wide, space-10 + space-1 = 44px
- * tall), mono typography and the :focus ring — as a leaf input it
- * focuses under :focus, not :focus-within, and resets its outline
- * unconditionally rather than inside the focus arm. */
+/* The cell surface (border/radius/fill) and the :focus ring come from
+ * utils/field-skin.ts (fieldChrome + fieldFocusRing — as a leaf input
+ * the cell focuses under :focus, not :focus-within); the cell keeps
+ * its own box (space-10 wide, space-10 + space-1 = 44px tall), mono
+ * typography, the border/shadow transition and the unconditional
+ * outline reset (not inside the focus arm — the skin's arm-scoped
+ * reset is not enough for a cell that must never paint the UA ring). */
 const cell = css`
   width: var(--haze-space-10);
   height: calc(var(--haze-space-10) + var(--haze-space-1));
@@ -37,11 +39,6 @@ const cell = css`
   color: var(--haze-color-text);
   outline: none;
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /* A cell is blank when it holds no char or a space placeholder —
@@ -117,7 +114,7 @@ export default function OTPInputCore({
               refs.current[i] = el;
               if (i === 0) setFirstCellRef(el);
             }}
-            x-class={[fieldChrome, cell]}
+            x-class={[fieldChrome, fieldFocusRing, cell]}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"

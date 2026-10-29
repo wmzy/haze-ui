@@ -7,6 +7,7 @@ import type {
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
 import { base, sizes, squareSizes } from '../Button/styles';
 
 type ToggleCoreOwnProps = {
@@ -109,7 +110,7 @@ export default function ToggleCore<T extends ElementType = 'button'>({
       {...(isNativeButton ? { type: 'button' as const } : {})}
       aria-pressed={pressed}
       data-slot='toggle'
-      x-class={[base, surfaces[pressed ? 'pressed' : 'rest'], sizeClass, className]}
+      x-class={[base, focusRingVisible, surfaces[pressed ? 'pressed' : 'rest'], sizeClass, className]}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
         // The historical onNativeClick signature stays button-typed; the
         // event itself is whatever element `as` rendered.

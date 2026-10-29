@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useHotkeys } from '../../hooks/useHotkeys';
+import { useOpenWithChange } from '../../utils/floating';
 import Dialog from '../Dialog/Dialog';
 
 import Command, { CommandInput } from './Command';
@@ -85,18 +86,20 @@ export default function CommandDialog({
   const [open, setOpen, openCtrl] = useControl(openControl, false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Single tracked setter (useOpenWithChange): the hotkey toggle and the
+  // item-selection close both ride it, so onOpenChange mirrors every
+  // flip of the self-owned open state.
+  const setTrackedOpen = useOpenWithChange(open, setOpen, onOpenChange);
+
   const toggle = useCallback(() => {
-    const next = !open;
-    setOpen(next);
-    onOpenChange?.(next);
-  }, [open, setOpen, onOpenChange]);
+    setTrackedOpen(!open);
+  }, [setTrackedOpen, open]);
 
   // Selecting an item closes the palette (after the item's own
   // onSelect); Esc and backdrop close ride Dialog's native paths.
   const closeOnSelect = useCallback(() => {
-    setOpen(false);
-    onOpenChange?.(false);
-  }, [setOpen, onOpenChange]);
+    setTrackedOpen(false);
+  }, [setTrackedOpen]);
 
   // No `hotkey` prop → `enabled: false` keeps useHotkeys from attaching
   // any listener.

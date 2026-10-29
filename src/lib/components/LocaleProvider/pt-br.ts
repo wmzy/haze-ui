@@ -117,6 +117,10 @@ const ptBR: HazeStrings = {
     addStop: 'Adicionar parada',
     removeStop: 'Remover parada',
   },
+  copyButton: {
+    copy: 'Copiar',
+    copied: 'Copiado',
+  },
   confirmDialog: {
     confirm: 'Confirmar',
     cancel: 'Cancelar',
@@ -248,6 +252,14 @@ const ptBR: HazeStrings = {
     clear: 'Limpar',
     undo: 'Desfazer',
     unsupported: 'A assinatura não é suportada neste navegador.',
+  },
+  schedule: {
+    today: 'Hoje',
+    previous: 'Anterior',
+    next: 'Próximo',
+    day: 'Dia',
+    week: 'Semana',
+    month: 'Mês',
   },
   select: {
     placeholder: 'Selecionar…',

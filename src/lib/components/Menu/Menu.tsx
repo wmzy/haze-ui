@@ -5,7 +5,7 @@ import type { VirtualListHandle } from '../VirtualList';
 import type { MenuClassNames } from './MenuContext';
 
 import { css } from '@linaria/core';
-import { isValidElement, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
@@ -13,6 +13,7 @@ import { useFocusScope } from '../../utils/focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
+import { reactNodeText } from '../../utils/text';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { VirtualList } from '../VirtualList';
 
@@ -139,26 +140,12 @@ const virtualizedBody = css`
   }
 `;
 
-/** Typeahead text of a data entry: its label flattened to a string.
- *  Rows outside the virtual window have no DOM to read textContent
- *  from, so the match runs against the data model. */
+/** Typeahead text of a data entry: its label flattened to a string
+ *  (utils/text's `reactNodeText`). Rows outside the virtual window
+ *  have no DOM to read textContent from, so the match runs against
+ *  the data model. */
 function menuEntryText(entry: MenuDataItem): string {
   return entry.type === 'divider' ? '' : reactNodeText(entry.label);
-}
-
-/** Flatten a ReactNode to its text content (strings/numbers joined
- *  across children trees; non-text nodes contribute nothing). */
-function reactNodeText(node: ReactNode): string {
-  if (typeof node === 'string' || typeof node === 'number') {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(reactNodeText).join('');
-  }
-  if (isValidElement<{ children?: ReactNode }>(node)) {
-    return reactNodeText(node.props.children);
-  }
-  return '';
 }
 
 /** Rows that can take focus: everything but dividers and disabled

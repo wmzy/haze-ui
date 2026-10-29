@@ -15,45 +15,56 @@ import {css} from '@linaria/core';
    WCAG 2.5.8 target size: the track is the switch's only pointer
    target, so the sm/md variants must not dip below it. */
 const trackSm = css`
+  /* 2.25rem (36px) sits between the space steps (32/40) — literal on
+     purpose (InlineEdit's 1.75rem precedent). */
   width: 2.25rem;
   height: var(--haze-space-6);
 `;
 
 const trackMd = css`
-  width: 40px;
+  width: var(--haze-space-10);
   height: var(--haze-space-6);
 `;
 
 const trackLg = css`
-  width: 48px;
+  width: var(--haze-space-12);
+  /* 26px sits between the space steps (24/32) — literal on purpose. */
   height: 26px;
 `;
 
+/* The checked thumb travels exactly its own width (track padding is
+   symmetric: inner width − thumb = thumb), so both read one custom
+   property — a size tweak can never drift the travel from the box. */
 const thumbSm = css`
-  width: 1rem;
-  height: 1rem;
+  --haze-switch-thumb-w: var(--haze-space-4);
+  width: var(--haze-switch-thumb-w);
+  height: var(--haze-switch-thumb-w);
 `;
 
 const thumbMd = css`
-  width: 18px;
-  height: 18px;
+  /* 18px sits between the space steps (16/20) — literal on purpose. */
+  --haze-switch-thumb-w: 18px;
+  width: var(--haze-switch-thumb-w);
+  height: var(--haze-switch-thumb-w);
 `;
 
 const thumbLg = css`
-  width: 22px;
-  height: 22px;
+  /* 22px sits between the space steps (20/24) — literal on purpose. */
+  --haze-switch-thumb-w: 22px;
+  width: var(--haze-switch-thumb-w);
+  height: var(--haze-switch-thumb-w);
 `;
 
 const thumbCheckedSm = css`
-  transform: translateX(1rem);
+  transform: translateX(var(--haze-switch-thumb-w));
 `;
 
 const thumbCheckedMd = css`
-  transform: translateX(18px);
+  transform: translateX(var(--haze-switch-thumb-w));
 `;
 
 const thumbCheckedLg = css`
-  transform: translateX(22px);
+  transform: translateX(var(--haze-switch-thumb-w));
 `;
 
 export const trackSizes = {

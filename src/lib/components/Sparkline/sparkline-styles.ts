@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import {statusStrokeColors} from '../../utils/status-stroke-skin';
+
 /**
  * Shared Sparkline skin — the base class plus color→stroke / color→fill
  * variant maps the `Sparkline` component wears. Living in their own module
@@ -17,15 +19,15 @@ export const base = css`
   overflow: visible;
 `;
 
-/** Stroke color per semantic color; worn by the line path. */
-export const colorStrokes = {
-  default: css`stroke: var(--haze-color-text-secondary);`,
-  primary: css`stroke: var(--haze-color-primary);`,
-  success: css`stroke: var(--haze-color-success);`,
-  danger: css`stroke: var(--haze-color-danger);`,
-  warning: css`stroke: var(--haze-color-warning);`,
-  info: css`stroke: var(--haze-color-info);`,
-} as const;
+/**
+ * Stroke color per semantic color; worn by the line path. Delegates to
+ * the shared status stroke axis — identical per-key values, including
+ * the neutral `default` → text-secondary — so Progress's circle track
+ * and the Sparkline line wear one skin. Re-bound as a local const: a
+ * bare re-export would flatten to the utils source module in the
+ * rollup output and break split-css family grouping.
+ */
+export const colorStrokes = statusStrokeColors;
 
 /** Translucent area fill per semantic color; worn by the fill path of the `area` variant. */
 export const colorFills = {

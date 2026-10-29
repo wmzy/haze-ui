@@ -27,7 +27,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useRef } from
 import { useControl } from 'react-use-control';
 
 import { getDirection, inlineAxisKeys } from './direction';
-import { useFloating, type FloatingBehavior } from './floating';
+import { useFloating, useOpenWithChange, type FloatingBehavior } from './floating';
 import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from './menuKeyboard';
 import { useHoverIntent } from './use-hover-intent';
 
@@ -82,17 +82,10 @@ export function useSubmenu({
   // is silently dropped in Chromium).
   const focusRequestRef = useRef(false);
 
-  // Same shape as DropdownMenu's handleSetOpen: accepts functional updates
-  // (the floating engine's trigger click toggles with (prev) => !prev) and
-  // notifies onOpenChange on every transition, whatever drove it.
-  const setOpen = useCallback(
-    (value: boolean | ((prev: boolean) => boolean)) => {
-      const next = typeof value === 'function' ? value(open) : value;
-      setOpenState(next);
-      onOpenChange?.(next);
-    },
-    [open, setOpenState, onOpenChange]
-  );
+  // Same seam as DropdownMenu's handleSetOpen (useOpenWithChange): every
+  // transition — keyboard, hover intent, floating engine — funnels through
+  // here so onOpenChange fires on each flip, whatever drove it.
+  const setOpen = useOpenWithChange(open, setOpenState, onOpenChange);
 
   const floating = useFloating({
     open,

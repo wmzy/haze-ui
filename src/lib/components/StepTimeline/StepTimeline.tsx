@@ -9,6 +9,8 @@ import { css } from '@linaria/core';
 
 import { useControl } from 'react-use-control';
 
+import { useOpenWithChange } from '../../utils/floating';
+
 import { ChevronRight } from '../../icons';
 import {
   chevronPair,
@@ -135,17 +137,14 @@ function StepTimelineItem({
   className,
 }: StepTimelineItemProps) {
   const [open, setOpen] = useControl(openControl, false);
+  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
   const panelId = useId();
   const hasPanel = content != null || children != null;
   // A toggle with nothing to reveal would be a dead button — only the
   // header of an item carrying content/child steps becomes one.
   const expandable = collapsible && hasPanel;
 
-  const toggleOpen = () => {
-    const next = !open;
-    setOpen(next);
-    onOpenChange?.(next);
-  };
+  const toggleOpen = () => handleSetOpen(!open);
 
   const glyph =
     icon ??

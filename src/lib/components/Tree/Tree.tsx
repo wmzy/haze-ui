@@ -26,6 +26,7 @@ import {
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { mergeRefs } from '../../utils/refs';
 import {
+  computeCheckedState,
   findNodeByKey,
   getChildKeys,
   getParentKey,
@@ -87,40 +88,18 @@ function omitStatus(
   return next;
 }
 
+/* Cascade resolution lives in utils/tree-utils.ts
+ * (`computeCheckedState` — one post-order walk carrying subtree
+ * totals; the previous shape called `getChildKeys` per parent, a
+ * full-tree findNodeByKey DFS each time, O(n²) on wide trees). The
+ * strict branch stays here: no cascade, the raw keys are the answer. */
 function computeCheckedKeys(
   keys: string[],
   data: TreeNodeData[],
   checkStrictly: boolean
 ): { checked: string[]; halfChecked: string[] } {
   if (checkStrictly) return { checked: keys, halfChecked: [] };
-
-  const checkedSet = new Set(keys);
-  const halfCheckedSet = new Set<string>();
-  const toRemove = new Set<string>();
-
-  const walk = (nodes: TreeNodeData[]) => {
-    for (const node of nodes) {
-      if (node.children?.length) {
-        walk(node.children);
-        const allDescendants = getChildKeys(data, node.key);
-        const checkedDescendants = allDescendants.filter((k) =>
-          checkedSet.has(k)
-        );
-        if (checkedDescendants.length === 0) {
-          toRemove.add(node.key);
-        } else if (checkedDescendants.length < allDescendants.length) {
-          halfCheckedSet.add(node.key);
-          toRemove.add(node.key);
-        }
-      }
-    }
-  };
-  walk(data);
-
-  return {
-    checked: keys.filter((k) => !toRemove.has(k)),
-    halfChecked: Array.from(halfCheckedSet),
-  };
+  return computeCheckedState(data, keys);
 }
 
 export default function Tree({

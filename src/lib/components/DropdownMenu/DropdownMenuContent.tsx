@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useCallback, useEffect } from 'react';
 
+import { classnames } from '../../utils/classnames';
 import { FloatingPanel, type FloatingPlacement } from '../../utils/floating';
 import {
   getEnabledMenuItems,
@@ -84,9 +85,7 @@ export default function DropdownMenuContent({
       id={contentId}
       role="menu"
       visualClass={menuPanel}
-      className={
-        [className, classNames?.content].filter(Boolean).join(' ') || undefined
-      }
+      className={classnames(className, classNames?.content)}
       onKeyDown={handleKeyDown}
     >
       {children}

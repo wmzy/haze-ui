@@ -8,6 +8,7 @@ import { useClipboard } from '../../hooks/useClipboard';
 import { useStreamingAnnouncements } from '../../hooks/useStreamingAnnouncements';
 import { srOnly } from '../../utils/sr-only';
 import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 
 type ChatMessageRole = 'user' | 'assistant' | 'system';
 
@@ -151,33 +152,30 @@ const statusError = css`
   color: var(--haze-color-danger);
 `;
 
+/* Hover-bar actions: the shared quietIconButton chrome
+ * (utils/quiet-button-skin) plus the compact 20px seat. Ring
+ * convergence: the old 2px box-shadow ring becomes the shared 3px
+ * chrome; the transition timing converges on the skin's plain ease
+ * (was var(--haze-ease)). */
 const actionBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: var(--haze-space-5);
   height: var(--haze-space-5);
-  border: none;
   border-radius: var(--haze-radius-sm);
-  background: transparent;
-  color: var(--haze-color-text-muted);
-  cursor: pointer;
-  transition: color var(--haze-duration-fast),
-    background-color var(--haze-duration-fast);
-
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--haze-color-focus-ring);
-  }
 `;
 
+/* Success tint for the 1.5s copied window. The data-slot compound arm
+   (0,2,0) outspecifies the shared skin's base ink — a same-property
+   override must not trust cross-module source order — while the :hover
+   arm (0,3,0) keeps the skin's hover ink decisive, preserving the
+   pre-share behavior (success at rest, text on hover). */
 const actionBtnCopied = css`
-  color: var(--haze-color-success);
+  &[data-slot='copy-button'] {
+    color: var(--haze-color-success);
+  }
+
+  &[data-slot='copy-button']:hover {
+    color: var(--haze-color-text);
+  }
 `;
 
 /**
@@ -281,7 +279,7 @@ export default function ChatMessage({
               <button
                 type='button'
                 data-slot='copy-button'
-                x-class={[actionBtn, copied && actionBtnCopied]}
+                x-class={[quietIconButton, actionBtn, copied && actionBtnCopied]}
                 onClick={handleCopy}
                 aria-label={chatStrings.copy}
               >

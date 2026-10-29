@@ -11,6 +11,7 @@ import { useControl } from 'react-use-control';
 import { useStrings } from '../LocaleProvider';
 
 import { classnames } from '../../utils/classnames';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { NativeHiddenFields } from '../../utils/native-form';
 import { panelSurface } from '../../utils/panel-skin';
@@ -234,12 +235,12 @@ export default function ColorPicker({
   }
 
   return (
-    <span data-slot='color-picker' className={container}>
+    <span data-slot='color-picker' x-class={[container]}>
       <button
         ref={setTriggerRef}
         type='button'
         data-slot='trigger'
-        x-class={[trigger, checkerboard]}
+        x-class={[trigger, checkerboard, focusRingVisible]}
         style={floating.triggerStyle}
         aria-label={label}
         aria-haspopup='dialog'

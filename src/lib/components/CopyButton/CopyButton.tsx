@@ -4,6 +4,7 @@ import type { ButtonProps } from '../Button';
 
 import { Button } from '../Button';
 import VisuallyHidden from '../VisuallyHidden/VisuallyHidden';
+import { useStrings } from '../LocaleProvider';
 import { useClipboard } from '../../hooks/useClipboard';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { Check } from '../../icons';
@@ -29,9 +30,11 @@ type CopyButtonOwnProps = {
   getValue?: () => string;
   /** How long the copied feedback lasts, in ms. Defaults to 2000. */
   copiedTimeout?: number;
-  /** Accessible name while idle. Defaults to 'Copy'. */
+  /** Accessible name while idle. Defaults to the `copyButton.copy`
+   *  locale pack entry ('Copy'). */
   copyLabel?: string;
-  /** Accessible name while copied. Defaults to 'Copied'. */
+  /** Accessible name while copied. Defaults to the `copyButton.copied`
+   *  pack entry ('Copied'). */
   copiedLabel?: string;
   /** Slot classes (see {@link CopyButtonClassNames}). */
   classNames?: CopyButtonClassNames;
@@ -82,8 +85,8 @@ export default function CopyButton<T extends ElementType = 'button'>({
   value,
   getValue,
   copiedTimeout = 2000,
-  copyLabel = 'Copy',
-  copiedLabel = 'Copied',
+  copyLabel,
+  copiedLabel,
   variant = 'outline',
   square = true,
   size,
@@ -95,6 +98,9 @@ export default function CopyButton<T extends ElementType = 'button'>({
   ...rest
 }: CopyButtonProps<T>) {
   const { copied, copy } = useClipboard(copiedTimeout);
+  const strings = useStrings('copyButton');
+  const copyText = copyLabel ?? strings.copy;
+  const copiedText = copiedLabel ?? strings.copied;
   // Same resolution tiers as Button (explicit prop → Button's
   // ConfigProvider section → built-in 'md') so the icon step always
   // matches the chrome it sits in.
@@ -122,7 +128,7 @@ export default function CopyButton<T extends ElementType = 'button'>({
       square={square}
       as={as}
       data-copied={copied || undefined}
-      aria-label={copied ? copiedLabel : copyLabel}
+      aria-label={copied ? copiedText : copyText}
       className={
         [
           className,
@@ -151,7 +157,7 @@ export default function CopyButton<T extends ElementType = 'button'>({
       {/* Status announcement: aria-label swaps silently on a focused
        * control, so the copied transition speaks through a polite
        * live region instead (aria-label keeps naming the button). */}
-      <VisuallyHidden role="status">{copied ? copiedLabel : ''}</VisuallyHidden>
+      <VisuallyHidden role="status">{copied ? copiedText : ''}</VisuallyHidden>
     </Button>
   );
 }

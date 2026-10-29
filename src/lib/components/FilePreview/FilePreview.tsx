@@ -55,13 +55,15 @@ const card = css`
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
   font-family: var(--haze-font-sans);
+  /* 22rem (352px) has no ladder step — a card clamp, not a spacing
+     rhythm; literal on purpose. */
   max-width: 22rem;
 `;
 
 const thumbWrap = css`
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--haze-space-10);
+  height: var(--haze-space-10);
   flex-shrink: 0;
   border-radius: var(--haze-radius-sm);
   overflow: hidden;
@@ -85,6 +87,8 @@ const extBadge = css`
   left: 0;
   right: 0;
   font-family: var(--haze-font-mono);
+  /* 0.5rem (8px) is below the smallest text step — a badge micro-label
+     under the extension; literal on purpose. */
   font-size: 0.5rem;
   line-height: var(--haze-leading-tight);
   text-align: center;
@@ -140,8 +144,8 @@ const actionBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   padding: 0;
   border: none;
   border-radius: var(--haze-radius-sm);

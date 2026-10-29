@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { useState } from 'react';
 import { css } from '@linaria/core';
@@ -15,7 +15,7 @@ type PasswordInputCoreProps = {
   className?: string;
   /** Forwarded to the inner password `<input>` (not the wrapper div). */
   ref?: Ref<HTMLInputElement>;
-};
+} & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value' | 'onChange' | 'size'>;
 
 const wrapper = css`
   display: block;
@@ -54,6 +54,7 @@ export default function PasswordInputCore({
   disabled,
   className,
   ref,
+  ...rest
 }: PasswordInputCoreProps) {
   const [visible, setVisible] = useState(false);
   const strings = useStrings('passwordInput');
@@ -68,6 +69,7 @@ export default function PasswordInputCore({
         aria-label={strings.label}
         placeholder={placeholder}
         disabled={disabled}
+        {...rest}
         rightSection={
           <button
             data-slot="toggle-visibility"

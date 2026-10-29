@@ -1,3 +1,4 @@
+import type { ComponentPropsWithoutRef } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { useState, useRef, useEffect } from 'react';
@@ -13,7 +14,7 @@ type InlineEditProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-};
+} & Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'onChange'>;
 
 const display = css`
   cursor: text;
@@ -70,6 +71,7 @@ export default function InlineEdit({
   placeholder,
   disabled,
   className,
+  ...rest
 }: InlineEditProps) {
   const [value, setValue] = useControl(valueControl, '');
   const [isEditing, setIsEditing] = useState(false);
@@ -114,6 +116,7 @@ export default function InlineEdit({
       <input
         ref={inputRef}
         data-slot='inline-edit'
+        {...rest}
         autoFocus
         x-class={[fieldChrome, fieldSizes.sm, editing, className]}
         aria-label={placeholderLabel}

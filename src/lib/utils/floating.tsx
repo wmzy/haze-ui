@@ -517,6 +517,31 @@ export function useOpenAdaptor(
   );
 }
 
+/**
+ * The self-owned-open counterpart of `useOpenAdaptor`: the component
+ * holds the open state itself (useControl) and mirrors every flip
+ * through `onOpenChange`. Generic over the state shape — DropdownMenu/
+ * ContextMenu/submenu/CommandDialog/FloatButtonGroup/StepTimeline/
+ * Trace drive booleans, Accordion drives its `openKeys` string[].
+ * These components wore this adapter as hand-rolled callbacks with
+ * byte-identical tails.
+ */
+export function useOpenWithChange<T>(
+  open: T,
+  setOpen: Dispatch<SetStateAction<T>>,
+  onOpenChange?: (open: T) => void
+): Dispatch<SetStateAction<T>> {
+  return useCallback(
+    (next) => {
+      const value =
+        typeof next === 'function' ? (next as (prev: T) => T)(open) : next;
+      setOpen(value);
+      onOpenChange?.(value);
+    },
+    [open, setOpen, onOpenChange]
+  );
+}
+
 export function useFloating({
   open,
   setOpen,

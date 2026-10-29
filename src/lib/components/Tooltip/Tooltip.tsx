@@ -8,12 +8,14 @@ import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
+import { toCollisionStrategy } from '../../utils/collision';
 import {
   floatingPlacementClasses,
   useFloating,
   useFloatingPosition,
   type FloatingPlacement,
 } from '../../utils/floating';
+import { floatingPairHost } from '../../utils/panel-skin';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
@@ -50,11 +52,6 @@ type TooltipProps = {
   ref?: Ref<HTMLSpanElement>;
   children: ReactNode;
 };
-
-const wrapper = css`
-  position: relative;
-  display: inline-flex;
-`;
 
 const bubble = css`
   padding: var(--haze-space-1) var(--haze-space-2);
@@ -110,7 +107,7 @@ export default function Tooltip({
   // Stable identity: useFloatingPosition re-runs its effect on every
   // change of this object.
   const collision = useMemo(
-    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    () => toCollisionStrategy(collisionPadding),
     [collisionPadding]
   );
   // Manual wiring (span panel, not FloatingPanel): the behavior still
@@ -138,7 +135,7 @@ export default function Tooltip({
   });
 
   return (
-    <span ref={ref} data-slot='tooltip' x-class={[wrapper, className, classNames?.root]}>
+    <span ref={ref} data-slot='tooltip' x-class={[floatingPairHost, className, classNames?.root]}>
       <span
         ref={triggerRef}
         data-slot='trigger'

@@ -14,6 +14,7 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { useFocusScope } from '../../utils/focus-scope';
+import { menuOptionStates } from '../../utils/menu-skins';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import {
   ChevronRight,
@@ -155,20 +156,14 @@ const wrapper = css`
 
 /** Trigger deltas over the shared picker base
  * (utils/picker-trigger): the wider path-row gap and the sm metrics.
- * `text-align: start` re-declares the base's identical value — kept
- * local for the rtl.test logical-properties sampling contract on this
- * file. */
+ * The keyboard focus arm rides the shared base. `text-align: start`
+ * re-declares the base's identical value — kept local for the
+ * rtl.test logical-properties sampling contract on this file. */
 const trigger = css`
   gap: var(--haze-space-2);
   font-size: var(--haze-text-sm);
   padding: var(--haze-space-2) var(--haze-space-3);
   text-align: start;
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /** Path label row: truncates instead of growing the trigger sideways. */
@@ -272,6 +267,11 @@ const COLUMN_MAX_HEIGHT = 220;
  * utils/picker-trigger), so the two cannot drift apart. */
 const ITEM_ROW_HEIGHT = 37;
 
+/** Column option chrome: the row skeleton and sm metrics — the
+ * hover/press/focus interaction states ride `menuOptionStates`
+ * (utils/menu-skins), composed ahead of this delta at the call site
+ * (its state arms out-specify the unconditional `background: none`
+ * button reset below). */
 const item = css`
   display: flex;
   align-items: center;
@@ -286,20 +286,6 @@ const item = css`
   text-align: start;
   cursor: pointer;
   transition: background var(--haze-duration-fast);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-
-  &:active {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    background: var(--haze-color-bg-subtle);
-    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
-  }
 `;
 
 /** Option on the active drill-down path (parent columns). */
@@ -713,7 +699,7 @@ export default function Cascader({
         aria-expanded={hasChildren ? inPath : undefined}
         aria-setsize={virtual ? columns[level]?.length : undefined}
         aria-posinset={virtual ? index + 1 : undefined}
-        x-class={[item, inPath && itemInPath, virtual && pickerVirtualRow, classNames?.option]}
+        x-class={[menuOptionStates, item, inPath && itemInPath, virtual && pickerVirtualRow, classNames?.option]}
         onClick={() => activate(option, level)}
         onMouseEnter={() => handleItemEnter(option, level)}
       >

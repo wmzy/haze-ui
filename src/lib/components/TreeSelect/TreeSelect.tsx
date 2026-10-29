@@ -134,7 +134,10 @@ const wrapper = css`
 
 /** Trigger deltas over the shared picker base
  * (utils/picker-trigger): the chip-wrapping flex row and the sm
- * metrics. */
+ * metrics. The keyboard focus arm rides the shared base; hover and
+ * disabled stay local — Cascader's trigger ships neither, so hoisting
+ * them would add hover feedback it never had (the drift discipline,
+ * utils/picker-trigger header). */
 const trigger = css`
   flex-wrap: wrap;
   gap: var(--haze-space-1);
@@ -143,12 +146,6 @@ const trigger = css`
 
   &:hover {
     border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {

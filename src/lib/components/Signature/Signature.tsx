@@ -10,6 +10,8 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
+import { focusWithinRing } from '../../utils/field-skin';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import {
@@ -80,17 +82,17 @@ const root = css`
   font-family: var(--haze-font-sans);
 `;
 
+/* Field-shaped frame around the pad — the shared `focusWithinRing`
+   (utils/field-skin.ts) composed below paints the wrapper focus
+   treatment: the canvas inside takes the interaction, the frame
+   repaints its border and wears the ring (the TagInput/PromptInput
+   wrapper-field pattern). */
 const canvasFrame = css`
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
   overflow: hidden;
   transition: border-color var(--haze-duration-fast);
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const canvasClass = css`
@@ -133,10 +135,9 @@ const toolButton = css`
     background: var(--haze-color-bg-subtle);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     both tool buttons below — it also brings the forced-colors
+     Highlight arm the local copy never had. */
 
   &:disabled {
     opacity: 0.5;
@@ -369,7 +370,7 @@ export default function Signature({
 
   return (
     <div data-slot='signature' x-class={[root, className]} {...rest}>
-      <div data-slot='canvas-frame' x-class={[canvasFrame]}>
+      <div data-slot='canvas-frame' x-class={[canvasFrame, focusWithinRing]}>
         <canvas
           ref={canvasRef}
           data-slot='canvas'
@@ -386,7 +387,7 @@ export default function Signature({
         <button
           type='button'
           data-slot='undo-button'
-          x-class={[toolButton]}
+          x-class={[toolButton, focusRingVisible]}
           onClick={handleUndo}
           disabled={disabled || strokeCount === 0}
         >
@@ -410,7 +411,7 @@ export default function Signature({
         <button
           type='button'
           data-slot='clear-button'
-          x-class={[toolButton]}
+          x-class={[toolButton, focusRingVisible]}
           onClick={handleClear}
           disabled={disabled || strokeCount === 0}
         >

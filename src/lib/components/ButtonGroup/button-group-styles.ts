@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { attachedRow } from '../../utils/seam-skin';
+
 /**
  * Shared ButtonGroup skin — the attached-bar merging rules the group
  * wrapper wears, plus the divider classes `ButtonGroupSeparator`
@@ -10,64 +12,28 @@ import { css } from '@linaria/core';
  * ## Merging model
  *
  * Adjacent buttons merge into one bar with pure CSS — the group never
- * rewraps its children (real `Button` elements render as-authored):
+ * rewraps its children (real `Button` elements render as-authored).
+ * The seam, corner and focus-lift arms are the shared attached-row
+ * recipe (`utils/seam-skin.ts` `attachedRow`), composed with the local
+ * bar geometry below into the single `group` class; `role='separator'`
+ * children ride the same -1px pull: a 1px rule lands exactly on the
+ * seam pixel it replaces.
  *
- * - every child except the first loses its leading edge: a -1px margin
- *   pulls it over the previous child's trailing border (two 1px borders
- *   collapse onto the same seam pixel) and the leading border turns
- *   transparent, so only the previous child's border ever paints the
- *   seam — deterministic no matter which sibling is hovered, because
- *   the two rules never touch the same element;
- * - every child except the last loses its trailing corner radii, so the
- *   bar keeps the rounded profile of a single button at both ends;
- * - `role='separator'` children ride the same -1px pull: a 1px rule
- *   lands exactly on the seam pixel it replaces.
- *
- * Orientation rides a `data-orientation` attribute on the wrapper. The
- * `:not([data-orientation='vertical'])` / `[data-orientation='vertical']`
- * branches are mutually exclusive, so no cascade order is ever
- * load-bearing between them.
+ * Orientation rides a `data-orientation` attribute on the wrapper; the
+ * seam skin's orientation branches are mutually exclusive (see its
+ * header).
  */
 
-export const group = css`
+/** The bar geometry — container declarations only: the inline stretch
+ * box, the vertical column flip and the separator cross-sizing. The
+ * seam, corner and focus-lift arms live in utils/seam-skin. */
+const groupBox = css`
   display: inline-flex;
   align-items: stretch;
 
-  /* The focus ring is a box-shadow — later siblings would paint over
-   * its seam edge, so a focused button lifts above the row (z-index
-   * works on flex items even when statically positioned). */
-  & > *:focus-visible {
-    z-index: var(--haze-z-local-1);
-  }
-
-  /* Horizontal bar: the seam runs on the inline axis. */
-  &:not([data-orientation='vertical']) > *:not(:first-child) {
-    margin-inline-start: -1px;
-    border-inline-start-color: transparent;
-    border-start-start-radius: 0;
-    border-end-start-radius: 0;
-  }
-
-  &:not([data-orientation='vertical']) > *:not(:last-child) {
-    border-start-end-radius: 0;
-    border-end-end-radius: 0;
-  }
-
-  /* Vertical bar: same recipe on the block axis, cross-sized buttons. */
+  /* Vertical bar: cross-sized buttons down the block axis. */
   &[data-orientation='vertical'] {
     flex-direction: column;
-  }
-
-  &[data-orientation='vertical'] > *:not(:first-child) {
-    margin-block-start: -1px;
-    border-block-start-color: transparent;
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
-  }
-
-  &[data-orientation='vertical'] > *:not(:last-child) {
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
   }
 
   /* Dividers size with the bar's cross axis and never shrink it. The
@@ -79,6 +45,10 @@ export const group = css`
     align-self: stretch;
   }
 `;
+
+/** The wrapper's one class: shared seam recipe + local bar geometry,
+ * space-joined the way `x-class` would compose them. */
+export const group = `${attachedRow} ${groupBox}`;
 
 /** Shared divider chassis: centred content, takes no bar space beyond
  * its own box. The 1px rule mode and the glyph mode both start here. */

@@ -114,6 +114,10 @@ const zhCN: HazeStrings = {
     addStop: '添加节点',
     removeStop: '移除节点',
   },
+  copyButton: {
+    copy: '复制',
+    copied: '已复制',
+  },
   confirmDialog: {
     confirm: '确认',
     cancel: '取消',
@@ -245,6 +249,14 @@ const zhCN: HazeStrings = {
     clear: '清除',
     undo: '撤销',
     unsupported: '当前浏览器不支持签名板。',
+  },
+  schedule: {
+    today: '今天',
+    previous: '上一个',
+    next: '下一个',
+    day: '日',
+    week: '周',
+    month: '月',
   },
   select: {
     placeholder: '请选择',

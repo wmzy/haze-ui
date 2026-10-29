@@ -116,6 +116,10 @@ const esES: HazeStrings = {
     addStop: 'Añadir punto',
     removeStop: 'Quitar punto',
   },
+  copyButton: {
+    copy: 'Copiar',
+    copied: 'Copiado',
+  },
   confirmDialog: {
     confirm: 'Confirmar',
     cancel: 'Cancelar',
@@ -247,6 +251,14 @@ const esES: HazeStrings = {
     clear: 'Borrar',
     undo: 'Deshacer',
     unsupported: 'La firma no es compatible con este navegador.',
+  },
+  schedule: {
+    today: 'Hoy',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    day: 'Día',
+    week: 'Semana',
+    month: 'Mes',
   },
   select: {
     placeholder: 'Seleccionar…',

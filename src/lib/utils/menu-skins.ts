@@ -2,7 +2,9 @@ import { css } from '@linaria/core';
 
 /**
  * Shared skins for the three menu families (Menu, DropdownMenu,
- * ContextMenu): the item base skeleton, each family's interaction-state
+ * ContextMenu) plus the option-item interaction states of the
+ * menu-adjacent pickers (Cascader's column options, Command's palette
+ * items): the item base skeleton, each family's interaction-state
  * skin, the item slot/variant skins (danger/icon/kbd/indicator/group
  * label), the panel surfaces and the divider — formerly copy-pasted per
  * component directory.
@@ -108,6 +110,36 @@ export const menuPopupItem = css`
 
   &:active {
     background: var(--haze-color-bg-subtle);
+  }
+`;
+
+/**
+ * Option-item interaction states for the item surfaces outside the
+ * three menu families — Cascader's column options and Command's
+ * palette items. The plain trio those two shipped verbatim twice:
+ * hover washes subtle, press one step stronger, keyboard focus draws
+ * the inset ring. Authored as state arms of the class itself (the
+ * `pickerNativeSelect` contract) so consumer deltas — which keep the
+ * padding/radius/typography differences — can never flip them by
+ * injection order: the arms out-specify any unconditional local
+ * declaration. Unlike `menuItemStates` there is no aria-expanded arm
+ * (Cascader's in-path decoration rides its own class), no anchor
+ * handling and no forced-colors restatement — this is exactly the two
+ * consumers' shipped trio, nothing more.
+ */
+export const menuOptionStates = css`
+  &:hover {
+    background: var(--haze-color-bg-subtle);
+  }
+
+  &:active {
+    background: var(--haze-color-bg-muted);
+  }
+
+  &:focus-visible {
+    outline: none;
+    background: var(--haze-color-bg-subtle);
+    box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
   }
 `;
 

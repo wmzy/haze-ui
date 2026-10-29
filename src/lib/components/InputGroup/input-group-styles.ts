@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { attachedRow } from '../../utils/seam-skin';
+
 /**
  * Shared InputGroup skin — the attached-field merging rules the group
  * wrapper wears, plus the addon classes `InputGroupAddon` applies.
@@ -9,43 +11,29 @@ import { css } from '@linaria/core';
  *
  * ## Merging model
  *
- * Same recipe as ButtonGroup, applied to a field row: every child
- * except the first loses its leading edge (a -1px margin pulls it over
- * the previous child's trailing border and its leading border turns
- * transparent, so exactly one 1px seam paints) and every child except
- * the last loses its trailing corner radii. Addons therefore attach to
- * `Input`/`Select`/`Button` children without either side knowing about
- * the other — the children render as-authored.
+ * The group wrapper wears the shared attached-row seam recipe
+ * (`utils/seam-skin.ts` `attachedRow` — the -1px overlap seam, the
+ * positional corner rounding and the focus z-lift) composed with the
+ * local row geometry below into the single `group` class. Addons
+ * therefore attach to `Input`/`Select`/`Button` children without
+ * either side knowing about the other — the children render
+ * as-authored.
  *
  * Sizing mirrors `InputCore`'s per-size paddings (see addonSizes), so
  * an addon and the field it hugs are the same height at every step.
  */
 
-export const group = css`
+/** The row geometry — container declarations only; the seam, corner
+ * and focus-lift arms live in utils/seam-skin. */
+const groupBox = css`
   display: inline-flex;
   align-items: stretch;
   inline-size: 100%;
-
-  /* The field's focus ring is a box-shadow — a trailing sibling would
-   * paint over its seam edge, so the focused child lifts above the row
-   * (z-index works on flex items even when statically positioned). */
-  & > *:focus,
-  & > *:focus-visible {
-    z-index: var(--haze-z-local-1);
-  }
-
-  & > *:not(:first-child) {
-    margin-inline-start: -1px;
-    border-inline-start-color: transparent;
-    border-start-start-radius: 0;
-    border-end-start-radius: 0;
-  }
-
-  & > *:not(:last-child) {
-    border-start-end-radius: 0;
-    border-end-end-radius: 0;
-  }
 `;
+
+/** The wrapper's one class: shared seam recipe + local geometry,
+ * space-joined the way `x-class` would compose them. */
+export const group = `${attachedRow} ${groupBox}`;
 
 /**
  * The addon surface: a tinted, bordered cell distinct from the field,

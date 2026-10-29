@@ -116,6 +116,10 @@ const ruRU: HazeStrings = {
     addStop: 'Добавить опорную точку',
     removeStop: 'Убрать опорную точку',
   },
+  copyButton: {
+    copy: 'Копировать',
+    copied: 'Скопировано',
+  },
   confirmDialog: {
     confirm: 'Подтвердить',
     cancel: 'Отмена',
@@ -247,6 +251,14 @@ const ruRU: HazeStrings = {
     clear: 'Очистить',
     undo: 'Отменить',
     unsupported: 'Подпись не поддерживается в этом браузере.',
+  },
+  schedule: {
+    today: 'Сегодня',
+    previous: 'Назад',
+    next: 'Далее',
+    day: 'День',
+    week: 'Неделя',
+    month: 'Месяц',
   },
   select: {
     placeholder: 'Выберите…',

@@ -32,7 +32,9 @@ export const panelContent = css`
  * Saturation/value surface: a dynamic two-layer gradient painted through
  * inline style (hue base + white/black overlays); this class carries the
  * interaction chrome. Pointer-dragged (`touch-action: none` keeps
- * touch drags from scrolling the page).
+ * touch drags from scrolling the page). The keyboard focus ring
+ * (utils/focus-ring) composes at the call site; the base outline reset
+ * stays because programmatic focus is not :focus-visible.
  */
 export const svArea = css`
   position: relative;
@@ -41,10 +43,6 @@ export const svArea = css`
   outline: none;
   cursor: crosshair;
   touch-action: none;
-
-  &:focus-visible {
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /**
@@ -64,7 +62,9 @@ export const svThumb = css`
   pointer-events: none;
 `;
 
-/** Shared shape of the hue/alpha rails. */
+/** Shared shape of the hue/alpha rails. The keyboard focus ring
+ * (utils/focus-ring) composes at the call site; the base outline reset
+ * stays because programmatic focus is not :focus-visible. */
 export const track = css`
   position: relative;
   height: var(--haze-space-3);
@@ -72,10 +72,6 @@ export const track = css`
   outline: none;
   cursor: pointer;
   touch-action: none;
-
-  &:focus-visible {
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /**
@@ -176,11 +172,6 @@ export const swatchBtn = css`
   &:hover {
     transform: scale(1.12);
   }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 export const swatchFill = css`
@@ -225,11 +216,6 @@ export const modeBtn = css`
     background: var(--haze-color-bg);
     color: var(--haze-color-text);
     box-shadow: var(--haze-shadow-sm);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -294,11 +280,6 @@ export const stopSwatchBtn = css`
   border-radius: var(--haze-radius-sm);
   overflow: hidden;
   cursor: pointer;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /** Selected stop: the primary ring marks which stop the rails edit. */
@@ -328,11 +309,6 @@ export const stopRemoveBtn = css`
     cursor: not-allowed;
     opacity: 0.4;
   }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 /** Full-width dashed "Add stop" affordance under the stop list. */
@@ -349,11 +325,6 @@ export const addStopBtn = css`
   &:hover {
     border-color: var(--haze-color-border-hover);
     color: var(--haze-color-text);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -373,11 +344,6 @@ export const gradientSwatch = css`
 
   &:hover {
     transform: scale(1.02);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -399,10 +365,5 @@ export const trigger = css`
 
   &:hover {
     border-color: var(--haze-color-border-hover);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;

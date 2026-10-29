@@ -10,6 +10,7 @@ import { Fragment, useId, useState } from 'react';
 
 import { useStrings } from '../LocaleProvider';
 
+import { focusRingVisible } from '../../utils/focus-ring';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import { clamp01, cssColor, formatColor, hsvToRgb, parseColor, rgbHexKey, rgbToHsv } from './color-math';
@@ -422,7 +423,7 @@ export default function ColorPickerPanel({
             key={`${keyPrefix}:${color}`}
             type='button'
             data-slot="swatch-item"
-            x-class={[swatchBtn, checkerboard, rgbHexKey(rgb) === solidActiveKey && swatchActive]}
+            x-class={[swatchBtn, checkerboard, focusRingVisible, rgbHexKey(rgb) === solidActiveKey && swatchActive]}
             aria-label={color}
             onClick={() => emitSolid(rgb, true)}
           >
@@ -453,7 +454,7 @@ export default function ColorPickerPanel({
         type='button'
         data-slot="gradient-swatch"
         aria-label={entry.label ?? entry.gradient}
-        x-class={[gradientSwatch, checkerboard, canonical === gradientCss && swatchActive]}
+        x-class={[gradientSwatch, checkerboard, focusRingVisible, canonical === gradientCss && swatchActive]}
         style={{background: canonical}}
         onClick={() => emitGradient(parsed, true)}
       />
@@ -467,7 +468,7 @@ export default function ColorPickerPanel({
           <button
             type='button'
             data-slot="mode-button"
-            x-class={[modeBtn]}
+            x-class={[modeBtn, focusRingVisible]}
             aria-pressed={!isGradient}
             onClick={() => switchMode('solid')}
           >
@@ -476,7 +477,7 @@ export default function ColorPickerPanel({
           <button
             type='button'
             data-slot="mode-button"
-            x-class={[modeBtn]}
+            x-class={[modeBtn, focusRingVisible]}
             aria-pressed={isGradient}
             onClick={() => switchMode('gradient')}
           >
@@ -519,7 +520,7 @@ export default function ColorPickerPanel({
       */}
       <div
         data-slot="saturation"
-        x-class={[svArea]}
+        x-class={[svArea, focusRingVisible]}
         role='slider'
         tabIndex={0}
         aria-label={strings.saturationBrightness}
@@ -542,7 +543,7 @@ export default function ColorPickerPanel({
 
       <div
         data-slot="hue-track"
-        x-class={[track, hueTrack]}
+        x-class={[track, hueTrack, focusRingVisible]}
         role='slider'
         tabIndex={0}
         aria-label={strings.hue}
@@ -559,7 +560,7 @@ export default function ColorPickerPanel({
       {allowAlpha && (
         <div
           data-slot="alpha-track"
-          x-class={[track, checkerboard]}
+          x-class={[track, checkerboard, focusRingVisible]}
           role='slider'
           tabIndex={0}
           aria-label={strings.alpha}
@@ -609,7 +610,7 @@ export default function ColorPickerPanel({
                 <button
                   type='button'
                   data-slot="stop-swatch"
-                  x-class={[stopSwatchBtn, checkerboard, index === stopIndex && stopSwatchActive]}
+                  x-class={[stopSwatchBtn, checkerboard, focusRingVisible, index === stopIndex && stopSwatchActive]}
                   aria-label={`${strings.stopColor} ${index + 1}: ${stop.color}`}
                   onClick={() => setSelectedStop(index)}
                 >
@@ -634,7 +635,7 @@ export default function ColorPickerPanel({
                 <button
                   type='button'
                   data-slot="stop-remove-button"
-                  x-class={[stopRemoveBtn]}
+                  x-class={[stopRemoveBtn, focusRingVisible]}
                   aria-label={`${strings.removeStop} ${index + 1}`}
                   disabled={stops.length <= 2}
                   onClick={() => removeStop(index)}
@@ -644,7 +645,7 @@ export default function ColorPickerPanel({
               </div>
             ))}
           </div>
-          <button type='button' data-slot="add-stop-button" x-class={[addStopBtn]} onClick={addStop}>
+          <button type='button' data-slot="add-stop-button" x-class={[addStopBtn, focusRingVisible]} onClick={addStop}>
             {strings.addStop}
           </button>
         </>

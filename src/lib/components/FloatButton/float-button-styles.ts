@@ -56,11 +56,10 @@ export const fab = css`
     box-shadow: var(--haze-shadow-xl);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed next
+     to this class by FloatButton and FloatButtonGroup's trigger — it
+     also brings the forced-colors Highlight outline the local copy
+     never had. */
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;

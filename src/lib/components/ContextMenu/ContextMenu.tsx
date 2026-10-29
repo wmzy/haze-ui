@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
-import { useFloating } from '../../utils/floating';
+import { useFloating, useOpenWithChange } from '../../utils/floating';
 
 import { ContextMenuProvider } from './ContextMenuContext';
 
@@ -56,14 +56,7 @@ export default function ContextMenu({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handleSetOpen = useCallback(
-    (value: boolean | ((prev: boolean) => boolean)) => {
-      const next = typeof value === 'function' ? value(open) : value;
-      setOpen(next);
-      onOpenChange?.(next);
-    },
-    [open, setOpen, onOpenChange]
-  );
+  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
 
   const setPosition = useCallback((px: number, py: number) => {
     setX(px);

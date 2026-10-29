@@ -3,6 +3,8 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { useStrings } from '../LocaleProvider';
 
 /** Distance from the bottom (px) that still counts as "parked at bottom". */
@@ -65,10 +67,9 @@ const jumpPill = css`
     border-color: var(--haze-color-primary);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     — it also brings the forced-colors Highlight arm the local copy
+     never had. */
 `;
 
 export default function ChatContainer({
@@ -121,7 +122,7 @@ export default function ChatContainer({
     <div ref={ref} data-slot='chat-container' x-class={[container, className]} {...rest}>
       {children}
       {autoScroll && showJump && (
-        <button type='button' data-slot='jump-button' x-class={[jumpPill]} onClick={jumpToBottom}>
+        <button type='button' data-slot='jump-button' x-class={[jumpPill, focusRingVisible]} onClick={jumpToBottom}>
           <span aria-hidden='true'>&darr;</span>
           {unreadLabel ?? strings.newMessages}
         </button>

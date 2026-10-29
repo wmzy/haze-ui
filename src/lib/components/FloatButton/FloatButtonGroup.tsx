@@ -4,6 +4,9 @@ import type { ControlOrValue } from 'react-use-control';
 import { useCallback, useId, useMemo } from 'react';
 import { useControl } from 'react-use-control';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import { useOpenWithChange } from '../../utils/floating';
+
 import {
   groupAnchor,
   anchored,
@@ -64,13 +67,7 @@ export default function FloatButtonGroup({
   const listId = useId();
   const state = open ? 'open' : 'closed';
 
-  const update = useCallback(
-    (next: boolean) => {
-      setOpen(next);
-      onOpenChange?.(next);
-    },
-    [setOpen, onOpenChange]
-  );
+  const update = useOpenWithChange(open, setOpen, onOpenChange);
 
   const closeMenu = useCallback(() => {
     if (open) update(false);
@@ -98,7 +95,7 @@ export default function FloatButtonGroup({
         <button
           type='button'
           data-slot='trigger'
-          x-class={[fab, shapes[shape], variants[variant]]}
+          x-class={[fab, focusRingVisible, shapes[shape], variants[variant]]}
           data-state={state}
           aria-expanded={open}
           aria-controls={listId}

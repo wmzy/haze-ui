@@ -15,19 +15,22 @@ import { statusSubtleColors } from './status-skin';
  * What deliberately stays local in alert-styles.ts / banner-styles.ts:
  * the layout axis — Alert is a flex-start icon column with a gap and
  * normal leading, Banner a centered space-between trigger row — a
- * genuine geometry difference, not spelling drift; plus Alert's
- * color-mix border layer, Banner's forced-colors CanvasText boundary
- * and roomier 2.5rem dismiss box. The dismiss (×) chrome itself
- * already lives in status-skin (`dismissBtn`). Every property set here
- * is disjoint from every consumer delta, so dev-server injection order
- * and dist split-css order cannot change the computed result.
+ * genuine geometry difference, not spelling drift; plus Banner's
+ * forced-colors CanvasText boundary and roomier 2.5rem dismiss box
+ * (Alert takes the shared color-mix border below; AsyncSection's error
+ * box composes the danger tint+edge pair with a stacked-column delta).
+ * The dismiss (×) chrome itself already lives in status-skin
+ * (`dismissBtn`). Every property set here is disjoint from every
+ * consumer delta, so dev-server injection order and dist split-css
+ * order cannot change the computed result.
  *
- * Pure Linaria class constants + one plain record of already-shared
- * classes (no css maps of our own — the one-css-map-per-module rule
- * has nothing to collide on); no hooks, no DOM access (RSC-safe by
+ * Pure Linaria class constants plus one css map (`calloutBorders`) and
+ * one plain record of already-shared classes — the
+ * one-css-map-per-module rule has nothing to collide on; no hooks, no
+ * DOM access (RSC-safe by
  * inspection; nothing RSC-listed imports it, so no rsc-safe.mjs entry
- * — the css rides with the alert/banner groups via split-css
- * sharedLayers).
+ * — the css rides with the alert/banner/async-section groups via
+ * split-css sharedLayers).
  */
 
 /** The callout surface: flex box, page-gutter padding, radius and the
@@ -59,4 +62,37 @@ export const calloutColors = {
   success: statusSubtleColors.success,
   warning: statusSubtleColors.warning,
   danger: statusSubtleColors.danger,
+} as const;
+
+/* The border layer composed over the subtle skin — the 25% color-mix
+ * edge that frames the message with its accent. Born as Alert's own
+ * layer; moved here when AsyncSection's error box needed the identical
+ * danger pair (subtle background + 25% danger border), and re-exported
+ * by alert-styles as `borders` (local const binding — see the colors
+ * note there). Key order mirrors calloutColors; properties are
+ * disjoint from the surface, the tint and every consumer delta. */
+export const calloutBorders = {
+  default: css`
+    border: 1px solid var(--haze-color-border);
+  `,
+  primary: css`
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-primary) 25%, transparent);
+  `,
+  info: css`
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-info) 25%, transparent);
+  `,
+  success: css`
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-success) 25%, transparent);
+  `,
+  warning: css`
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
+  `,
+  danger: css`
+    border: 1px solid
+      color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
+  `,
 } as const;

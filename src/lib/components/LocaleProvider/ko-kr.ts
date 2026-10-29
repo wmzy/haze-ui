@@ -116,6 +116,10 @@ const koKR: HazeStrings = {
     addStop: '중지점 추가',
     removeStop: '중지점 제거',
   },
+  copyButton: {
+    copy: '복사',
+    copied: '복사됨',
+  },
   confirmDialog: {
     confirm: '확인',
     cancel: '취소',
@@ -247,6 +251,14 @@ const koKR: HazeStrings = {
     clear: '지우기',
     undo: '실행 취소',
     unsupported: '이 브라우저에서는 서명이 지원되지 않습니다.',
+  },
+  schedule: {
+    today: '오늘',
+    previous: '이전',
+    next: '다음',
+    day: '일',
+    week: '주',
+    month: '월',
   },
   select: {
     placeholder: '선택…',

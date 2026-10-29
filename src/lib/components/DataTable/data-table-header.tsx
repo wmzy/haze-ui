@@ -17,6 +17,7 @@ import type { DataTableFiltersState } from './filters';
 import { css } from '@linaria/core';
 
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
 
 import { CheckboxCore } from '../Checkbox';
@@ -119,7 +120,7 @@ function ReorderGrip({
       }}
       aria-label={`Reorder ${label}`}
       aria-keyshortcuts='Alt+ArrowLeft Alt+ArrowRight'
-      x-class={[sortableHandle, reorderGripClass]}
+      x-class={[sortableHandle, reorderGripClass, focusRingVisible]}
     >
       <span aria-hidden='true'>⠿</span>
     </button>
@@ -152,10 +153,12 @@ const sortButton = css`
     color: var(--haze-color-primary);
   }
 
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the sort button's x-class; only the rounded-corner delta stays —
+     the ring and its forced-colors Highlight outline follow the
+     element's radius. */
   &:focus-visible {
-    outline: none;
     border-radius: var(--haze-radius-sm);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -194,10 +197,9 @@ const resizeHandle = css`
     background: var(--haze-color-primary);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the handle's x-class (the ::after tint arms above are the
+     affordance, not the ring). */
 `;
 
 /* Reorder grip at the header cell's inline-start edge: a focusable
@@ -227,10 +229,8 @@ const reorderGripClass = css`
     background: var(--haze-color-bg-subtle);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the grip's x-class (the resize-handle precedent). */
 `;
 
 /* The sortable wrapper span around a grip, present once the drag kit has
@@ -381,7 +381,7 @@ export function renderDataTableHeader<TData extends RowData>(
                   <button
                     type='button'
                     data-slot="sort-button"
-                    x-class={[sortButton]}
+                    x-class={[sortButton, focusRingVisible]}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <table.FlexRender header={header} />
@@ -409,7 +409,7 @@ export function renderDataTableHeader<TData extends RowData>(
                     aria-orientation='vertical'
                     aria-label={`Resize ${columnLabel(header.column)}`}
                     tabIndex={0}
-                    x-class={[resizeHandle]}
+                    x-class={[resizeHandle, focusRingVisible]}
                     onMouseDown={(event) => {
                       event.preventDefault();
                       header.getResizeHandler()(event);

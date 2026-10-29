@@ -116,6 +116,10 @@ const deDE: HazeStrings = {
     addStop: 'Farbstop hinzufügen',
     removeStop: 'Farbstop entfernen',
   },
+  copyButton: {
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+  },
   confirmDialog: {
     confirm: 'Bestätigen',
     cancel: 'Abbrechen',
@@ -247,6 +251,14 @@ const deDE: HazeStrings = {
     clear: 'Leeren',
     undo: 'Rückgängig',
     unsupported: 'Die Unterschrift wird in diesem Browser nicht unterstützt.',
+  },
+  schedule: {
+    today: 'Heute',
+    previous: 'Zurück',
+    next: 'Weiter',
+    day: 'Tag',
+    week: 'Woche',
+    month: 'Monat',
   },
   select: {
     placeholder: 'Auswählen…',

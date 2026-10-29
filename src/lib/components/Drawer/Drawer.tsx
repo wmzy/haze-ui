@@ -6,6 +6,7 @@ import { useControl } from 'react-use-control';
 
 import { useNativeDialogShell } from '../../utils/native-dialog';
 import { dialogBackdrop } from '../../utils/dialog-skin';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
@@ -107,12 +108,9 @@ const overlay = css`
   }
 
   /* The scrim and its fades are the shared dialog-skin companion
-   * (dialogBackdrop) composed next to this class; only the placement
-   * slide below stays family-local. */
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+   * (dialogBackdrop) composed next to this class, and the keyboard
+   * ring is utils/focus-ring's focusRingVisible (likewise composed
+   * below); only the placement slide below stays family-local. */
 
   /* 进出场位移由 placement 类注入变量，一对 keyframes 覆盖四个方向 */
   @keyframes haze-drawer-in {
@@ -136,13 +134,13 @@ const overlay = css`
   /* Forced-colors: the panel's opaque background flattens onto Canvas
      and the drawer declares border:none — an open drawer would blend
      into the page. A CanvasText boundary separates the panel from the
-     Canvas behind it; the squashed focus ring is replaced by a
-     Highlight outline. */
+     Canvas behind it; the Highlight outline itself comes from the
+     composed focusRingVisible — only its inset offset (an outer ring
+     would overflow the viewport-pinned panel) stays here. */
   @media (forced-colors: active) {
     border: 1px solid CanvasText;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
@@ -250,7 +248,7 @@ export default function Drawer({
       ref={setDialogRef}
       data-slot='content'
       {...dialogProps}
-      x-class={[overlay, dialogBackdrop, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
+      x-class={[overlay, focusRingVisible, dialogBackdrop, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
     >
       {children}
     </dialog>

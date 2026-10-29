@@ -8,8 +8,10 @@ import { createPortal } from 'react-dom';
 import { useControl } from 'react-use-control';
 
 import { computeFloatingPosition, resolvePadding } from '../../utils/collision';
+import { presenceOverlayFade } from '../../utils/dialog-skin';
 import { getDirection } from '../../utils/direction';
 import { Presence } from '../../utils/presence';
+import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 
@@ -87,7 +89,9 @@ function resolveTarget(step: TourStep): HTMLElement | null {
  * is painted either by the spotlight's giant box-shadow (a single element
  * cutting a hole, not four mask panels) or by the plain full mask below.
  * Clicks land here because it covers the viewport — the spotlight and the
- * mask are pointer-events: none.
+ * mask are pointer-events: none. The enter/exit fade is the shared
+ * dialog-skin companion (presenceOverlayFade) composed next to this
+ * class: Presence injects the data-state that drives it.
  */
 const overlay = css`
   position: fixed;
@@ -96,26 +100,6 @@ const overlay = css`
   z-index: var(--haze-z-overlay);
   font-family: var(--haze-font-sans);
   color: var(--haze-color-text);
-
-  &[data-state='open'] {
-    animation: haze-tour-in var(--haze-duration-normal) var(--haze-ease);
-  }
-
-  &[data-state='closed'] {
-    animation: haze-tour-out var(--haze-duration-fast) var(--haze-ease);
-  }
-
-  @keyframes haze-tour-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-tour-out {
-    to {
-      opacity: 0;
-    }
-  }
 `;
 
 /*
@@ -227,43 +211,6 @@ const counterStyle = css`
   margin-inline-end: auto;
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-muted);
-`;
-
-const btn = css`
-  padding: var(--haze-space-2) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  font-weight: var(--haze-weight-medium);
-  cursor: pointer;
-  transition:
-    background var(--haze-duration-fast) var(--haze-ease),
-    border-color var(--haze-duration-fast) var(--haze-ease);
-`;
-
-const subtleBtn = css`
-  background: var(--haze-color-bg);
-  border: 1px solid var(--haze-color-border);
-  color: var(--haze-color-text);
-
-  &:hover {
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-`;
-
-const primaryBtn = css`
-  background: var(--haze-color-primary);
-  border: 1px solid var(--haze-color-primary);
-  color: var(--haze-color-text-inverse);
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 // ---------------------------------------------------------------------------
@@ -482,7 +429,7 @@ export default function Tour({
     <Presence present={open}>
       <div
         data-slot='tour'
-        x-class={[overlay]}
+        x-class={[overlay, presenceOverlayFade]}
         onClick={
           maskClosable
             ? (event) => {
@@ -531,31 +478,31 @@ export default function Tour({
             <span id={counterId} data-slot='counter' x-class={[counterStyle]}>
               {stepOf}
             </span>
-            <button
-              type='button'
+            <Button
               data-slot='skip-button'
-              x-class={[btn, subtleBtn]}
+              variant='outline'
+              size='md'
               onClick={() => close('skip')}
             >
               {strings.skip}
-            </button>
-            <button
-              type='button'
+            </Button>
+            <Button
               data-slot='prev'
-              x-class={[btn, subtleBtn]}
+              variant='outline'
+              size='md'
               disabled={index === 0}
               onClick={() => goTo(index - 1)}
             >
               {strings.back}
-            </button>
-            <button
-              type='button'
+            </Button>
+            <Button
               data-slot='next'
-              x-class={[btn, primaryBtn]}
+              variant='solid'
+              size='md'
               onClick={() => (last ? close('done') : goTo(index + 1))}
             >
               {last ? strings.done : strings.next}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

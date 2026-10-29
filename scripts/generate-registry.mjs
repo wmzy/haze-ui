@@ -605,9 +605,9 @@ const CATEGORY_GROUPS = {
     'number-input', 'otp-input',
     'password-input', 'phone-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
     'signature', 'slider', 'switch', 'tag-input', 'textarea',
-    // 'time-field' 无独立 css family——其样式并入 date-field（segmented-field
-    // 引擎在 DateField 目录）+ time-picker 闭包，见 dist/css-manifest.json
-    'time-grid', 'time-picker', 'toggle', 'transfer', 'tree-select',
+    // time-field 现在是独立 css family：segmented-field 引擎已从 DateField
+    // 目录下沉到 utils/segmented-field（sharedLayers: date-field + time-field）
+    'time-field', 'time-grid', 'time-picker', 'toggle', 'transfer', 'tree-select',
     'upload',
   ],
   overlay: [

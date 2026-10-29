@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { classnames } from '../../utils/classnames';
 import { FloatingPanel } from '../../utils/floating';
 import { menuPanelLg } from '../../utils/menu-skins';
 import { useSubmenuContext } from '../../utils/submenu';
@@ -34,7 +35,7 @@ export default function MenuSubContent({
       id={sub.contentId}
       role='menu'
       visualClass={menuPanelLg}
-      className={[className, classNames?.subContent].filter(Boolean).join(' ') || undefined}
+      className={classnames(className, classNames?.subContent)}
       onKeyDown={sub.contentKeyDown}
     >
       {children}

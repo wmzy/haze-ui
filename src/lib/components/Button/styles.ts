@@ -43,11 +43,6 @@ export const base = css`
     box-shadow var(--haze-duration-fast);
   user-select: none;
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -59,15 +54,16 @@ export const base = css`
      text color. The base's transparent 1px border therefore survives
      as a ButtonText boundary already — restating it keeps ghost/link
      buttons deterministic instead of relying on the UA default. The
-     box-shadow focus ring is dropped by the UA, so keyboard focus
-     moves to a real outline in the Highlight system color. Disabled
-     surfaces render in GrayText at full opacity (the 0.5 dim reads as
-     noise against a two-color canvas). */
+     keyboard ring itself (the outline:none + box-shadow pair, and its
+     Highlight replacement here) is utils/focus-ring's focusRingVisible,
+     composed next to this class by every renderer of the skin (Button,
+     Toggle, the Toolbar items); only the wider outline-offset delta
+     rides here. Disabled surfaces render in GrayText at full opacity
+     (the 0.5 dim reads as noise against a two-color canvas). */
   @media (forced-colors: active) {
     border-color: ButtonText;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: 2px;
     }
 

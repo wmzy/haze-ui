@@ -114,6 +114,10 @@ const jaJP: HazeStrings = {
     addStop: 'ストップを追加',
     removeStop: 'ストップを削除',
   },
+  copyButton: {
+    copy: 'コピー',
+    copied: 'コピーしました',
+  },
   confirmDialog: {
     confirm: '確認',
     cancel: 'キャンセル',
@@ -245,6 +249,14 @@ const jaJP: HazeStrings = {
     clear: 'クリア',
     undo: '元に戻す',
     unsupported: 'このブラウザでは署名を利用できません。',
+  },
+  schedule: {
+    today: '今日',
+    previous: '前へ',
+    next: '次へ',
+    day: '日',
+    week: '週',
+    month: '月',
   },
   select: {
     placeholder: '選択してください',

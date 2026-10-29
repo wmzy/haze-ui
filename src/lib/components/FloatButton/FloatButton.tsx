@@ -6,6 +6,8 @@ import type {
   ReactNode,
 } from 'react';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { fab, shapes, variants, anchored, iconBox, descBox } from './float-button-styles';
 import { PlusGlyph } from './float-button-glyphs';
 import { useFloatButtonGroup } from './float-button-context';
@@ -105,7 +107,7 @@ export default function FloatButton<T extends ElementType = 'button'>({
     </>
   );
 
-  const classes = [fab, shapes[shape], variants[variant], !group && anchored, className];
+  const classes = [fab, focusRingVisible, shapes[shape], variants[variant], !group && anchored, className];
 
   return (
     <Tag

@@ -20,6 +20,8 @@ import { ApprovalCard } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/approval-card.css';
+import 'haze-ui/css/button.css';
+import 'haze-ui/css/spinner.css';
 
 export { ApprovalCard };
 export type { ApprovalCardProps } from 'haze-ui';

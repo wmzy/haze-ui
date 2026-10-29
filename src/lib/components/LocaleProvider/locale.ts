@@ -113,6 +113,10 @@ const defaultStrings = {
     addStop: 'Add stop',
     removeStop: 'Remove stop',
   },
+  copyButton: {
+    copy: 'Copy',
+    copied: 'Copied',
+  },
   confirmDialog: {
     confirm: 'Confirm',
     cancel: 'Cancel',
@@ -244,6 +248,14 @@ const defaultStrings = {
     clear: 'Clear',
     undo: 'Undo',
     unsupported: 'Signature is not supported in this browser.',
+  },
+  schedule: {
+    today: 'Today',
+    previous: 'Previous',
+    next: 'Next',
+    day: 'Day',
+    week: 'Week',
+    month: 'Month',
   },
   select: {
     placeholder: 'Select…',

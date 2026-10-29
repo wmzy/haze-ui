@@ -7,8 +7,9 @@ import { useId, useImperativeHandle, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
+import { toCollisionStrategy } from '../../utils/collision';
 import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
-import { panelSurface } from '../../utils/panel-skin';
+import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
 // Manual merge (not x-class): FloatingPanel appends its `className` prop
 // last in its own x-class array, so both consumer classes arrive there
 // in order — plain `className` first, the `content` slot after it.
@@ -65,11 +66,6 @@ type PopoverProps = {
   ref?: Ref<PopoverHandle>;
 };
 
-const container = css`
-  position: relative;
-  display: inline-flex;
-`;
-
 /* Call-site deltas on the shared panel surface (utils/panel-skin): the
  * padding step and the min-width floor size this panel — min-width
  * pairs with padding + the surface's border, whose border-box sizing
@@ -96,7 +92,7 @@ export default function Popover({
   // Stable identity: useFloatingPosition re-runs its effect on every
   // change of this object.
   const collision = useMemo(
-    () => (collisionPadding === undefined ? undefined : {collisionPadding}),
+    () => toCollisionStrategy(collisionPadding),
     [collisionPadding]
   );
   const floating = useFloating({
@@ -129,7 +125,7 @@ export default function Popover({
   );
 
   return (
-    <span data-slot='popover' x-class={[container]}>
+    <span data-slot='popover' x-class={[floatingPairHost]}>
       <FloatingTriggerSpan
         ref={triggerRef}
         behavior={floating}

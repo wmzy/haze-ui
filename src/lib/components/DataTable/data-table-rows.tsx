@@ -17,6 +17,8 @@ import type { CellNavigationModel, NavCell } from './use-cell-navigation';
 import { css } from '@linaria/core';
 import { Fragment } from 'react';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { CheckboxCore } from '../Checkbox';
 import { Empty } from '../Empty';
 import { Input } from '../Input';
@@ -129,10 +131,8 @@ const expander = css`
     background: var(--haze-color-bg-subtle);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed below
+     at the expand button's x-class. */
 `;
 
 const expanderIcon = css`
@@ -355,7 +355,7 @@ export function renderDataTableRow<TData extends RowData>(
                     <button
                       type='button'
                       data-slot="expand-button"
-                      x-class={[expander]}
+                      x-class={[expander, focusRingVisible]}
                       aria-expanded={row.getIsExpanded()}
                       aria-controls={
                         renderExpandedRow !== undefined

@@ -1,7 +1,6 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useRef } from 'react';
 
 import { useStrings } from '../LocaleProvider';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
@@ -9,6 +8,8 @@ import { srOnly } from '../../utils/sr-only';
 
 type FileInputProps = {
   children?: ReactNode;
+  /** Forwarded to the hidden native input (React 19 ref-as-prop). */
+  ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type'>;
 
 /* The trigger keeps its own transition/hover (the only field surface
@@ -40,9 +41,9 @@ const trigger = css`
 export default function FileInput({
   children,
   className,
+  ref,
   ...rest
 }: FileInputProps) {
-  const ref = useRef<HTMLInputElement>(null);
   const strings = useStrings('fileInput');
 
   return (

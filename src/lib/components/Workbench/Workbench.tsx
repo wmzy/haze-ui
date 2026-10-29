@@ -364,15 +364,17 @@ export default function Workbench({
     panelHeightControl,
     PANEL_DEFAULT
   );
-  // The panels bind the same Control the scrim writes to, so handle
-  // expanders, scrim clicks and external drivers stay one state source.
-  const [sidebarCollapsed, setSidebarCollapsed, sidebarCollapsedCtrl] =
-    useControl(sidebarCollapsedProp, false);
+  // The panel binds the same Control the resizable group writes to, so
+  // handle expanders and external drivers stay one state source; only
+  // the Control slot is consumed here.
+  const [, , sidebarCollapsedCtrl] = useControl(sidebarCollapsedProp, false);
   // Mobile-only overlay state: the under-breakpoint sidebar form.
   // Starts closed — the mobile shell reveals the sidebar through
   // the consumer's button, not by default.
-  const [mobileSidebarOpen, setMobileSidebarOpen, mobileSidebarOpenCtrl] =
-    useControl(mobileSidebarOpenControl, false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useControl(
+    mobileSidebarOpenControl,
+    false
+  );
   // The full-width slide-out is opaque and edge-to-edge (z 100), so it
   // would cover any scrim entirely — no scrim is rendered for it and
   // the keyboard is the shell's built-in dismissal path.

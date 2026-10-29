@@ -127,9 +127,11 @@ export function Text({
   className,
   children,
 }: TextProps) {
-  let Tag: keyof JSX.IntrinsicElements = 'span';
-  if (strong) Tag = 'strong';
-  else if (code) Tag = 'code';
+  const Tag: keyof JSX.IntrinsicElements = strong
+    ? 'strong'
+    : code
+      ? 'code'
+      : 'span';
 
   const clamped = Boolean(ellipsis);
   const lines = ellipsisLines(ellipsis);

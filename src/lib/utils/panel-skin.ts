@@ -56,3 +56,15 @@ export const popoverPanelHidden = css`
     display: none;
   }
 `;
+
+/**
+ * Trigger/panel pair host: the relative inline-flex wrapper every
+ * floating pair (Popover/Tooltip/HoverCard/Popconfirm) anchors its
+ * panel against — the four components wore it as identical local
+ * two-declaration classes. Composition deltas (gap, display tweaks)
+ * stay local with raised specificity if they must override.
+ */
+export const floatingPairHost = css`
+  position: relative;
+  display: inline-flex;
+`;

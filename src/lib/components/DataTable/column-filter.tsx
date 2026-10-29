@@ -4,6 +4,9 @@ import { css } from '@linaria/core';
 import { useState } from 'react';
 import { useControl } from 'react-use-control';
 
+import { classnames } from '../../utils/classnames';
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import { Button } from '../Button';
 import { CheckboxCore } from '../Checkbox';
 import { Popover } from '../Popover';
@@ -35,10 +38,12 @@ const filterTrigger = css`
     color: var(--haze-color-primary);
   }
 
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed into
+     the Popover trigger slot below; only the rounded-corner delta
+     stays — the ring and its forced-colors Highlight outline follow
+     the element's radius. */
   &:focus-visible {
-    outline: none;
     border-radius: var(--haze-radius-sm);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -182,7 +187,7 @@ function ColumnFilterTrigger({
   return (
     <Popover
       open={openCtrl}
-      classNames={{ trigger: filterTrigger }}
+      classNames={{ trigger: classnames(filterTrigger, focusRingVisible) }}
       content={
         <ColumnFilterMenu
           label={label}

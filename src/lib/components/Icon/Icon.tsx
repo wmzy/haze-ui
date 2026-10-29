@@ -32,16 +32,16 @@ const strokeOnly = css`
 
 const sizes = {
   sm: css`
-    width: 16px;
-    height: 16px;
+    width: var(--haze-space-4);
+    height: var(--haze-space-4);
   `,
   md: css`
-    width: 20px;
-    height: 20px;
+    width: var(--haze-space-5);
+    height: var(--haze-space-5);
   `,
   lg: css`
-    width: 24px;
-    height: 24px;
+    width: var(--haze-space-6);
+    height: var(--haze-space-6);
   `,
 } as const;
 

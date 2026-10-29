@@ -1,6 +1,7 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
 import { useBusyPressable } from '../../hooks/useBusyPressable';
+import { focusRingVisible } from '../../utils/focus-ring';
 import Spinner from '../Spinner/Spinner';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
@@ -110,6 +111,7 @@ export default function Button<T extends ElementType = 'button'>({
       aria-busy={busyProps['aria-busy']}
       x-class={[
         base,
+        focusRingVisible,
         variants[variant],
         sizeClass,
         !isNativeButton && linkClass,

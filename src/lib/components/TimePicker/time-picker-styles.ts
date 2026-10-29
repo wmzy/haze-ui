@@ -7,6 +7,7 @@
 import { css } from '@linaria/core';
 
 import { classnames } from '../../utils/classnames';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 
 export const wrapper = css`
@@ -143,7 +144,11 @@ export const footer = css`
   margin-block-start: var(--haze-space-2);
 `;
 
-export const nowButton = css`
+/** Panel footer's "Now" action: quiet primary-text ghost button. The
+ * keyboard ring is utils/focus-ring's focusRingVisible composed next
+ * to the local base — it also brings the forced-colors Highlight arm
+ * the local copy never had. */
+const nowButtonBase = css`
   appearance: none;
   border: none;
   background: transparent;
@@ -161,9 +166,6 @@ export const nowButton = css`
   &:active {
     background: var(--haze-color-bg-muted);
   }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
+
+export const nowButton = classnames(nowButtonBase, focusRingVisible);

@@ -123,6 +123,10 @@ const arSA: HazeStrings = {
     addStop: 'إضافة نقطة',
     removeStop: 'إزالة نقطة',
   },
+  copyButton: {
+    copy: 'نسخ',
+    copied: 'تم النسخ',
+  },
   confirmDialog: {
     confirm: 'تأكيد',
     cancel: 'إلغاء',
@@ -254,6 +258,14 @@ const arSA: HazeStrings = {
     clear: 'مسح',
     undo: 'تراجع',
     unsupported: 'لوحة التوقيع غير مدعومة في هذا المتصفح.',
+  },
+  schedule: {
+    today: 'اليوم',
+    previous: 'السابق',
+    next: 'التالي',
+    day: 'يوم',
+    week: 'أسبوع',
+    month: 'شهر',
   },
   select: {
     placeholder: 'تحديد…',

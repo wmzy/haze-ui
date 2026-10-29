@@ -87,12 +87,14 @@ describe('Sparkline', () => {
   });
 
   it('exposes the color skin maps for composition', () => {
+    // Stroke axis delegates to the shared status stroke skin, so its key
+    // order follows the canonical status axis (warning before danger).
     expect(Object.keys(colorStrokes)).toEqual([
       'default',
       'primary',
       'success',
-      'danger',
       'warning',
+      'danger',
       'info',
     ]);
     expect(Object.keys(colorFills)).toEqual([
