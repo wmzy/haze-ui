@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
+import { useControl } from 'react-use-control';
 
 import {Form, FormItem, createForm, getValue} from '../../form';
 
@@ -147,5 +148,128 @@ describe('Segmented + react-f0rm FormItem coexistence', () => {
     // be inert there; the form store is the single value channel.
     await user.click(screen.getByRole('button', {name: 'Week'}));
     expect(getValue(form, 'view')).toBe('week');
+  });
+});
+
+describe('Segmented keyboard navigation (roving tabindex + select-on-move)', () => {
+  it('keeps a single tab stop on the selected option', () => {
+    render(<Segmented options={['A', 'B', 'C']} value="B" />);
+    const [a, b, c] = screen.getAllByRole('button');
+    expect(a!).toHaveAttribute('tabindex', '-1');
+    expect(b!).toHaveAttribute('tabindex', '0');
+    expect(c!).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('falls back to the first enabled option for the tab stop', () => {
+    const disabledFirst = [
+      {value: 'a', label: 'A', disabled: true},
+      {value: 'b', label: 'B'},
+      {value: 'c', label: 'C'},
+    ];
+    const {rerender} = render(<Segmented options={disabledFirst} />);
+    const [a, b] = screen.getAllByRole('button');
+    expect(a!).toHaveAttribute('tabindex', '-1');
+    expect(b!).toHaveAttribute('tabindex', '0');
+
+    // a selected-but-disabled option cannot hold the stop either
+    rerender(<Segmented options={disabledFirst} value="a" />);
+    const [a2, b2] = screen.getAllByRole('button');
+    expect(a2!).toHaveAttribute('tabindex', '-1');
+    expect(b2!).toHaveAttribute('tabindex', '0');
+  });
+
+  it('selects and focuses with ArrowRight/ArrowLeft, wrapping (LTR)', async () => {
+    const user = userEvent.setup();
+    render(<Segmented options={['A', 'B', 'C']} value="A" />);
+    const [a, b, c] = screen.getAllByRole('button');
+    a!.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(b!).toHaveFocus();
+    // the roving stop follows the selection, proving the value moved
+    expect(b!).toHaveAttribute('tabindex', '0');
+    expect(a!).toHaveAttribute('tabindex', '-1');
+    await user.keyboard('{ArrowRight}');
+    expect(c!).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(a!).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(c!).toHaveFocus();
+  });
+
+  it('moves selection to Home/End', async () => {
+    const user = userEvent.setup();
+    render(<Segmented options={['A', 'B', 'C']} value="B" />);
+    const [a, , c] = screen.getAllByRole('button');
+    screen.getByRole('button', {name: 'B'}).focus();
+    await user.keyboard('{Home}');
+    expect(a!).toHaveFocus();
+    expect(a!).toHaveAttribute('tabindex', '0');
+    await user.keyboard('{End}');
+    expect(c!).toHaveFocus();
+    expect(c!).toHaveAttribute('tabindex', '0');
+  });
+
+  it('mirrors the arrow keys under dir=rtl', async () => {
+    const user = userEvent.setup();
+    // Custom containers are not auto-appended to body — focus needs the
+    // tree attached (same pattern as src/lib/rtl.test.tsx).
+    const rtl = document.createElement('div');
+    rtl.setAttribute('dir', 'rtl');
+    document.body.appendChild(rtl);
+    try {
+      render(<Segmented options={['A', 'B', 'C']} value="A" />, {container: rtl});
+      const [a, b] = screen.getAllByRole('button');
+      a!.focus();
+      // RTL: the visually-forward arrow is ArrowLeft
+      await user.keyboard('{ArrowLeft}');
+      expect(b!).toHaveFocus();
+      await user.keyboard('{ArrowRight}');
+      expect(a!).toHaveFocus();
+    } finally {
+      rtl.remove();
+    }
+  });
+
+  it('skips disabled options when moving', async () => {
+    const user = userEvent.setup();
+    render(
+      <Segmented
+        options={[
+          {value: 'a', label: 'A'},
+          {value: 'b', label: 'B', disabled: true},
+          {value: 'c', label: 'C'},
+        ]}
+        value="a"
+      />
+    );
+    const [a, , c] = screen.getAllByRole('button');
+    a!.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(c!).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(a!).toHaveFocus();
+    await user.keyboard('{End}');
+    // End lands on the last enabled option, not the disabled middle
+    expect(c!).toHaveFocus();
+  });
+
+  it('arrows update a controlled value through the shared control', async () => {
+    const user = userEvent.setup();
+    function Controlled() {
+      const [, , control] = useControl('day');
+      return (
+        <form onSubmit={(e) => e.preventDefault()}>
+          <Segmented name="view" options={views} value={control} />
+        </form>
+      );
+    }
+    const {container} = render(<Controlled />);
+    const form = container.querySelector('form')!;
+    screen.getByRole('button', {name: 'Day'}).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', {name: 'Week'})).toHaveFocus();
+    // the hidden form bridge mirrors the parent-owned state — the
+    // arrow selection flowed through setValue, not a local copy
+    expect(new FormData(form).get('view')).toBe('week');
   });
 });

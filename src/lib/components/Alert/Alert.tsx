@@ -5,10 +5,11 @@ import type { StatusColor } from '../../utils/status-skin';
 import { useControl } from 'react-use-control';
 
 import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
+import { calloutContent, calloutSurface } from '../../utils/callout-skin';
 
 import { useStrings } from '../LocaleProvider';
 
-import { base, colors, borders, contentStyle } from './alert-styles';
+import { base, colors, borders } from './alert-styles';
 
 type AlertProps = {
   visible?: ControlOrValue<boolean>;
@@ -46,9 +47,9 @@ export default function Alert({
       ref={ref}
       role={statusLiveRoles[color]}
       data-slot='alert'
-      x-class={[base, colors[color], borders[color], className]}
+      x-class={[calloutSurface, base, colors[color], borders[color], className]}
     >
-      <div data-slot='content' className={contentStyle}>{children}</div>
+      <div data-slot='content' x-class={[calloutContent]}>{children}</div>
       {closable && (
         <button
           type='button'

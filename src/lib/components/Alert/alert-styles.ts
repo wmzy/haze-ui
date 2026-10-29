@@ -1,44 +1,42 @@
 import {css} from '@linaria/core';
 
-import { statusSubtleColors } from '../../utils/status-skin';
+import { calloutColors } from '../../utils/callout-skin';
 
 /**
- * Shared Alert skin — the base and color classes the `Alert`
- * component wears. Living in their own module keeps the component file
- * free of style internals (react-refresh boundary) and lets the
- * colors map ship as a public constant (`alertVariants`, the shadcn
- * `buttonVariants` precedent) for consumers composing custom elements
- * with the same skin; split-css groups the emitted CSS into
- * `haze-ui/css/alert.css` with them.
+ * Shared Alert skin — the Alert-specific layers composed over the
+ * common callout surface (utils/callout-skin.ts: box model, padding,
+ * body typography, the flexing content column and the status tint
+ * map; the mirror Banner keeps only its own deltas there too). Living
+ * in their own module keeps the component file free of style
+ * internals (react-refresh boundary) and lets the colors map ship as
+ * a public constant (`alertVariants`, the shadcn `buttonVariants`
+ * precedent) for consumers composing custom elements with the same
+ * skin; split-css groups the emitted CSS into `haze-ui/css/alert.css`
+ * with them.
  */
 
+/** Alert's layout delta over the shared callout surface: a flex-start
+ *  icon column — multi-line content hangs left under the glyph — with
+ *  a gap, and body copy keeps the normal leading Banner's single-line
+ *  trigger row does not need. */
 export const base = css`
-  display: flex;
   align-items: flex-start;
   gap: var(--haze-space-3);
-  padding: var(--haze-space-3) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-normal);
 `;
 
-/* The tinted surface/text pair comes from the shared status skin
- * (utils/status-skin.ts — byte-identical to Badge/Tag/Banner/Chip's
- * subtle axis); Alert's own layer below is the color-mix border
- * composed on top. Key order preserved from the historical map (the
- * public `alertVariants` shape). */
-export const colors = {
-  default: statusSubtleColors.default,
-  primary: statusSubtleColors.primary,
-  info: statusSubtleColors.info,
-  success: statusSubtleColors.success,
-  warning: statusSubtleColors.warning,
-  danger: statusSubtleColors.danger,
-} as const;
+/* The tinted surface/text pair is the shared callout status map
+ * (utils/callout-skin.ts — the status-skin subtle axis under the
+ * public `alertVariants` shape; key order is API). Alert's own layer
+ * below is the color-mix border composed on top. */
+// Local const (not a bare re-export) — rolls up as a real binding so
+// css-manifest attributes alertVariants to the alert family; a pure
+// `export { calloutColors as colors }` gets flattened to the utils
+// origin and breaks generate-registry (badge-styles precedent).
+export const colors = calloutColors;
 
 /** The border layer Alert composes over the shared subtle skin — the
- * 25% color-mix edge that frames the message with its accent. */
+ *  25% color-mix edge that frames the message with its accent. */
 export const borders = {
   default: css`
     border: 1px solid var(--haze-color-border);
@@ -64,7 +62,3 @@ export const borders = {
       color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
   `,
 } as const;
-
-export const contentStyle = css`
-  flex: 1;
-`;

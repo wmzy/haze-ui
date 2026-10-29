@@ -15,9 +15,10 @@ import {
 /**
  * Heatmap — a GitHub-style activity calendar: week columns × weekday
  * rows of squares, intensity-binned by value. Pure rendering from
- * props (no hooks, RSC-safe): all i18n surface is label props
- * (`getLabel` / `getMonthLabel` / `getWeekdayLabel` / `summary`)
- * instead of LocaleProvider keys.
+ * props (no hooks — listed in scripts/rsc-safe.mjs): all i18n surface
+ * is label props (`getLabel` / `getMonthLabel` / `getWeekdayLabel` /
+ * `summary`) instead of LocaleProvider keys, so the English literals
+ * below are deliberate RSC-safe defaults, not missed hook-ups.
  *
  * Layout is one CSS grid: row 1 carries month labels (each spanning
  * the week columns whose Saturday opens that month), column 1 the
@@ -78,6 +79,13 @@ type HeatmapProps = {
 /** UTC day in milliseconds — the grid math is DST-free by construction. */
 const DAY_MS = 86_400_000;
 
+// RSC-safe by design (scripts/rsc-safe.mjs): the month/weekday label
+// defaults (and the summary / getLabel English fallbacks below) stay
+// inlined literals instead of useStrings('heatmap') — a server tree
+// cannot source strings from a client LocaleProvider anyway (context
+// never crosses the RSC boundary), and the hook would drag the whole
+// locale pack into the safe closure. Localize via getMonthLabel /
+// getWeekdayLabel / getLabel / summary props.
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
@@ -188,6 +196,8 @@ export default function Heatmap({
               levels,
               Math.max(1, Math.ceil((value / maxValue) * levels))
             );
+      // RSC-safe inline English fallback (see the MONTH_NAMES note) —
+      // localize via the getLabel prop, not useStrings.
       const label = getLabel
         ? getLabel({ date, value })
         : `${value === 0 ? 'No activity' : `${value} ${value === 1 ? 'activity' : 'activities'}`} on ${date}`;

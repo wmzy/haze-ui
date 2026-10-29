@@ -1,8 +1,13 @@
-import type { ReactNode, Ref } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  ReactNode,
+  Ref,
+} from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { mergeRefs } from '../../utils/refs';
 
 import { sizes } from './segmented-styles';
@@ -19,7 +24,7 @@ type SegmentedCoreProps = {
   className?: string;
   /**
    * Forwarded to the group's focus target — the selected option's
-   * `<button>` (falling back to the first).
+   * `<button>` (falling back to the first enabled option).
    */
   ref?: Ref<HTMLButtonElement>;
 };
@@ -106,6 +111,16 @@ function normalize(option: SegmentedOption) {
   return option;
 }
 
+/**
+ * Keyboard model: roving tabindex + select-on-move arrows (RTL-aware
+ * via `inlineAxisKeys`, key set aligned with TabList: arrows + Home/
+ * End). `role` deliberately stays `group` — the exhaustive ARIA shape
+ * for a single-select segmented control is `radiogroup` + `radio`, but
+ * swapping it now would break the published aria contract (consumer
+ * role queries, axe baselines) for what is a keyboard-only enhancement.
+ * The roving stop plus arrow selection delivers the expected keyboard
+ * behavior without changing what assistive tech announces.
+ */
 export default function SegmentedCore({
   options,
   value,
@@ -114,19 +129,90 @@ export default function SegmentedCore({
   className,
   ref,
 }: SegmentedCoreProps) {
-  // The consumer's ref rides the selected option's button — the natural
-  // focus target — falling back to the first when nothing is selected;
-  // as the selection moves, the ref re-attaches to the new stop.
+  const groupRef = useRef<HTMLDivElement | null>(null);
+
+  // The consumer's ref rides the group's tab stop — the selected
+  // option's button, falling back to the first enabled one when
+  // nothing usable is selected; as the selection moves, the ref
+  // re-attaches to the new stop.
   const attachStop = useCallback(
     (node: HTMLButtonElement | null) => mergeRefs(ref)(node),
     [ref]
   );
-  const stopIndex = Math.max(
-    0,
-    options.findIndex((opt) => normalize(opt).value === value)
+
+  // Roving tab stop: the selected option, unless it is disabled (a
+  // disabled button cannot hold the group's single stop) — then the
+  // first enabled option, else degenerate index 0.
+  const selectedIndex = options.findIndex(
+    (opt) => normalize(opt).value === value
   );
+  const stopIndex =
+    selectedIndex >= 0 && !normalize(options[selectedIndex]!).disabled
+      ? selectedIndex
+      : Math.max(0, options.findIndex((opt) => !normalize(opt).disabled));
+
+  // Select-on-move, the single-select sibling of TabList's strip
+  // keyboard model (menuKeyboard's moveFocusInAxis is pure focus
+  // movement — a different contract from arrows that must select).
+  // Written inline for the same reason TabList does not share one.
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const stops = Array.from(
+      groupRef.current?.querySelectorAll<HTMLButtonElement>(
+        "[data-slot='segment']"
+      ) ?? []
+    );
+    if (stops.length === 0) return;
+    const current = stops.findIndex((stop) =>
+      stop.contains(document.activeElement)
+    );
+
+    // Step from `from` in `step` direction, wrapping, skipping
+    // disabled stops; land on the first enabled one and select it.
+    const move = (from: number, step: 1 | -1) => {
+      const len = stops.length;
+      for (let offset = 1; offset <= len; offset += 1) {
+        const index = (from + step * offset + len * 2) % len;
+        if (stops[index]!.disabled) continue;
+        stops[index]!.focus();
+        onChange(normalize(options[index]!).value);
+        return;
+      }
+    };
+
+    const { next: nextKey, prev: prevKey } = inlineAxisKeys(
+      'horizontal',
+      getDirection(groupRef.current)
+    );
+
+    const anchor = current < 0 ? stopIndex : current;
+    switch (event.key) {
+      case nextKey:
+        event.preventDefault();
+        move(anchor, 1);
+        return;
+      case prevKey:
+        event.preventDefault();
+        move(anchor, -1);
+        return;
+      case 'Home':
+        event.preventDefault();
+        move(-1, 1);
+        return;
+      case 'End':
+        event.preventDefault();
+        move(stops.length, -1);
+        return;
+    }
+  };
+
   return (
-    <div data-slot='segmented' x-class={[container, sizes[size], className]} role="group">
+    <div
+      ref={groupRef}
+      data-slot='segmented'
+      x-class={[container, sizes[size], className]}
+      role="group"
+      onKeyDown={handleKeyDown}
+    >
       {options.map((opt, index) => {
         const { value: val, label, disabled } = normalize(opt);
         return (
@@ -135,6 +221,7 @@ export default function SegmentedCore({
             data-slot='segment'
             ref={index === stopIndex ? attachStop : undefined}
             type="button"
+            tabIndex={index === stopIndex ? 0 : -1}
             x-class={[btn, value === val && activeBtn]}
             disabled={disabled}
             onClick={() => onChange(val)}

@@ -169,6 +169,7 @@ type UseSuggestFieldOptions = {
  * closing after a commit and reacting to syncs is `onSync`'s job, not
  * this hook's.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- hook 与 SuggestListbox 同文件是 floating.tsx / ToastContainer 同款 suppression：事件半边与渲染半边共享 SuggestRow/私有类型，拆文件会迫使类型公开或复制。
 export function useSuggestField({
   suggest,
   textareaRef,

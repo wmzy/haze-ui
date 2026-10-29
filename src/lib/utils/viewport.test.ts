@@ -17,6 +17,7 @@ const counters = { renders: 0 };
 
 function InsetHarness({ enabled }: { enabled?: boolean }) {
   const inset = useVisualViewportInset(enabled);
+  // eslint-disable-next-line react-hooks/immutability -- 测试专用渲染计数器：断言「同值短路不重渲染」依赖在渲染体内累计（effect 计数会改变语义）
   counters.renders += 1;
   return createElement(
     'output',

@@ -5,10 +5,11 @@ import type { StatusColor } from '../../utils/status-skin';
 import { useControl } from 'react-use-control';
 
 import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
+import { calloutContent, calloutSurface } from '../../utils/callout-skin';
 
 import { useStrings } from '../LocaleProvider';
 
-import { banner, colors, closeBtnSize, content } from './banner-styles';
+import { banner, colors, closeBtnSize } from './banner-styles';
 
 type BannerProps = {
   visible?: ControlOrValue<boolean>;
@@ -43,10 +44,10 @@ export default function Banner({
     <div
       ref={ref}
       data-slot='banner'
-      x-class={[banner, colors[color], className]}
+      x-class={[calloutSurface, banner, colors[color], className]}
       role={statusLiveRoles[color]}
     >
-      <div data-slot='content' x-class={[content]}>{children}</div>
+      <div data-slot='content' x-class={[calloutContent]}>{children}</div>
       {onClose && (
         <button
           data-slot='close'

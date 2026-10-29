@@ -21,6 +21,7 @@ function escapeHtml(text: string): string {
     .replaceAll('>', '&gt;');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Highlighter 签名要求双参；本 demo 不装语法包，语言位仅占位
 function fakeHighlight(code: string, _language: string): string {
   return escapeHtml(code).replace(TOKEN_RE, (token) => {
     if (/^['"]/.test(token)) {

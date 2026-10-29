@@ -235,6 +235,15 @@ const sharedLayers = {
     'tag',
     'toast',
   ],
+  // Shared callout skin (utils/callout-skin.ts): the surface box
+  // model, padding and body typography plus the flexing content
+  // column the structural-mirror callout pair composes — Alert's
+  // flex-start icon column, Banner's centered trigger row, Alert's
+  // color-mix border layer and Banner's forced-colors boundary stay
+  // local (genuine geometry differences, not spelling drift). The
+  // status tint classes and dismiss chrome ride via utils/status-skin;
+  // no rsc-safe entry: nothing RSC-listed imports this module.
+  'utils/callout-skin': ['alert', 'banner'],
   // Solid/stroke status axes (progress bar fill, circle stroke,
   // indicator tone dots) — separate modules from status-skin because
   // same-keyed css maps in one file collide under Linaria's member-key

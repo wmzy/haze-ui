@@ -25,8 +25,8 @@ type SegmentedProps = {
   name?: string;
   /**
    * Forwarded to the group's focus target — the selected option's
-   * `<button>` (falling back to the first) — so form bridges and
-   * `ref.current.focus()` reach the group.
+   * `<button>` (falling back to the first enabled option) — so form
+   * bridges and `ref.current.focus()` reach the group.
    */
   ref?: Ref<HTMLButtonElement>;
 };
