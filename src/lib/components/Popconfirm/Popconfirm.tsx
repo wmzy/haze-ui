@@ -12,6 +12,7 @@ import { useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
+import { dangerRemapTokens } from '../../utils/danger-remap';
 import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { panelSurface } from '../../utils/panel-skin';
@@ -135,19 +136,11 @@ const actions = css`
 `;
 
 /**
- * `okVariant='danger'`: remaps the solid skin's primary tokens onto the
- * danger family on the OK button itself. Custom-property remapping (not
- * a background override) sidesteps any specificity fight with Button's
- * variant classes — the skin's own declarations simply resolve against
- * the danger tokens at this element. All three states are remapped
- * explicitly: hover/active derive at the theme element, so re-deriving
- * them from an overridden `--haze-color-primary` here would not work.
+ * `okVariant='danger'`: remaps the solid skin's primary tokens onto
+ * the danger family on the OK button itself (the shared
+ * utils/danger-remap class ConfirmDialog's `variant='danger'` also
+ * wears).
  */
-const okDangerTokens = css`
-  --haze-color-primary: var(--haze-color-danger);
-  --haze-color-primary-hover: var(--haze-color-danger-hover);
-  --haze-color-primary-active: var(--haze-color-danger-active);
-`;
 
 /** Thenable check for the async handler contract (plain objects with a `then`, not just `Promise` instances). */
 function isThenable(value: unknown): value is PromiseLike<unknown> {
@@ -277,7 +270,7 @@ export default function Popconfirm({
   };
 
   return (
-    <span data-slot='popconfirm' className={container}>
+    <span data-slot='popconfirm' x-class={[container]}>
       <FloatingTriggerSpan
         ref={triggerRef}
         behavior={floating}
@@ -349,7 +342,7 @@ export default function Popconfirm({
             data-slot='ok'
             variant='solid'
             size='sm'
-            className={okVariant === 'danger' ? okDangerTokens : undefined}
+            className={okVariant === 'danger' ? dangerRemapTokens : undefined}
             loading={pending === 'ok'}
             onClick={() => runAction('ok')}
           >

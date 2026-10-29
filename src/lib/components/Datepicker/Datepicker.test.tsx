@@ -3,55 +3,17 @@ import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 
 import ConfigProvider from '../ConfigProvider/ConfigProvider';
+import {
+  getLocalizedMonthLabel,
+  getLocalizedWeekdays,
+  getLocaleWeekStart,
+  getMonthLabel,
+  getMonthTitleName,
+  getWeekdayHeaders,
+} from '../../utils/testing/date-test-helpers';
 
 import Datepicker from './Datepicker';
 import DatepickerCore from './DatepickerCore';
-
-function getMonthLabel(year: number, month: number) {
-  return new Date(year, month).toLocaleString('default', {
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-/* The date-mode header splits the old "Month Year" title into two
-   drill-down buttons — the long month name and the bare year. */
-function getMonthTitleName(month: number) {
-  return new Date(2025, month, 15).toLocaleString('default', {
-    month: 'long',
-  });
-}
-
-function getLocalizedMonthLabel(year: number, month: number, locale: string) {
-  return new Intl.DateTimeFormat(locale, {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(year, month));
-}
-
-/* Mirrors Calendar's week-start resolution: Intl reports 7 for Sunday while
-   the grid uses 0, and engines without getWeekInfo fall back to Sunday. */
-function getLocaleWeekStart(locale: string) {
-  const firstDay = (
-    new Intl.Locale(locale) as { getWeekInfo?: () => { firstDay: number } }
-  ).getWeekInfo?.().firstDay;
-  return firstDay === undefined || firstDay === 7 ? 0 : firstDay;
-}
-
-function getLocalizedWeekdays(locale: string, weekStart: number) {
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  // 2024-01-07 is a Sunday; index 0…6 map to Sunday…Saturday.
-  const byDay = Array.from({ length: 7 }, (_, day) =>
-    fmt.format(new Date(2024, 0, 7 + day))
-  );
-  return Array.from({ length: 7 }, (_, i) => byDay[(weekStart + i) % 7]!);
-}
-
-function getWeekdayHeaders() {
-  return screen
-    .getAllByRole('columnheader')
-    .map((columnheader) => columnheader.textContent);
-}
 
 describe('Datepicker', () => {
   it('renders an input with placeholder', () => {

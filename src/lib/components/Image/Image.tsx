@@ -144,7 +144,7 @@ export default function Image({
     <>
       <span data-slot="image" x-class={[wrapper, className]} style={{ aspectRatio }}>
         {error && fallback ? (
-          <span data-slot="error" className={fallbackStyle}>{fallback}</span>
+          <span data-slot="error" x-class={[fallbackStyle]}>{fallback}</span>
         ) : (
           <img
             data-slot="img"

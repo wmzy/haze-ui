@@ -219,7 +219,7 @@ export default function HoverCard({
   return (
     <span
       data-slot='hover-card'
-      className={container}
+      x-class={[container]}
       onBlur={interactive ? handleFocusOut : undefined}
     >
       <span

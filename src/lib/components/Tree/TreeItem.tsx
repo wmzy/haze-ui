@@ -5,6 +5,7 @@ import type { TreeNodeData } from './types';
 import { css } from '@linaria/core';
 import { useId } from 'react';
 
+import { choiceBase } from '../../utils/choice-skin';
 import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
 import { useStrings } from '../LocaleProvider';
 
@@ -51,7 +52,10 @@ const indentSize = 24;
 const item = css`
   display: flex;
   align-items: center;
-  min-height: 2rem;
+  min-height: var(--haze-space-8);
+  /* 2px vertical breathing is a literal on purpose: the spacing scale
+     has no 2px step, and the row's density already rides the space-8
+     floor above. */
   padding: 2px 0;
   cursor: pointer;
   user-select: none;
@@ -62,6 +66,11 @@ const item = css`
     background: var(--haze-color-bg-subtle);
   }
 
+  /* Inset on purpose, and deliberately not unified with the choice
+     base's 0 0 0 3px box ring: the row is a full-width strip stacked
+     flush against its siblings, so an outset ring would paint outside
+     the rounded row and collide with the neighbouring rows — the
+     roving-focus indicator stays inside the row's own box. */
   &:focus-visible {
     outline: none;
     box-shadow: inset 0 0 0 2px var(--haze-color-focus-ring);
@@ -93,8 +102,8 @@ const switcher = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--haze-space-6);
+  height: var(--haze-space-6);
   flex-shrink: 0;
   cursor: pointer;
   color: var(--haze-color-text-muted);
@@ -105,8 +114,8 @@ const switcher = css`
   }
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: var(--haze-space-3);
+    height: var(--haze-space-3);
   }
 `;
 
@@ -114,39 +123,52 @@ const switcherExpanded = css`
   transform: rotate(90deg);
 `;
 
+/* Row checkbox slot on top of the shared choice base
+ * (utils/choice-skin.ts — the 24px WCAG 2.5.8 target box, the
+ * idle/hover chrome and the forced-colors baseline): local stays the
+ * span-role geometry — flex centering for the state glyph, the square
+ * radius, the space-2 end gap to the title instead of the label
+ * inputs' space-1 margin ring — plus the armed counter-deltas below.
+ *
+ * The arms re-declare properties choiceBase also owns, so they ride
+ * the compound `&[data-slot='checkbox']` selector to keep winning in
+ * any cascade order — a plain later class resolves by stylesheet
+ * order, and dev-server injection and dist split-css order shared
+ * layers oppositely (Banner's closeBtnSize precedent): the primary
+ * hover border (a stronger affordance than the base's border-hover)
+ * and the `all` transition (the disable dim rides disabledStyle's
+ * opacity, which the base's three-property list would not animate).
+ *
+ * choiceBase's :disabled and :focus-visible arms never match here —
+ * the span owns no tab stop (the row is the roving-focus stop), so
+ * the dimming comes from disabledStyle and the focus ring stays on
+ * the row class above. */
 const checkbox = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* WCAG 2.5.8 target-size floor — the row's checkbox affordance is a
-     pointer target of its own (stopPropagation isolates its hit). */
-  width: var(--haze-space-6);
-  height: var(--haze-space-6);
-  flex-shrink: 0;
-  margin-inline-end: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-sm);
-  background: var(--haze-color-bg);
-  cursor: pointer;
-  transition: all var(--haze-duration-fast);
 
-  &:hover {
-    border-color: var(--haze-color-primary);
+  &[data-slot='checkbox'] {
+    margin: 0;
+    margin-inline-end: var(--haze-space-2);
+    transition: all var(--haze-duration-fast);
+
+    &:hover {
+      border-color: var(--haze-color-primary);
+    }
   }
 
   svg {
-    width: 12px;
-    height: 12px;
-    color: white;
+    width: var(--haze-space-3);
+    height: var(--haze-space-3);
+    color: var(--haze-color-text-inverse);
   }
 `;
 
-const checkboxChecked = css`
-  background: var(--haze-color-primary);
-  border-color: var(--haze-color-primary);
-`;
-
-const checkboxHalfChecked = css`
+/* Checked and half-checked paint the same primary box — the two states
+ * differ only in the child glyph (CheckIcon vs MinusIcon svg). */
+const checkboxActive = css`
   background: var(--haze-color-primary);
   border-color: var(--haze-color-primary);
 `;
@@ -155,15 +177,15 @@ const nodeIcon = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: var(--haze-space-4);
+  height: var(--haze-space-4);
   flex-shrink: 0;
   margin-inline-end: var(--haze-space-2);
   color: var(--haze-color-text-muted);
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: var(--haze-space-4);
+    height: var(--haze-space-4);
   }
 `;
 
@@ -225,11 +247,16 @@ const loadFailedNote = css`
   }
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: var(--haze-space-3);
+    height: var(--haze-space-3);
   }
 `;
 
+/* indentSize stays a px literal on purpose: it is the per-level indent
+ * unit of the tree's layout (each depth advances one column) — a
+ * structural constant rather than a spacing-rhythm value, so the
+ * numerically-equal space-6 is not used (it would shrink every level
+ * under compact density and re-flow the guide-line geometry). */
 const indentLine = css`
   display: inline-block;
   width: ${indentSize}px;
@@ -450,9 +477,10 @@ export default function TreeItem({
             }
             aria-labelledby={titleId}
             x-class={[
+              choiceBase,
               checkbox,
-              checked === 'checked' && checkboxChecked,
-              checked === 'halfChecked' && checkboxHalfChecked,
+              (checked === 'checked' || checked === 'halfChecked') &&
+                checkboxActive,
               node.disableCheckbox && disabledStyle,
             ]}
             onClick={(e) => {

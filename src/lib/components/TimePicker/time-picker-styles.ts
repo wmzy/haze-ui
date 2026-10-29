@@ -7,7 +7,6 @@
 import { css } from '@linaria/core';
 
 import { classnames } from '../../utils/classnames';
-import { pickerFieldInput } from '../../utils/field-skin';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 
 export const wrapper = css`
@@ -19,10 +18,11 @@ export const wrapper = css`
    (utils/field-skin.ts): the readonly combobox sizes like a full-width
    block field, shows the pointer cursor a picker trigger earns, and
    keeps its figures tabular so the panel's columns align on focus.
-   `trigger` composes the shared class ahead of these — additive
-   properties only, both classes riding the time-picker family css
-   through the sharedLayers registration. */
-const triggerDeltas = css`
+   `PickerInputTrigger` (utils/picker-trigger) composes the shared
+   `pickerFieldInput` class ahead of these — additive properties only,
+   both classes riding the time-picker family css through the
+   sharedLayers registration. */
+export const trigger = css`
   display: block;
   width: 100%;
   line-height: var(--haze-leading-normal);
@@ -39,10 +39,6 @@ const triggerDeltas = css`
     color: var(--haze-color-text-muted);
   }
 `;
-
-/** Readonly trigger input — the shared picker field skin plus the
- * deltas above. */
-export const trigger = classnames(pickerFieldInput, triggerDeltas);
 
 /* Panel chrome deltas over the shared bare panel surface
    (utils/panel-skin.ts): the column layout and its inset. */

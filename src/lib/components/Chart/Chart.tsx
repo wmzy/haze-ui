@@ -22,6 +22,8 @@ import { css } from '@linaria/core';
 import Empty from '../Empty/Empty';
 import Spinner from '../Spinner/Spinner';
 
+import { srOnly } from '../../utils/sr-only';
+
 import {
   chartTree,
   gaugeTree,
@@ -180,21 +182,6 @@ const stateBox = css`
   justify-content: center;
   width: 100%;
   height: 100%;
-`;
-
-/* Screen-reader-only wrapper for the fallback table — the same clip-path
- * recipe as VisuallyHidden, on a `div` because `span > table` is invalid
- * HTML nesting (the library's local-sr-only convention, cf. Tabs/Sidebar). */
-const visuallyHidden = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
 `;
 
 /* The fallback table is clipped away visually, but stays token-styled so a
@@ -407,7 +394,9 @@ export default function Chart<T>({
             )}
           </div>
           {fallbackTable && (
-            <div data-slot='fallback-table' x-class={[visuallyHidden]}>
+            /* The shared srOnly clip class rides a `div` because
+               `span > table` is invalid HTML nesting. */
+            <div data-slot='fallback-table' x-class={[srOnly]}>
               {type === 'gauge' ? (
                 <table x-class={[fallbackTableStyle]}>
                   <caption>{accessibleLabel}</caption>

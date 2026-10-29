@@ -6,6 +6,7 @@ import { useId } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useNativeDialogShell } from '../../utils/native-dialog';
+import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -110,59 +111,11 @@ const overlay = css`
   max-width: var(--haze-dialog-width, 480px);
   width: 100%;
 
-  &[open][data-state='open'] {
-    animation: haze-dialog-in var(--haze-duration-normal) var(--haze-ease);
-  }
-
-  &[open][data-state='closed'] {
-    animation: haze-dialog-out var(--haze-duration-fast) var(--haze-ease);
-  }
-
-  &::backdrop {
-    background: var(--haze-color-scrim);
-  }
-
-  &[open][data-state='open']::backdrop {
-    animation: haze-dialog-backdrop-in var(--haze-duration-normal)
-      var(--haze-ease);
-  }
-
-  &[open][data-state='closed']::backdrop {
-    animation: haze-dialog-backdrop-out var(--haze-duration-fast)
-      var(--haze-ease);
-  }
-
   &:focus-visible {
     outline: none;
     box-shadow:
       var(--haze-shadow-xl),
       0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  @keyframes haze-dialog-in {
-    from {
-      opacity: 0;
-      transform: scale(0.97);
-    }
-  }
-
-  @keyframes haze-dialog-out {
-    to {
-      opacity: 0;
-      transform: scale(0.97);
-    }
-  }
-
-  @keyframes haze-dialog-backdrop-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-dialog-backdrop-out {
-    to {
-      opacity: 0;
-    }
   }
 
   /* Forced-colors: the panel's opaque background flattens onto Canvas
@@ -217,7 +170,7 @@ export default function Dialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[overlay, className, classNames?.root]}
+      x-class={[overlay, dialogPanelMotion, dialogBackdrop, className, classNames?.root]}
     >
       {title !== undefined && (
         <h2 id={titleId} data-slot='title' x-class={[titleText, classNames?.header]}>

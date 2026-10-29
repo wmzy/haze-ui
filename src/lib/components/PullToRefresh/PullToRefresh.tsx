@@ -5,7 +5,7 @@ import type {
   Ref,
 } from 'react';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
 import Spinner from '../Spinner/Spinner';
@@ -13,6 +13,7 @@ import {
   capturePointer,
   releasePointerCaptureSafe,
 } from '../../utils/pointer-capture';
+import { useTouchScrollGuard } from '../../utils/touch-scroll-guard';
 
 /** Gesture state machine: idle → pulling → ready → refreshing → idle. */
 type PullToRefreshPhase =
@@ -220,56 +221,30 @@ export default function PullToRefresh({
     [canRefresh],
   );
 
-  // vaul/Base UI 式 touchmove 守卫（BottomSheet 同型）：只在手势
-  // 「可转换」的窗口内 preventDefault，阻止引擎把触摸判归原生滚动/
-  // 橡皮筋（那会 pointercancel 掐断 pointer 流）。内容未到顶、方向
-  // 不向下、横向占优、未过 slop 时一律让位，横向平移与正常内容滚动
-  // 完全不受影响。
-  const preventNativeScroll = useCallback(
-    (event: TouchEvent) => {
+  // vaul/Base UI 式 touchmove 守卫（utils/touch-scroll-guard，与
+  // BottomSheet 的下滑手势共用同一 hook）：只在手势「可转换」的窗口
+  // 内 preventDefault，阻止引擎把触摸判归原生滚动/橡皮筋（那会
+  // pointercancel 掐断 pointer 流）。内容未到顶、方向不向下、横向
+  // 占优、未过 slop 时一律让位，横向平移与正常内容滚动完全不受
+  // 影响。hook 内部保证监听恒定引用（canRefresh prop 身份不稳也不
+  // 会中途换守卫丢掉 claim）并提供卸载安全网。
+  const {claim: claimScrollGuard, release: releaseScrollGuard} =
+    useTouchScrollGuard((event) => {
       const gesture = gestureRef.current;
-      if (!gesture || event.touches.length !== 1) return;
-      if (event.defaultPrevented) return;
+      if (!gesture || event.touches.length !== 1) return false;
       const [touch] = event.touches;
-      if (!touch) return;
+      if (!touch) return false;
       const dx = touch.clientX - gesture.startX;
       const dy = touch.clientY - gesture.startY;
-      if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) return;
-      if (!gesture.dragging && (dy <= PULL_SLOP || !pullAllowed(event.target)))
-        return;
-      event.preventDefault();
-    },
-    [pullAllowed],
-  );
-
-  // The listener handed to add/removeEventListener must have a stable
-  // identity across renders (a canRefresh prop with unstable identity
-  // would otherwise swap the guard mid-gesture and drop the claim), so
-  // the stable wrapper always reads the latest logic through a ref.
-  const guardRef = useRef(preventNativeScroll);
-  const stableGuard = useCallback((event: TouchEvent) => {
-    guardRef.current(event);
-  }, []);
-  useEffect(() => {
-    guardRef.current = preventNativeScroll;
-  });
-
-  // 卸载安全网：手势中途卸载（路由切换等）时摘掉 document 级监听，
-  // 避免悬空闭包继续吞掉页面的原生滚动。
-  useEffect(
-    () => () => {
-      document.removeEventListener('touchmove', stableGuard);
-    },
-    [stableGuard],
-  );
+      if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) return false;
+      return gesture.dragging || (dy > PULL_SLOP && pullAllowed(event.target));
+    });
 
   const takeGesture = (content: HTMLDivElement, pointerId: number) => {
     // jsdom / engines without pointer capture: events keep bubbling
     // to the content handlers anyway.
     capturePointer(content, pointerId);
-    document.addEventListener('touchmove', stableGuard, {
-      passive: false,
-    });
+    claimScrollGuard();
   };
 
   const releaseGesture = (pointerId: number) => {
@@ -277,7 +252,7 @@ export default function PullToRefresh({
     // release it safely so it cannot swallow the following click.
     const content = contentRef.current;
     if (content) releasePointerCaptureSafe(content, pointerId);
-    document.removeEventListener('touchmove', stableGuard);
+    releaseScrollGuard();
   };
 
   const startRefresh = async () => {

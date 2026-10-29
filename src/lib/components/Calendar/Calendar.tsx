@@ -1,11 +1,14 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  ReactNode,
+} from 'react';
 
 import type { CalendarProps, HeaderPanelView } from './types';
 
 import type { MonthPaneView, PeriodGridView } from './grids';
 
 import { useControl } from 'react-use-control';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   addMonths,
@@ -49,6 +52,12 @@ export type {
   CalendarPickerMode,
   CalendarProps,
 } from './types';
+
+/** First year of the decade `year` belongs to — the anchor of the year
+ * grids' decade layout and the base of a year's offset within it. */
+function decadeStart(year: number): number {
+  return Math.floor(year / 10) * 10;
+}
 
 export default function Calendar({
   picker = 'date',
@@ -166,28 +175,39 @@ export default function Calendar({
   const weekdayLabels = getWeekdayLabels(locale, weekStart);
   const showWeekColumn = showWeekNumbers || weekMode;
 
-  const titleFormatter = new Intl.DateTimeFormat(locale ?? 'default', {
-    month: 'long',
-    year: 'numeric',
-  });
-  const monthTitleFormatter = new Intl.DateTimeFormat(locale ?? 'default', {
-    month: 'long',
-  });
-  const monthNameFormatter = new Intl.DateTimeFormat(locale ?? 'default', {
-    month: 'short',
-  });
-  const monthNames = Array.from({ length: 12 }, (_, month) =>
-    monthNameFormatter.format(new Date(2026, month, 15))
-  );
+  // Locale-only formatters (and the month-name list they shape) are
+  // memoized apart from the view (Schedule's timeFormatters precedent):
+  // month and year hops must not rebuild them.
+  const localeTag = locale ?? 'default';
+  const { titleFormatter, monthTitleFormatter, monthNames } = useMemo(() => {
+    const monthNameFormatter = new Intl.DateTimeFormat(localeTag, {
+      month: 'short',
+    });
+    return {
+      titleFormatter: new Intl.DateTimeFormat(localeTag, {
+        month: 'long',
+        year: 'numeric',
+      }),
+      monthTitleFormatter: new Intl.DateTimeFormat(localeTag, {
+        month: 'long',
+      }),
+      monthNames: Array.from({ length: 12 }, (_, month) =>
+        monthNameFormatter.format(new Date(2026, month, 15))
+      ),
+    };
+  }, [localeTag]);
   // Locale part order of the combined "Month Year" title decides the
   // header's title order (zh-CN renders the year first; en-US the
   // month), so the two drill-down titles read in the locale's own order.
-  const titleParts = titleFormatter.formatToParts(
-    new Date(viewYear, viewMonth, 15)
-  );
-  const yearTitleFirst =
-    titleParts.findIndex((part) => part.type === 'year') <
-    titleParts.findIndex((part) => part.type === 'month');
+  const yearTitleFirst = useMemo(() => {
+    const titleParts = titleFormatter.formatToParts(
+      new Date(viewYear, viewMonth, 15)
+    );
+    return (
+      titleParts.findIndex((part) => part.type === 'year') <
+      titleParts.findIndex((part) => part.type === 'month')
+    );
+  }, [titleFormatter, viewYear, viewMonth]);
 
   const setView = (next: { year: number; month: number }) => {
     setViewYear(next.year);
@@ -260,19 +280,19 @@ export default function Calendar({
    * lands back on the day grid anchored at it) or from the quick-select
    * toolbar (picking returns to the month grid, the picker="year"
    * grid's cousin). Opening hands focus to the anchor year's cell. */
-  const yearsDecadeStart = Math.floor(yearsAnchor / 10) * 10;
+  const yearsDecadeStart = decadeStart(yearsAnchor);
 
   const openYearsFromHeader = () => {
     yearsReturnRef.current = 'days';
     // Decade of the NEW anchor (viewYear), not the previous state.
-    pendingQuickCellRef.current = viewYear - Math.floor(viewYear / 10) * 10;
+    pendingQuickCellRef.current = viewYear - decadeStart(viewYear);
     setYearsAnchor(viewYear);
     setPanelView('years');
   };
 
   const openYearsFromMonths = () => {
     yearsReturnRef.current = 'months';
-    pendingQuickCellRef.current = quickYear - Math.floor(quickYear / 10) * 10;
+    pendingQuickCellRef.current = quickYear - decadeStart(quickYear);
     setYearsAnchor(quickYear);
     setPanelView('years');
   };
@@ -302,7 +322,7 @@ export default function Calendar({
   /* Month/quarter mode drill-down: the year title opens the decade
    * grid anchored at the viewed year; picking (or Esc) returns to the
    * mode grid with focus on the value's cell. */
-  const modeYearsDecadeStart = Math.floor(modeYearsAnchor / 10) * 10;
+  const modeYearsDecadeStart = decadeStart(modeYearsAnchor);
 
   const modeValueCellIndex = () =>
     picker === 'month'
@@ -310,7 +330,7 @@ export default function Calendar({
       : (parseQuarterValue(value)?.quarter ?? 1) - 1;
 
   const openModeYears = () => {
-    pendingQuickCellRef.current = viewYear - Math.floor(viewYear / 10) * 10;
+    pendingQuickCellRef.current = viewYear - decadeStart(viewYear);
     setModeYearsAnchor(viewYear);
     setModeYearsOpen(true);
   };
@@ -515,35 +535,66 @@ export default function Calendar({
     cellRender,
   };
 
+  /* ── Drill toolbar anatomy ── The quick-select drill toolbars (years,
+   * months) and the picker modes' header share the same ‹ title ›
+   * stepper; only the handlers, labels and the title element differ
+   * (decade-range span or year button). Local render functions keep
+   * the three rows in sync. */
+  const renderStepButton = (
+    slot: 'prev' | 'next',
+    onClick: () => void,
+    label: string
+  ) => (
+    <button
+      data-slot={slot}
+      type='button'
+      x-class={[
+        headerBtn,
+        slot === 'prev' ? classNames?.prev : classNames?.next,
+      ]}
+      onClick={onClick}
+      aria-label={label}
+    >
+      {slot === 'prev' ? '‹' : '›'}
+    </button>
+  );
+
+  /** Decade-range title: `start – start + 11` (the year grids carry
+   * twelve cells — the decade plus its overflow year). */
+  const renderDecadeTitle = (start: number) => (
+    <span data-slot='title' x-class={[headerTitle, classNames?.title]}>
+      {start} – {start + 11}
+    </span>
+  );
+
+  /** The full quick-select toolbar row (years/months drill views). */
+  const renderDrillToolbar = (props: {
+    prevLabel: string;
+    onPrev: () => void;
+    title: ReactNode;
+    nextLabel: string;
+    onNext: () => void;
+  }) => (
+    <div data-slot='toolbar' x-class={[quickToolbar, classNames?.toolbar]}>
+      {renderStepButton('prev', props.onPrev, props.prevLabel)}
+      {props.title}
+      {renderStepButton('next', props.onNext, props.nextLabel)}
+    </div>
+  );
+
   /* Built lazily: when the day grid is showing, neither drill grid is
    * constructed — cellRender must not fire for cells that are not
    * mounted. */
   const yearsDrillView =
     panelView === 'years' ? (
       <div x-class={[quickSelect]} onKeyDown={onQuickKeyDown}>
-        <div data-slot='toolbar' x-class={[quickToolbar, classNames?.toolbar]}>
-          <button
-            data-slot='prev'
-            type='button'
-            x-class={[headerBtn, classNames?.prev]}
-            onClick={() => setYearsAnchor((year) => year - 10)}
-            aria-label={strings.previousDecade}
-          >
-            ‹
-          </button>
-          <span data-slot='title' x-class={[headerTitle, classNames?.title]}>
-            {yearsDecadeStart} – {yearsDecadeStart + 11}
-          </span>
-          <button
-            data-slot='next'
-            type='button'
-            x-class={[headerBtn, classNames?.next]}
-            onClick={() => setYearsAnchor((year) => year + 10)}
-            aria-label={strings.nextDecade}
-          >
-            ›
-          </button>
-        </div>
+        {renderDrillToolbar({
+          prevLabel: strings.previousDecade,
+          onPrev: () => setYearsAnchor((year) => year - 10),
+          title: renderDecadeTitle(yearsDecadeStart),
+          nextLabel: strings.nextDecade,
+          onNext: () => setYearsAnchor((year) => year + 10),
+        })}
         {renderYearGrid(
           {
             decadeStart: yearsDecadeStart,
@@ -561,37 +612,25 @@ export default function Calendar({
   const monthsDrillView =
     panelView === 'months' ? (
       <div x-class={[quickSelect]} onKeyDown={onQuickKeyDown}>
-        <div data-slot='toolbar' x-class={[quickToolbar, classNames?.toolbar]}>
-          <button
-            data-slot='prev'
-            type='button'
-            x-class={[headerBtn, classNames?.prev]}
-            onClick={() => setQuickYear((year) => year - 1)}
-            aria-label={strings.previousYear}
-          >
-            ‹
-          </button>
-          {/* The year drills into a decade grid (the picker="year"
-              layout); picking a year lands back on this month grid. */}
-          <button
-            data-slot='title'
-            type='button'
-            x-class={[titleBtn, headerTitle, classNames?.title]}
-            aria-haspopup='grid'
-            onClick={openYearsFromMonths}
-          >
-            {quickYear}
-          </button>
-          <button
-            data-slot='next'
-            type='button'
-            x-class={[headerBtn, classNames?.next]}
-            onClick={() => setQuickYear((year) => year + 1)}
-            aria-label={strings.nextYear}
-          >
-            ›
-          </button>
-        </div>
+        {renderDrillToolbar({
+          prevLabel: strings.previousYear,
+          onPrev: () => setQuickYear((year) => year - 1),
+          title: (
+            /* The year drills into a decade grid (the picker="year"
+                layout); picking a year lands back on this month grid. */
+            <button
+              data-slot='title'
+              type='button'
+              x-class={[titleBtn, headerTitle, classNames?.title]}
+              aria-haspopup='grid'
+              onClick={openYearsFromMonths}
+            >
+              {quickYear}
+            </button>
+          ),
+          nextLabel: strings.nextYear,
+          onNext: () => setQuickYear((year) => year + 1),
+        })}
         {renderMonthGrid(
           {
             year: quickYear,
@@ -628,7 +667,6 @@ export default function Calendar({
    *  title drills into the decade year grid; picking a year returns to
    *  the mode grid anchored at it. */
   if (picker !== 'date' && picker !== 'week') {
-    const decadeStart = Math.floor(viewYear / 10) * 10;
     const drilled = modeYearsOpen && picker !== 'year';
     const previousLabel =
       drilled || picker === 'year'
@@ -691,7 +729,7 @@ export default function Calendar({
     ) : (
       renderYearGrid(
         {
-          decadeStart,
+          decadeStart: decadeStart(viewYear),
           gridRef: modeGridRef,
           onKeyDown: handleModeGridKeyDown,
           isActive: (year) => value === formatYearValue(year),
@@ -705,27 +743,18 @@ export default function Calendar({
     return (
       <div ref={setRootRef} data-slot='calendar' x-class={[calendarWrapper, className, classNames?.root]} {...rest}>
         <div data-slot='header' x-class={[header, classNames?.header]}>
-          <button
-            data-slot='prev'
-            type='button'
-            x-class={[headerBtn, classNames?.prev]}
-            onClick={() =>
+          {renderStepButton(
+            'prev',
+            () =>
               drilled
                 ? setModeYearsAnchor((year) => year - 10)
-                : stepModePeriod(-1)
-            }
-            aria-label={previousLabel}
-          >
-            ‹
-          </button>
+                : stepModePeriod(-1),
+            previousLabel
+          )}
           {drilled ? (
-            <span data-slot='title' x-class={[headerTitle, classNames?.title]}>
-              {modeYearsDecadeStart} – {modeYearsDecadeStart + 11}
-            </span>
+            renderDecadeTitle(modeYearsDecadeStart)
           ) : picker === 'year' ? (
-            <span data-slot='title' x-class={[headerTitle, classNames?.title]}>
-              {decadeStart} – {decadeStart + 11}
-            </span>
+            renderDecadeTitle(decadeStart(viewYear))
           ) : (
             /* The year title drills into the decade grid (the
                 date mode's year title does the same from its header). */
@@ -753,19 +782,14 @@ export default function Calendar({
             >
               {strings.today}
             </button>
-            <button
-              data-slot='next'
-              type='button'
-              x-class={[headerBtn, classNames?.next]}
-              onClick={() =>
+            {renderStepButton(
+              'next',
+              () =>
                 drilled
                   ? setModeYearsAnchor((year) => year + 10)
-                  : stepModePeriod(1)
-              }
-              aria-label={nextLabel}
-            >
-              ›
-            </button>
+                  : stepModePeriod(1),
+              nextLabel
+            )}
           </span>
         </div>
         {modeGrid}

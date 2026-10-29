@@ -2,15 +2,15 @@
  * Built-in range presets for DateRangePicker's `presets='common'` set.
  *
  * Date arithmetic follows utils/date-math.ts semantics: every value is
- * a local civil date realized at midnight (`new Date(year, month, day)`),
- * and day shifts ride the Date constructor's day-rollover — DST never
- * moves midnight, so a shifted local midnight always round-trips its
- * civil date.
+ * a local civil date realized at midnight, serialized at day
+ * resolution — only the civil date reaches the value, so `addDays`'
+ * minute-resolution day rollover is equivalent to the constructor's.
  */
 
 import type { DateRangePickerPreset } from './DateRangePickerCore';
 
 import {
+  addDays,
   addMonths,
   formatDate,
   formatDateOf,
@@ -28,16 +28,6 @@ type CommonPresetLabels = {
   lastMonth: string;
 };
 
-/** Shift a local-midnight civil date by whole days. */
-function shiftDays(date: Date, delta: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta);
-}
-
-/** Serialize a local-midnight civil date as "YYYY-MM-DD". */
-function toValue(date: Date): string {
-  return formatDateOf(date);
-}
-
 /** First → last day of a month, as "YYYY-MM-DD" values. */
 function monthBounds(year: number, month: number): [string, string] {
   return [
@@ -51,7 +41,7 @@ export function commonRangePresets(
   labels: CommonPresetLabels,
   today: Date = new Date()
 ): DateRangePickerPreset[] {
-  const day = (delta: number) => toValue(shiftDays(today, delta));
+  const day = (delta: number) => formatDateOf(addDays(today, delta));
   const thisMonth = monthBounds(today.getFullYear(), today.getMonth());
   const previous = addMonths(today.getFullYear(), today.getMonth(), -1);
   const lastMonth = monthBounds(previous.year, previous.month);

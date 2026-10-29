@@ -44,6 +44,11 @@ const cell = css`
   }
 `;
 
+/* A cell is blank when it holds no char or a space placeholder —
+ * non-sequential fills pad the gap with spaces so digit positions
+ * stay stable (see handleChange). */
+const isBlank = (ch: string | undefined) => !ch || ch === ' ';
+
 export default function OTPInputCore({
   length = 6,
   value,
@@ -63,7 +68,13 @@ export default function OTPInputCore({
   const handleChange = useCallback(
     (index: number, char: string) => {
       const next = value.split('');
-      next[index] = char.slice(-1);
+      // Filling a cell beyond the value's end leaves sparse holes in
+      // next — join('') collapses them, so the digit would land right
+      // after the last existing char while focus advances past the
+      // typed cell. Pad the gap with space placeholders so each digit
+      // keeps its position ('1' + typing into cell 4 → '1  4').
+      const pad = index > next.length ? ' '.repeat(index - next.length) : '';
+      next[index] = pad + char.slice(-1);
       const joined = next.join('').slice(0, length);
       onChange(joined);
 
@@ -76,7 +87,7 @@ export default function OTPInputCore({
 
   const handleKeyDown = useCallback(
     (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Backspace' && !value[index] && index > 0) {
+      if (e.key === 'Backspace' && isBlank(value[index]) && index > 0) {
         refs.current[index - 1]?.focus();
       }
     },
@@ -96,26 +107,32 @@ export default function OTPInputCore({
 
   return (
     <div data-slot="otp-input" x-class={[container, className]}>
-      {Array.from({ length }, (_, i) => (
-        <input
-          key={i}
-          data-slot="segment"
-          ref={(el) => {
-            refs.current[i] = el;
-            if (i === 0) setFirstCellRef(el);
-          }}
-          x-class={[fieldChrome, cell]}
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={1}
-          aria-label={formatString(strings.digitLabel, { index: i + 1, total: length })}
-          value={value[i] ?? ''}
-          onChange={(e) => handleChange(i, e.target.value)}
-          onKeyDown={(e) => handleKeyDown(i, e)}
-          onPaste={handlePaste}
-        />
-      ))}
+      {Array.from({ length }, (_, i) => {
+        const ch = value[i] ?? '';
+        return (
+          <input
+            key={i}
+            data-slot="segment"
+            ref={(el) => {
+              refs.current[i] = el;
+              if (i === 0) setFirstCellRef(el);
+            }}
+            x-class={[fieldChrome, cell]}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={1}
+            aria-label={formatString(strings.digitLabel, { index: i + 1, total: length })}
+            /* A space placeholder renders as an empty cell — the native
+             * value must not carry the space or maxLength={1} would
+             * block typing over it. */
+            value={ch === ' ' ? '' : ch}
+            onChange={(e) => handleChange(i, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(i, e)}
+            onPaste={handlePaste}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -12,18 +12,21 @@ import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { useFocusScope } from '../../utils/focus-scope';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import {
   ChevronRight,
   PickerTrigger,
+  pickerArrowOpen,
   pickerCaret,
   pickerEmptyBlock,
   pickerLoadingBlock,
   pickerSearchInput,
+  pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { usePanelQuery } from '../../utils/use-panel-query';
 import { usePendingFocus } from '../../utils/use-pending-focus';
 import { useSearchReport } from '../../utils/use-search-report';
 import { useStrings } from '../LocaleProvider';
@@ -42,8 +45,8 @@ type CascaderVirtualizedConfig = {
    * Row height in px of one column item. Defaults to 37 — the natural
    * box of a column item: space-2 padding top+bottom + text-sm at
    * leading-normal = 8 + 21 + 8. Virtualization math needs it as a JS
-   * number; items are stretched to fill it (`virtualRow`), so the two
-   * cannot drift apart.
+   * number; items are stretched to fill it (`pickerVirtualRow`,
+   * utils/picker-trigger), so the two cannot drift apart.
    */
   itemHeight?: number;
   /** Extra rows kept mounted above/below the visible window. Defaults
@@ -265,16 +268,9 @@ const COLUMN_MAX_HEIGHT = 220;
 
 /** Fixed row height for the virtualized path: the natural column-item
  * box — space-2 padding top+bottom (8+8) + text-sm at leading-normal
- * (21) = 37. Items are stretched to fill it (`virtualRow`), so the two
- * cannot drift apart. */
+ * (21) = 37. Items are stretched to fill it (`pickerVirtualRow`,
+ * utils/picker-trigger), so the two cannot drift apart. */
 const ITEM_ROW_HEIGHT = 37;
-
-/** Stretch a virtualized item over its absolutely-positioned,
- * fixed-height row wrapper so hover/focus cover the full row. */
-const virtualRow = css`
-  height: 100%;
-  box-sizing: border-box;
-`;
 
 const item = css`
   display: flex;
@@ -379,10 +375,11 @@ export default function Cascader({
   const [activePath, setActivePath] = useState<string[]>([]);
   // Remote search mode: presence of `onSearch` swaps the panel for a
   // search input plus consumer-owned options (see the prop docs). The
-  // query is internal UI state (never a prop), so useState is the
-  // correct primitive here, not useControl.
+  // query is internal panel UI state (never a prop), reset on close so
+  // a stale remote result set never survives to the next open (the
+  // shared usePanelQuery reset Select/TreeSelect use).
   const searchMode = onSearch !== undefined;
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePanelQuery(open);
   // `virtualized` resolution: object config enables and customizes,
   // `true` enables with defaults, anything else keeps the plain DOM.
   const virtual = virtualized !== undefined && virtualized !== false;
@@ -517,14 +514,6 @@ export default function Cascader({
 
   useSearchReport(onSearch, query);
 
-  // A closed panel starts the next open with a fresh query — a stale
-  // remote result set surviving close/reopen would show the consumer's
-  // pruned tree while the input reads empty. Adjusted during render
-  // (the same React-endorsed reset as Select's searchable panel).
-  if (!open && query !== '') {
-    setQuery('');
-  }
-
   const setPanelRef = useCallback(
     (node: HTMLDivElement | null) => {
       panelRef.current = node;
@@ -599,10 +588,7 @@ export default function Cascader({
   };
 
   const handleTriggerKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      setOpen(true);
-    }
+    pickerArrowOpen(open, setOpen, e);
   };
 
   const handlePanelKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -615,10 +601,12 @@ export default function Cascader({
 
     // Drill/back arrows mirror under RTL (← drills into the submenu that
     // opens on the physical left) — direction read from the panel's DOM
-    // subtree at event time.
-    const drillKey =
-      getDirection(panel) === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const backKey = drillKey === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
+    // subtree at event time (`inlineAxisKeys`, the same contract as
+    // TabList's overflow menu).
+    const { next: drillKey, prev: backKey } = inlineAxisKeys(
+      'horizontal',
+      getDirection(panel)
+    );
 
     switch (e.key) {
       case 'ArrowDown':
@@ -725,7 +713,7 @@ export default function Cascader({
         aria-expanded={hasChildren ? inPath : undefined}
         aria-setsize={virtual ? columns[level]?.length : undefined}
         aria-posinset={virtual ? index + 1 : undefined}
-        x-class={[item, inPath && itemInPath, virtual && virtualRow, classNames?.option]}
+        x-class={[item, inPath && itemInPath, virtual && pickerVirtualRow, classNames?.option]}
         onClick={() => activate(option, level)}
         onMouseEnter={() => handleItemEnter(option, level)}
       >

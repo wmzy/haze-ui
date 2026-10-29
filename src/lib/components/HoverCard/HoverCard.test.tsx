@@ -7,6 +7,12 @@ import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import ConfigProvider from '../ConfigProvider/ConfigProvider';
+import {
+  installNativePopover,
+  removeNativePopover,
+  showPopoverMock,
+  ToggleEventPolyfill,
+} from '../../utils/testing/popover-mock';
 
 import HoverCard from './HoverCard';
 
@@ -363,51 +369,7 @@ describe('HoverCard (ConfigProvider delay precedence)', () => {
   });
 });
 
-// jsdom implements neither the Popover API nor ToggleEvent; polyfill the
-// minimal surface the component relies on (same approach as Popover's
-// tests) to exercise the native path.
-class ToggleEventPolyfill extends Event {
-  newState: string;
-  constructor(type: string, init: { newState: string }) {
-    super(type);
-    this.newState = init.newState;
-  }
-}
-
-function installNativePopover() {
-  Object.defineProperty(HTMLElement.prototype, 'popover', {
-    configurable: true,
-    value: 'manual',
-  });
-  HTMLElement.prototype.showPopover = showPopoverMock;
-  HTMLElement.prototype.hidePopover = hidePopoverMock;
-}
-
-const showPopoverMock = vi.fn(function (this: HTMLElement) {
-  this.setAttribute('data-popover-open', '');
-  this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
-});
-
-const hidePopoverMock = vi.fn(function (this: HTMLElement) {
-  if (!this.hasAttribute('data-popover-open')) return;
-  this.removeAttribute('data-popover-open');
-  this.dispatchEvent(
-    new ToggleEventPolyfill('toggle', { newState: 'closed' })
-  );
-});
-
-type PopoverProtoPatch = {
-  popover?: unknown;
-  showPopover?: () => void;
-  hidePopover?: () => void;
-};
-
-function removeNativePopover() {
-  const proto = HTMLElement.prototype as PopoverProtoPatch;
-  delete proto.popover;
-  delete proto.showPopover;
-  delete proto.hidePopover;
-}
+// The native-popover jsdom double lives in utils/testing/popover-mock.
 
 describe('HoverCard (native popover API)', () => {
   beforeEach(() => {

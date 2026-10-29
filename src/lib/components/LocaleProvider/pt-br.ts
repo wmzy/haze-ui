@@ -277,6 +277,7 @@ const ptBR: HazeStrings = {
     generating: 'Gerando',
   },
   tabs: {
+    addTab: 'Adicionar aba',
     close: 'Fechar',
     moreTabs: 'Mais abas',
     statusDirty: 'Alterações não salvas',

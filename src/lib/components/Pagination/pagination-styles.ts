@@ -10,10 +10,10 @@ import {css} from '@linaria/core';
  */
 export const sizes = {
   sm: css`
-    & button, & select, & input { min-width: 2rem; height: 2rem; font-size: var(--haze-text-xs); }
+    & button, & select, & input { min-width: var(--haze-space-8); height: var(--haze-space-8); font-size: var(--haze-text-xs); }
   `,
   md: css``,
   lg: css`
-    & button, & select, & input { min-width: 40px; height: 40px; font-size: var(--haze-text-base); }
+    & button, & select, & input { min-width: var(--haze-space-10); height: var(--haze-space-10); font-size: var(--haze-text-base); }
   `,
 } as const;

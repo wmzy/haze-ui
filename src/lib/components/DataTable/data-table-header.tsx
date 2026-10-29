@@ -16,7 +16,7 @@ import type { DataTableFiltersState } from './filters';
 
 import { css } from '@linaria/core';
 
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { sortableHandle, useSortableHandle } from '../../utils/sortable-handle';
 
 import { CheckboxCore } from '../Checkbox';
@@ -109,10 +109,13 @@ function ReorderGrip({
         if (!event.altKey || event.ctrlKey || event.metaKey) return;
         if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
         event.preventDefault();
-        onMove(
-          (event.key === 'ArrowRight') !==
-            (getDirection(event.currentTarget) === 'rtl')
+        // Forward = towards the inline end: the arrows mirror under
+        // RTL, read from the DOM at event time (inlineAxisKeys).
+        const { next: nextKey } = inlineAxisKeys(
+          'horizontal',
+          getDirection(event.currentTarget)
         );
+        onMove(event.key === nextKey);
       }}
       aria-label={`Reorder ${label}`}
       aria-keyshortcuts='Alt+ArrowLeft Alt+ArrowRight'
@@ -422,9 +425,13 @@ export function renderDataTableHeader<TData extends RowData>(
                       event.preventDefault();
                       // Arrows mirror under RTL, read from the DOM at
                       // event time so the keys follow the painted
-                      // direction (same contract as Calendar).
-                      const rtl = getDirection(event.currentTarget) === 'rtl';
-                      const grow = (event.key === 'ArrowRight') !== rtl;
+                      // direction (inlineAxisKeys, same contract as
+                      // Calendar).
+                      const { next: nextKey } = inlineAxisKeys(
+                        'horizontal',
+                        getDirection(event.currentTarget)
+                      );
+                      const grow = event.key === nextKey;
                       nudgeColumnSize(header, grow ? 5 : -5);
                     }}
                   />

@@ -14,17 +14,17 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
+import { PickerChips, pickerClearBtn } from '../../utils/picker-chips';
 import {
   PickerTrigger,
-  pickerOverflowBadge,
+  pickerArrowOpen,
   pickerPanelWidth,
   pickerSearchInput,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { usePanelQuery } from '../../utils/use-panel-query';
 import { findNodeByKey, mergeLoadedChildren } from '../../utils/tree-utils';
-import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
-import { formatString } from '../LocaleProvider/locale';
 import Tree from '../Tree/Tree';
 
 /**
@@ -169,78 +169,6 @@ const triggerValue = css`
 
 const placeholderText = css`
   color: var(--haze-color-text-muted);
-`;
-
-/** One selected value: the Chip capsule plus its pointer-only ×. */
-const chipItem = css`
-  display: inline-flex;
-  align-items: center;
-`;
-
-/**
- * Pointer-only remove affordance. A real button here would nest
- * interactive controls inside the trigger button — invalid HTML, an
- * axe nested-interactive violation, and a screen-reader mess. The span
- * is aria-hidden and unreachable by Tab on purpose: keyboard users
- * remove values through the panel checkboxes or the clear affordance
- * (the same trade-off Select's multiple trigger makes).
- */
-const chipRemove = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: none;
-  border-radius: var(--haze-radius-full);
-  background: transparent;
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  margin-inline-start: var(--haze-space-1);
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
-
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-/**
- * Pointer-only clear affordance (same nested-interactive rationale as
- * chipRemove), revealed on trigger hover/focus-within through the
- * data-clearable ancestor selector (Select's trigger pattern).
- */
-const clearBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: none;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity var(--haze-duration-fast);
-
-  [data-clearable]:hover &,
-  [data-clearable]:focus-within & {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
 `;
 
 /** Caret deltas over the shared caret base (utils/picker-trigger):
@@ -449,11 +377,8 @@ export default function TreeSelect({
 
   // Panel search query: internal panel UI state (never a prop), reset
   // on close so a stale filter never survives to the next open (the
-  // render-time reset Select/Cascader use).
-  const [query, setQuery] = useState('');
-  if (!open && query !== '') {
-    setQuery('');
-  }
+  // shared usePanelQuery reset Select/Cascader use).
+  const [query, setQuery] = usePanelQuery(open);
 
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -522,10 +447,7 @@ export default function TreeSelect({
   }, [open, floating.shown, showSearch, multiple, keys]);
 
   const handleTriggerKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      setOpen(true);
-    }
+    pickerArrowOpen(open, setOpen, e);
   };
 
   const handlePanelKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -577,12 +499,6 @@ export default function TreeSelect({
 
   const selectedNode = !multiple && keys.length > 0 ? nodeByKey.get(keys[0] ?? '') : undefined;
 
-  const chips = multiple ? keys : [];
-  const visibleChips =
-    maxTagCount === undefined ? chips : chips.slice(0, Math.max(maxTagCount, 0));
-  const overflowKeys =
-    maxTagCount === undefined ? [] : chips.slice(Math.max(maxTagCount, 0));
-
   const showClear = allowClear && !disabled && keys.length > 0;
 
   /** String form of a title, for chips and the overflow tooltip. */
@@ -600,34 +516,14 @@ export default function TreeSelect({
         {placeholder ?? strings.placeholder}
       </span>
     ) : (
-      <>
-        {visibleChips.map((key) => (
-          <span data-slot='item' x-class={chipItem} key={key}>
-            <Chip color='primary'>{labelText(key)}</Chip>
-            <span
-              aria-hidden='true'
-              data-slot='item-remove'
-              x-class={chipRemove}
-              onClick={(e) => {
-                // Removing a chip must not toggle the panel.
-                e.stopPropagation();
-                removeKey(key);
-              }}
-            >
-              ×
-            </span>
-          </span>
-        ))}
-        {overflowKeys.length > 0 && (
-          <span
-            data-slot='overflow-badge'
-            x-class={pickerOverflowBadge}
-            title={overflowKeys.map(labelText).join(', ')}
-          >
-            {formatString(strings.moreTags, { count: overflowKeys.length })}
-          </span>
-        )}
-      </>
+      <PickerChips
+        values={keys}
+        labelOf={labelText}
+        titleOf={labelText}
+        maxTagCount={maxTagCount}
+        onRemove={removeKey}
+        moreTags={strings.moreTags}
+      />
     )
   ) : selectedNode ? (
     <span data-slot='value' x-class={triggerValue}>{selectedNode.title ?? selectedNode.key}</span>
@@ -642,7 +538,7 @@ export default function TreeSelect({
       aria-hidden='true'
       data-slot='clear-button'
       title={strings.clear}
-      x-class={clearBtn}
+      x-class={pickerClearBtn}
       onClick={(e) => {
         // Clearing must not flip the panel either way.
         e.stopPropagation();

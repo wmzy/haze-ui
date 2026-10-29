@@ -1,25 +1,18 @@
-import type {
-  ChangeEvent,
-  ComponentPropsWithoutRef,
-  KeyboardEvent,
-  Ref,
-  SyntheticEvent,
-} from 'react';
-import type { VirtualListHandle } from '../VirtualList';
+import type { ComponentPropsWithoutRef, KeyboardEvent, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback, useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef } from 'react';
+import { useControl } from 'react-use-control';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
-import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
-import { pickerPanelWidth } from '../../utils/picker-trigger';
+import { useFloating } from '../../utils/floating';
 import {
-  suggestHintRow,
-  suggestListbox,
-  suggestOption,
-  suggestOptionHighlighted,
-} from '../../utils/suggest-list-skin';
-import { spliceToken, suggestOptionId } from '../../utils/suggest-marker';
+  fieldChrome,
+  fieldResizeHandle,
+  fieldSizes,
+  nativeFieldChrome,
+} from '../../utils/field-skin';
+import { suggestOptionId } from '../../utils/suggest-marker';
+import { SuggestListbox, useSuggestField } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { mergeRefs } from '../../utils/refs';
@@ -57,12 +50,11 @@ const wrapper = css`
 `;
 
 /* The field base is the shared field skin (utils/field-skin.ts) — the
- * same surface trio, native chrome arms and md size Input and Textarea
- * wear. Mentions' own deltas stay here: the drag handle and border-box
- * sizing (the shared chrome leaves the box model to consumers, and
- * width:100% plus border must stay inside the box). */
-const textareaDeltas = css`
-  resize: vertical;
+ * same surface trio, native chrome arms, md size and resize handle
+ * Input and Textarea wear. Mentions' own delta below keeps only the
+ * box model (the shared chrome leaves it to consumers, and width:100%
+ * plus border must stay inside the box). */
+const borderBox = css`
   box-sizing: border-box;
 `;
 
@@ -87,7 +79,10 @@ export default function MentionsCore({
   ...rest
 }: MentionsCoreProps) {
   const strings = useStrings('mentions');
-  const [open, setOpen] = useState(false);
+  // Panel visibility is internal-only (never a prop), but rides the
+  // family's state primitive — the same shape SelectFloating's open
+  // uses, so a future control seam lands identically.
+  const [open, setOpen] = useControl(undefined, false);
   const id = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const setTextareaRef = useCallback(
@@ -96,9 +91,6 @@ export default function MentionsCore({
   );
   const panelRef = useRef<HTMLDivElement>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
-  // The listbox is never virtualized; useHighlightScroll still takes the
-  // handle (same call shape as Combobox/SelectFloating).
-  const listRef = useRef<VirtualListHandle>(null);
 
   // Shared token machinery (utils/use-textarea-suggest.ts): the marker
   // state, the keyboard highlight and the post-insert caret restore.
@@ -125,7 +117,6 @@ export default function MentionsCore({
     shown: floating.shown,
     highlightIndex,
     virtualized: false,
-    listRef,
     rowRef: activeRowRef,
   });
 
@@ -141,34 +132,28 @@ export default function MentionsCore({
       })
     : [];
 
-  // Stable, SSR-safe DOM id per option row: listbox id + index, both
-  // deterministic across renders and re-opens (no random values). The
-  // textarea's aria-activedescendant points here so screen readers
-  // announce the keyboard highlight on rows that never receive DOM focus.
-  const optionId = (index: number) => suggestOptionId(id, index);
-
   // Only while the popup is open — a closed listbox must not own the
   // textarea's active descendant. No highlight (or an out-of-range one
-  // after the option list shrank) omits the attribute entirely.
+  // after the option list shrank) omits the attribute entirely. Row
+  // ids come from suggestOptionId (utils/suggest-marker.ts), the same
+  // scheme SuggestListbox stamps its rows with.
   const activeDescendant =
-    open && filtered[highlightIndex] ? optionId(highlightIndex) : undefined;
+    open && filtered[highlightIndex] ? suggestOptionId(id, highlightIndex) : undefined;
 
-  /** Recomputes the token (and panel visibility) from the live caret. */
-  const syncFromCaret = (text: string, caret: number) => {
-    setOpen(suggest.syncFromCaret(text, caret) !== null);
-  };
+  // Shared event pair (utils/suggest-listbox.tsx): the change/select
+  // handlers that keep the token in step with the caret; the panel
+  // write stays here (Mentions owns explicit open state).
+  const { commit: commitMention, handleChange, handleSelect } = useSuggestField({
+    suggest,
+    textareaRef,
+    value,
+    onText: onChange,
+    onSync: (next) => setOpen(next !== null),
+  });
 
   const insertMention = (optionToInsert: MentionsOption) => {
     if (!marker) return;
-    const text = textareaRef.current?.value ?? value;
-    const spliced = spliceToken(
-      text,
-      marker,
-      `${marker.trigger}${optionToInsert.value} `
-    );
-    onChange(spliced.text);
-    suggest.stageCaretRestore(spliced.caret);
-    suggest.setMarker(null);
+    commitMention(optionToInsert.value);
     setOpen(false);
   };
 
@@ -184,18 +169,6 @@ export default function MentionsCore({
       },
       onEscape: () => setOpen(false),
     });
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value);
-    syncFromCaret(e.target.value, e.target.selectionStart);
-  };
-
-  // Caret moves without edits (clicks, arrow keys) re-evaluate the token
-  // too, so the panel follows the caret in and out of mention tokens.
-  const handleSelect = (e: SyntheticEvent<HTMLTextAreaElement>) => {
-    const el = e.currentTarget;
-    syncFromCaret(el.value, el.selectionStart);
   };
 
   return (
@@ -221,7 +194,7 @@ export default function MentionsCore({
         aria-autocomplete="list"
         aria-controls={id}
         aria-activedescendant={activeDescendant}
-        x-class={[fieldChrome, nativeFieldChrome, fieldSizes.md, textareaDeltas]}
+        x-class={[fieldChrome, nativeFieldChrome, fieldSizes.md, fieldResizeHandle, borderBox]}
         value={value}
         placeholder={placeholder}
         onChange={handleChange}
@@ -230,45 +203,20 @@ export default function MentionsCore({
         onKeyDown={handleKeyDown}
         {...rest}
       />
-      <FloatingPanel
-        ref={panelRef}
+      <SuggestListbox
         behavior={floating}
-        placement="bottom-span"
+        panelRef={panelRef}
         id={id}
-        role="listbox"
-        visualClass={`${pickerPanelWidth} ${suggestListbox} ${listMaxHeight}`}
-      >
-        {filtered.length === 0 ? (
-          // An aria-disabled option keeps the listbox's required owned
-          // elements satisfied while nothing is actually selectable.
-          <div
-            role="option"
-            data-slot="empty"
-            aria-selected="false"
-            aria-disabled="true"
-            className={suggestHintRow}
-          >
-            {strings.noMatch}
-          </div>
-        ) : (
-          filtered.map((o, i) => (
-            <div
-              key={o.value}
-              role="option"
-              data-slot="item"
-              id={optionId(i)}
-              aria-selected={i === highlightIndex}
-              aria-setsize={filtered.length}
-              aria-posinset={i + 1}
-              ref={i === highlightIndex ? activeRowRef : undefined}
-              x-class={[suggestOption, i === highlightIndex && suggestOptionHighlighted]}
-              onClick={() => insertMention(o)}
-            >
-              {o.label ?? o.value}
-            </div>
-          ))
-        )}
-      </FloatingPanel>
+        rows={filtered}
+        highlightIndex={highlightIndex}
+        rowRef={activeRowRef}
+        onCommit={(index) => {
+          const selected = filtered[index];
+          if (selected !== undefined) insertMention(selected);
+        }}
+        emptyText={strings.noMatch}
+        heightCapClass={listMaxHeight}
+      />
     </div>
   );
 }

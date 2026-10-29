@@ -46,7 +46,7 @@ export default function Breadcrumb({
       x-class={[nav, className]}
       {...rest}
     >
-      <ol data-slot='list' className={list}>
+      <ol data-slot='list' x-class={[list]}>
         {items.map((child, i) => (
           <li
             key={i}
@@ -55,7 +55,7 @@ export default function Breadcrumb({
           >
             {child}
             {i < items.length - 1 && (
-              <span data-slot='separator' className={sep} aria-hidden='true'>
+              <span data-slot='separator' x-class={[sep]} aria-hidden='true'>
                 {separator}
               </span>
             )}

@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { useNativeDialogShell } from '../../utils/native-dialog';
+import { dialogBackdrop } from '../../utils/dialog-skin';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
@@ -105,20 +106,9 @@ const overlay = css`
     animation: haze-drawer-out var(--haze-duration-fast) var(--haze-ease);
   }
 
-  &::backdrop {
-    background: var(--haze-color-scrim);
-  }
-
-  &[open][data-state='open']::backdrop {
-    animation: haze-drawer-backdrop-in var(--haze-duration-normal)
-      var(--haze-ease);
-  }
-
-  &[open][data-state='closed']::backdrop {
-    animation: haze-drawer-backdrop-out var(--haze-duration-fast)
-      var(--haze-ease);
-  }
-
+  /* The scrim and its fades are the shared dialog-skin companion
+   * (dialogBackdrop) composed next to this class; only the placement
+   * slide below stays family-local. */
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
@@ -140,18 +130,6 @@ const overlay = css`
         var(--haze-drawer-from-x, 0),
         var(--haze-drawer-from-y, 0)
       );
-    }
-  }
-
-  @keyframes haze-drawer-backdrop-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-drawer-backdrop-out {
-    to {
-      opacity: 0;
     }
   }
 
@@ -272,7 +250,7 @@ export default function Drawer({
       ref={setDialogRef}
       data-slot='content'
       {...dialogProps}
-      x-class={[overlay, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
+      x-class={[overlay, dialogBackdrop, placements[placement], size !== undefined && sizes[size], className, resolvedClassNames?.content]}
     >
       {children}
     </dialog>

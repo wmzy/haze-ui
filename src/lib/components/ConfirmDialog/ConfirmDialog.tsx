@@ -8,6 +8,8 @@ import { useId } from 'react';
 import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
 
+import { dangerRemapTokens } from '../../utils/danger-remap';
+import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
 import { panelSurface } from '../../utils/panel-skin';
 import { useNativeDialogShell } from '../../utils/native-dialog';
 
@@ -29,69 +31,19 @@ type ConfirmDialogProps = {
 
 /**
  * Sheet deltas on the shared panel surface (utils/panel-skin): the modal
- * lane (space-6 padding, 480px max, full width up to it) plus the
- * enter/exit animations, driven by the native-dialog shell's data-state
- * on the panel itself (the `open` attribute guard keeps a closed panel
- * from animating once `close()` lands). Border, radius, elevation,
- * typography and the forced-colors arm come from the surface — the
- * hand-rolled sheet this replaces carried no forced-colors border at all.
- *
- * The scrim the old self-drawn mask div painted is the native
- * `::backdrop` now: same token, same fades, and the showModal top layer
- * replaces the z-index tier.
+ * lane (space-6 padding, 480px max, full width up to it). Border,
+ * radius, elevation, typography and the forced-colors arm come from the
+ * surface — the hand-rolled sheet this replaces carried no
+ * forced-colors border at all. The enter/exit animations and the
+ * `::backdrop` scrim are the shared dialog-skin companions
+ * (`dialogPanelMotion`/`dialogBackdrop`), driven by the native-dialog
+ * shell's data-state on the panel itself; the showModal top layer
+ * replaces the old self-drawn mask div's z-index tier.
  */
 const sheet = css`
   padding: var(--haze-space-6);
   max-width: 480px;
   width: 100%;
-
-  &[open][data-state='open'] {
-    animation: haze-confirm-in var(--haze-duration-normal) var(--haze-ease);
-  }
-
-  &[open][data-state='closed'] {
-    animation: haze-confirm-out var(--haze-duration-fast) var(--haze-ease);
-  }
-
-  &::backdrop {
-    background: var(--haze-color-scrim);
-  }
-
-  &[open][data-state='open']::backdrop {
-    animation: haze-confirm-backdrop-in var(--haze-duration-normal)
-      var(--haze-ease);
-  }
-
-  &[open][data-state='closed']::backdrop {
-    animation: haze-confirm-backdrop-out var(--haze-duration-fast)
-      var(--haze-ease);
-  }
-
-  @keyframes haze-confirm-in {
-    from {
-      opacity: 0;
-      transform: scale(0.97);
-    }
-  }
-
-  @keyframes haze-confirm-out {
-    to {
-      opacity: 0;
-      transform: scale(0.97);
-    }
-  }
-
-  @keyframes haze-confirm-backdrop-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-confirm-backdrop-out {
-    to {
-      opacity: 0;
-    }
-  }
 `;
 
 const header = css`
@@ -115,16 +67,10 @@ const footer = css`
 
 /**
  * `variant='danger'`: remaps the solid Button skin's primary tokens
- * onto the danger family on the confirm button itself (Popconfirm's
- * `okDangerTokens` pattern — custom-property remapping sidesteps any
- * specificity fight with Button's variant classes; hover/active derive
- * at the theme element, so all three states are remapped explicitly).
+ * onto the danger family on the confirm button itself (the shared
+ * utils/danger-remap class Popconfirm's `okVariant='danger'` also
+ * wears).
  */
-const confirmDangerTokens = css`
-  --haze-color-primary: var(--haze-color-danger);
-  --haze-color-primary-hover: var(--haze-color-danger-hover);
-  --haze-color-primary-active: var(--haze-color-danger-active);
-`;
 
 export default function ConfirmDialog({
   open: openControl,
@@ -175,7 +121,7 @@ export default function ConfirmDialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[panelSurface, sheet, className]}
+      x-class={[panelSurface, sheet, dialogPanelMotion, dialogBackdrop, className]}
       {...rest}
     >
       {title && (
@@ -197,7 +143,7 @@ export default function ConfirmDialog({
           data-slot='confirm-button'
           variant='solid'
           size='md'
-          className={variant === 'danger' ? confirmDangerTokens : undefined}
+          className={variant === 'danger' ? dangerRemapTokens : undefined}
           onClick={handleConfirm}
         >
           {confirmLabel}

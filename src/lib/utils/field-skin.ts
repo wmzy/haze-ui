@@ -92,6 +92,17 @@ export const nativeFieldChrome = css`
 `;
 
 /**
+ * The resize affordance a textarea-shaped field wears (Textarea,
+ * Mentions' textarea): the UA drag handle on the block, inline-end
+ * corner. The box model it stretches (Mentions keeps width:100% and
+ * the border inside the box) stays a per-site companion class —
+ * consumers differ on it, so it does not ride here.
+ */
+export const fieldResizeHandle = css`
+  resize: vertical;
+`;
+
+/**
  * Shared field size skin — the per-size padding/typography classes a
  * sized field wears (Input, Textarea, NumberInput's inner input; the
  * `input-styles` / `textarea-styles` / `number-input-styles` modules

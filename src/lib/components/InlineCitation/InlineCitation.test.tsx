@@ -1,6 +1,13 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import {
+  hidePopoverMock,
+  installNativePopover,
+  removeNativePopover,
+  showPopoverMock,
+} from '../../utils/testing/popover-mock';
+
 import InlineCitation from './InlineCitation';
 
 function getTrigger(name = '[1]') {
@@ -134,51 +141,9 @@ describe('InlineCitation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Native popover API tier: jsdom ships no popover machinery, so the minimal
-// surface the floating engine relies on is mocked here (same approach as
-// Popover.test.tsx / Dialog.test.tsx) to exercise the native path.
+// Native popover API tier: the jsdom double lives in
+// utils/testing/popover-mock.
 // ---------------------------------------------------------------------------
-
-class ToggleEventPolyfill extends Event {
-  newState: string;
-  constructor(type: string, init: { newState: string }) {
-    super(type);
-    this.newState = init.newState;
-  }
-}
-
-const showPopoverMock = vi.fn(function (this: HTMLElement) {
-  this.setAttribute('data-popover-open', '');
-  this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
-});
-
-const hidePopoverMock = vi.fn(function (this: HTMLElement) {
-  if (!this.hasAttribute('data-popover-open')) return;
-  this.removeAttribute('data-popover-open');
-  this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'closed' }));
-});
-
-type PopoverProtoPatch = {
-  popover?: unknown;
-  showPopover?: () => void;
-  hidePopover?: () => void;
-};
-
-function installNativePopover() {
-  Object.defineProperty(HTMLElement.prototype, 'popover', {
-    configurable: true,
-    value: 'manual',
-  });
-  HTMLElement.prototype.showPopover = showPopoverMock;
-  HTMLElement.prototype.hidePopover = hidePopoverMock;
-}
-
-function removeNativePopover() {
-  const proto = HTMLElement.prototype as PopoverProtoPatch;
-  delete proto.popover;
-  delete proto.showPopover;
-  delete proto.hidePopover;
-}
 
 describe('InlineCitation (native popover API)', () => {
   beforeEach(() => {

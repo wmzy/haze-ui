@@ -169,21 +169,28 @@ const imgAnimated = css`
   transition: transform var(--haze-duration-normal) var(--haze-ease);
 `;
 
-const toolbar = css`
+/* Shared chrome of the overlay's floating strips (toolbar, thumbnail
+   strip): an absolutely positioned, horizontally centered fit-content
+   box carrying the raised panel skin (border/radius/bg/shadow). The
+   per-strip classes below add only their edge offset and layout. */
+const chromeStrip = css`
   position: absolute;
-  top: var(--haze-space-4);
   left: 0;
   right: 0;
   margin-inline: auto;
   width: fit-content;
-  display: flex;
-  align-items: center;
-  gap: var(--haze-space-1);
-  padding: var(--haze-space-1);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-lg);
   background: var(--haze-color-bg);
   box-shadow: var(--haze-shadow-lg);
+`;
+
+const toolbar = css`
+  top: var(--haze-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--haze-space-1);
+  padding: var(--haze-space-1);
 `;
 
 const toolButton = css`
@@ -276,24 +283,16 @@ const counter = css`
   color: var(--haze-color-text-secondary);
 `;
 
-/* Bottom thumbnail strip (gallery mode): fit-content and centered like
-   the toolbar, scrolling horizontally when the entries overflow. */
+/* Bottom thumbnail strip (gallery mode): the chromeStrip chrome plus a
+   scrollable flex row, scrolling horizontally when the entries
+   overflow. */
 const thumbnailStrip = css`
-  position: absolute;
   bottom: var(--haze-space-4);
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  width: fit-content;
   max-width: 90%;
   display: flex;
   align-items: center;
   gap: var(--haze-space-2);
   padding: var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-lg);
-  background: var(--haze-color-bg);
-  box-shadow: var(--haze-shadow-lg);
   overflow-x: auto;
 `;
 
@@ -491,7 +490,7 @@ export default function ImagePreview({
       ref={setDialogRef}
       aria-label={active.alt}
       data-state={open ? 'open' : 'closed'}
-      className={overlay}
+      x-class={[overlay]}
       onCancel={(event) => {
         // Esc would otherwise bypass the exit animation — route it through
         // the same state flip as every other close path.
@@ -551,13 +550,13 @@ export default function ImagePreview({
           <ChevronRight aria-hidden="true" focusable="false" />
         </button>
       )}
-      <div data-slot="toolbar" className={toolbar}>
+      <div data-slot="toolbar" x-class={[chromeStrip, toolbar]}>
         {zoom && (
           <>
             <button
               data-slot="zoom-in-button"
               type="button"
-              className={toolButton}
+              x-class={[toolButton]}
               aria-label={strings.zoomIn}
               disabled={scale >= SCALE_MAX}
               onClick={() => setScale(clampScale(scale + SCALE_STEP))}
@@ -567,7 +566,7 @@ export default function ImagePreview({
             <button
               data-slot="zoom-out-button"
               type="button"
-              className={toolButton}
+              x-class={[toolButton]}
               aria-label={strings.zoomOut}
               disabled={scale <= SCALE_MIN}
               onClick={() => setScale(clampScale(scale - SCALE_STEP))}
@@ -577,7 +576,7 @@ export default function ImagePreview({
             <button
               data-slot="reset-button"
               type="button"
-              className={toolButton}
+              x-class={[toolButton]}
               aria-label={strings.reset}
               onClick={resetTransform}
             >
@@ -589,7 +588,7 @@ export default function ImagePreview({
           <button
             data-slot="rotate-button"
             type="button"
-            className={toolButton}
+            x-class={[toolButton]}
             aria-label={strings.rotate}
             onClick={() => setRotation((prev) => (prev + ROTATE_STEP) % 360)}
           >
@@ -597,7 +596,7 @@ export default function ImagePreview({
           </button>
         )}
         {galleryMode && (
-          <span data-slot="counter" className={counter}>
+          <span data-slot="counter" x-class={[counter]}>
             {formatString(strings.counter, {
               current: activeIndex + 1,
               total,
@@ -608,7 +607,7 @@ export default function ImagePreview({
           ref={closeRef}
           data-slot="close"
           type="button"
-          className={toolButton}
+          x-class={[toolButton]}
           aria-label={strings.close}
           onClick={() => setOpen(false)}
         >
@@ -616,7 +615,7 @@ export default function ImagePreview({
         </button>
       </div>
       {galleryImages !== null && total > 1 && showThumbnails && (
-        <div data-slot="thumbnails" className={thumbnailStrip}>
+        <div data-slot="thumbnails" x-class={[chromeStrip, thumbnailStrip]}>
           {galleryImages.map((image, i) => (
             <button
               key={`${image.src}-${i}`}
@@ -634,7 +633,7 @@ export default function ImagePreview({
               <img
                 src={image.src}
                 alt=""
-                className={thumbnailImg}
+                x-class={[thumbnailImg]}
                 draggable={false}
               />
             </button>

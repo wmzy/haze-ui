@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { getMonthLabel } from '../../utils/testing/date-test-helpers';
+
 import DateRangePicker from './DateRangePicker';
 import DateRangePickerCore from './DateRangePickerCore';
 
@@ -43,20 +45,13 @@ describe('DateRangePicker', () => {
 });
 
 describe('DateRangePicker dual-month panel', () => {
-  function monthLabel(year: number, month: number) {
-    return new Date(year, month).toLocaleString('default', {
-      month: 'long',
-      year: 'numeric',
-    });
-  }
-
   it('renders two adjacent month grids below the inputs', () => {
     render(<DateRangePicker startDate="2026-01-15" months={2} />);
     expect(
-      screen.getByRole('grid', { name: monthLabel(2026, 0) })
+      screen.getByRole('grid', { name: getMonthLabel(2026, 0) })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('grid', { name: monthLabel(2026, 1) })
+      screen.getByRole('grid', { name: getMonthLabel(2026, 1) })
     ).toBeInTheDocument();
     // The two date inputs stay in place.
     expect(document.querySelectorAll('input[type="date"]')).toHaveLength(2);
@@ -67,7 +62,7 @@ describe('DateRangePicker dual-month panel', () => {
     const { container } = render(
       <DateRangePicker startDate="2026-01-15" months={2} />
     );
-    const february = screen.getByRole('grid', { name: monthLabel(2026, 1) });
+    const february = screen.getByRole('grid', { name: getMonthLabel(2026, 1) });
     // A start date is already set, so the first calendar pick completes
     // the range with the end date.
     await user.click(february.querySelector('[data-haze-day="2026-02-10"]')!);
@@ -108,14 +103,14 @@ describe('DateRangePicker dual-month panel', () => {
       const view = render(props('', ''));
 
       // First pick starts a fresh range (end cleared).
-      const january = screen.getByRole('grid', { name: monthLabel(2026, 0) });
+      const january = screen.getByRole('grid', { name: getMonthLabel(2026, 0) });
       fireEvent.click(january.querySelector('[data-haze-day="2026-01-20"]')!);
       expect(onStartChange).toHaveBeenCalledWith('2026-01-20');
       expect(onEndChange).toHaveBeenCalledWith('');
 
       // Second pick at or after the start completes the range.
       view.rerender(props('2026-01-20', ''));
-      const february = screen.getByRole('grid', { name: monthLabel(2026, 1) });
+      const february = screen.getByRole('grid', { name: getMonthLabel(2026, 1) });
       fireEvent.click(february.querySelector('[data-haze-day="2026-02-10"]')!);
       expect(onEndChange).toHaveBeenCalledWith('2026-02-10');
       expect(onStartChange).toHaveBeenCalledTimes(1);
@@ -127,7 +122,7 @@ describe('DateRangePicker dual-month panel', () => {
   it('restarts the range when the second pick precedes the start', async () => {
     const user = userEvent.setup();
     render(<DateRangePicker startDate="2026-01-15" months={2} />);
-    const january = screen.getByRole('grid', { name: monthLabel(2026, 0) });
+    const january = screen.getByRole('grid', { name: getMonthLabel(2026, 0) });
     await user.click(january.querySelector('[data-haze-day="2026-01-20"]')!);
     await user.click(january.querySelector('[data-haze-day="2026-01-08"]')!);
     expect(screen.getByLabelText('Start date')).toHaveValue('2026-01-08');
@@ -139,10 +134,10 @@ describe('DateRangePicker dual-month panel', () => {
     render(<DateRangePicker startDate="2026-01-15" months={2} />);
     await user.click(screen.getByRole('button', { name: 'Next month' }));
     expect(
-      screen.getByRole('grid', { name: monthLabel(2026, 1) })
+      screen.getByRole('grid', { name: getMonthLabel(2026, 1) })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('grid', { name: monthLabel(2026, 2) })
+      screen.getByRole('grid', { name: getMonthLabel(2026, 2) })
     ).toBeInTheDocument();
   });
 

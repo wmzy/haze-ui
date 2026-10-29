@@ -5,10 +5,11 @@ import type { SelectClassNames } from './Select';
 import type { SelectEntryData, SelectOptionData } from './select-options';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { PickerChips, pickerClearBtn } from '../../utils/picker-chips';
 import {
   PickerCaret,
   PickerTrigger,
@@ -18,7 +19,6 @@ import {
   pickerListboxVirtual,
   pickerLoadingBlock,
   pickerOptionRow,
-  pickerOverflowBadge,
   pickerPanelWidth,
   pickerSearchInput,
   pickerTrigger,
@@ -27,8 +27,8 @@ import {
 import { mergeRefs } from '../../utils/refs';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useListboxNavigation } from '../../utils/use-listbox-navigation';
+import { usePanelQuery } from '../../utils/use-panel-query';
 import { useSearchReport } from '../../utils/use-search-report';
-import Chip from '../Chip/Chip';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import Spinner from '../Spinner/Spinner';
@@ -264,83 +264,6 @@ const inlineInput = css`
   }
 `;
 
-/** One selected value: the Chip capsule plus its pointer-only remove ×. */
-const chipItem = css`
-  display: inline-flex;
-  align-items: center;
-`;
-
-/**
- * Pointer-only remove affordance. A real button here would nest
- * interactive controls inside the trigger button — invalid HTML, an axe
- * `nested-interactive` violation, and a screen-reader mess. The span is
- * aria-hidden and unreachable by Tab on purpose: keyboard users remove
- * values with Backspace on the trigger or by toggling the option in the
- * listbox (the same trade-off Ant Design's multiple select makes).
- */
-const chipRemove = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: none;
-  border-radius: var(--haze-radius-full);
-  background: transparent;
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  margin-inline-start: var(--haze-space-1);
-  opacity: 0.6;
-  transition: opacity var(--haze-duration-fast);
-
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-/**
- * Pointer-only clear affordance (same nested-interactive rationale as
- * `chipRemove`). Revealed on trigger hover/focus-within through the
- * `[data-clearable]` ancestor selector (the `[role='option']:hover &`
- * pattern from the option rows); hidden otherwise — `visibility` +
- * `pointer-events` keep the invisible affordance from eating clicks
- * aimed at the caret. The solid background chip masks the painted caret
- * slot it occupies, on both the floating trigger and the native-select
- * overlay in SelectCore.
- */
-const clearBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: none;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity var(--haze-duration-fast);
-
-  [data-clearable]:hover &,
-  [data-clearable]:focus-within & {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
-`;
-
 /** Caret deltas over the shared caret base (utils/picker-trigger): a
  * centered box pushed to the trigger's inline end, inert to pointers
  * (the open toggle belongs to the trigger, not the glyph). */
@@ -505,10 +428,9 @@ export default function SelectFloating<T extends string | number = string>({
   // Panel visibility stays internal to the trigger — the pointer-safe
   // open path lives in floating's onTriggerPointerDown/onTriggerClick.
   const [open, setOpen] = useControl(undefined, false);
-  // The search query is internal UI state (never a prop), so useState
-  // is the correct primitive here, not useControl.
-  const [query, setQuery] = useState('');
-  const [prevQuery, setPrevQuery] = useState(query);
+  // The search query is internal panel UI state (never a prop), reset
+  // on close — the shared hook owns the reset.
+  const [query, setQuery] = usePanelQuery(open);
   const id = useId();
   // The floating trigger host: the button in every mode but tags, the
   // chip-box div there. HTMLElement-typed because of that split.
@@ -601,9 +523,15 @@ export default function SelectFloating<T extends string | number = string>({
 
   // The clamped flat-index highlight shared with Combobox
   // (utils/use-listbox-navigation); every consumed navigation key also
-  // opens the panel from the closed state (a no-op while open).
-  const { activeIndex, setActiveIndex, handleNavigationKey } =
-    useListboxNavigation(navigableOptions.length, () => setOpen(true));
+  // opens the panel from the closed state (a no-op while open), and a
+  // changed query re-highlights the first match during render (MUI
+  // Autocomplete behavior: Enter right after typing picks it without
+  // an arrow press first).
+  const { activeIndex, handleNavigationKey } = useListboxNavigation(
+    navigableOptions.length,
+    () => setOpen(true),
+    { query, reset: 'first-match' }
+  );
 
   // Flat index at which each entry's options begin — the bridge between
   // the grouped render structure and the flat keyboard/aria order.
@@ -651,24 +579,6 @@ export default function SelectFloating<T extends string | number = string>({
   }, [showPanelSearch, open, floating.shown]);
 
   useSearchReport(onSearch, query);
-
-  // A closed panel starts the next open with a fresh query — a stale
-  // filter surviving close/reopen would hide the very value the user
-  // just picked. Adjusted during render (the same React-endorsed reset
-  // as the highlight below) instead of an effect, per the repo's
-  // set-state-in-effect lint posture.
-  if (!open && query !== '') {
-    setQuery('');
-  }
-
-  // Typing a new query invalidates the highlight — adjust during render
-  // (React-endorsed reset) so the first filtered frame already carries
-  // the auto-highlight of the first match (MUI Autocomplete behavior:
-  // Enter right after typing picks it without an arrow press first).
-  if (query !== prevQuery) {
-    setPrevQuery(query);
-    setActiveIndex(navigableOptions.length > 0 ? 0 : -1);
-  }
 
   const toggleOption = (optionValue: T) => {
     if (selected.includes(optionValue)) {
@@ -762,7 +672,8 @@ export default function SelectFloating<T extends string | number = string>({
     } else if (e.key === 'Backspace') {
       // Keyboard parity for the pointer-only affordances: multiple
       // drops the most recently selected chip, single (clearable)
-      // empties the value — see chipRemove/clearBtn.
+      // empties the value — see pickerChipRemove/pickerClearBtn
+      // (utils/picker-chips).
       if (isMulti && selected.length > 0) {
         e.preventDefault();
         onChange(selected.slice(0, -1));
@@ -880,7 +791,7 @@ export default function SelectFloating<T extends string | number = string>({
       aria-hidden='true'
       data-slot='clear-button'
       title={strings.clear}
-      x-class={[clearBtn, classNames?.clearButton]}
+      x-class={[pickerClearBtn, classNames?.clearButton]}
       onClick={(e) => {
         // Keep the trigger's open toggle out of this click — clearing
         // must not flip the panel either way (the pointerdown above
@@ -896,45 +807,18 @@ export default function SelectFloating<T extends string | number = string>({
   ) : undefined;
 
   // The chip set of a multiple/tags trigger, shared by both shapes —
-  // the overflow badge of `maxTagCount` included.
+  // the shared row (utils/picker-chips) with the overflow badge of
+  // `maxTagCount` included.
   const chips = (
-    <>
-      {(maxTagCount === undefined
-        ? selected
-        : selected.slice(0, Math.max(maxTagCount, 0))
-      ).map((v) => (
-        <span data-slot='item' x-class={[chipItem, classNames?.item]} key={v}>
-          <Chip color='primary'>{labelFor(v)}</Chip>
-          <span
-            aria-hidden='true'
-            data-slot='item-remove'
-            x-class={chipRemove}
-            onClick={(e) => {
-              // Keep the trigger's open toggle out of this click —
-              // removing a chip must not close the panel.
-              e.stopPropagation();
-              removeValue(v);
-            }}
-          >
-            ×
-          </span>
-        </span>
-      ))}
-      {maxTagCount !== undefined && selected.length > Math.max(maxTagCount, 0) && (
-        <span
-          data-slot='overflow-badge'
-          x-class={pickerOverflowBadge}
-          title={selected
-            .slice(Math.max(maxTagCount, 0))
-            .map((v) => selectOptionText(labelFor(v)))
-            .join(', ')}
-        >
-          {formatString(strings.moreTags, {
-            count: selected.length - Math.max(maxTagCount, 0),
-          })}
-        </span>
-      )}
-    </>
+    <PickerChips
+      values={selected}
+      labelOf={labelFor}
+      titleOf={(v) => selectOptionText(labelFor(v))}
+      maxTagCount={maxTagCount}
+      onRemove={removeValue}
+      moreTags={strings.moreTags}
+      itemClassName={classNames?.item}
+    />
   );
 
   const triggerBody = isMulti ? (

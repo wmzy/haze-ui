@@ -29,18 +29,20 @@ const base = css`
 
 const sizes = {
   sm: css`
-    width: 32px;
-    height: 32px;
+    width: var(--haze-space-8);
+    height: var(--haze-space-8);
     font-size: var(--haze-text-xs);
   `,
   md: css`
-    width: 40px;
-    height: 40px;
+    width: var(--haze-space-10);
+    height: var(--haze-space-10);
     font-size: var(--haze-text-sm);
   `,
+  /* 56px has no single step on the space scale (jumps 12→16): the
+     space-12 + space-2 composition, TabBar's 56px track precedent. */
   lg: css`
-    width: 56px;
-    height: 56px;
+    width: calc(var(--haze-space-12) + var(--haze-space-2));
+    height: calc(var(--haze-space-12) + var(--haze-space-2));
     font-size: var(--haze-text-lg);
   `,
 } as const;
@@ -66,7 +68,7 @@ export default function Avatar({
       {src && !error ? (
         <img
           data-slot="img"
-          className={imgStyle}
+          x-class={[imgStyle]}
           src={src}
           alt={alt ?? ''}
           onError={() => setError(true)}

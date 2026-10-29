@@ -6,8 +6,9 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
-import { ChevronRight } from '../../icons';
 import { citationIndexBadge, citationLink } from '../../utils/citation-skin';
+import { DisclosureChevron } from '../../utils/disclosure-chevron';
+import { chevronPair } from '../../utils/timeline-skin';
 
 /** One cited source: a numbered entry whose title optionally links out. */
 type SourceItem = {
@@ -71,8 +72,8 @@ const toggleBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
   padding: 0;
   align-self: center;
   border: none;
@@ -85,17 +86,6 @@ const toggleBtn = css`
   &:hover {
     color: var(--haze-color-text);
   }
-
-  &[aria-expanded='true'] svg {
-    transform: rotate(90deg);
-  }
-`;
-
-/* The chevron svg's rotate transition; the transform itself is the
-   button's &[aria-expanded='true'] svg rule above — both must sit on
-   the svg, so the former inline style becomes this class. */
-const chevron = css`
-  transition: transform var(--haze-duration-fast) var(--haze-ease);
 `;
 
 const snippetBase = css`
@@ -257,19 +247,15 @@ export default function Sources({
                   onClick={() => toggle(source.id)}
                   x-class={[toggleBtn]}
                 >
-                  {/* lucide ChevronRight at 10px with a compensating
-                      stroke: the 24-unit viewBox renders at 10/24 the
-                      scale of the former 10-unit inline glyph, so
-                      strokeWidth 3.6 keeps the shipped 1.5px rendered
-                      stroke (JsonView/StepTimeline precedent). The
-                      transition class rides the icon itself — the
-                      rotate transform targets `svg` from toggleBtn. */}
-                  <ChevronRight
+                  {/* Rotation rides the glyph itself: the transition is
+                      built into DisclosureChevron, the open arm is
+                      timeline-skin's shared chevronPair class applied
+                      directly here — no competing `transform`
+                      declaration exists on the svg, so the bare class
+                      wins and the animation is unchanged. */}
+                  <DisclosureChevron
                     size={10}
-                    strokeWidth={3.6}
-                    aria-hidden='true'
-                    focusable='false'
-                    x-class={[chevron]}
+                    x-class={[itemExpanded && chevronPair.open]}
                   />
                 </button>
                 <div

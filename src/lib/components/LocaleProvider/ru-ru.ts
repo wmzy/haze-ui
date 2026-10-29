@@ -276,6 +276,7 @@ const ruRU: HazeStrings = {
     generating: 'Генерация',
   },
   tabs: {
+    addTab: 'Добавить вкладку',
     close: 'Закрыть',
     moreTabs: 'Ещё вкладки',
     statusDirty: 'Несохранённые изменения',

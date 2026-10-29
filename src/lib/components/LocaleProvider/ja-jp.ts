@@ -274,6 +274,7 @@ const jaJP: HazeStrings = {
     generating: '生成中',
   },
   tabs: {
+    addTab: '追加タブ',
     close: '閉じる',
     moreTabs: 'その他のタブ',
     statusDirty: '未保存の変更',

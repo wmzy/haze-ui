@@ -25,7 +25,7 @@ import {
   PARK_DELTA,
 } from '../../utils/grip-gesture';
 import { gripBase, gripHorizontal, gripVertical } from '../../utils/grip-skin';
-import { clamp } from '../../utils/math';
+import { clamp, quantize } from '../../utils/math';
 import { capturePointer } from '../../utils/pointer-capture';
 import { useStrings } from '../LocaleProvider';
 
@@ -42,15 +42,6 @@ function useSplitterMembership() {
 /** Arrow-key step in percent points of the pane area (WCAG 2.5.1: the
  * drag-styled divider is fully operable without a pointer). */
 const KEYBOARD_STEP = 5;
-
-/** Sizes are emitted rounded to 2 decimals so consumer payloads stay
- * clean; the trailing pane is derived (pairSum − lead) so the pair sum
- * is preserved exactly. */
-const round2 = (value: number): number => Math.round(value * 100) / 100;
-
-function clampRange(value: number, lo: number, hi: number): number {
-  return clamp(value, lo, hi);
-}
 
 /** A pane's resize contract, read from its declaration props. */
 type PaneDeclaration = { min: number; max: number };
@@ -202,7 +193,7 @@ export function Splitter({
         declarationOf(partnerIndex),
         pairSum
       );
-      const target = clampRange(
+      const target = clamp(
         restoreRef.current.get(paneIndex) ?? pairSum / 2,
         lo,
         hi
@@ -229,13 +220,16 @@ export function Splitter({
   const mirrored = (): boolean =>
     gripMirrored(orientation, containerRef.current);
 
+  /** Sizes are emitted rounded to 2 decimals (quantize's 100 tier) so
+   * consumer payloads stay clean; the trailing pane is derived
+   * (pairSum − lead) so the pair sum is preserved exactly. */
   const applyDivider = (
     leadIndex: number,
     nextLead: number,
     pairSum: number
   ) => {
-    const lead = round2(nextLead);
-    const trail = round2(pairSum - lead);
+    const lead = quantize(nextLead, 100);
+    const trail = quantize(pairSum - lead, 100);
     setSizes((prev) => {
       if (leadIndex + 1 >= prev.length) return prev;
       if (prev[leadIndex] === lead) return prev;
@@ -306,8 +300,8 @@ export function Splitter({
     }
     const raw = axisOf(event) - drag.origin;
     const deltaPercent = ((mirrored() ? -raw : raw) / drag.extent) * 100;
-    const nextLead = clampRange(drag.startLead + deltaPercent, drag.lo, drag.hi);
-    if (round2(nextLead) === round2(drag.lastLead)) return;
+    const nextLead = clamp(drag.startLead + deltaPercent, drag.lo, drag.hi);
+    if (quantize(nextLead, 100) === quantize(drag.lastLead, 100)) return;
     drag.lastLead = nextLead;
     applyDivider(drag.leadIndex, nextLead, drag.pairSum);
   };
@@ -334,7 +328,7 @@ export function Splitter({
     );
     const current = paneSize(index);
     event.preventDefault();
-    const nextLead = clampRange(current + delta, lo, hi);
+    const nextLead = clamp(current + delta, lo, hi);
     if (nextLead === current) return;
     applyDivider(index, nextLead, pairSum);
   };

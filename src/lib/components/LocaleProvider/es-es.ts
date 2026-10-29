@@ -276,6 +276,7 @@ const esES: HazeStrings = {
     generating: 'Generando',
   },
   tabs: {
+    addTab: 'Añadir pestaña',
     close: 'Cerrar',
     moreTabs: 'Más pestañas',
     statusDirty: 'Cambios sin guardar',

@@ -1,6 +1,8 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { StatusColor } from '../../utils/status-skin';
 
+import { css } from '@linaria/core';
+
 import {
   barBase,
   barSizes,
@@ -32,11 +34,17 @@ export default function Progress({
   variant = 'bar',
   size = 'md',
   color = 'primary',
-  'aria-label': ariaLabel = 'Progress',
+  'aria-label': ariaLabel,
   className,
   ref,
   ...rest
 }: ProgressProps) {
+  // RSC-safe by design (scripts/rsc-safe.mjs): the aria-label default
+  // stays an inlined literal instead of useStrings('progress') — a
+  // server tree cannot source strings from a client LocaleProvider
+  // anyway (context never crosses the RSC boundary), and the hook would
+  // drag the whole locale pack into the safe closure.
+  const label = ariaLabel ?? 'Progress';
   const clamped = Math.max(0, Math.min(100, value));
 
   if (variant === 'circle') {
@@ -50,7 +58,7 @@ export default function Progress({
         ref={ref}
         role="progressbar"
         data-slot="progress"
-        aria-label={ariaLabel}
+        aria-label={label}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={clamped}
@@ -86,7 +94,7 @@ export default function Progress({
       ref={ref}
       role="progressbar"
       data-slot="progress"
-      aria-label={ariaLabel}
+      aria-label={label}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={clamped}

@@ -14,8 +14,12 @@ type UseHighlightScrollOptions = {
   highlightIndex: number;
   /** Virtualized mode drives the window through `scrollToIndex`. */
   virtualized: boolean;
-  /** VirtualList handle of the virtualized path. */
-  listRef: RefObject<VirtualListHandle | null>;
+  /**
+   * VirtualList handle of the virtualized path — only that path needs
+   * it; plain (non-virtualized) panels scroll the highlighted row
+   * element and carry no handle.
+   */
+  listRef?: RefObject<VirtualListHandle | null>;
   /** Plain-path handle: ref on the currently highlighted row element. */
   rowRef: RefObject<HTMLDivElement | null>;
 };
@@ -41,7 +45,7 @@ export function useHighlightScroll({
   useEffect(() => {
     if (!shown || highlightIndex < 0) return;
     if (virtualized) {
-      listRef.current?.scrollToIndex(highlightIndex, 'auto');
+      listRef?.current?.scrollToIndex(highlightIndex, 'auto');
       return;
     }
     const row = rowRef.current;

@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, Ref, SetStateAction } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import type { CalendarCellRender, CalendarPickerMode } from '../Calendar/Calendar';
 
@@ -14,7 +14,7 @@ import {
   parseWeekValue,
 } from '../../utils/date-math';
 import { pickerFieldInputSm } from '../../utils/field-skin';
-import { FloatingPanel, useFloating } from '../../utils/floating';
+import { FloatingPanel, useFloating, useOpenAdaptor } from '../../utils/floating';
 import { panelSurfaceBare } from '../../utils/panel-skin';
 import { PickerInputTrigger } from '../../utils/picker-trigger';
 import { PresetRows } from '../../utils/preset-list-rows';
@@ -247,7 +247,7 @@ export default function DatepickerCore({
         (monday &&
           new Date(monday.year, monday.month, monday.day)) ||
         parseCivilDate(dayValue);
-      if (!day) return time !== undefined ? `${dayValue} ${time}` : dayValue;
+      if (!day) return time !== undefined ? formatDateTimeValue(dayValue, time) : dayValue;
       return format(
         time !== undefined ? applyTimeToCivilDate(day, time) : day
       );
@@ -255,13 +255,7 @@ export default function DatepickerCore({
     return time !== undefined ? formatDateTimeValue(dayValue, time) : dayValue;
   };
 
-  // Adapt the value/onChange pair to the state-setter shape the floating
-  // behavior drives (functional updates included).
-  const setOpen = useCallback(
-    (next: SetStateAction<boolean>) =>
-      onOpenChange(typeof next === 'function' ? next(open) : next),
-    [onOpenChange, open]
-  );
+  const setOpen = useOpenAdaptor(open, onOpenChange);
 
   const floating = useFloating({
     open,

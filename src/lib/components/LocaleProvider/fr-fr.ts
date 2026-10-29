@@ -276,6 +276,7 @@ const frFR: HazeStrings = {
     generating: 'Génération en cours',
   },
   tabs: {
+    addTab: 'Ajouter un onglet',
     close: 'Fermer',
     moreTabs: "Plus d'onglets",
     statusDirty: 'Modifications non enregistrées',

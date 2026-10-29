@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { useControl } from 'react-use-control';
 
 import { getDirection } from '../../utils/direction';
+import { quantize } from '../../utils/math';
 
 type SliderCoreProps = {
   /** `number` in single mode, `[low, high]` when `range` is set. An
@@ -459,7 +460,7 @@ function mirrorRangeArrows(
   const max = el.max === '' ? 100 : Number(el.max);
   const delta = event.key === 'ArrowLeft' ? step : -step;
   const next = Math.min(Math.max(value + delta, min), max);
-  onChange(Math.round(next * 1e6) / 1e6);
+  onChange(quantize(next));
   // The passthrough expects a change event; a synthesized one is not
   // constructible cross-engine, and this key event targets the same
   // input — close enough for consumers tracking value changes.

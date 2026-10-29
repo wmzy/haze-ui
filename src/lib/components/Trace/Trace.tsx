@@ -8,9 +8,9 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
-import { ChevronRight } from '../../icons';
 import { srOnly } from '../../utils/sr-only';
 import { agenticStatusLabel } from '../../utils/agentic-status';
+import { DisclosureChevron } from '../../utils/disclosure-chevron';
 import {
   chevronPair,
   disclosureMonoBody,
@@ -196,17 +196,7 @@ export function TraceItem({
             aria-hidden='true'
             x-class={[chevronPair.closed, open && chevronPair.open]}
           >
-            {/* lucide ChevronRight at 12px with a compensating 3-unit
-                stroke: the 24-unit viewBox renders at half the scale of
-                the former 16-unit inline glyph, so strokeWidth 3 keeps
-                the shipped 1.5px rendered stroke (StepTimeline
-                precedent). */}
-            <ChevronRight
-              size={12}
-              strokeWidth={3}
-              aria-hidden='true'
-              focusable='false'
-            />
+            <DisclosureChevron size={12} />
           </span>
         </button>
       ) : (

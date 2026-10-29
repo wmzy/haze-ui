@@ -9,14 +9,17 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useFocusScope } from '../../utils/focus-scope';
+import { useOverlayHandle } from '../../utils/native-dialog';
+import { presenceOverlayFade } from '../../utils/dialog-skin';
 import {
   capturePointer,
   releasePointerCaptureSafe,
 } from '../../utils/pointer-capture';
 import { Presence } from '../../utils/presence';
+import { useTouchScrollGuard } from '../../utils/touch-scroll-guard';
 import { useViewTransitionFlip } from '../../utils/view-transition';
 import { useVisualViewportInset } from '../../utils/viewport';
 
@@ -77,6 +80,9 @@ type BottomSheetProps = {
   ref?: Ref<BottomSheetHandle>;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
 
+/* The scrim div's fades are the shared dialog-skin companion
+ * (presenceOverlayFade) composed next to this class: Presence injects
+ * the data-state that drives it and the sheet's own slide below. */
 const overlay = css`
   position: fixed;
   inset: 0;
@@ -85,29 +91,6 @@ const overlay = css`
   display: flex;
   align-items: flex-end;
   justify-content: center;
-
-  /* Presence 注入的 data-state 驱动 backdrop 与内容各自的进退场 */
-  &[data-state='open'] {
-    animation: haze-sheet-backdrop-in var(--haze-duration-normal)
-      var(--haze-ease);
-  }
-
-  &[data-state='closed'] {
-    animation: haze-sheet-backdrop-out var(--haze-duration-fast)
-      var(--haze-ease);
-  }
-
-  @keyframes haze-sheet-backdrop-in {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes haze-sheet-backdrop-out {
-    to {
-      opacity: 0;
-    }
-  }
 `;
 
 const sheet = css`
@@ -225,41 +208,17 @@ export default function BottomSheet({
   // document.startViewTransition(() => flushSync(...)) 里（不支持或
   // reduce 偏好时退化为直接 setOpen）。
   const flipOpen = useViewTransitionFlip(viewTransition, setOpen);
-  const openerRef = useRef<HTMLElement | null>(null);
-  // Opener capture for the imperative handle's focusTrigger(). Declared
-  // BEFORE useFocusScope on purpose: effects run in declaration order,
-  // and the scope's effect is what moves focus into the sheet —
-  // capturing later would record the sheet itself. This mirrors the
-  // element the scope restores focus to on close.
-  useEffect(() => {
-    if (!open) return;
-    const active = document.activeElement;
-    openerRef.current = active instanceof HTMLElement ? active : null;
-  }, [open]);
-  const setScope = useFocusScope({ enabled: open, trapped: true });
-
+  // 命令式 surface（open/close/focusTrigger）与 opener 捕获走共享层
+  // （utils/native-dialog 的 useOverlayHandle）：close 与遮罩点击、
+  // Escape 共用下面的 handleClose——onClose 的每个消费方看到的唯一
+  // 出口。声明在 useFocusScope 之前（scope 的 effect 会把焦点移进
+  // sheet，晚捕获会记下 sheet 自己）。
   const handleClose = useCallback(() => {
     flipOpen(false);
     onClose?.();
   }, [flipOpen, onClose]);
-
-  // Imperative surface: `ref.current?.open()/close()/focusTrigger()`.
-  // close shares handleClose with the overlay-click and Escape paths —
-  // the single exit every consumer of onClose sees.
-  useImperativeHandle(
-    ref,
-    () => ({
-      open: () => {
-        flipOpen(true);
-      },
-      close: handleClose,
-      focusTrigger: () => {
-        const target = openerRef.current;
-        if (target?.isConnected) target.focus();
-      },
-    }),
-    [flipOpen, handleClose]
-  );
+  useOverlayHandle({ open, flipOpen, close: handleClose, ref });
+  const setScope = useFocusScope({ enabled: open, trapped: true });
 
   // ── 虚拟键盘避让 ────────────────────────────────────────────────
   const kbInset = useVisualViewportInset(virtualKeyboard && open);
@@ -287,31 +246,29 @@ export default function BottomSheet({
   );
   const swipeRef = useRef<SwipeState | null>(null);
 
-  // vaul/Base UI 式 touchmove 守卫：在「可转换」窗口内阻止原生滚动
-  // 接管手势（引擎一旦把触摸判归滚动，pointer 流会被 pointercancel
-  // 掐断）。仅当内容已在顶部且向下拖时 preventDefault，正常内容滚动
-  // 不受影响。必须恒定引用——addEventListener/removeEventListener 配对。
-  const preventNativeScroll = useCallback((event: TouchEvent) => {
-    const swipe = swipeRef.current;
-    const sheet = sheetRef.current;
-    if (!swipe || !sheet || event.touches.length !== 1) return;
-    if (event.defaultPrevented) return;
-    const [touch] = event.touches;
-    if (!touch) return;
-    const dy = touch.clientY - swipe.startY;
-    if (dy <= 0) return;
-    if (!swipe.dragging && !isAtScrollTop(event.target, sheet)) return;
-    if (swipe.dragging || dy > SWIPE_SLOP) event.preventDefault();
-  }, []);
+  // vaul/Base UI 式 touchmove 守卫（utils/touch-scroll-guard）：在「可
+  // 转换」窗口内阻止原生滚动接管手势（引擎一旦把触摸判归滚动，pointer
+  // 流会被 pointercancel 掐断）。仅当内容已在顶部且向下拖时
+  // preventDefault，正常内容滚动不受影响。
+  const {claim: claimScrollGuard, release: releaseScrollGuard} =
+    useTouchScrollGuard((event) => {
+      const swipe = swipeRef.current;
+      const sheet = sheetRef.current;
+      if (!swipe || !sheet || event.touches.length !== 1) return false;
+      const [touch] = event.touches;
+      if (!touch) return false;
+      const dy = touch.clientY - swipe.startY;
+      if (dy <= 0) return false;
+      if (!swipe.dragging && !isAtScrollTop(event.target, sheet)) return false;
+      return swipe.dragging || dy > SWIPE_SLOP;
+    });
 
   const takeGesture = (sheet: HTMLDivElement, pointerId: number) => {
     // jsdom/无指针捕获的引擎：事件继续以冒泡形式送达 sheet
     capturePointer(sheet, pointerId);
     sheet.style.transition = 'none'; // 拖拽跟手，不做过渡
     sheet.style.userSelect = 'none'; // 鼠标拖拽不选中文本
-    document.addEventListener('touchmove', preventNativeScroll, {
-      passive: false,
-    });
+    claimScrollGuard();
   };
 
   const releaseGesture = (sheet: HTMLDivElement, pointerId: number) => {
@@ -319,7 +276,7 @@ export default function BottomSheet({
     // 松手后的 click；已丢失的捕获是 no-op
     releasePointerCaptureSafe(sheet, pointerId);
     sheet.style.userSelect = '';
-    document.removeEventListener('touchmove', preventNativeScroll);
+    releaseScrollGuard();
   };
 
   // 回弹到 resting 位（键盘弹出时是 -inset，否则清空回落到类样式）；
@@ -399,14 +356,14 @@ export default function BottomSheet({
       sheet.style.userSelect = '';
       sheet.style.transition = '';
     }
-    document.removeEventListener('touchmove', preventNativeScroll);
-  }, [open, preventNativeScroll]);
+    releaseScrollGuard();
+  }, [open, releaseScrollGuard]);
 
   return (
     <Presence present={open}>
       <div
         data-slot='mask'
-        x-class={[overlay, className]}
+        x-class={[overlay, presenceOverlayFade, className]}
         onClick={() => {
           // 退场期间（已 setOpen(false)、Presence 尚未卸载）不再重复关闭
           if (open) handleClose();

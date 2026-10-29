@@ -12,11 +12,11 @@ import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
+import { PickerOverflowBadge } from '../../utils/picker-chips';
 import {
   pickerGroupLabel,
   pickerListbox,
   pickerListboxVirtual,
-  pickerOverflowBadge,
   pickerPanelWidth,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
@@ -372,7 +372,6 @@ export default function Combobox<T extends string | number = string>({
   const [created, setCreated] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [open, setOpen] = useControl(openControl, false);
-  const [prevQuery, setPrevQuery] = useState(query);
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   // The consumer's ref rides the same combobox input the floating
@@ -459,9 +458,14 @@ export default function Combobox<T extends string | number = string>({
   // The clamped flat-index highlight shared with Select
   // (utils/use-listbox-navigation); every consumed navigation key also
   // opens the panel from the closed state (a no-op while open). Home/
-  // End join the skeleton here — Select always had them.
-  const { activeIndex: highlightIndex, setActiveIndex: setHighlightIndex, handleNavigationKey } =
-    useListboxNavigation(listItems.length, () => setOpen(true));
+  // End join the skeleton here — Select always had them. A changed
+  // query clears the highlight during render, so the first filtered
+  // frame drops any stale highlight without an extra effect pass.
+  const { activeIndex: highlightIndex, handleNavigationKey } =
+    useListboxNavigation(listItems.length, () => setOpen(true), {
+      query,
+      reset: 'none',
+    });
 
   // Explicit `virtualized` override: object config enables at any
   // length and customizes metrics, `true` enables with defaults,
@@ -523,14 +527,6 @@ export default function Combobox<T extends string | number = string>({
   });
 
   useSearchReport(onSearch, query);
-
-  // Typing a new query invalidates the highlight — adjust during render
-  // (React-endorsed reset) so the first filtered frame already drops any
-  // stale highlight, without an extra effect pass.
-  if (query !== prevQuery) {
-    setPrevQuery(query);
-    setHighlightIndex(-1);
-  }
 
   const isSelected = (val: T) =>
     multiple ? selected.includes(val) : value === val;
@@ -726,21 +722,12 @@ export default function Combobox<T extends string | number = string>({
               </Chip>
             </span>
           ))}
-          {maxTagCount !== undefined &&
-            selected.length > Math.max(maxTagCount, 0) && (
-              <span
-                data-slot='overflow-badge'
-                x-class={pickerOverflowBadge}
-                title={selected
-                  .slice(Math.max(maxTagCount, 0))
-                  .map((v) => labelFor(v))
-                  .join(', ')}
-              >
-                {formatString(selectStrings.moreTags, {
-                  count: selected.length - Math.max(maxTagCount, 0),
-                })}
-              </span>
-            )}
+          <PickerOverflowBadge
+            values={selected}
+            maxTagCount={maxTagCount}
+            titleOf={labelFor}
+            moreTags={selectStrings.moreTags}
+          />
           {triggerInput}
         </div>
       ) : (

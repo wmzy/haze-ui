@@ -4,8 +4,8 @@ import { css } from '@linaria/core';
 import { useCallback, useId, useState } from 'react';
 
 import { useClipboard } from '../../hooks/useClipboard';
-import { ChevronRight } from '../../icons';
 import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
+import { DisclosureChevron } from '../../utils/disclosure-chevron';
 import { chevronPair } from '../../utils/timeline-skin';
 
 import { useStrings } from '../LocaleProvider';
@@ -264,17 +264,7 @@ function JsonNode({
           onClick={() => onToggle(path, defaultCollapsed)}
         >
           <span data-slot="icon" x-class={[chevron]}>
-            {/* lucide ChevronRight at 12px with a compensating 3-unit
-                stroke: the 24-unit viewBox renders at half the scale of
-                the former 16-unit inline glyph, so strokeWidth 3 keeps
-                the shipped 1.5px rendered stroke (StepTimeline
-                precedent). */}
-            <ChevronRight
-              size={12}
-              strokeWidth={3}
-              aria-hidden='true'
-              focusable='false'
-            />
+            <DisclosureChevron size={12} />
           </span>
           {keyPrefix}
           <span data-slot="punctuation" x-class={[punct]}>
@@ -300,12 +290,7 @@ function JsonNode({
           onClick={() => onToggle(path, defaultCollapsed)}
         >
           <span data-slot="icon" x-class={[chevron, chevronPair.open]}>
-            <ChevronRight
-              size={12}
-              strokeWidth={3}
-              aria-hidden='true'
-              focusable='false'
-            />
+            <DisclosureChevron size={12} />
           </span>
           {keyPrefix}
           <span data-slot="punctuation" x-class={[punct]}>{open}</span>

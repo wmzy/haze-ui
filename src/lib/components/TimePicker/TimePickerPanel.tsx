@@ -4,7 +4,8 @@ import type { TimeParts, TimePickerFormat } from '../../utils/time-math';
 
 import { useCallback, useEffect, useId, useRef } from 'react';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
+import { FloatingPanel, useFloating, useOpenAdaptor } from '../../utils/floating';
+import { PickerInputTrigger } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
@@ -105,13 +106,7 @@ export default function TimePickerPanel({
   const periodColumnRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
 
-  // Adapt the value/onOpenChange pair to the state-setter shape the
-  // floating behavior drives (functional updates included).
-  const setOpen = useCallback(
-    (next: boolean | ((prev: boolean) => boolean)) =>
-      onOpenChange(typeof next === 'function' ? next(open) : next),
-    [onOpenChange, open]
-  );
+  const setOpen = useOpenAdaptor(open, onOpenChange);
 
   const floating = useFloating({
     open,
@@ -369,28 +364,18 @@ export default function TimePickerPanel({
 
   return (
     <div x-class={[wrapper, className]}>
-      <input
+      {/* The shared readonly combobox trigger (utils/picker-trigger):
+          same DOM the local input rendered — pickerFieldInput skin,
+          floating wiring, the popup aria set. The trigger's keyboard
+          stepping rides `onKeyDown` through the rest spread. */}
+      <PickerInputTrigger
         ref={setInputRef}
-        data-slot='input'
-        readOnly
-        style={floating.triggerStyle}
+        behavior={floating}
+        open={open}
+        controlsId={panelId}
         className={trigger}
         value={value}
         placeholder={placeholder}
-        role="combobox"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onPointerDown={(e) => {
-          // jsdom dispatches pointer events on disabled inputs that
-          // browsers swallow; keep the two behaviors aligned.
-          if (e.currentTarget.disabled) return;
-          floating.onTriggerPointerDown();
-        }}
-        onClick={(e) => {
-          if (e.currentTarget.disabled) return;
-          floating.onTriggerClick();
-        }}
         onKeyDown={handleTriggerKeyDown}
         {...rest}
       />

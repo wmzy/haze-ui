@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from 'react';
-
 import { useCallback, useState } from 'react';
 
 /**
@@ -12,17 +10,24 @@ type NavigationKeyEvent = {
   preventDefault: () => void;
 };
 
+/** How the highlight answers a changed panel query: `first-match`
+ * re-highlights the first option of the fresh result set (Select's
+ * MUI-Autocomplete posture — Enter right after typing picks it without
+ * an arrow press first), `none` clears it (Combobox's drop-on-refilter). */
+type QueryHighlightReset = 'first-match' | 'none';
+
+/** Third-argument options of `useListboxNavigation`. */
+type ListboxQueryReset = {
+  /** The site's current panel search query. */
+  query: string;
+  /** What a changed query does to the highlight. */
+  reset: QueryHighlightReset;
+};
+
 /** Controller surface of `useListboxNavigation`. */
 type ListboxNavigation = {
   /** The highlighted option's flat index; -1 while nothing is highlighted. */
   activeIndex: number;
-  /**
-   * Raw setter for the site's render-time resets: a new query typically
-   * re-highlights (Select's auto-highlight of the first match) or clears
-   * (Combobox's drop-on-refilter) — both are the caller's call, not the
-   * skeleton's.
-   */
-  setActiveIndex: Dispatch<SetStateAction<number>>;
   /**
    * The ArrowUp/ArrowDown/Home/End skeleton of a listbox keydown:
    * suppresses the key's default and moves the clamped highlight, then
@@ -58,9 +63,23 @@ export function useListboxNavigation(
    * the picker sites open their panel from the closed state here
    * (`setOpen(true)`; a no-op while already open).
    */
-  onNavigate?: () => void
+  onNavigate?: () => void,
+  /**
+   * When given, the hook tracks the panel query and resets the
+   * highlight on change (during render, the React-endorsed reset), so
+   * the first filtered frame already carries the site's typing
+   * posture instead of a stale highlight.
+   */
+  queryReset?: ListboxQueryReset
 ): ListboxNavigation {
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [prevQuery, setPrevQuery] = useState(queryReset?.query);
+  if (queryReset !== undefined && queryReset.query !== prevQuery) {
+    setPrevQuery(queryReset.query);
+    setActiveIndex(
+      queryReset.reset === 'first-match' ? (count > 0 ? 0 : -1) : -1
+    );
+  }
 
   const move = useCallback(
     (delta: 1 | -1) => {
@@ -106,7 +125,12 @@ export function useListboxNavigation(
     [jump, move, onNavigate]
   );
 
-  return { activeIndex, setActiveIndex, handleNavigationKey };
+  return { activeIndex, handleNavigationKey };
 }
 
-export type { ListboxNavigation, NavigationKeyEvent };
+export type {
+  ListboxNavigation,
+  ListboxQueryReset,
+  NavigationKeyEvent,
+  QueryHighlightReset,
+};

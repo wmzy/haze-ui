@@ -276,6 +276,7 @@ const koKR: HazeStrings = {
     generating: '생성 중',
   },
   tabs: {
+    addTab: '탭 추가',
     close: '닫기',
     moreTabs: '탭 더 보기',
     statusDirty: '저장되지 않은 변경 사항',

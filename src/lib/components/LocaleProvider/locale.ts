@@ -273,6 +273,7 @@ const defaultStrings = {
     generating: 'Generating',
   },
   tabs: {
+    addTab: 'Add tab',
     close: 'Close',
     moreTabs: 'More tabs',
     statusDirty: 'Unsaved changes',

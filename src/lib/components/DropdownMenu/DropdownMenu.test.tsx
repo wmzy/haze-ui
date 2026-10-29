@@ -8,6 +8,10 @@ import { useControl } from 'react-use-control';
 import { SUBMENU_CLOSE_GRACE_MS, SUBMENU_OPEN_DELAY_MS } from '../../utils/submenu';
 
 import { menuItemDanger } from '../../utils/menu-skins';
+import {
+  installNativePopover,
+  removeNativePopover,
+} from '../../utils/testing/popover-mock';
 
 import DropdownMenu from './DropdownMenu';
 import DropdownMenuTrigger from './DropdownMenuTrigger';
@@ -860,47 +864,8 @@ describe('DropdownMenu submenu', () => {
   });
 });
 
-// jsdom implements neither the Popover API nor ToggleEvent; polyfill the
-// minimal surface the component relies on (same approach as Popover's
-// tests) to exercise the native tier-2 path for collisionPadding.
-class ToggleEventPolyfill extends Event {
-  newState: string;
-  constructor(type: string, init: { newState: string }) {
-    super(type);
-    this.newState = init.newState;
-  }
-}
-
-function installNativePopover() {
-  Object.defineProperty(HTMLElement.prototype, 'popover', {
-    configurable: true,
-    value: 'manual',
-  });
-  HTMLElement.prototype.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', '');
-    this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
-  };
-  HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
-    if (!this.hasAttribute('data-popover-open')) return;
-    this.removeAttribute('data-popover-open');
-    this.dispatchEvent(
-      new ToggleEventPolyfill('toggle', { newState: 'closed' })
-    );
-  };
-}
-
-type PopoverProtoPatch = {
-  popover?: unknown;
-  showPopover?: () => void;
-  hidePopover?: () => void;
-};
-
-function removeNativePopover() {
-  const proto = HTMLElement.prototype as PopoverProtoPatch;
-  delete proto.popover;
-  delete proto.showPopover;
-  delete proto.hidePopover;
-}
+// The native-popover jsdom double (and tier-2 support) lives in
+// utils/testing/popover-mock.
 
 type MockRect = {
   top: number;

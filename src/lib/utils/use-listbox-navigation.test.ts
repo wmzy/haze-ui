@@ -88,20 +88,52 @@ describe('useListboxNavigation', () => {
     expect(onNavigate).toHaveBeenCalledTimes(2);
   });
 
+  it('re-highlights the first match on a changed query in first-match mode', async () => {
+    const { result, rerender } = renderHook(
+      ({ count, query }: { count: number; query: string }) =>
+        useListboxNavigation(count, undefined, { query, reset: 'first-match' }),
+      { initialProps: { count: 3, query: '' } }
+    );
+    await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('End'))));
+    expect(result.current.activeIndex).toBe(2);
+    rerender({ count: 3, query: 'a' });
+    expect(result.current.activeIndex).toBe(0);
+    // An unchanged query never re-fires the reset.
+    rerender({ count: 3, query: 'a' });
+    await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('ArrowDown'))));
+    expect(result.current.activeIndex).toBe(1);
+    rerender({ count: 3, query: 'a' });
+    expect(result.current.activeIndex).toBe(1);
+    // An empty result set resets to -1, not a clamped 0.
+    rerender({ count: 0, query: 'zz' });
+    expect(result.current.activeIndex).toBe(-1);
+  });
+
+  it('clears the highlight on a changed query in none mode', async () => {
+    const { result, rerender } = renderHook(
+      ({ count, query }: { count: number; query: string }) =>
+        useListboxNavigation(count, undefined, { query, reset: 'none' }),
+      { initialProps: { count: 3, query: '' } }
+    );
+    await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('End'))));
+    expect(result.current.activeIndex).toBe(2);
+    rerender({ count: 3, query: 'a' });
+    expect(result.current.activeIndex).toBe(-1);
+  });
+
   it('tracks a shrinking option count without resurrecting a stale index', async () => {
     const { result, rerender } = renderHook(
-      ({ count }: { count: number }) => useListboxNavigation(count),
-      { initialProps: { count: 4 } }
+      ({ count, query }: { count: number; query: string }) =>
+        useListboxNavigation(count, undefined, { query, reset: 'none' }),
+      { initialProps: { count: 4, query: '' } }
     );
     await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('End'))));
     expect(result.current.activeIndex).toBe(3);
-    // The filtered list shrank to one option: the exposed setter is how
-    // sites reseed the highlight; a step from the stale index stays
+    // The filtered list shrank to one option: the query-reset path is
+    // how sites reseed the highlight; a step from the stale index stays
     // clamped into the new bounds.
-    act(() => {
-      result.current.setActiveIndex(-1);
-    });
-    rerender({ count: 1 });
+    rerender({ count: 1, query: 'a' });
+    expect(result.current.activeIndex).toBe(-1);
     await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('ArrowDown'))));
     expect(result.current.activeIndex).toBe(0);
     await act(() => Promise.resolve(result.current.handleNavigationKey(keyEvent('ArrowDown'))));

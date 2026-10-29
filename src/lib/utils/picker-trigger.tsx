@@ -23,7 +23,11 @@ import { pickerFieldInput } from './field-skin';
  * (Select/Cascader/TreeSelect), the loading/empty state blocks, the
  * group-heading typography, the option-row skeleton (+ density
  * variant), and the readonly input trigger the date/time families
- * anchor their popup panels on (PickerInputTrigger).
+ * anchor their popup panels on (PickerInputTrigger). The chip-row
+ * affordances (chip capsule skin, pointer-only remove × and clear
+ * affordance, the chips + overflow-badge JSX) live next door in
+ * utils/picker-chips; the closed-panel query reset lives in the
+ * css-less utils/use-panel-query.
  *
  * Deliberately NOT shared — genuinely drifted, they stay local to each
  * family (the drift discipline): gap/flex-wrap/padding/font-size per
@@ -335,6 +339,26 @@ export const pickerNativeCaret = css`
   }
 `;
 
+/**
+ * Keydown arm shared by the button-trigger pickers (TreeSelect,
+ * Cascader): ArrowUp/ArrowDown on a closed trigger opens the panel —
+ * a no-op while already open, the same contract Select's and
+ * Combobox's `useListboxNavigation` sites get through `onNavigate`.
+ */
+export function pickerArrowOpen(
+  open: boolean,
+  setOpen: (next: boolean) => void,
+  event: {
+    readonly key: string;
+    preventDefault: () => void;
+  }
+): void {
+  if (!open && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+    event.preventDefault();
+    setOpen(true);
+  }
+}
+
 export const ChevronDown = () => (
   <svg
     viewBox='0 0 12 12'
@@ -490,9 +514,10 @@ type PickerInputTriggerProps = {
  * for the popup aria set (aria-expanded is not supported on the
  * implicit textbox role, ARIA 1.2). The field surface is the shared md
  * `pickerFieldInput` (utils/field-skin); family deltas (cursor,
- * widths, tabular figures) ride `className` extension classes. Exported
- * ahead of the date families' adoption — they still render their local
- * copies today.
+ * widths, tabular figures) ride `className` extension classes. The
+ * pointer/click wiring is disabled-aware: jsdom dispatches pointer and
+ * click events on disabled inputs that browsers swallow, so a
+ * disabled trigger never toggles on either engine.
  */
 export function PickerInputTrigger({
   behavior,
@@ -516,8 +541,16 @@ export function PickerInputTrigger({
       aria-haspopup={popup}
       aria-expanded={open}
       aria-controls={controlsId}
-      onPointerDown={behavior.onTriggerPointerDown}
-      onClick={behavior.onTriggerClick}
+      onPointerDown={(event) => {
+        // jsdom dispatches pointer events on disabled inputs that
+        // browsers swallow; keep the two behaviors aligned.
+        if (event.currentTarget.disabled) return;
+        behavior.onTriggerPointerDown();
+      }}
+      onClick={(event) => {
+        if (event.currentTarget.disabled) return;
+        behavior.onTriggerClick();
+      }}
       x-class={[pickerFieldInput, className]}
     />
   );

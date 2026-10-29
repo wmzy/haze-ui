@@ -7,7 +7,9 @@ import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { mergeRefs } from '../../utils/refs';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
-import { listWrap, tag, removeBtn } from '../../utils/tag-skin';
+import { listWrap, tag } from '../../utils/tag-skin';
+
+import TagRemoveButton from './TagRemoveButton';
 
 /** One rendered tag, offered to `renderTag` injectors.
  * @internal */
@@ -207,25 +209,11 @@ export default function TagInputCore({
         ) : (
           <li key={i} data-slot="item" x-class={[tag]}>
             {t}
-            <button
-              data-slot="remove-button"
-              x-class={[removeBtn]}
-              type="button"
-              onClick={() => removeTag(i)}
-              onKeyDown={(e) => {
-                // Backspace on a tag's remove button removes that tag too,
-                // so consecutive Backspace presses walk through the tags
-                // with focus following.
-                if (e.key === 'Backspace') {
-                  e.preventDefault();
-                  removeTag(i);
-                }
-              }}
-              aria-label={formatString(strings.removeTag, { tag: t })}
+            <TagRemoveButton
+              removeLabel={formatString(strings.removeTag, { tag: t })}
+              onRemove={() => removeTag(i)}
               disabled={disabled}
-            >
-              x
-            </button>
+            />
           </li>
         )
       )}

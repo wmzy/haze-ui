@@ -1,6 +1,8 @@
 import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
+import { defaultStrings } from '../LocaleProvider/locale';
+
 import Progress from './Progress';
 import { barSizes, circleSizes, colorMap, circleColorMap } from './progress-styles';
 
@@ -20,7 +22,10 @@ describe('Progress', () => {
 
   it('defaults aria-label to Progress and accepts a custom one', () => {
     const { rerender } = render(<Progress value={10} />);
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-label', 'Progress');
+    expect(screen.getByRole('progressbar')).toHaveAttribute(
+      'aria-label',
+      defaultStrings.progress.label
+    );
     rerender(<Progress value={10} aria-label="上传进度" />);
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-label', '上传进度');
   });

@@ -1,30 +1,21 @@
 import type {
-  ChangeEvent,
   ComponentPropsWithoutRef,
   Dispatch,
   KeyboardEvent,
   SetStateAction,
-  SyntheticEvent,
 } from 'react';
 import type { ControlOrValue } from 'react-use-control';
-import type { VirtualListHandle } from '../VirtualList';
 import type { SuggestMarker } from '../../utils/suggest-marker';
 
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
+import { useFloating } from '../../utils/floating';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
-import { pickerPanelWidth } from '../../utils/picker-trigger';
-import {
-  suggestHintRow,
-  suggestListbox,
-  suggestOption,
-  suggestOptionHighlighted,
-} from '../../utils/suggest-list-skin';
-import { spliceToken, suggestOptionId } from '../../utils/suggest-marker';
+import { suggestOptionId } from '../../utils/suggest-marker';
+import { SuggestListbox, useSuggestField } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
@@ -177,9 +168,6 @@ export default function PromptInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
-  // The listbox is never virtualized; useHighlightScroll still takes the
-  // handle (same call shape as Combobox/SelectFloating).
-  const listRef = useRef<VirtualListHandle>(null);
   // Request sequence for async getSuggestions: only the newest request's
   // response may land — stale ones are dropped on arrival.
   const requestSeqRef = useRef(0);
@@ -229,7 +217,6 @@ export default function PromptInput({
     shown: floating.shown,
     highlightIndex,
     virtualized: false,
-    listRef,
     rowRef: activeRowRef,
   });
 
@@ -250,15 +237,13 @@ export default function PromptInput({
 
   const label = ariaLabel ?? placeholder ?? strings.label;
 
-  // Stable, SSR-safe DOM id per option row: listbox id + index. The
-  // textarea's aria-activedescendant points here so screen readers
-  // announce the keyboard highlight on rows that never receive focus.
-  const optionId = (index: number) => suggestOptionId(id, index);
   const current = suggestions[highlightIndex];
   // Only while the popup is open — a closed listbox must not own the
-  // textarea's active descendant.
+  // textarea's active descendant. Row ids come from suggestOptionId
+  // (utils/suggest-marker.ts), the same scheme SuggestListbox stamps
+  // its rows with.
   const activeDescendant =
-    open && current !== undefined ? optionId(highlightIndex) : undefined;
+    open && current !== undefined ? suggestOptionId(id, highlightIndex) : undefined;
 
   /** Fetches suggestions for the token at the caret, guarding races. */
   const fetchSuggestions = (atMarker: SuggestMarker | null) => {
@@ -290,11 +275,6 @@ export default function PromptInput({
     );
   };
 
-  /** Recomputes the token (and panel visibility) from the live caret. */
-  const syncFromCaret = (text: string, caret: number) => {
-    fetchSuggestions(suggest.syncFromCaret(text, caret));
-  };
-
   const updateText = (next: string) => {
     setValue(next);
     onChange?.(next);
@@ -305,18 +285,21 @@ export default function PromptInput({
     onTagsChange?.(next);
   };
 
+  // Shared event pair (utils/suggest-listbox.tsx): the change/select
+  // handlers that keep the token in step with the caret; fetches (the
+  // panel-side sync reaction) and the dismissal bookkeeping below stay
+  // here because PromptInput derives panel state instead of owning it.
+  const { commit: commitSuggestion, handleChange, handleSelect } = useSuggestField({
+    suggest,
+    textareaRef,
+    value,
+    onText: updateText,
+    onSync: fetchSuggestions,
+  });
+
   const insertSuggestion = (suggestion: string) => {
     if (!marker) return;
-    const text = textareaRef.current?.value ?? value;
-    // The token (trigger + query) is replaced by trigger + word + space.
-    const spliced = spliceToken(
-      text,
-      marker,
-      `${marker.trigger}${suggestion} `
-    );
-    updateText(spliced.text);
-    suggest.stageCaretRestore(spliced.caret);
-    suggest.setMarker(null);
+    commitSuggestion(suggestion);
     fetchSuggestions(null);
     setDismissedKey(null);
   };
@@ -356,18 +339,6 @@ export default function PromptInput({
       e.preventDefault();
       submit();
     }
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    updateText(e.target.value);
-    syncFromCaret(e.target.value, e.target.selectionStart);
-  };
-
-  // Caret moves without edits (clicks, arrow keys) re-evaluate the token
-  // too, so the panel follows the caret in and out of trigger tokens.
-  const handleSelect = (e: SyntheticEvent<HTMLTextAreaElement>) => {
-    const el = e.currentTarget;
-    syncFromCaret(el.value, el.selectionStart);
   };
 
   return (
@@ -426,55 +397,21 @@ export default function PromptInput({
         {...rest}
       />
       {completionEnabled && (
-        <FloatingPanel
-          ref={panelRef}
+        <SuggestListbox
           behavior={floating}
-          placement="bottom-span"
+          panelRef={panelRef}
           id={id}
-          role="listbox"
-          visualClass={`${pickerPanelWidth} ${suggestListbox} ${listMaxHeight}`}
-        >
-          {loading ? (
-            // An aria-disabled option keeps the listbox's required owned
-            // elements satisfied while nothing is actually selectable.
-            <div
-              role="option"
-              data-slot='loading'
-              aria-selected="false"
-              aria-disabled="true"
-              x-class={[suggestHintRow]}
-            >
-              {strings.loading}
-            </div>
-          ) : suggestions.length === 0 ? (
-            <div
-              role="option"
-              data-slot='empty'
-              aria-selected="false"
-              aria-disabled="true"
-              x-class={[suggestHintRow]}
-            >
-              {strings.noMatch}
-            </div>
-          ) : (
-            suggestions.map((suggestion, i) => (
-              <div
-                key={`${suggestion}:${i}`}
-                role="option"
-                data-slot='option'
-                id={optionId(i)}
-                aria-selected={i === highlightIndex}
-                aria-setsize={suggestions.length}
-                aria-posinset={i + 1}
-                ref={i === highlightIndex ? activeRowRef : undefined}
-                x-class={[suggestOption, i === highlightIndex && suggestOptionHighlighted]}
-                onClick={() => insertSuggestion(suggestion)}
-              >
-                {suggestion}
-              </div>
-            ))
-          )}
-        </FloatingPanel>
+          rows={suggestions.map((suggestion) => ({ value: suggestion }))}
+          highlightIndex={highlightIndex}
+          rowRef={activeRowRef}
+          onCommit={(index) => {
+            const selected = suggestions[index];
+            if (selected !== undefined) insertSuggestion(selected);
+          }}
+          emptyText={strings.noMatch}
+          loadingText={loading ? strings.loading : undefined}
+          heightCapClass={listMaxHeight}
+        />
       )}
     </div>
   );

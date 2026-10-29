@@ -501,6 +501,22 @@ export type FloatingBehavior = {
   panelRef: RefObject<HTMLElement | null>;
 };
 
+/**
+ * Adapt an `open`/`onOpenChange` value pair (the picker families'
+ * controlled-open seam) to the state-setter shape `useFloating` drives:
+ * functional updates resolve against the current `open` before the
+ * change surfaces through `onOpenChange`.
+ */
+export function useOpenAdaptor(
+  open: boolean,
+  onOpenChange: (open: boolean) => void
+): Dispatch<SetStateAction<boolean>> {
+  return useCallback(
+    (next) => onOpenChange(typeof next === 'function' ? next(open) : next),
+    [onOpenChange, open]
+  );
+}
+
 export function useFloating({
   open,
   setOpen,

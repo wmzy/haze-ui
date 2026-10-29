@@ -276,6 +276,7 @@ const deDE: HazeStrings = {
     generating: 'Wird generiert',
   },
   tabs: {
+    addTab: 'Tab hinzufügen',
     close: 'Schließen',
     moreTabs: 'Weitere Tabs',
     statusDirty: 'Ungespeicherte Änderungen',

@@ -659,10 +659,10 @@ describe('Drawer size presets', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveClass('custom');
     expect(dialog).toHaveClass('slot');
-    // overlay + placement + size 预设三个 Linaria 类也都在
+    // overlay + 共享 dialogBackdrop + placement + size 预设四个 Linaria 类也都在
     const linariaClasses = [...dialogClassSet()].filter(
       (c) => c !== 'custom' && c !== 'slot'
     );
-    expect(linariaClasses).toHaveLength(3);
+    expect(linariaClasses).toHaveLength(4);
   });
 });

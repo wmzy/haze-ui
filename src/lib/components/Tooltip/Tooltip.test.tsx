@@ -6,6 +6,11 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import {
+  installNativePopover,
+  removeNativePopover,
+} from '../../utils/testing/popover-mock';
+
 import Tooltip from './Tooltip';
 
 /**
@@ -243,46 +248,7 @@ describe('Tooltip', () => {
 // the anchor branch active once the popover API is installed).
 // ---------------------------------------------------------------------------
 
-class ToggleEventPolyfill extends Event {
-  newState: string;
-  constructor(type: string, init: { newState: string }) {
-    super(type);
-    this.newState = init.newState;
-  }
-}
-
-function installNativePopover() {
-  Object.defineProperty(HTMLElement.prototype, 'popover', {
-    configurable: true,
-    value: 'manual',
-  });
-  HTMLElement.prototype.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', '');
-    this.dispatchEvent(
-      new ToggleEventPolyfill('toggle', { newState: 'open' })
-    );
-  };
-  HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
-    if (!this.hasAttribute('data-popover-open')) return;
-    this.removeAttribute('data-popover-open');
-    this.dispatchEvent(
-      new ToggleEventPolyfill('toggle', { newState: 'closed' })
-    );
-  };
-}
-
-type PopoverProtoPatch = {
-  popover?: unknown;
-  showPopover?: () => void;
-  hidePopover?: () => void;
-};
-
-function removeNativePopover() {
-  const proto = HTMLElement.prototype as PopoverProtoPatch;
-  delete proto.popover;
-  delete proto.showPopover;
-  delete proto.hidePopover;
-}
+// The native-popover jsdom double lives in utils/testing/popover-mock.
 
 describe('Tooltip (anchored-tier collision)', () => {
   afterEach(() => {

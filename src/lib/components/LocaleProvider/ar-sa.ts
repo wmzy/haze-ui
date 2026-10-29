@@ -283,6 +283,7 @@ const arSA: HazeStrings = {
     generating: 'جارٍ الإنشاء',
   },
   tabs: {
+    addTab: 'إضافة تبويب',
     close: 'إغلاق',
     moreTabs: 'المزيد من علامات التبويب',
     statusDirty: 'تغييرات غير محفوظة',

@@ -7,7 +7,7 @@ import type {
 
 import { useCallback, useState } from 'react';
 
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { usePendingFocus } from '../../utils/use-pending-focus';
 
 /** One tbody cell in the roving-tabindex navigation model, keyed by row id
@@ -187,13 +187,17 @@ export function useCellNavigation({
         next = rowIndex < lastRowIndex ? at(rowIndex + 1, columnIndex) : undefined;
         break;
       case 'ArrowLeft':
+      case 'ArrowRight': {
         // Horizontal keys mirror under RTL, read from the DOM at event
-        // time (same contract as the resize handles).
-        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? 1 : -1);
+        // time — next = towards the inline end (inlineAxisKeys, same
+        // contract as the resize handles).
+        const { next: nextKey } = inlineAxisKeys(
+          'horizontal',
+          getDirection(event.currentTarget)
+        );
+        next = horizontal(event.key === nextKey ? 1 : -1);
         break;
-      case 'ArrowRight':
-        next = horizontal(getDirection(event.currentTarget) === 'rtl' ? -1 : 1);
-        break;
+      }
       case 'Home':
         next = at(rowIndex, 0);
         break;

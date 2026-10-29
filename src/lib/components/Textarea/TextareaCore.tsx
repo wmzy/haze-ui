@@ -1,8 +1,6 @@
 import type { ComponentPropsWithoutRef, Ref } from 'react';
 
-import { css } from '@linaria/core';
-
-import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
+import { fieldChrome, fieldResizeHandle, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
 
 type TextareaCoreProps = {
   value: string;
@@ -17,12 +15,9 @@ type TextareaCoreProps = {
 } & Omit<ComponentPropsWithoutRef<'textarea'>, 'value' | 'onChange' | 'size'>;
 
 /* The field base is the shared field skin (utils/field-skin.ts) —
- * Input and Textarea wore identical chrome; the only Textarea delta is
- * the drag handle. */
-const resizable = css`
-  resize: vertical;
-`;
-
+ * Input and Textarea wore identical chrome; the resize handle moved
+ * there too (`fieldResizeHandle`) once Mentions' textarea shipped the
+ * same declaration. */
 export default function TextareaCore({
   value,
   onChange,
@@ -36,7 +31,7 @@ export default function TextareaCore({
     <textarea
       ref={ref}
       data-slot='textarea'
-      x-class={[fieldChrome, nativeFieldChrome, resizable, fieldSizes[size], className]}
+      x-class={[fieldChrome, nativeFieldChrome, fieldResizeHandle, fieldSizes[size], className]}
       value={value}
       onChange={(e) => {
         onChange(e.target.value);

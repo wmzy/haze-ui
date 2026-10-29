@@ -96,6 +96,7 @@ const sharedLayers = {
   // folded in here instead (a native-form entry would now fail the
   // "emitted no module CSS" guard).
   'utils/sr-only': [
+    'chart',
     'chat-message',
     'color-picker',
     'file-input',
@@ -159,16 +160,21 @@ const sharedLayers = {
   // Shared timeline skeleton (utils/timeline-skin.ts): list/row/dot
   // geometry, the muted text skins, the status-marker ring arms and
   // glyph map, and the expandable-disclosure layer shared by Timeline,
-  // StepTimeline, Trace, Plan, JsonView and ToolCallCard ride with
-  // every consuming family's css.
+  // StepTimeline, Trace, Plan, JsonView, Sources and ToolCallCard ride
+  // with every consuming family's css.
   'utils/timeline-skin': [
     'json-view',
     'plan',
+    'sources',
     'step-timeline',
     'timeline',
     'tool-call-card',
     'trace',
   ],
+  // Shared disclosure chevron glyph (utils/disclosure-chevron.tsx): the
+  // stroke-compensated lucide ChevronRight and its rotate transition
+  // rendered by the expandable data families ride with each family's css.
+  'utils/disclosure-chevron': ['json-view', 'sources', 'trace'],
   // Shared preset shortcut rows (utils/preset-list-skin.ts) heading
   // the Datepicker and DateRangePicker panels ride with both css.
   'utils/preset-list-skin': ['datepicker', 'date-range-picker'],
@@ -178,22 +184,34 @@ const sharedLayers = {
   // native-select caret overlay ride with every family that renders a
   // picker trigger button, a native-select trigger or an anchored
   // picker panel (Select floating + SelectCore, Cascader, TreeSelect,
-  // ModelPicker, Combobox, PromptInput, Mentions). No rsc-safe entry:
-  // the module renders DOM.
+  // ModelPicker, Combobox, PromptInput, Mentions), plus the readonly
+  // input trigger the date/time families anchor on (Datepicker,
+  // TimePicker). No rsc-safe entry: the module renders DOM.
   'utils/picker-trigger': [
     'cascader',
     'combobox',
+    'datepicker',
     'mentions',
     'model-picker',
     'prompt-input',
     'select',
+    'time-picker',
     'tree-select',
   ],
+  // Picker chip row (utils/picker-chips.tsx): the chip capsule skin,
+  // the pointer-only remove × and clear affordance, and the chips +
+  // maxTagCount overflow-badge JSX the multi-value triggers render
+  // (Select floating, TreeSelect; Combobox composes just the badge —
+  // its chips keep Chip's own onClose button). Cascader renders no
+  // chips and only consumes the css-less utils/use-panel-query, so it
+  // is not listed. No rsc-safe entry: the module renders DOM.
+  'utils/picker-chips': ['combobox', 'select', 'tree-select'],
   // Shared choice-input skin (utils/choice-skin.ts): the 24px box
   // geometry, idle/hover/focus/disabled chrome, forced-colors baseline
-  // and the label base Checkbox and Radio both wear; the :checked
-  // decorations (checkmark vs dot) stay local per component.
-  'utils/choice-skin': ['checkbox', 'radio'],
+  // and the label base Checkbox and Radio both wear; TreeItem's row
+  // checkbox (a role=checkbox span) wears the box chrome too; the
+  // :checked decorations (checkmark vs dot) stay local per component.
+  'utils/choice-skin': ['checkbox', 'radio', 'tree'],
   // Shared resize-grip skin (utils/grip-skin.ts): the 24/44px hit strip
   // + 2px hairline chrome (hover/focus wash, focus ring, forced-colors
   // baseline, per-orientation geometry) that Splitter's dividers and
@@ -257,6 +275,20 @@ const sharedLayers = {
     'time-picker',
     'tree-select',
   ],
+  // Shared danger remap (utils/danger-remap.ts): the custom-property
+  // remap turning a solid Button onto the danger token family that
+  // Popconfirm's okVariant='danger' and ConfirmDialog's variant='danger'
+  // both wear on their confirm buttons (formerly byte-identical local
+  // copies). Kept out of status-solid-skin so the progress/indicator
+  // fill classes do not ride into these families.
+  'utils/danger-remap': ['popconfirm', 'confirm-dialog'],
+  // Shared dialog-family motion (utils/dialog-skin.ts): the scrim
+  // fades for every overlay plus the modal scale-and-fade panels
+  // (Dialog, ConfirmDialog) — the native <dialog> trio arms the
+  // [open][data-state] ::backdrop, BottomSheet's Presence-driven div
+  // arms its own fade; Drawer's placement slide and BottomSheet's
+  // sheet slide stay family-local.
+  'utils/dialog-skin': ['dialog', 'drawer', 'confirm-dialog', 'bottom-sheet'],
 };
 
 /**
@@ -415,8 +447,23 @@ for (const [name, spec] of exported) {
   const css = moduleCssFiles.find(
     (rel) => rel === `${family}.wyw-in-js.css` || rel.startsWith(`${family}/`)
   );
-  if (css) families[name] = groupOfModule(css);
-  else noCss.push(name);
+  if (css) {
+    families[name] = groupOfModule(css);
+  } else {
+    // Fully-composed family (e.g. Textarea wears only shared field-skin
+    // classes): the group's css comes entirely from sharedLayers
+    // inlining and is reachable through this export — not dead css.
+    // Derive the group without groupOfModule's fail path (dates/ and
+    // other roots legitimately have no css group).
+    const fallback =
+      family.startsWith('components/')
+        ? kebab(family.split('/')[1])
+        : family === 'form' || family === 'tokens'
+          ? family
+          : null;
+    if (fallback !== null && groups.has(fallback)) families[name] = fallback;
+    else noCss.push(name);
+  }
 }
 
 // Every css group must be reachable through some export, otherwise the

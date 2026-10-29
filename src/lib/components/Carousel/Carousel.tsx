@@ -26,7 +26,7 @@ import { usePausableTimeout } from '../../utils/use-pausable-timeout';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
-import { getDirection } from '../../utils/direction';
+import { getDirection, inlineAxisKeys } from '../../utils/direction';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -128,8 +128,8 @@ const navBtn = css`
   z-index: var(--haze-z-local-1);
   appearance: none;
   border: none;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--haze-space-10);
+  height: var(--haze-space-10);
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-bg);
   color: var(--haze-color-text);
@@ -179,6 +179,10 @@ const indicators = css`
 `;
 
 const dot = css`
+  /* 10px dot (0.625rem) + 6px padding (0.375rem) → 22px hit box.
+     Neither value maps to a space step (the scale jumps 8→12) and the
+     dot is deliberately smaller than the smallest touch chrome — kept
+     literal, documented. */
   width: 0.625rem;
   height: 0.625rem;
   border-radius: var(--haze-radius-full);
@@ -428,9 +432,10 @@ export default function Carousel({
    */
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (count <= 1) return;
-    const nextKey =
-      getDirection(wrapperRef.current) === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const prevKey = nextKey === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
+    const { next: nextKey, prev: prevKey } = inlineAxisKeys(
+      'horizontal',
+      getDirection(wrapperRef.current)
+    );
     switch (event.key) {
       case nextKey:
         event.preventDefault();
@@ -534,7 +539,7 @@ export default function Carousel({
           >
             ›
           </button>
-          <div data-slot='dots' className={indicators}>
+          <div data-slot='dots' x-class={[indicators]}>
             {Array.from({ length: count }, (_, i) => (
               <button
                 key={i}

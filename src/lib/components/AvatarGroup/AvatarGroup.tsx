@@ -33,13 +33,15 @@ const itemStacked = css`
   margin-inline-start: calc(-1 * var(--haze-space-3));
 `;
 
+/* Matches Avatar's sm frame (space-8) so the chip reads as one more
+   avatar in the stack rather than a foreign badge. */
 const overflowChip = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 32px;
-  height: 32px;
+  width: var(--haze-space-8);
+  height: var(--haze-space-8);
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-bg-muted);
   color: var(--haze-color-text-secondary);

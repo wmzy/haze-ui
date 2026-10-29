@@ -276,6 +276,7 @@ const itIT: HazeStrings = {
     generating: 'Generazione in corso',
   },
   tabs: {
+    addTab: 'Aggiungi scheda',
     close: 'Chiudi',
     moreTabs: 'Più schede',
     statusDirty: 'Modifiche non salvate',

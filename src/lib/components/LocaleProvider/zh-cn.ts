@@ -274,6 +274,7 @@ const zhCN: HazeStrings = {
     generating: '生成中',
   },
   tabs: {
+    addTab: '新增标签页',
     close: '关闭',
     moreTabs: '更多标签页',
     statusDirty: '未保存',

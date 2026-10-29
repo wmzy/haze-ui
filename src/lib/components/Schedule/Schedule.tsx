@@ -171,9 +171,9 @@ function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
+/** Exclusive end of a civil day — the following midnight. */
 function endOfDay(date: Date): Date {
-  const day = startOfDay(date);
-  return new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
+  return addDays(startOfDay(date), 1);
 }
 
 function minutesOfDay(date: Date): number {
@@ -199,23 +199,14 @@ function reactNodeText(node: ReactNode): string {
   return '';
 }
 
+/** Snap to the nearest `slotMinutes` boundary of the day — minute
+ * resolution (date-math's own), matching the grids' slot semantics. */
 function snapToDateSlot(date: Date, slotMinutes: number): Date {
   const step = slotMinutes > 0 ? slotMinutes : 60;
   const snapped = Math.round(minutesOfDay(date) / step) * step;
-  if (snapped >= MINUTES_PER_DAY) {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate() + 1
-    );
-  }
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    0,
-    snapped
-  );
+  return snapped >= MINUTES_PER_DAY
+    ? addDays(startOfDay(date), 1)
+    : addMinutes(startOfDay(date), snapped);
 }
 
 /**

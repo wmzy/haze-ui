@@ -129,7 +129,7 @@ export default function Popover({
   );
 
   return (
-    <span data-slot='popover' className={container}>
+    <span data-slot='popover' x-class={[container]}>
       <FloatingTriggerSpan
         ref={triggerRef}
         behavior={floating}

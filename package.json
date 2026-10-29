@@ -236,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "23.12 KB"
+      "limit": "23.71 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
@@ -245,7 +245,7 @@
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "49.96 KB",
+      "limit": "51.59 KB",
       "gzip": true
     },
     {
@@ -269,7 +269,7 @@
     {
       "name": "CSS family ratchet: trace",
       "path": "dist/css/trace.css",
-      "limit": "1.1 KB",
+      "limit": "1.18 KB",
       "gzip": true
     },
     {
@@ -341,7 +341,7 @@
     {
       "name": "CSS family ratchet: dialog",
       "path": "dist/css/dialog.css",
-      "limit": "0.55 KB",
+      "limit": "0.69 KB",
       "gzip": true
     },
     {
@@ -377,13 +377,13 @@
     {
       "name": "CSS family ratchet: tree",
       "path": "dist/css/tree.css",
-      "limit": "1.25 KB",
+      "limit": "1.33 KB",
       "gzip": true
     },
     {
       "name": "CSS family ratchet: combobox",
       "path": "dist/css/combobox.css",
-      "limit": "1.98 KB",
+      "limit": "2.18 KB",
       "gzip": true
     },
     {
@@ -401,7 +401,7 @@
     {
       "name": "CSS family ratchet: sources",
       "path": "dist/css/sources.css",
-      "limit": "1 KB",
+      "limit": "1.44 KB",
       "gzip": true
     },
     {

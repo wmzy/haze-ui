@@ -342,17 +342,14 @@ export default function TabList({
            * the + is not a tab — it is a plain button with its own tab
            * stop (Enter/Space activate natively).
            *
-           * The default name is component-internal English: the `tabs`
-           * locale pack carries no add key yet, and adding one means
-           * re-syncing all eleven built-in packs (the strings
-           * key-for-key contract) — out of this component's file
-           * domain. `addable.addLabel` is the i18n hook. The library
-           * ships no icon set of its own (Icon wraps consumer glyphs),
-           * so the + is a styled text glyph — same idiom as the strip's
-           * ⋯ and the tab's ×. */}
+           * The default name comes from the `tabs` locale pack;
+           * `addable.addLabel` overrides it. The library ships no icon
+           * set of its own (Icon wraps consumer glyphs), so the + is a
+           * styled text glyph — same idiom as the strip's ⋯ and the
+           * tab's ×. */}
           <button
             type='button'
-            aria-label={addable.addLabel ?? 'Add tab'}
+            aria-label={addable.addLabel ?? strings.addTab}
             onClick={() => addable.onAdd?.()}
             x-class={stripButton}
           >

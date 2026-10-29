@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 
 import { floatingHidden } from '../../utils/floating';
+import { defaultStrings } from '../LocaleProvider/locale';
 
 import TabList from './TabList';
 import Tab from './Tab';
@@ -826,20 +827,22 @@ describe('Tabs lazy panels', () => {
 describe('Tabs addable', () => {
   it('renders the + button outside the tablist with the default name', () => {
     render(<TabsFixture addable={{ onAdd: () => undefined }} />);
-    const add = screen.getByRole('button', { name: 'Add tab' });
+    const add = screen.getByRole('button', { name: defaultStrings.tabs.addTab });
     expect(screen.getByRole('tablist')).not.toContainElement(add);
   });
 
   it('renders no + button when addable is omitted', () => {
     render(<TabsFixture />);
-    expect(screen.queryByRole('button', { name: 'Add tab' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: defaultStrings.tabs.addTab })
+    ).toBeNull();
   });
 
   it('calls onAdd on click and Enter', async () => {
     const user = userEvent.setup();
     const onAdd = vi.fn();
     render(<TabsFixture addable={{ onAdd }} />);
-    const add = screen.getByRole('button', { name: 'Add tab' });
+    const add = screen.getByRole('button', { name: defaultStrings.tabs.addTab });
     await user.click(add);
     expect(onAdd).toHaveBeenCalledTimes(1);
     add.focus();

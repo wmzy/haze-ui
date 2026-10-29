@@ -40,12 +40,32 @@ const nav = css`
   font-family: var(--haze-font-sans);
 `;
 
+/* Shared keyboard focus treatment — the box-shadow ring every
+   interactive surface (page buttons, jump markers, size select,
+   jumper input) wears verbatim, plus its forced-colors Highlight
+   fallback. Per-surface deltas layer on top with `outline-offset`
+   and base outlines only; none restates the ring itself. */
+const pgFocusRing = css`
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+
+  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
+     a Highlight outline replaces it. */
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline: 2px solid Highlight;
+    }
+  }
+`;
+
 const btn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.25rem;
-  height: 2.25rem;
+  min-width: calc(var(--haze-space-8) + var(--haze-space-1));
+  height: calc(var(--haze-space-8) + var(--haze-space-1));
   padding: 0 var(--haze-space-2);
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
@@ -65,17 +85,11 @@ const btn = css`
     cursor: not-allowed;
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     an inset Highlight outline replaces it; disabled pages drop the
-     dim and render GrayText. */
+  /* Forced-colors deltas over pgFocusRing: the page button's
+     Highlight ring is inset; disabled pages drop the dim and render
+     GrayText. */
   @media (forced-colors: active) {
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
 
@@ -116,8 +130,8 @@ const ellipsis = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.25rem;
-  height: 2.25rem;
+  min-width: calc(var(--haze-space-8) + var(--haze-space-1));
+  height: calc(var(--haze-space-8) + var(--haze-space-1));
   color: var(--haze-color-text-muted);
   font-size: var(--haze-text-sm);
 `;
@@ -135,21 +149,15 @@ const ellipsisJumpBtn = css`
     color: var(--haze-color-primary);
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: a transparent no-border button gets nothing from
-     the UA — an inset CanvasText outline adds the boundary without
-     shifting layout, upgrading to the Highlight ring on keyboard
-     focus. */
+  /* Forced-colors deltas over pgFocusRing: a transparent no-border
+     button gets nothing from the UA — an inset CanvasText outline adds
+     the boundary without shifting layout, upgrading to the inset
+     Highlight ring on keyboard focus. */
   @media (forced-colors: active) {
     outline: 1px solid CanvasText;
     outline-offset: -1px;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
   }
@@ -162,56 +170,30 @@ const auxText = css`
   font-size: var(--haze-text-sm);
 `;
 
-const control = css`
-  height: 2.25rem;
-  padding: 0 var(--haze-space-2);
+/* Shared field skin for the size changer and the page inputs —
+   metrics, border, surface and typography they hold in common; the
+   focus treatment rides along via `pgFocusRing`, and each delta keeps
+   only its padding/width/cursor/text-align specifics. */
+const pgFieldBase = css`
+  height: calc(var(--haze-space-8) + var(--haze-space-1));
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-size: var(--haze-text-sm);
   font-family: var(--haze-font-sans);
+`;
+
+const control = css`
+  padding: 0 var(--haze-space-2);
   cursor: pointer;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     a Highlight outline replaces it. */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-    }
-  }
 `;
 
 const jumperInput = css`
-  width: 3rem;
-  height: 2.25rem;
+  width: var(--haze-space-12);
   padding: 0 var(--haze-space-1);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
   text-align: center;
   cursor: text;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     a Highlight outline replaces it. */
-  @media (forced-colors: active) {
-    &:focus-visible {
-      outline: 2px solid Highlight;
-    }
-  }
 `;
 
 /** Pages a jump-marker click moves (antd precedent). */
@@ -266,7 +248,9 @@ export default function Pagination({
     if (simple) setDraft(String(page));
   }, [page, simple, setDraft]);
 
-  /** Single navigation seam: clamps, syncs state, fires the value callback. */
+  /** Single navigation seam: clamps, syncs state, fires the value callback.
+   * Returns the clamped page so callers echoing it back (the jumper draft)
+   * don't restate the clamp. */
   const navigate = (nextPage: number, nextPageSize: number) => {
     const nextTotalPages = Math.max(1, Math.ceil(total / nextPageSize));
     const clamped = Math.min(Math.max(1, nextPage), nextTotalPages);
@@ -275,22 +259,39 @@ export default function Pagination({
     if (clamped !== page || nextPageSize !== pageSize) {
       onPageChange?.(clamped, nextPageSize);
     }
+    return clamped;
   };
 
-  /** Enter-commit for the quick jumper and the simple-mode input. */
+  /** Enter-commit for the quick jumper and the simple-mode input; the
+      clamping is `navigate`'s, echoed back into the draft. */
   const commitDraft = () => {
     const parsed = parseInt(draft, 10);
     if (Number.isNaN(parsed)) {
       setDraft(simple ? String(page) : '');
       return;
     }
-    const clamped = Math.min(Math.max(1, parsed), totalPages);
-    setDraft(String(clamped));
-    navigate(clamped, pageSize);
+    setDraft(String(navigate(parsed, pageSize)));
   };
 
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const rangeEnd = Math.min(page * pageSize, total);
+
+  // One element serves both mounts — the simple-mode readout and the
+  // standalone jumper render the identical input (field, commit seam,
+  // label), never at the same time.
+  const jumperField = (
+    <input
+      data-slot='input'
+      type="text"
+      x-class={[pgFieldBase, pgFocusRing, jumperInput]}
+      value={draft}
+      aria-label={strings.jumperLabel}
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') commitDraft();
+      }}
+    />
+  );
 
   const baseOptions = pageSizeOptions ?? [...DEFAULT_PAGE_SIZE_OPTIONS];
   const sizeOptions = baseOptions.includes(pageSize)
@@ -307,7 +308,7 @@ export default function Pagination({
       <button
         data-slot='prev'
         type="button"
-        x-class={[btn]}
+        x-class={[btn, pgFocusRing]}
         disabled={page <= 1}
         onClick={() => navigate(page - 1, pageSize)}
         aria-label={strings.previous}
@@ -316,17 +317,7 @@ export default function Pagination({
       </button>
       {simple ? (
         <>
-          <input
-            data-slot='input'
-            type="text"
-            x-class={[jumperInput]}
-            value={draft}
-            aria-label={strings.jumperLabel}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitDraft();
-            }}
-          />
+          {jumperField}
           <span data-slot='total' x-class={[auxText]}>/ {totalPages}</span>
         </>
       ) : (
@@ -337,7 +328,7 @@ export default function Pagination({
                 key={`e${i}`}
                 data-slot='ellipsis'
                 type="button"
-                x-class={[ellipsis, ellipsisJumpBtn]}
+                x-class={[ellipsis, ellipsisJumpBtn, pgFocusRing]}
                 aria-label={formatString(
                   pages.indexOf(page) > i
                     ? strings.ellipsisBackward
@@ -361,7 +352,7 @@ export default function Pagination({
               key={p}
               data-slot='item'
               type="button"
-              x-class={[btn, p === page && activeBtn]}
+              x-class={[btn, pgFocusRing, p === page && activeBtn]}
               aria-current={p === page ? 'page' : undefined}
               onClick={() => navigate(p, pageSize)}
             >
@@ -373,7 +364,7 @@ export default function Pagination({
       <button
         data-slot='next'
         type="button"
-        x-class={[btn]}
+        x-class={[btn, pgFocusRing]}
         disabled={page >= totalPages}
         onClick={() => navigate(page + 1, pageSize)}
         aria-label={strings.next}
@@ -383,7 +374,7 @@ export default function Pagination({
       {showSizeChanger ? (
         <select
           data-slot='size-changer'
-          x-class={[control]}
+          x-class={[pgFieldBase, pgFocusRing, control]}
           value={String(pageSize)}
           aria-label={strings.sizeLabel}
           onChange={(e) => navigate(1, parseInt(e.target.value, 10))}
@@ -400,17 +391,7 @@ export default function Pagination({
           {strings.jumperPrefix ? (
             <span data-slot='prefix' x-class={[auxText]}>{strings.jumperPrefix}</span>
           ) : null}
-          <input
-            data-slot='input'
-            type="text"
-            x-class={[jumperInput]}
-            value={draft}
-            aria-label={strings.jumperLabel}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitDraft();
-            }}
-          />
+          {jumperField}
           {strings.jumperSuffix ? (
             <span data-slot='suffix' x-class={[auxText]}>{strings.jumperSuffix}</span>
           ) : null}

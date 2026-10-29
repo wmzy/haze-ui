@@ -19,7 +19,7 @@ const step = css`
 
 const stepConnector = css`
   position: absolute;
-  top: 16px;
+  top: var(--haze-space-4);
   inset-inline-start: 50%;
   width: 100%;
   height: 2px;
@@ -42,8 +42,8 @@ const stepActiveConnector = css`
 `;
 
 const circle = css`
-  width: 2.25rem;
-  height: 2.25rem;
+  width: calc(var(--haze-space-8) + var(--haze-space-1));
+  height: calc(var(--haze-space-8) + var(--haze-space-1));
   border-radius: var(--haze-radius-full);
   display: flex;
   align-items: center;
@@ -53,7 +53,9 @@ const circle = css`
   border: 2px solid var(--haze-color-border);
   background: var(--haze-color-bg);
   color: var(--haze-color-text-muted);
-  transition: all var(--haze-duration-normal);
+  /* The filled state flips border-color/background/color — a former
+     transition:all, narrowed to those (Segmented / Pagination precedent). */
+  transition: border-color var(--haze-duration-normal), background var(--haze-duration-normal), color var(--haze-duration-normal);
 `;
 
 /* The filled circle the active and the completed step both wear — the
