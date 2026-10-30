@@ -4,30 +4,11 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { squareSizes } from '../Button/styles';
+import { stubClipboard } from '../../utils/testing/stub-clipboard';
 
 import CopyButton from './CopyButton';
 import Snippet from './Snippet';
 import { iconSizes } from './copy-button-styles';
-
-// jsdom 30 has neither navigator.clipboard nor document.execCommand —
-// the same stub surface useClipboard's own tests patch. The stub MUST
-// be installed AFTER userEvent.setup(): user-event attaches its own
-// navigator.clipboard polyfill during setup, silently replacing any
-// earlier stub (ours is configurable, so redefining on top of
-// user-event's works).
-function stubClipboard(writeText: (text: string) => Promise<void>) {
-  const fn = vi.fn(writeText);
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText: fn },
-    configurable: true,
-  });
-  return {
-    fn,
-    restore: () => {
-      Reflect.deleteProperty(navigator, 'clipboard');
-    },
-  };
-}
 
 function svgPath(container: HTMLElement) {
   return container.querySelector('button svg path')?.getAttribute('d');

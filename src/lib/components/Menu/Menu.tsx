@@ -10,7 +10,7 @@ import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
-import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { findWrapIndex, useMenuKeyboard, useRovingTabindex, useTypeahead } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
 import { reactNodeText } from '../../utils/text';
@@ -109,10 +109,6 @@ const VIRTUAL_ROW_HEIGHT = 37;
    Shorter lists size to their rows through Math.min at the call site
    (Select's listbox precedent). */
 const VIRTUAL_MAX_HEIGHT = 296;
-
-/** Typeahead buffer lifetime — the same 500ms window the plain
- *  keyboard layer (utils/menuKeyboard) uses. */
-const TYPEAHEAD_WINDOW_MS = 500;
 
 /**
  * Virtualized list chrome: every item kind is stretched over its
@@ -264,11 +260,10 @@ export default function Menu({
     setPendingFocus({ index, attempt: focusAttemptRef.current });
   }
 
-  // Typeahead buffer of the virtualized level (the plain layer keeps its
-  // own inside utils/menuKeyboard).
-  const typedRef = useRef('');
-  const resetTimerRef = useRef(0);
-  useEffect(() => () => window.clearTimeout(resetTimerRef.current), []);
+  // Typeahead buffer of the virtualized level — the mechanism shared
+  // with the plain keyboard layer (utils/menuKeyboard's useTypeahead);
+  // only the match source differs (the data model, not the DOM).
+  const pushTyped = useTypeahead();
 
   /**
    * Keyboard for the virtualized panel: the plain useMenuKeyboard walks
@@ -381,26 +376,20 @@ export default function Menu({
           return;
         }
         event.preventDefault();
-        const typed = (typedRef.current + event.key).toLowerCase();
-        typedRef.current = typed;
-        window.clearTimeout(resetTimerRef.current);
-        resetTimerRef.current = window.setTimeout(() => {
-          typedRef.current = '';
-        }, TYPEAHEAD_WINDOW_MS);
+        const typed = pushTyped(event.key);
         // Search forward from the current row, wrapping; the current
         // row itself is the last candidate so repeating a character
         // cycles between rows starting with it.
         const start = current < 0 ? 0 : current + 1;
-        for (let k = 0; k < rows.length; k++) {
-          const index =
-            (((start + k) % rows.length) + rows.length) % rows.length;
+        const match = findWrapIndex(rows.length, start, (index) => {
           const row = rows[index];
-          if (row === undefined || !isFocusableEntry(row)) continue;
-          if (menuEntryText(row).toLowerCase().startsWith(typed)) {
-            focusVirtualRow(index);
-            return;
-          }
-        }
+          return (
+            row !== undefined &&
+            isFocusableEntry(row) &&
+            menuEntryText(row).toLowerCase().startsWith(typed)
+          );
+        });
+        if (match >= 0) focusVirtualRow(match);
       }
     }
   }

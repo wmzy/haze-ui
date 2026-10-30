@@ -222,6 +222,58 @@ export function assertCivilDate(
 }
 
 /**
+ * The `addMonths` body every fixed-grid adapter shares: shift
+ * `(year, month)` by `delta` months over a `monthsPerYear`-wide grid
+ * with year carry, then clamp the day to the target month's length
+ * (Jan 31 + 1 → Feb 28). At the default grid of 12 the shift is
+ * exactly date-math's `addMonths` formula; ethiopic passes its
+ * thirteen-month grid. Hebrew's years hold a variable 12/13 months,
+ * so its adapter walks the calendar locally and only mirrors the
+ * final day clamp. Internal helper; not part of the public dates
+ * surface.
+ */
+export function clampMonthShift(
+  parts: CivilDateParts,
+  delta: number,
+  monthLength: (year: number, month: number) => number,
+  monthsPerYear = 12
+): CivilDateParts {
+  const total = parts.year * monthsPerYear + parts.month + delta;
+  const year = Math.floor(total / monthsPerYear);
+  const month = ((total % monthsPerYear) + monthsPerYear) % monthsPerYear;
+  return {
+    year,
+    month,
+    day: Math.min(parts.day, monthLength(year, month)),
+  };
+}
+
+/**
+ * Fold `Intl.DateTimeFormat#formatToParts` output into a numeric parts
+ * object: every part whose type names a key of `parts` stores
+ * `Number(value)` plus the key's `offsets` entry (default 0) under that
+ * key — literal/dayPeriod/era parts fall through untouched. Intl months
+ * are 1-based while the parts convention (`CivilDateParts`,
+ * `ZonedParts`) is `Date#getMonth`'s 0-based, hence the lone `{ month:
+ * -1 }` offset both callers pass. Folds into and returns `parts`.
+ * Internal helper; not part of the public dates surface.
+ */
+export function foldFormatParts<T extends Record<string, number>>(
+  formatted: readonly Intl.DateTimeFormatPart[],
+  parts: T,
+  offsets?: Readonly<Partial<Record<keyof T, number>>>
+): T {
+  const target: Record<string, number> = parts;
+  for (const part of formatted) {
+    if (part.type in target) {
+      target[part.type] =
+        Number(part.value) + (offsets?.[part.type as keyof T] ?? 0);
+    }
+  }
+  return parts;
+}
+
+/**
  * Anchor instants for Gregorian-structure month-name sampling: day 15
  * of every month of 2026 UTC (day 15 exists in every month; the year
  * sits mid-range). Shared by the Gregorian-like adapters' factory.
@@ -276,13 +328,9 @@ export function makeGregorianLikeAdapter(
             monthLength(year - yearOffset, month),
 
     addMonths(parts, delta) {
-      const shifted = shiftMonth(parts.year, parts.month, delta);
-      const lastDay = monthLength(shifted.year - yearOffset, shifted.month);
-      return {
-        year: shifted.year,
-        month: shifted.month,
-        day: Math.min(parts.day, lastDay),
-      };
+      return clampMonthShift(parts, delta, (year, month) =>
+        monthLength(year - yearOffset, month)
+      );
     },
 
     monthNames(locale = 'en', style: MonthNameStyle = 'long') {

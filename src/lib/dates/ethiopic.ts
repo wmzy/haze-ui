@@ -15,6 +15,7 @@ import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter'
 
 import {
   assertCivilDate,
+  clampMonthShift,
   DAY_MS,
   eraOfDate,
   localMidnightOf,
@@ -128,17 +129,10 @@ export const ethiopicAdapter: HazeDateAdapter = {
   },
 
   addMonths(parts, delta) {
-    // Plain month-index arithmetic (every year holds the same thirteen
-    // months), truncating the day to the target month's length — day
-    // 30 into Pagume clamps to 5/6.
-    const total = parts.year * MONTHS + parts.month + delta;
-    const year = Math.floor(total / MONTHS);
-    const month = ((total % MONTHS) + MONTHS) % MONTHS;
-    return {
-      year,
-      month,
-      day: Math.min(parts.day, monthLength(year, month)),
-    };
+    // Every Ethiopic year holds the same thirteen months, so the shared
+    // shift/clamp rides the thirteen-wide grid — day 30 into Pagume
+    // clamps to 5/6.
+    return clampMonthShift(parts, delta, monthLength, MONTHS);
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {

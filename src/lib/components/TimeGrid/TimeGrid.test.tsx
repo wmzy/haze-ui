@@ -182,6 +182,29 @@ describe('TimeGrid', () => {
     expect(radio('09:00')).toHaveAttribute('aria-checked', 'true');
   });
 
+  it('keyboard: a column move onto a disabled slot skips a whole row (same column)', async () => {
+    const user = userEvent.setup();
+    render(
+      <TimeGrid
+        aria-label='Pick'
+        from='09:00'
+        to='15:00'
+        step={60}
+        columns={3}
+        disabledValues={['12:00']}
+      />
+    );
+    await user.tab();
+    expect(radio('09:00')).toHaveFocus();
+    // One row down from 09:00 (index 0) is the disabled 12:00 (index 3)
+    // — the walker keeps its stride, staying in-column onto 15:00
+    // (index 6) instead of crawling to the adjacent 13:00, matching
+    // Calendar's grid walker (utils/skip-walker).
+    await user.keyboard('{ArrowDown}');
+    expect(radio('15:00')).toHaveFocus();
+    expect(radio('15:00')).toHaveAttribute('aria-checked', 'true');
+  });
+
   it('formats slot text through formatLabel', () => {
     render(
       <TimeGrid

@@ -1,19 +1,11 @@
 import { act, renderHook } from '@testing-library/react';
 
+import { stubClipboard } from '../utils/testing/stub-clipboard';
+
 import { useClipboard } from './useClipboard';
 
-// jsdom 30 既没有 navigator.clipboard 也没有 document.execCommand——
-// 两条复制路径都得 stub。
-function stubClipboard(writeText: (text: string) => Promise<void>) {
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText },
-    configurable: true,
-  });
-  return () => {
-    Reflect.deleteProperty(navigator, 'clipboard');
-  };
-}
-
+// jsdom 30 没有 document.execCommand——退化复制路径得 stub
+// （navigator.clipboard 的 jsdom double 在 utils/testing/stub-clipboard）。
 function stubExecCommand(impl: () => boolean) {
   const fn = vi.fn(impl);
   // Stubbing the deprecated API the fallback path depends on.
@@ -31,7 +23,7 @@ describe('useClipboard', () => {
   it('copies via the async clipboard API and resets copied after resetMs', async () => {
     vi.useFakeTimers();
     const written: string[] = [];
-    const restore = stubClipboard((text) => {
+    const { restore } = stubClipboard((text) => {
       written.push(text);
       return Promise.resolve();
     });
@@ -61,7 +53,7 @@ describe('useClipboard', () => {
 
   it('falls back to execCommand when the clipboard API rejects', async () => {
     vi.useFakeTimers();
-    const restore = stubClipboard(() =>
+    const { restore } = stubClipboard(() =>
       Promise.reject(new DOMException('Permission denied', 'NotAllowedError'))
     );
     const exec = stubExecCommand(() => true);
@@ -104,7 +96,7 @@ describe('useClipboard', () => {
 
   it('returns false and keeps copied off when both paths fail', async () => {
     vi.useFakeTimers();
-    const restore = stubClipboard(() =>
+    const { restore } = stubClipboard(() =>
       Promise.reject(new DOMException('Permission denied', 'NotAllowedError'))
     );
     const exec = stubExecCommand(() => false);
@@ -131,7 +123,7 @@ describe('useClipboard', () => {
 
   it('restarts the reset window when copying again mid-window', async () => {
     vi.useFakeTimers();
-    const restore = stubClipboard(() => Promise.resolve());
+    const { restore } = stubClipboard(() => Promise.resolve());
     try {
       const { result } = renderHook(() => useClipboard(2000));
       await act(async () => {
@@ -161,7 +153,7 @@ describe('useClipboard', () => {
 
   it('clears the pending reset timer on unmount', async () => {
     vi.useFakeTimers();
-    const restore = stubClipboard(() => Promise.resolve());
+    const { restore } = stubClipboard(() => Promise.resolve());
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       const { result, unmount } = renderHook(() => useClipboard());

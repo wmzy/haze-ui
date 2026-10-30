@@ -16,10 +16,9 @@
  */
 import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
 
-import { addMonths as shiftMonth } from '../utils/date-math';
-
 import {
   assertCivilDate,
+  clampMonthShift,
   DAY_MS,
   eraOfDate,
   localMidnightOf,
@@ -181,12 +180,7 @@ export const persianAdapter: HazeDateAdapter = {
   },
 
   addMonths(parts, delta) {
-    const shifted = shiftMonth(parts.year, parts.month, delta);
-    return {
-      year: shifted.year,
-      month: shifted.month,
-      day: Math.min(parts.day, monthLength(shifted.year, shifted.month)),
-    };
+    return clampMonthShift(parts, delta, monthLength);
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {

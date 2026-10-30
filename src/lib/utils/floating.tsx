@@ -15,7 +15,15 @@ import type {
 import type { CollisionStrategy } from './collision';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { computeFloatingPosition, mirrorPlacement, resolvePadding } from './collision';
 import { getDirection } from './direction';
@@ -539,6 +547,67 @@ export function useOpenWithChange<T>(
       onOpenChange?.(value);
     },
     [open, setOpen, onOpenChange]
+  );
+}
+
+/**
+ * The imperative surface the floating-overlay family exposes through
+ * the React 19 `ref` prop (same API choice as VirtualList): Popover's,
+ * DropdownMenu's and Popconfirm's `*Handle` types are this shape with
+ * family-specific docs.
+ */
+export type FloatingHandle = {
+  /** Show the panel, as if the trigger toggled it open. */
+  open: () => void;
+  /** Close the panel through the animated exit path. */
+  close: () => void;
+  /** Focus the trigger element. */
+  focusTrigger: () => void;
+};
+
+/**
+ * The shared imperative-handle half of the floating-overlay family
+ * (Popover, DropdownMenu, Popconfirm). `open`/`close` only write the
+ * state the floating engine reacts to — the same path as the trigger's
+ * own clicks — leaving `showPopover`/`hidePopover` and the toggle-echo
+ * reconciliation to the engine's effect.
+ *
+ * `setOpen` is the setter both directions route through: a plain
+ * `useControl` writer (Popover, Popconfirm) or a `useOpenWithChange`
+ * wrapper, so `onOpenChange` fires on imperative toggles too
+ * (DropdownMenu shares it with the trigger and items). `disabled`
+ * guards `open()` only — Popconfirm's trigger parity — and never
+ * blocks `close()` or `focusTrigger()`.
+ */
+export function useFloatingHandle({
+  ref,
+  setOpen,
+  triggerRef,
+  disabled = false,
+}: {
+  /** The component's imperative `ref` prop. */
+  ref?: Ref<FloatingHandle>;
+  /** The setter `open()`/`close()` route through (see JSDoc above). */
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  /** The trigger element `focusTrigger()` focuses. */
+  triggerRef: RefObject<HTMLElement | null>;
+  /** Blocks `open()` only — Popconfirm's `disabled` trigger parity. */
+  disabled?: boolean;
+}): void {
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: () => {
+        if (!disabled) setOpen(true);
+      },
+      close: () => {
+        setOpen(false);
+      },
+      focusTrigger: () => {
+        triggerRef.current?.focus();
+      },
+    }),
+    [setOpen, disabled, triggerRef]
   );
 }
 

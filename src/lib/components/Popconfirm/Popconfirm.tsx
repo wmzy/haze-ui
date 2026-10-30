@@ -8,12 +8,17 @@ import type { ControlOrValue } from 'react-use-control';
 import type { FloatingPlacement } from '../../utils/floating';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
 import { dangerRemapTokens } from '../../utils/danger-remap';
-import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
+import {
+  FloatingPanel,
+  FloatingTriggerSpan,
+  useFloating,
+  useFloatingHandle,
+} from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
 import { mergeRefs } from '../../utils/refs';
@@ -191,21 +196,9 @@ export default function Popconfirm({
   // actually being shown.
   const setScope = useFocusScope({ enabled: open, autoFocus: false });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      open: () => {
-        if (!disabled) setOpen(true);
-      },
-      close: () => {
-        setOpen(false);
-      },
-      focusTrigger: () => {
-        triggerRef.current?.focus();
-      },
-    }),
-    [setOpen, disabled]
-  );
+  // Imperative surface: `open()` honors `disabled` (trigger parity);
+  // `close()` and `focusTrigger()` stay unconditional.
+  useFloatingHandle({ ref, setOpen, triggerRef, disabled });
 
   // One shared exit for both actions: fire the handler, then close —
   // immediately for a sync handler, after the returned promise resolves

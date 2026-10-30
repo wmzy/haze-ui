@@ -1,23 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import JsonView from './JsonView';
+import { stubClipboard } from '../../utils/testing/stub-clipboard';
 
-/** jsdom has neither navigator.clipboard nor execCommand — stub the async
- * API so the success path runs (same pattern as ChatMessage.test.tsx). */
-function stubClipboard(writeText: (text: string) => Promise<void>) {
-  const fn = vi.fn(writeText);
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText: fn },
-    configurable: true,
-  });
-  return {
-    fn,
-    restore: () => {
-      Reflect.deleteProperty(navigator, 'clipboard');
-    },
-  };
-}
+import JsonView from './JsonView';
 
 const sample = {
   name: 'haze-ui',

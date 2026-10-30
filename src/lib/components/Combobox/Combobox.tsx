@@ -11,7 +11,7 @@ import { useControl } from 'react-use-control';
 
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { fieldChrome, fieldSizes, nativeFieldChrome } from '../../utils/field-skin';
+import { fieldChrome, fieldSizes, focusWithinRing, nativeFieldChrome } from '../../utils/field-skin';
 import { PickerOverflowBadge } from '../../utils/picker-chips';
 import {
   pickerGroupLabel,
@@ -21,6 +21,7 @@ import {
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { stateOptionRow } from '../../utils/state-option-skin';
 import { findMatchRanges } from '../../utils/text-match';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useListboxNavigation } from '../../utils/use-listbox-navigation';
@@ -232,10 +233,8 @@ const multiBox = css`
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
 
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
+  /* Focus arm: the shared focusWithinRing (utils/field-skin) composed
+     below — same wrapper-ring recipe as the single-mode input. */
 `;
 
 /** The bare query input inside the multiple-mode chip box. */
@@ -270,18 +269,14 @@ const matchMark = css`
 /**
  * Loading spinner row / no-results row. Rendered as an aria-disabled
  * option so the listbox's owned-element contract stays satisfied while
- * nothing is actually selectable (PromptInput's pattern).
+ * nothing is actually selectable (PromptInput's pattern). The centered
+ * muted row core is the shared `stateOptionRow`
+ * (utils/state-option-skin.ts, shared with Command's empty row); this
+ * local delta is only the denser padding plus the spinner gap.
  */
 const stateRow = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: var(--haze-space-2);
   padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-muted);
-  cursor: default;
 `;
 
 /** Scrollport height of the virtualized list — the plain listbox's
@@ -696,7 +691,7 @@ export default function Combobox<T extends string | number = string>({
           ref={boxRef}
           data-slot='trigger'
           style={floating.triggerStyle}
-          x-class={multiBox}
+          x-class={[multiBox, focusWithinRing]}
           // Open on click (via the suppression-aware toggle), never on
           // pointer-driven focus — the same race the single input avoids.
           onPointerDown={floating.onTriggerPointerDown}
@@ -762,7 +757,7 @@ export default function Combobox<T extends string | number = string>({
             data-slot='loading'
             aria-selected={false}
             aria-disabled="true"
-            x-class={[stateRow]}
+            x-class={[stateOptionRow, stateRow]}
           >
             <Spinner size="sm" />
           </div>
@@ -772,7 +767,7 @@ export default function Combobox<T extends string | number = string>({
             data-slot='empty'
             aria-selected={false}
             aria-disabled="true"
-            x-class={[stateRow, resolvedClassNames?.empty]}
+            x-class={[stateOptionRow, stateRow, resolvedClassNames?.empty]}
           >
             {empty ?? strings.noResults}
           </div>

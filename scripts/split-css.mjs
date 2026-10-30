@@ -121,8 +121,13 @@ const sharedLayers = {
   // :focus-within focus ring, the native input/textarea chrome and the
   // field size map the field families wear. masked-input and any other
   // InputCore compositor is covered automatically through the input
-  // family's css via the css-manifest dependency closure, not listed.
+  // family's css via the css-manifest dependency closure, not listed —
+  // that closure only maps component-dir imports (utils modules carry
+  // no css group of their own), so a family that imports the layer
+  // directly while shipping its own css file must be listed explicitly
+  // (ChatInput and RichTextEditor compose just focusWithinRing).
   'utils/field-skin': [
+    'chat-input',
     'color-picker',
     'combobox',
     'date-range-picker',
@@ -135,6 +140,7 @@ const sharedLayers = {
     'number-input',
     'otp-input',
     'prompt-input',
+    'rich-text-editor',
     'signature',
     'tag-input',
     'textarea',
@@ -149,6 +155,13 @@ const sharedLayers = {
   // textarea-suggest surfaces (PromptInput tokens, Mentions mentions)
   // render; max-height stays a per-site local override.
   'utils/suggest-list-skin': ['mentions', 'prompt-input'],
+  // Shared state-option row (utils/state-option-skin.ts): the centered
+  // muted-text row Combobox's loading/empty state rows and Command's
+  // empty row render as aria-disabled options (keeps the listbox's
+  // owned-element contract satisfied while nothing is selectable);
+  // padding density and Combobox's spinner gap stay local deltas
+  // composed behind the shared base.
+  'utils/state-option-skin': ['combobox', 'command'],
   // Shared quiet-button skin (utils/quiet-button-skin.ts): the bordered
   // transparent hover-wash button recipe (reset + border + bg-subtle
   // hover + typography) the inline affordances wear; the md/sm density

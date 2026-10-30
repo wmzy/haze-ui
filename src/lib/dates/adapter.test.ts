@@ -1,5 +1,8 @@
 import type { HazeCalendarIdentifier, HazeDateAdapter } from './adapter';
 
+import { addMonths } from '../utils/date-math';
+import { clampMonthShift, foldFormatParts } from './adapter';
+
 import { gregoryAdapter } from './gregory';
 import { islamicUmalquraAdapter } from './islamic';
 import { persianAdapter } from './persian';
@@ -110,5 +113,101 @@ describe('adapter contract (shared invariants)', () => {
       const { year } = adapter.fromGregorian(new Date(2026, 0, 1));
       expect(adapter.era?.(year)).toMatch(/./);
     }
+  });
+});
+
+describe('clampMonthShift', () => {
+  // January 31, February 28 (2026 is not a leap year) — a fixed table
+  // keeps the helper unit independent of any real calendar.
+  const gregorianLength = (_year: number, month: number) =>
+    month === 1 ? 28 : 31;
+
+  it('carries the month across year boundaries with the day intact', () => {
+    expect(
+      clampMonthShift({ year: 2026, month: 4, day: 15 }, 2, gregorianLength)
+    ).toEqual({ year: 2026, month: 6, day: 15 });
+    expect(
+      clampMonthShift({ year: 2026, month: 0, day: 15 }, -1, gregorianLength)
+    ).toEqual({ year: 2025, month: 11, day: 15 });
+  });
+
+  it('clamps the day to the target month length', () => {
+    expect(
+      clampMonthShift({ year: 2026, month: 0, day: 31 }, 1, gregorianLength)
+    ).toEqual({ year: 2026, month: 1, day: 28 });
+  });
+
+  it('carries exactly like date-math addMonths on the default grid', () => {
+    // The monthsPerYear=12 default is documented as the date-math
+    // formula; pin one cross-year sample per sign of delta.
+    for (const delta of [-14, 14]) {
+      const shifted = clampMonthShift(
+        { year: 2026, month: 0, day: 15 },
+        delta,
+        gregorianLength
+      );
+      expect({ year: shifted.year, month: shifted.month }).toEqual(
+        addMonths(2026, 0, delta)
+      );
+    }
+  });
+
+  it('shifts over a custom months-per-year grid', () => {
+    // Ethiopic shape: twelve 30-day months + a 5-day Pagume (index 12)
+    // — day 30 landing in Pagume clamps to 5, and Pagume + 1 carries
+    // into next year's Maskaram.
+    const ethiopicLength = (_year: number, month: number) =>
+      month === 12 ? 5 : 30;
+    expect(
+      clampMonthShift({ year: 2017, month: 11, day: 30 }, 1, ethiopicLength, 13)
+    ).toEqual({ year: 2017, month: 12, day: 5 });
+    expect(
+      clampMonthShift({ year: 2017, month: 12, day: 3 }, 1, ethiopicLength, 13)
+    ).toEqual({ year: 2018, month: 0, day: 3 });
+  });
+});
+
+describe('foldFormatParts', () => {
+  it('folds numeric part types with the month offset and skips the rest', () => {
+    // The islamic shape: 2026-01-01 = 1447-07-12 AH.
+    const formatted: Intl.DateTimeFormatPart[] = [
+      { type: 'year', value: '1447' },
+      { type: 'literal', value: '-' },
+      { type: 'month', value: '7' },
+      { type: 'day', value: '12' },
+    ];
+    expect(
+      foldFormatParts(formatted, { year: 0, month: 0, day: 0 }, { month: -1 })
+    ).toEqual({ year: 1447, month: 6, day: 12 });
+  });
+
+  it('folds the five zoned-part types out of Intl order', () => {
+    // formatToParts emits literal separators and may carry dayPeriod
+    // parts; neither names a key of the target, so both fall through.
+    const formatted: Intl.DateTimeFormatPart[] = [
+      { type: 'month', value: '02' },
+      { type: 'day', value: '17' },
+      { type: 'hour', value: '09' },
+      { type: 'minute', value: '05' },
+      { type: 'year', value: '2026' },
+      { type: 'dayPeriod', value: 'AM' },
+    ];
+    expect(
+      foldFormatParts(
+        formatted,
+        { year: 0, month: 0, day: 0, hour: 0, minute: 0 },
+        { month: -1 }
+      )
+    ).toEqual({ year: 2026, month: 1, day: 17, hour: 9, minute: 5 });
+  });
+
+  it('defaults offsets to zero and folds into (and returns) its target', () => {
+    const parts = { year: 0, month: 0, day: 0 };
+    const folded = foldFormatParts(
+      [{ type: 'year', value: '2026' }] as Intl.DateTimeFormatPart[],
+      parts
+    );
+    expect(folded).toBe(parts);
+    expect(folded).toEqual({ year: 2026, month: 0, day: 0 });
   });
 });

@@ -6,6 +6,7 @@ import { useControl } from 'react-use-control';
 
 import { NativeHiddenFields } from '../../utils/native-form';
 import { mergeRefs } from '../../utils/refs';
+import { nextEnabledIndex } from '../../utils/skip-walker';
 import { formatTimeValue, parseTimeValue } from '../../utils/time-math';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
@@ -151,14 +152,13 @@ export default function TimeGrid({
   };
 
   /** Next enabled index stepping by `delta`; null at the grid's edge. */
-  const nextEnabled = (index: number, delta: number): number | null => {
-    let next = index + delta;
-    while (next >= 0 && next < slots.length && disabled.has(slots[next]!)) {
-      next += delta > 0 ? 1 : -1;
-    }
-    if (next < 0 || next >= slots.length) return null;
-    return next;
-  };
+  const nextEnabled = (index: number, delta: number): number | null =>
+    nextEnabledIndex(
+      slots.length,
+      (i) => disabled.has(slots[i]!),
+      index,
+      delta
+    );
 
   const handleKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,

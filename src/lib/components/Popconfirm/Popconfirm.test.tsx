@@ -462,6 +462,31 @@ describe('Popconfirm imperative handle', () => {
     );
   });
 
+  it('keeps handle.close unconditional while disabled', () => {
+    const ref = createRef<PopconfirmHandle>();
+    const { rerender } = render(
+      <Popconfirm ref={ref} title='Sure?'>
+        Trigger
+      </Popconfirm>
+    );
+    act(() => ref.current!.open());
+    expect(screen.getByRole('button', { name: 'Trigger' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+
+    rerender(
+      <Popconfirm ref={ref} title='Sure?' disabled>
+        Trigger
+      </Popconfirm>
+    );
+    act(() => ref.current!.close());
+    expect(screen.getByRole('button', { name: 'Trigger' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
   it('focuses the trigger through focusTrigger()', () => {
     const ref = createRef<PopconfirmHandle>();
     render(

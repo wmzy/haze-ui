@@ -7,6 +7,7 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { Button } from '../Button';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
+import { focusWithinRing } from '../../utils/field-skin';
 
 type ChatInputProps = {
   value?: ControlOrValue<string>;
@@ -27,6 +28,11 @@ type ChatInputProps = {
   className?: string;
 };
 
+/** Composer chrome: keeps its radius-lg box (fieldChrome is radius-md),
+ * so the surface stays local and only the transition remains here — the
+ * wrapper focus arm is the shared focusWithinRing (utils/field-skin)
+ * composed below; the textarea inside owns the focus, the wrapper paints
+ * the ring. */
 const wrapper = css`
   display: flex;
   align-items: flex-end;
@@ -37,11 +43,6 @@ const wrapper = css`
   background: var(--haze-color-bg);
   font-family: var(--haze-font-sans);
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const textarea = css`
@@ -128,7 +129,7 @@ export default function ChatInput({
   };
 
   return (
-    <div data-slot='chat-input' x-class={[wrapper, className]}>
+    <div data-slot='chat-input' x-class={[wrapper, focusWithinRing, className]}>
       <textarea
         ref={textareaRef}
         data-slot='input'

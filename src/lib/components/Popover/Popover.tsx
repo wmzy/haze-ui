@@ -3,12 +3,17 @@ import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
 import { toCollisionStrategy } from '../../utils/collision';
-import { FloatingPanel, FloatingTriggerSpan, useFloating } from '../../utils/floating';
+import {
+  FloatingPanel,
+  FloatingTriggerSpan,
+  useFloating,
+  useFloatingHandle,
+} from '../../utils/floating';
 import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
 // Manual merge (not x-class): FloatingPanel appends its `className` prop
 // last in its own x-class array, so both consumer classes arrive there
@@ -104,25 +109,10 @@ export default function Popover({
     collision,
   });
 
-  // Imperative surface: `ref.current?.open()/close()/focusTrigger()`.
-  // open/close only write the state the floating engine reacts to (the
-  // same path as the trigger's clicks), leaving showPopover/hidePopover
-  // and the toggle-echo reconciliation to the engine's effect.
-  useImperativeHandle(
-    ref,
-    () => ({
-      open: () => {
-        setOpen(true);
-      },
-      close: () => {
-        setOpen(false);
-      },
-      focusTrigger: () => {
-        triggerRef.current?.focus();
-      },
-    }),
-    [setOpen]
-  );
+  // Imperative surface: `ref.current?.open()/close()/focusTrigger()` —
+  // plain state writes, no onOpenChange routing (Popover has none); the
+  // shared hook (utils/floating) owns the engine-facing contract.
+  useFloatingHandle({ ref, setOpen, triggerRef });
 
   return (
     <span data-slot='popover' x-class={[floatingPairHost]}>

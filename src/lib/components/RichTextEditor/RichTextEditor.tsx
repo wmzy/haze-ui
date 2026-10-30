@@ -1,6 +1,7 @@
 import type { AnyExtension, Editor } from '@tiptap/core';
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { HazeStrings } from '../LocaleProvider';
 
 import { css } from '@linaria/core';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -9,8 +10,10 @@ import StarterKit from '@tiptap/starter-kit';
 import { Fragment, useEffect, useImperativeHandle, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import { focusWithinRing } from '../../utils/field-skin';
 import { NativeHiddenFields } from '../../utils/native-form';
 import { proseContent } from '../../utils/prose-skin';
+import { useStrings } from '../LocaleProvider';
 import { Toolbar, ToolbarButton, ToolbarSeparator } from '../Toolbar';
 
 /**
@@ -86,22 +89,19 @@ const root = css`
     border-color: var(--haze-color-border-hover);
   }
 
-  /* The ProseMirror contenteditable carries the keyboard focus; the
-     chrome wears the ring (an outline on the content div itself would
-     fight the caret). */
-  &:focus-within {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: CanvasText border stays visible, the box-shadow ring
-     is dropped by the UA so focus moves to a Highlight outline. */
+  /* Focus: the ProseMirror contenteditable carries the keyboard focus;
+     the chrome wears the shared ring (utils/field-skin's focusWithinRing
+     composed below — an outline on the content div itself would fight
+     the caret). Forced-colors: CanvasText border stays visible, the
+     box-shadow ring is dropped by the UA so focus moves to a Highlight
+     outline; no box-shadow: none restatement — the UA drop makes it
+     redundant, and re-declaring it would race the composed ring arm on
+     injection order. */
   @media (forced-colors: active) {
     border-color: CanvasText;
 
     &:focus-within {
       outline: 2px solid Highlight;
-      box-shadow: none;
     }
   }
 `;
@@ -186,7 +186,8 @@ type ToolbarState = {
 function buildToolbarItems(
   editor: Editor | null,
   state: ToolbarState | null,
-  editable: boolean
+  editable: boolean,
+  strings: Readonly<HazeStrings['richTextEditor']>
 ): ToolbarItem[][] {
   const chain = () => editor?.chain().focus();
   const off = !editor || !state || !editable;
@@ -194,7 +195,7 @@ function buildToolbarItems(
     [
       {
         key: 'bold',
-        label: 'Bold',
+        label: strings.bold,
         glyph: 'B',
         pressed: state?.bold ?? false,
         disabled: off || !state.canBold,
@@ -202,7 +203,7 @@ function buildToolbarItems(
       },
       {
         key: 'italic',
-        label: 'Italic',
+        label: strings.italic,
         glyph: 'I',
         pressed: state?.italic ?? false,
         disabled: off || !state.canItalic,
@@ -210,7 +211,7 @@ function buildToolbarItems(
       },
       {
         key: 'strike',
-        label: 'Strikethrough',
+        label: strings.strikethrough,
         glyph: 'S',
         pressed: state?.strike ?? false,
         disabled: off || !state.canStrike,
@@ -220,7 +221,7 @@ function buildToolbarItems(
     [
       {
         key: 'heading-2',
-        label: 'Heading 2',
+        label: strings.heading2,
         glyph: 'H2',
         pressed: state?.heading2 ?? false,
         disabled: off || !state.canHeading2,
@@ -228,7 +229,7 @@ function buildToolbarItems(
       },
       {
         key: 'heading-3',
-        label: 'Heading 3',
+        label: strings.heading3,
         glyph: 'H3',
         pressed: state?.heading3 ?? false,
         disabled: off || !state.canHeading3,
@@ -238,16 +239,16 @@ function buildToolbarItems(
     [
       {
         key: 'bullet-list',
-        label: 'Bullet list',
-        glyph: '• List',
+        label: strings.bulletList,
+        glyph: strings.bulletListGlyph,
         pressed: state?.bulletList ?? false,
         disabled: off || !state.canBulletList,
         run: () => chain()?.toggleBulletList().run(),
       },
       {
         key: 'ordered-list',
-        label: 'Ordered list',
-        glyph: '1. List',
+        label: strings.orderedList,
+        glyph: strings.orderedListGlyph,
         pressed: state?.orderedList ?? false,
         disabled: off || !state.canOrderedList,
         run: () => chain()?.toggleOrderedList().run(),
@@ -256,16 +257,16 @@ function buildToolbarItems(
     [
       {
         key: 'blockquote',
-        label: 'Blockquote',
-        glyph: 'Quote',
+        label: strings.blockquote,
+        glyph: strings.blockquoteGlyph,
         pressed: state?.blockquote ?? false,
         disabled: off || !state.canBlockquote,
         run: () => chain()?.toggleBlockquote().run(),
       },
       {
         key: 'code-block',
-        label: 'Code block',
-        glyph: 'Code',
+        label: strings.codeBlock,
+        glyph: strings.codeBlockGlyph,
         pressed: state?.codeBlock ?? false,
         disabled: off || !state.canCodeBlock,
         run: () => chain()?.toggleCodeBlock().run(),
@@ -274,8 +275,8 @@ function buildToolbarItems(
     [
       {
         key: 'link',
-        label: 'Link',
-        glyph: 'Link',
+        label: strings.link,
+        glyph: strings.linkGlyph,
         pressed: state?.link ?? false,
         disabled: off || !state.canLink,
         run: () => {
@@ -318,6 +319,7 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const [value, setValue] = useControl(valueControl, '');
   const [editable] = useControl(editableControl, true);
+  const strings = useStrings('richTextEditor');
   // Every HTML string handed to setValue but not yet consumed back by a
   // render. React flushes asynchronously, so during fast typing a commit
   // can carry a value the editor has already published PAST — comparing
@@ -350,7 +352,7 @@ export default function RichTextEditor({
       // The contenteditable is the real textbox; it carries the name.
       editorProps: {
         attributes: {
-          'aria-label': ariaLabel ?? 'Rich text editor',
+          'aria-label': ariaLabel ?? strings.label,
           ...(ariaLabelledBy ? { 'aria-labelledby': ariaLabelledBy } : {}),
         },
       },
@@ -431,14 +433,14 @@ export default function RichTextEditor({
     },
   });
 
-  const toolbarGroups = buildToolbarItems(editor, toolbarState, editable);
+  const toolbarGroups = buildToolbarItems(editor, toolbarState, editable, strings);
 
   return (
-    <div data-slot='rich-text-editor' x-class={[root, className]} {...rest}>
+    <div data-slot='rich-text-editor' x-class={[root, focusWithinRing, className]} {...rest}>
       {toolbar !== false &&
         (toolbar === undefined ? (
           <Toolbar
-            aria-label='Text formatting'
+            aria-label={strings.toolbarLabel}
             data-slot='rich-text-toolbar'
             className={toolbarArea}
           >

@@ -13,6 +13,7 @@ import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
+import { focusListEdge } from '../../utils/menuKeyboard';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import { PickerChips, pickerClearBtn } from '../../utils/picker-chips';
 import {
@@ -460,12 +461,14 @@ export default function TreeSelect({
 
   const handleSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'ArrowDown') return;
-    const first = panelRef.current?.querySelector<HTMLElement>(
+    // Focus the first enabled treeitem; the key is only consumed when
+    // one exists (otherwise ArrowDown keeps its default).
+    const first = focusListEdge(
+      panelRef.current,
+      'first',
       '[role="treeitem"]:not([aria-disabled="true"])'
     );
-    if (!first) return;
-    e.preventDefault();
-    first.focus();
+    if (first) e.preventDefault();
   };
 
   // Single mode: the commit itself traveled through the shared control

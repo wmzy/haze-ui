@@ -1,26 +1,11 @@
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { stubClipboard } from '../../utils/testing/stub-clipboard';
+
 import StreamingText from '../StreamingText/StreamingText';
 
 import ChatMessage from './ChatMessage';
-
-/** jsdom has neither navigator.clipboard nor execCommand — stub the
- * async API so the success path runs (same pattern as
- * useClipboard.test.tsx). */
-function stubClipboard(writeText: (text: string) => Promise<void>) {
-  const fn = vi.fn(writeText);
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText: fn },
-    configurable: true,
-  });
-  return {
-    fn,
-    restore: () => {
-      Reflect.deleteProperty(navigator, 'clipboard');
-    },
-  };
-}
 
 describe('ChatMessage', () => {
   it('renders children', () => {

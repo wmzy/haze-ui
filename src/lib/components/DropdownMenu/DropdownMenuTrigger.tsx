@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
-import { getEnabledMenuItems } from '../../utils/menuKeyboard';
+import { focusListEdge } from '../../utils/menuKeyboard';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -39,9 +39,7 @@ export default function DropdownMenuTrigger({
   // already open (focus stayed on the clicked trigger), focus it directly.
   const focusEdgeItem = (edge: 'first' | 'last') => {
     if (open) {
-      const items = getEnabledMenuItems(contentRef.current);
-      const target = edge === 'first' ? items[0] : items[items.length - 1];
-      target?.focus();
+      focusListEdge(contentRef.current, edge);
     } else {
       focusRequestRef.current = edge;
       setOpen(true);

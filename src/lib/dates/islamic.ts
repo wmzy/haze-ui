@@ -21,7 +21,14 @@ import type {
 
 import { addMonths as shiftMonth } from '../utils/date-math';
 
-import { DAY_MS, eraOfDate, normalizeParts, sampleMonthNames } from './adapter';
+import {
+  clampMonthShift,
+  DAY_MS,
+  eraOfDate,
+  foldFormatParts,
+  normalizeParts,
+  sampleMonthNames,
+} from './adapter';
 
 /** Mean synodic month in days — the linear estimate that seeds the
  * inverse-conversion search. */
@@ -37,13 +44,11 @@ const partsFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
 /** Hijri parts of a UTC-civil instant. `formatToParts` months are
  * 1-based, normalized here to the 0-based date.ts convention. */
 function partsFromMs(ms: number): CivilDateParts {
-  const parts: CivilDateParts = { year: 0, month: 0, day: 0 };
-  for (const part of partsFormatter.formatToParts(new Date(ms))) {
-    if (part.type === 'year') parts.year = Number(part.value);
-    else if (part.type === 'month') parts.month = Number(part.value) - 1;
-    else if (part.type === 'day') parts.day = Number(part.value);
-  }
-  return parts;
+  return foldFormatParts(
+    partsFormatter.formatToParts(new Date(ms)),
+    { year: 0, month: 0, day: 0 },
+    { month: -1 }
+  );
 }
 
 /** Search anchor: 2026-01-01 = 1447-07-12 AH (verified against Intl,
@@ -141,16 +146,7 @@ export const islamicUmalquraAdapter: HazeDateAdapter = {
   },
 
   addMonths(parts, delta) {
-    const shifted = shiftMonth(parts.year, parts.month, delta);
-    const lastDay = islamicUmalquraAdapter.getDaysInMonth(
-      shifted.year,
-      shifted.month
-    );
-    return {
-      year: shifted.year,
-      month: shifted.month,
-      day: Math.min(parts.day, lastDay),
-    };
+    return clampMonthShift(parts, delta, islamicUmalquraAdapter.getDaysInMonth);
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {

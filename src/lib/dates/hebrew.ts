@@ -234,6 +234,8 @@ export const hebrewAdapter: HazeDateAdapter = {
     return {
       year,
       month,
+      // Same end-of-month clamp as clampMonthShift (adapter.ts); the
+      // walk above is what a variable 12/13-month year makes local.
       day: Math.min(parts.day, monthLength(year, month)),
     };
   },

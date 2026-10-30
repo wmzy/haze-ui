@@ -15,6 +15,7 @@ import {
   getDaysInMonth,
 } from '../../utils/date-math';
 import { getDirection } from '../../utils/direction';
+import { nextEnabledIndex } from '../../utils/skip-walker';
 
 /** Day buttons of the rendered grid in DOM order (outside months and
  * disabled days included — `focusFrom` skips the disabled ones). */
@@ -35,12 +36,12 @@ function focusFrom(
   from: number,
   delta: number
 ): number | null {
-  let index = from + delta;
-  while (index >= 0 && index < buttons.length && buttons[index]!.disabled) {
-    index += delta;
-  }
-  if (index < 0 || index >= buttons.length) return null;
-  return index;
+  return nextEnabledIndex(
+    buttons.length,
+    (index) => buttons[index]!.disabled,
+    from,
+    delta
+  );
 }
 
 /**

@@ -4,12 +4,16 @@ import type { CollisionPadding } from '../../utils/collision';
 import type { MenuDataItem } from '../../utils/menuItems';
 import type { DropdownMenuClassNames } from './DropdownMenuContext';
 
-import { useId, useImperativeHandle, useMemo, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { toCollisionStrategy } from '../../utils/collision';
-import { useFloating, useOpenWithChange } from '../../utils/floating';
+import {
+  useFloating,
+  useFloatingHandle,
+  useOpenWithChange,
+} from '../../utils/floating';
 import { renderMenuDataItems } from '../../utils/menuItems';
 
 import DropdownMenuCheckboxItem from './DropdownMenuCheckboxItem';
@@ -115,24 +119,10 @@ export default function DropdownMenu({
 
   const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
 
-  // Imperative surface: `ref.current?.open()/close()/focusTrigger()`.
-  // open/close share handleSetOpen with the trigger and items, so
-  // onOpenChange fires and the floating engine drives the popover.
-  useImperativeHandle(
-    ref,
-    () => ({
-      open: () => {
-        handleSetOpen(true);
-      },
-      close: () => {
-        handleSetOpen(false);
-      },
-      focusTrigger: () => {
-        triggerRef.current?.focus();
-      },
-    }),
-    [handleSetOpen]
-  );
+  // Imperative surface: `ref.current?.open()/close()/focusTrigger()` —
+  // routes through handleSetOpen so onOpenChange fires on imperative
+  // toggles, same as the trigger and items.
+  useFloatingHandle({ ref, setOpen: handleSetOpen, triggerRef });
 
   // Stable identity: useFloatingPosition re-runs its effect on every
   // change of this object.

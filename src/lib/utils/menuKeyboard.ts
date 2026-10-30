@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { getDirection, inlineAxisKeys } from './direction';
 
 /** How long typed characters keep accumulating before the buffer resets. */
-const TYPEAHEAD_WINDOW_MS = 500;
+export const TYPEAHEAD_WINDOW_MS = 500;
 
 /**
  * Default item selector: enabled menu items inside a menu container.
@@ -37,6 +37,25 @@ export function getEnabledMenuItems(
     return items.filter((el) => el.closest('[role="menu"]') === container);
   }
   return items;
+}
+
+/**
+ * Focus the first or last enabled item of a list container — the
+ * shared edge entry for arrows moving focus into a list (a
+ * DropdownMenu trigger's ArrowDown/ArrowUp, Command's input,
+ * TreeSelect's search field). Returns the focused element, or null
+ * when the container holds no matching item (so callers can skip
+ * preventDefault).
+ */
+export function focusListEdge(
+  container: HTMLElement | null,
+  edge: 'first' | 'last',
+  selector?: string
+): HTMLElement | null {
+  const items = getEnabledMenuItems(container, selector);
+  const target = edge === 'first' ? items[0] : items[items.length - 1];
+  target?.focus();
+  return target ?? null;
 }
 
 type MoveFocusInAxisOptions = {
@@ -129,6 +148,60 @@ type UseMenuKeyboardOptions = {
 };
 
 /**
+ * Forward search with wrap-around over `[0, length)`: tests `matches`
+ * against every index starting at `start` (inclusive), wrapping past
+ * the end back to the front; each index is tested exactly once.
+ * Callers that pass `current + 1` (both typeahead searches do) make
+ * the current item the last candidate, so repeating a character
+ * cycles between items starting with it. Negative or overflowing
+ * `start` values are normalized modulo `length` (Menu's virtualized
+ * rows pass -1 for "focus not on a row"). Returns the first matching
+ * index, or -1 when nothing matches.
+ */
+export function findWrapIndex(
+  length: number,
+  start: number,
+  matches: (index: number) => boolean
+): number {
+  if (length <= 0) return -1;
+  const from = ((start % length) + length) % length;
+  for (let i = 0; i < length; i++) {
+    const index = (from + i) % length;
+    if (matches(index)) return index;
+  }
+  return -1;
+}
+
+/**
+ * Typeahead buffer shared by the keyboard layers: `useMenuKeyboard`
+ * here (matching DOM items) and Menu's virtualized path (matching the
+ * data model — rows outside the virtual window have no DOM to read).
+ * Each push appends one character case-insensitively and (re)starts
+ * the TYPEAHEAD_WINDOW_MS reset timer; the buffer clears when the
+ * window lapses. Returns the push function, which yields the
+ * accumulated buffer.
+ */
+export function useTypeahead(): (char: string) => string {
+  const typedRef = useRef('');
+  const resetTimerRef = useRef(0);
+
+  useEffect(
+    () => () => window.clearTimeout(resetTimerRef.current),
+    []
+  );
+
+  return useCallback((char: string) => {
+    const typed = (typedRef.current + char).toLowerCase();
+    typedRef.current = typed;
+    window.clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = window.setTimeout(() => {
+      typedRef.current = '';
+    }, TYPEAHEAD_WINDOW_MS);
+    return typed;
+  }, []);
+}
+
+/**
  * Keyboard behavior for a roving-tabindex item container (WAI-ARIA menu
  * button / listbox pattern): the orientation's main-axis arrows move
  * focus (wrapping, skipping disabled items), Home/End jump to the ends,
@@ -142,13 +215,7 @@ export function useMenuKeyboard({
   onCloseToStart,
   orientation = 'vertical',
 }: UseMenuKeyboardOptions) {
-  const typedRef = useRef('');
-  const resetTimerRef = useRef(0);
-
-  useEffect(
-    () => () => window.clearTimeout(resetTimerRef.current),
-    []
-  );
+  const pushTyped = useTypeahead();
 
   return useCallback(
     (event: ReactKeyboardEvent) => {
@@ -225,29 +292,21 @@ export function useMenuKeyboard({
             return;
           }
           event.preventDefault();
-          const typed = (typedRef.current + event.key).toLowerCase();
-          typedRef.current = typed;
-          window.clearTimeout(resetTimerRef.current);
-          resetTimerRef.current = window.setTimeout(() => {
-            typedRef.current = '';
-          }, TYPEAHEAD_WINDOW_MS);
+          const typed = pushTyped(event.key);
           // Search forward from the current item, wrapping; the current
           // item itself is the last candidate so repeating a character
           // cycles between items starting with it.
           const start = current + 1;
-          for (let i = 0; i < items.length; i++) {
-            const index = (start + i) % items.length;
+          const match = findWrapIndex(items.length, start, (index) =>
             // Element.textContent is spec'd non-null (concatenation of
             // descendants; '' when empty)
-            if (items[index]!.textContent.toLowerCase().startsWith(typed)) {
-              focus(index);
-              return;
-            }
-          }
+            items[index]!.textContent.toLowerCase().startsWith(typed)
+          );
+          if (match >= 0) focus(match);
         }
       }
     },
-    [menuRef, onClose, selector, onCloseToStart, orientation]
+    [menuRef, onClose, selector, onCloseToStart, orientation, pushTyped]
   );
 }
 

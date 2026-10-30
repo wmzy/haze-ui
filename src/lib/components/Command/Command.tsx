@@ -5,9 +5,10 @@ import { css } from '@linaria/core';
 import { Children, createContext, useContext, useEffect, useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { focusListEdge, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { menuOptionStates } from '../../utils/menu-skins';
 import { mergeRefs } from '../../utils/refs';
+import { stateOptionRow } from '../../utils/state-option-skin';
 import Kbd from '../Kbd/Kbd';
 import { useStrings } from '../LocaleProvider';
 import { VirtualList } from '../VirtualList';
@@ -187,9 +188,11 @@ export function CommandInput({ placeholder, className, ref }: CommandInputProps)
         // WAI-ARIA combobox pattern: arrows move focus into the list.
         if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
         e.preventDefault();
-        const items = getEnabledMenuItems(listRef.current, OPTION_SELECTOR);
-        const target = e.key === 'ArrowDown' ? items[0] : items[items.length - 1];
-        target?.focus();
+        focusListEdge(
+          listRef.current,
+          e.key === 'ArrowDown' ? 'first' : 'last',
+          OPTION_SELECTOR
+        );
       }}
     />
   );
@@ -268,14 +271,13 @@ const listVirtualPort = css`
   }
 `;
 
+/** The empty/no-results row: an aria-disabled option keeps the listbox
+ * non-empty for assistive tech. The centered muted row core is the
+ * shared `stateOptionRow` (utils/state-option-skin.ts, shared with
+ * Combobox's loading/empty state rows); this local delta is only the
+ * roomier block padding. */
 const emptyStyle = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--haze-space-4) var(--haze-space-3);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text-muted);
-  cursor: default;
 `;
 
 export function CommandList({
@@ -331,9 +333,9 @@ export function CommandList({
   );
 
   const emptyRow = showEmpty && (
-    // Same shape as Combobox's empty row: a disabled option keeps
-    // the listbox non-empty for assistive tech.
-    <div data-slot='empty' role="option" aria-selected={false} aria-disabled="true" x-class={[emptyStyle]}>
+    // The shared aria-disabled option row (stateOptionRow) plus the
+    // local roomier padding — the same recipe as Combobox's state rows.
+    <div data-slot='empty' role="option" aria-selected={false} aria-disabled="true" x-class={[stateOptionRow, emptyStyle]}>
       {empty ?? strings.noResults}
     </div>
   );

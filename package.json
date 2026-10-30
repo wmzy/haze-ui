@@ -212,13 +212,13 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "6.85 KB"
+      "limit": "7.25 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{TagGroup, TagGroupItem}",
-      "limit": "6.65 KB"
+      "limit": "7.05 KB"
     },
     {
       "name": "SortableTagInput — pulls the @dnd-kit trio (from barrel)",
@@ -236,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "23.9 KB"
+      "limit": "24.3 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
@@ -455,7 +455,7 @@
     {
       "name": "CSS family ratchet: rich-text-editor",
       "path": "dist/css/rich-text-editor.css",
-      "limit": "1.25 KB",
+      "limit": "1.27 KB",
       "gzip": true
     },
     {

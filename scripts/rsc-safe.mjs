@@ -78,6 +78,9 @@ export const RSC_SAFE_MODULES = new Set([
   // Shared choice-input skin (utils/choice-skin.ts): the Checkbox/Radio
   // box + label bases — same purity class as menu-skins above.
   'utils/choice-skin.ts',
+  // Shared state-option row (utils/state-option-skin.ts): a single
+  // Linaria class constant — same purity class as sr-only above.
+  'utils/state-option-skin.ts',
   // Shared status skin (utils/status-skin.ts): pure Linaria class
   // constants + plain color/role records — no hooks, no DOM access.
   // Required for the RSC-safe closure: the safe-listed Badge/Tag/Chip/
