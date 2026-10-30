@@ -3,6 +3,12 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { css } from '@linaria/core';
 
 import { focusRingVisible } from '../../utils/focus-ring';
+import {
+  navItemActive,
+  navItemBadge,
+  navItemBase,
+  navItemIcon,
+} from '../../utils/nav-item-skin';
 
 import { Badge } from '../Badge';
 
@@ -74,34 +80,18 @@ type TabBarItemProps = {
  * target (WCAG 2.5.8) even outside the bar. `flex: 1 1 0` distributes free
  * space evenly; `min-width: max-content` is the shrink clamp — a crowded
  * bar keeps every item at least content-wide and the track's overflow-x
- * takes over instead of squishing labels. */
+ * takes over instead of squishing labels. Sizing/typography delta on the
+ * shared navItemBase chrome (utils/nav-item-skin.ts). */
 const item = css`
-  box-sizing: border-box;
-  position: relative;
-  display: inline-flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: var(--haze-space-1);
   flex: 1 1 0;
   min-width: max-content;
   min-height: calc(var(--haze-space-10) + var(--haze-space-1));
   padding: var(--haze-space-1) var(--haze-space-2);
-  border: none;
   border-radius: var(--haze-radius-sm);
-  background: transparent;
-  color: var(--haze-color-text-muted);
   font-family: inherit;
   font-size: var(--haze-text-xs);
-  cursor: pointer;
-  transition:
-    color var(--haze-duration-fast) var(--haze-ease),
-    background var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
 
   /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
      the item below — a deliberate convergence: the local copy wore a
@@ -110,13 +100,12 @@ const item = css`
      forced-colors Highlight arm the local copy never had). */
 `;
 
-const itemActive = css`
-  color: var(--haze-color-primary);
-
-  &:hover {
-    color: var(--haze-color-primary);
-    background: var(--haze-color-primary-subtle);
-  }
+/* The active-token pair consumed by the shared navItemActive arm: the
+ * bar marks the current view with the primary family — primary text
+ * pinned through hover over a primary-subtle wash. */
+const itemActiveTokens = css`
+  --haze-nav-item-active-color: var(--haze-color-primary);
+  --haze-nav-item-active-hover-bg: var(--haze-color-primary-subtle);
 `;
 
 /* Top-edge 2px indicator = --haze-space-1 / 2, spanning the item width. */
@@ -128,32 +117,16 @@ const indicator = css`
   background: var(--haze-color-primary);
 `;
 
-/* Relative anchor for the badge overlay, so the badge tracks the icon
- * corner regardless of the item's stretched height. */
-const itemIcon = css`
+/* Relative anchor composed onto the shared navItemIcon slot, so the
+ * badge overlay tracks the icon corner regardless of the item's
+ * stretched height. */
+const itemIconAnchor = css`
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
-
-  & > svg {
-    width: 100%;
-    height: 100%;
-  }
 `;
 
 const itemLabel = css`
   line-height: var(--haze-leading-tight);
   white-space: nowrap;
-`;
-
-const itemBadge = css`
-  position: absolute;
-  inset-block-start: calc(var(--haze-space-1) / -2);
-  inset-inline-end: calc(var(--haze-space-1) / -2);
-  pointer-events: none;
 `;
 
 export function TabBarItem({
@@ -177,13 +150,24 @@ export function TabBarItem({
         if (active) onReselect?.();
         else onSelect?.();
       }}
-      x-class={[item, focusRingVisible, active && itemActive, className]}
+      x-class={[
+        navItemBase,
+        item,
+        focusRingVisible,
+        active && navItemActive,
+        active && itemActiveTokens,
+        className,
+      ]}
       {...rest}
     >
-      <span data-slot='tab-bar-item-icon' x-class={itemIcon} aria-hidden='true'>
+      <span
+        data-slot='tab-bar-item-icon'
+        x-class={[navItemIcon, itemIconAnchor]}
+        aria-hidden='true'
+      >
         {icon}
         {badge !== undefined && badge !== null && (
-          <span data-slot='tab-bar-item-badge' x-class={itemBadge}>
+          <span data-slot='tab-bar-item-badge' x-class={navItemBadge}>
             <Badge size='sm'>{badge}</Badge>
           </span>
         )}

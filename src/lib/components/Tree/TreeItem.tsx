@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 import { useId } from 'react';
 
 import { choiceBase } from '../../utils/choice-skin';
+import { ChevronRight } from '../../utils/picker-trigger';
 import { spinAnimation } from '../../utils/spinner-glyph';
 import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
 import { truncate } from '../../utils/truncate';
@@ -257,19 +258,10 @@ const indentLineWithBorder = css`
   border-inline-start: 1px solid var(--haze-color-border);
 `;
 
-const ChevronRight = () => (
-  <svg
-    viewBox='0 0 12 12'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-  >
-    <path d='M4 2l4 4-4 4' />
-  </svg>
-);
-
+/* CheckIcon/MinusIcon stay local 12×12 glyphs on purpose: the icons
+ * barrel's Check is lucide's 24-unit viewBox (M20 6 9 17l-5-5), whose
+ * strokeWidth 2 renders at half the weight of the local 12-unit grid
+ * in the same 16px slot — not a geometric match. */
 const CheckIcon = () => (
   <svg
     viewBox='0 0 12 12'

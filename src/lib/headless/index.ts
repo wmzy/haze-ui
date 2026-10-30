@@ -22,6 +22,7 @@ import { useBusyPressable } from '../hooks/useBusyPressable';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { hotkey, useHotkeys } from '../hooks/useHotkeys';
 import { useInView } from '../hooks/useInView';
+import { useLatest } from '../hooks/useLatest';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { usePrevious } from '../hooks/usePrevious';
@@ -546,6 +547,13 @@ export { useBusyPressable };
 // ---------------------------------------------------------------------------
 // Persistent state hooks (../hooks)
 // ---------------------------------------------------------------------------
+
+/**
+ * A ref always pointing at the value from the latest render — the
+ * mirror long-lived closures (timers, async chains, listeners) read to
+ * see the current props instead of the ones captured at setup time.
+ */
+export { useLatest };
 
 /**
  * The value from the previous render; `undefined` on the first.

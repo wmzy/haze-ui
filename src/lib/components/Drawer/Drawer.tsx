@@ -7,7 +7,7 @@ import { useControl } from 'react-use-control';
 import { useNativeDialogShell } from '../../utils/native-dialog';
 import { dialogBackdrop } from '../../utils/dialog-skin';
 import { focusRingVisible } from '../../utils/focus-ring';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -226,12 +226,9 @@ export default function Drawer({
   ref,
 }: DrawerProps) {
   const [open, setOpen] = useControl(openControl, false);
-  // ConfigProvider defaults merge under the prop — per-key: an explicit
-  // classNames key on the component wins over the provider's.
   const config = useConfigDefaults('Drawer');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
   // 面板生命周期（showModal/退场动画→close、keepMounted 休眠、命令式
   // handle、Esc/背景点击关闭三件套）与 Dialog 共用同一原语。
   const {setDialogRef, dialogProps} = useNativeDialogShell({

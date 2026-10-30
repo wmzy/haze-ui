@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { css } from '@linaria/core';
 import { useState } from 'react';
 
+import { CheckboxCore } from '../Checkbox';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 
@@ -71,6 +72,15 @@ const itemStyle = css`
   font-size: var(--haze-text-sm);
   cursor: pointer;
 
+  /* CheckboxCore ships standalone 4px margins (its bare-input 32px
+     optical footprint); inside the row the gap owns horizontal spacing
+     and the 24px box centers against the title. The nested selector
+     beats the single-class base no matter the stylesheet emission
+     order (TaskList's row delta precedent). */
+  & > input {
+    margin: 0;
+  }
+
   &:hover {
     background: var(--haze-color-bg-subtle);
   }
@@ -129,9 +139,10 @@ function renderPanel(
       <div data-slot="list" x-class={[panelBody]}>
         {items.map((item) => (
           <label key={item.key} data-slot="item" x-class={[itemStyle]}>
-            <input
-              data-slot="checkbox"
-              type="checkbox"
+            {/* CheckboxCore renders the bare input (no label prop) so the
+                row label keeps owning the wrapping and the accessible
+                name — same pattern as TaskList's rows. */}
+            <CheckboxCore
               checked={selected.includes(item.key)}
               disabled={item.disabled}
               onChange={() => toggle(item.key)}

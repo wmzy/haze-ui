@@ -2,6 +2,8 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { Children, Fragment, cloneElement, isValidElement } from 'react';
 
+import { reactNodeText } from '../../utils/text';
+
 /**
  * Props of a `<CommandItem>` element as far as built-in filtering is
  * concerned. Structurally typed (not imported from Command.tsx) so the
@@ -98,18 +100,12 @@ export function fuzzyMatch(query: string, text: string): FuzzyMatch {
 
 /**
  * Concatenated text of an item's children — the default filter target
- * when no explicit `value` is given. Strings/numbers/booleans pass
- * through; nested arrays and elements are walked depth-first (the same
- * shape as Select's `selectOptionText`).
+ * when no explicit `value` is given. Thin delegate to `reactNodeText`:
+ * strings/numbers/booleans pass through, nested arrays and elements
+ * are walked depth-first.
  */
 export function commandItemText(node: ReactNode): string {
-  if (typeof node === 'string') return node;
-  if (typeof node === 'number' || typeof node === 'boolean') return String(node);
-  if (Array.isArray(node)) return node.map(commandItemText).join('');
-  if (isValidElement<{ children?: ReactNode }>(node)) {
-    return commandItemText(node.props.children);
-  }
-  return '';
+  return reactNodeText(node);
 }
 
 /**

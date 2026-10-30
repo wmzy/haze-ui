@@ -5,7 +5,7 @@ import { Children } from 'react';
 import { arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 
 import { SortableItem, SortableRegion } from '../../utils/sortable';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { TagGroupItemClassNamesContext, type TagGroupClassNames } from './TagGroup';
 import { group } from './tag-group-styles';
@@ -41,9 +41,8 @@ export default function SortableTagGroup({
   // Same 'TagGroup' ConfigProvider section as the plain variant — it is
   // the same component family.
   const config = useConfigDefaults('TagGroup');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
 
   // The sortable mode needs positional indices over the child list, so it
   // renders through Children.toArray; ids are the child indices.

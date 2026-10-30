@@ -3,6 +3,8 @@ import type { StatusColor } from '../../utils/status-skin';
 
 import { useId } from 'react';
 
+import { meterFill } from '../../utils/meter-skin';
+
 import {
   root as rootClass,
   header as headerClass,
@@ -169,7 +171,7 @@ export default function Meter({
         <div
           data-slot="bar"
           data-color={color}
-          x-class={[barClass, classNames?.bar]}
+          x-class={[meterFill, barClass, classNames?.bar]}
           style={{ width: `${percent}%` }}
         />
       </div>

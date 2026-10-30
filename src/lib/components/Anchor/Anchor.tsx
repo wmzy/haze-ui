@@ -170,11 +170,14 @@ export default function Anchor({
     if (!el) return;
     const container = getContainer?.() ?? window;
     if (container instanceof HTMLElement) {
-      container.scrollTop =
-        el.getBoundingClientRect().top -
-        container.getBoundingClientRect().top +
-        container.scrollTop -
-        offsetTop;
+      container.scrollTo({
+        top:
+          el.getBoundingClientRect().top -
+          container.getBoundingClientRect().top +
+          container.scrollTop -
+          offsetTop,
+        behavior: 'smooth',
+      });
       return;
     }
     container.scrollTo({

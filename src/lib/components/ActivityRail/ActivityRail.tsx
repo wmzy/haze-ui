@@ -4,6 +4,14 @@ import { Children, isValidElement } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import {
+  navItemActive,
+  navItemBadge,
+  navItemBase,
+  navItemIcon,
+} from '../../utils/nav-item-skin';
+
 import { Badge } from '../Badge';
 import { Tooltip } from '../Tooltip';
 
@@ -144,42 +152,28 @@ type ActivityRailItemProps = {
   slot?: 'start' | 'end';
 } & Omit<ComponentPropsWithoutRef<'button'>, 'type' | 'children' | 'slot'>;
 
-/* 44px square target = --haze-space-10 + --haze-space-1 (WCAG 2.5.8). */
+/* 44px square target = --haze-space-10 + --haze-space-1 (WCAG 2.5.8).
+ * Sizing delta on the shared navItemBase chrome (utils/nav-item-skin.ts). */
 const item = css`
-  box-sizing: border-box;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: var(--haze-space-0);
-  border: none;
   width: calc(var(--haze-space-10) + var(--haze-space-1));
   height: calc(var(--haze-space-10) + var(--haze-space-1));
   border-radius: var(--haze-radius-md);
-  background: transparent;
-  color: var(--haze-color-text-muted);
-  cursor: pointer;
-  transition:
-    color var(--haze-duration-fast) var(--haze-ease),
-    background var(--haze-duration-fast) var(--haze-ease);
 
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 var(--haze-space-1) var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the item below — a deliberate convergence: the local copy wore a
+     var(--haze-space-1) (4px) ring, the last width variant across the
+     library, now unified on the shared 3px ring (and it gains the
+     forced-colors Highlight arm the local copy never had). The only
+     intentional visual change of the nav-item-skin extraction. */
 `;
 
-const itemActive = css`
-  color: var(--haze-color-text);
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
+/* The active-token pair consumed by the shared navItemActive arm: the
+ * rail keeps the plain text color — currency is carried by the
+ * indicator alone — pinned through hover over the same bg-muted wash. */
+const itemActiveTokens = css`
+  --haze-nav-item-active-color: var(--haze-color-text);
+  --haze-nav-item-active-hover-bg: var(--haze-color-bg-muted);
 `;
 
 /* Rail-side 2px indicator bar, flush with the track's outer edge (the
@@ -191,26 +185,6 @@ const indicator = css`
   width: calc(var(--haze-space-1) / 2);
   border-radius: var(--haze-radius-full);
   background: var(--haze-color-primary);
-`;
-
-const itemIcon = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
-
-  & > svg {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const itemBadge = css`
-  position: absolute;
-  inset-block-start: calc(var(--haze-space-1) / -2);
-  inset-inline-end: calc(var(--haze-space-1) / -2);
-  pointer-events: none;
 `;
 
 export function ActivityRailItem({
@@ -234,14 +208,25 @@ export function ActivityRailItem({
         onClick?.(event);
         onSelect?.();
       }}
-      x-class={[item, active && itemActive, className]}
+      x-class={[
+        navItemBase,
+        item,
+        focusRingVisible,
+        active && navItemActive,
+        active && itemActiveTokens,
+        className,
+      ]}
       {...rest}
     >
-      <span data-slot='activity-rail-item-icon' x-class={itemIcon} aria-hidden='true'>
+      <span
+        data-slot='activity-rail-item-icon'
+        x-class={navItemIcon}
+        aria-hidden='true'
+      >
         {icon}
       </span>
       {badge !== undefined && badge !== null && (
-        <span data-slot='activity-rail-item-badge' x-class={itemBadge}>
+        <span data-slot='activity-rail-item-badge' x-class={navItemBadge}>
           <Badge size='sm'>{badge}</Badge>
         </span>
       )}

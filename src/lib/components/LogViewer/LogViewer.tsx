@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { useEndReached } from '../../utils/use-end-reached';
+import { monoPanelBase } from '../../utils/mono-panel-skin';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -30,15 +31,8 @@ type LogViewerProps = {
   className?: string;
 };
 
-const wrapper = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  line-height: var(--haze-leading-relaxed);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  overflow: hidden;
-`;
-
+// Outer chrome shared with DiffViewer (utils/mono-panel-skin); the
+// toolbar/body/entry classes below are family deltas.
 const toolbar = css`
   display: flex;
   gap: var(--haze-space-1);
@@ -141,7 +135,7 @@ export default function LogViewer({ logs, filter: filterControl, onLoadMore, cla
   });
 
   return (
-    <div data-slot="log-viewer" x-class={[wrapper, className]}>
+    <div data-slot="log-viewer" x-class={[monoPanelBase, className]}>
       <div data-slot="toolbar" x-class={[toolbar]}>
         <button
           data-slot="filter-button"

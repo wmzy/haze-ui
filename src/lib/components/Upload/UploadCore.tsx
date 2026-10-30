@@ -13,6 +13,7 @@ import { css } from '@linaria/core';
 import { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'react';
 
 import { useStrings } from '../LocaleProvider';
+import { useLatest } from '../../hooks/useLatest';
 import { formatFileSize } from '../FilePreview/file-preview-format';
 import { clamp } from '../../utils/math';
 
@@ -364,36 +365,18 @@ export default function UploadCore({
   // Mirror the latest applied value so async beforeUpload verdicts
   // merge onto the freshest list instead of the one captured at pick
   // time (a parent may have committed another pick meanwhile).
-  const latestValue = useRef(value);
-  useEffect(() => {
-    latestValue.current = value;
-  });
+  const latestValue = useLatest(value);
 
   // Mirrors for the imperative handle and the async upload chain —
   // they run outside the render that produced the latest props.
-  const entriesRef = useRef(entries);
-  useEffect(() => {
-    entriesRef.current = entries;
-  });
-  const latestExecutor = useRef(executor);
-  useEffect(() => {
-    latestExecutor.current = executor;
-  });
-  const latestOnChange = useRef(onChange);
-  useEffect(() => {
-    latestOnChange.current = onChange;
-  });
-  const latestOnStatusChange = useRef(onStatusChange);
-  useEffect(() => {
-    latestOnStatusChange.current = onStatusChange;
-  });
+  const entriesRef = useLatest(entries);
+  const latestExecutor = useLatest(executor);
+  const latestOnChange = useLatest(onChange);
+  const latestOnStatusChange = useLatest(onStatusChange);
   // The queue drains from long-lived closures (request settle
   // callbacks) — they must read the freshest cap, not the one captured
   // at enqueue time.
-  const latestConcurrency = useRef(resolveConcurrency(concurrency));
-  useEffect(() => {
-    latestConcurrency.current = resolveConcurrency(concurrency);
-  });
+  const latestConcurrency = useLatest(resolveConcurrency(concurrency));
 
   // Files refused at intake for exceeding `maxSize` → their rejection
   // message. Every intake re-evaluates the whole batch (entries set or

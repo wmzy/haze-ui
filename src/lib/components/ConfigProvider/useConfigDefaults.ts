@@ -48,6 +48,22 @@ export function useConfigDefaults<K extends keyof HazeConfig>(
 }
 
 /**
+ * Merges a component's ConfigProvider `classNames` section under the
+ * prop record — per key, an explicit slot on the component wins over
+ * the provider's. Returns the prop record itself (possibly undefined)
+ * when the section has no `classNames`, so provider-less renders keep
+ * referential identity. Pure companion to `useConfigDefaults`.
+ */
+export function mergeClassNames<T extends object>(
+  config: { readonly classNames?: T },
+  classNames: T | undefined
+): T | undefined {
+  return config.classNames
+    ? { ...config.classNames, ...classNames }
+    : classNames;
+}
+
+/**
  * Reads the resolved spacing density from the enclosing
  * `ConfigProvider` chain — `'normal'` with no provider, an inner
  * provider's value over an outer one. Density-aware components use this

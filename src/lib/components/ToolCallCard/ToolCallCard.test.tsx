@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
+import { statusSolidColors } from '../../utils/status-solid-skin';
+
 import ToolCallCard from './ToolCallCard';
 
 describe('ToolCallCard', () => {
@@ -31,6 +33,18 @@ describe('ToolCallCard', () => {
   it('renders error status', () => {
     render(<ToolCallCard name="search" status="error" />);
     expect(screen.getByText('Error')).toBeInTheDocument();
+  });
+
+  it('fills the status disc from the shared solid status skin', () => {
+    const { container, rerender } = render(<ToolCallCard name="search" />);
+    const disc = () => container.querySelector('[data-slot="indicator"]');
+    expect(disc()).toHaveClass(statusSolidColors.default);
+    rerender(<ToolCallCard name="search" status="running" />);
+    expect(disc()).toHaveClass(statusSolidColors.primary);
+    rerender(<ToolCallCard name="search" status="done" />);
+    expect(disc()).toHaveClass(statusSolidColors.success);
+    rerender(<ToolCallCard name="search" status="error" />);
+    expect(disc()).toHaveClass(statusSolidColors.danger);
   });
 
   it('renders input', () => {

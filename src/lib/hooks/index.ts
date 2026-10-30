@@ -18,6 +18,7 @@ export { useHotkeys, hotkey } from './useHotkeys';
 export type { HotkeyHandler, UseHotkeysOptions } from './useHotkeys';
 export { useInView } from './useInView';
 export type { UseInViewOptions } from './useInView';
+export { useLatest } from './useLatest';
 export { useLocalStorage } from './useLocalStorage';
 export { useMediaQuery } from './useMediaQuery';
 export { useElementSize } from './useElementSize';

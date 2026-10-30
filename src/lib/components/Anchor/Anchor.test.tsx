@@ -104,10 +104,9 @@ describe('Anchor', () => {
     }
   });
 
-  it('scrolls a custom container relative to its own top', async () => {
+  it('smooth-scrolls a custom container relative to its own top', async () => {
     const user = userEvent.setup();
     const containerRef: { current: HTMLDivElement | null } = { current: null };
-    let scrollTop = 0;
     const { container } = render(
       <main>
         <Anchor
@@ -127,13 +126,10 @@ describe('Anchor', () => {
       </main>
     );
     const scrollBox = containerRef.current!;
-    Object.defineProperty(scrollBox, 'scrollTop', {
-      configurable: true,
-      get: () => scrollTop,
-      set: (value: number) => {
-        scrollTop = value;
-      },
-    });
+    // jsdom ships no Element.scrollTo — install the call-shape spy both
+    // branches of scrollToId share (window branch: the spy above).
+    const scrollTo = vi.fn();
+    scrollBox.scrollTo = scrollTo;
     vi.spyOn(scrollBox, 'getBoundingClientRect').mockReturnValue({
       top: 100,
     } as DOMRect);
@@ -144,7 +140,10 @@ describe('Anchor', () => {
     await user.click(screen.getByRole('link', { name: 'API' }));
 
     // section top (350) - container top (100) + current scrollTop (0) - offset (10)
-    expect(scrollTop).toBe(240);
+    expect(scrollTo).toHaveBeenCalledWith({
+      top: 240,
+      behavior: 'smooth',
+    });
   });
 
   it('shares the highlight with a parent through a control', async () => {

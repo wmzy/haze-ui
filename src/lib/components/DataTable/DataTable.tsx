@@ -47,6 +47,7 @@ import { Pagination } from '../Pagination';
 import { TableBody, TableCell } from '../Table';
 
 import { TableClassNamesProvider } from '../Table/TableContext';
+import { baseStyle as tableBase } from '../Table/table-styles';
 import { VisuallyHidden } from '../VisuallyHidden';
 import { VirtualList } from '../VirtualList';
 
@@ -621,14 +622,6 @@ const fixedLayout = css`
  * between content and the fixed row height. */
 const virtualRowTable = css`
   height: 100%;
-`;
-
-const tableBase = css`
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
 `;
 
 const footer = css`

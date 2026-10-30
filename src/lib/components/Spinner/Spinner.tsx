@@ -38,16 +38,16 @@ const base = css`
 
 const sizes = {
   sm: css`
-    width: 16px;
-    height: 16px;
+    width: var(--haze-space-4);
+    height: var(--haze-space-4);
   `,
   md: css`
-    width: 24px;
-    height: 24px;
+    width: var(--haze-space-6);
+    height: var(--haze-space-6);
   `,
   lg: css`
-    width: 32px;
-    height: 32px;
+    width: var(--haze-space-8);
+    height: var(--haze-space-8);
   `,
 } as const;
 

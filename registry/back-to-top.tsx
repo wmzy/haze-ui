@@ -20,6 +20,7 @@ import { BackToTop } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/back-to-top.css';
+import 'haze-ui/css/float-button.css';
 
 export { BackToTop };
 export type { BackToTopProps } from 'haze-ui';

@@ -103,6 +103,15 @@ describe('Tree', () => {
     expect(screen.getAllByText('→')).toHaveLength(2);
   });
 
+  it('renders the shared picker chevron as a decorative switcher glyph', () => {
+    render(<Tree treeData={basicData} />);
+    // The glyph rides utils/picker-trigger's ChevronRight (Cascader
+    // precedent): the switcher button's aria-label owns the name, so
+    // the svg itself must stay hidden from the a11y tree.
+    const svg = screen.getAllByRole('button', { name: 'Expand' })[0]!.querySelector('svg');
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('supports titleRender', () => {
     render(
       <Tree

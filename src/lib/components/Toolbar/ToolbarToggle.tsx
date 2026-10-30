@@ -1,11 +1,9 @@
 import type { ComponentPropsWithRef, ElementType, MouseEvent } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
-import { focusRingVisible } from '../../utils/focus-ring';
-import { base, sizes, squareSizes, variants } from '../Button/styles';
+import ToolbarButton from './ToolbarButton';
 
 /**
  * A toolbar item that toggles: ToolbarButton's skin and roving behavior
@@ -41,23 +39,13 @@ type ToolbarToggleProps<T extends ElementType = 'button'> = ToolbarToggleOwnProp
   as?: T;
 } & Omit<ComponentPropsWithRef<T>, keyof ToolbarToggleOwnProps | 'as' | 'type' | 'aria-pressed'>;
 
-const toolbarItem = css`
-  /* Most meaningful on the default ghost: a pressed item reads as
-   * engaged with a tinted well instead of a transparent surface. */
-  &[aria-pressed='true'] {
-    background: var(--haze-color-primary-subtle);
-    color: var(--haze-color-primary);
-
-    &:hover {
-      background: var(--haze-color-bg-muted);
-    }
-
-    &:active {
-      background: var(--haze-color-bg-muted);
-    }
-  }
-`;
-
+/**
+ * Delegates rendering to ToolbarButton (ButtonLink's delegation tier —
+ * same skin, same roving wiring, one code path per family, so the
+ * pressed-well arm lives in ToolbarButton only). The toggle contributes
+ * exactly its own delta: the `pressed` control wired to `aria-pressed`,
+ * the click that flips it, and its data-slot.
+ */
 export default function ToolbarToggle<T extends ElementType = 'button'>({
   pressed: pressedControl,
   variant = 'ghost',
@@ -69,25 +57,28 @@ export default function ToolbarToggle<T extends ElementType = 'button'>({
   ...rest
 }: ToolbarToggleProps<T>) {
   const [pressed, setPressed] = useControl(pressedControl, false);
-  const sizeClass = square ? squareSizes[size] : sizes[size];
-  const Tag = (as ?? 'button');
-  // Only the native button shape carries type; anchors and custom
-  // components keep their own element semantics.
-  const isNativeButton = as === undefined || as === 'button';
+  // The element-agnostic delta rides as one typed props object: every
+  // key is valid on whatever element `as` renders (ButtonLink's
+  // delegation passes concrete props the same way), and ToolbarButton
+  // still type-checks everything else it owns.
+  const toggleProps = {
+    'data-slot': 'toolbar-toggle',
+    'aria-pressed': pressed,
+    onClick: (event: MouseEvent<HTMLElement>) => {
+      setPressed(!pressed);
+      // Element-agnostic event: whatever element `as` rendered, the
+      // consumer's handler sees it, typed element-agnostic above.
+      onClick?.(event);
+    },
+  } as ComponentPropsWithRef<T>;
   return (
-    <Tag
-      {...(isNativeButton ? { type: 'button' as const } : {})}
-      data-slot="toolbar-toggle"
-      data-haze-toolbar-item=""
-      tabIndex={-1}
-      aria-pressed={pressed}
-      x-class={[base, focusRingVisible, variants[variant], sizeClass, toolbarItem, className]}
-      onClick={(event: MouseEvent<HTMLElement>) => {
-        setPressed(!pressed);
-        // Element-agnostic event: whatever element `as` rendered, the
-        // consumer's handler sees it, typed element-agnostic above.
-        onClick?.(event);
-      }}
+    <ToolbarButton<T>
+      as={as}
+      variant={variant}
+      size={size}
+      square={square}
+      className={className}
+      {...toggleProps}
       {...rest}
     />
   );

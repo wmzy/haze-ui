@@ -1,12 +1,25 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { createRef } from 'react';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import { fab, shapes, variants, anchored } from '../FloatButton/float-button-styles';
+
 import BackToTop from './BackToTop';
 
 describe('BackToTop', () => {
   it('renders a button', () => {
     render(<BackToTop />);
     expect(screen.getByRole('button', { name: 'Back to top' })).toBeInTheDocument();
+  });
+
+  it('wears the shared FloatButton skin and the keyboard focus ring', () => {
+    render(<BackToTop />);
+    const button = screen.getByRole('button', { name: 'Back to top' });
+    // the composed face: FloatButton fab + circle + solid + anchored,
+    // plus the shared :focus-visible ring the hand-rolled skin lacked.
+    for (const skin of [fab, focusRingVisible, shapes.circle, variants.solid, anchored]) {
+      expect(button).toHaveClass(skin);
+    }
   });
 
   it('applies className', () => {

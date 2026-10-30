@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import LocaleProvider from '../LocaleProvider';
+import { baseStyle } from '../Table/table-styles';
 import { floatingHidden } from '../../utils/floating';
 
 import DataTable from './DataTable';
@@ -73,6 +74,18 @@ describe('DataTable', () => {
     expect(table).toBeInTheDocument();
     // root → scroll area → table
     expect(table.parentElement?.parentElement).toHaveClass('custom');
+  });
+
+  it('composes the shared Table base class on every table element', () => {
+    render(<DataTable columns={columns} data={people} />);
+
+    // The header/body tables wear Table's baseStyle (single source with
+    // the Table component) instead of a local byte-identical copy.
+    const tables = document.querySelectorAll("table[data-slot='table']");
+    expect(tables.length).toBeGreaterThan(0);
+    for (const table of tables) {
+      expect(table).toHaveClass(baseStyle);
+    }
   });
 
   it('renders sorting as opt-in: no sort buttons unless sortable', () => {

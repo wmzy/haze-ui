@@ -3,6 +3,8 @@ import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 import NavigationBar from './NavigationBar';
 import NavLink from './NavLink';
 
@@ -47,6 +49,11 @@ describe('NavigationBar', () => {
   it('applies className to NavLink', () => {
     render(<NavLink className="custom">Link</NavLink>);
     expect(screen.getByText('Link')).toHaveClass('custom');
+  });
+
+  it('composes the shared keyboard focus ring on NavLink', () => {
+    render(<NavLink>Docs</NavLink>);
+    expect(screen.getByText('Docs')).toHaveClass(focusRingVisible);
   });
 
   it('passes through native anchor attributes', () => {

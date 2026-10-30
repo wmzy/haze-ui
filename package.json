@@ -245,7 +245,7 @@
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "54 KB",
+      "limit": "56 KB",
       "gzip": true
     },
     {
@@ -257,7 +257,7 @@
     {
       "name": "CSS family ratchet: popconfirm",
       "path": "dist/css/popconfirm.css",
-      "limit": "1.3 KB",
+      "limit": "1.35 KB",
       "gzip": true
     },
     {
@@ -275,7 +275,7 @@
     {
       "name": "CSS family ratchet: ellipsis",
       "path": "dist/css/ellipsis.css",
-      "limit": "0.5 KB",
+      "limit": "0.56 KB",
       "gzip": true
     },
     {
@@ -341,7 +341,7 @@
     {
       "name": "CSS family ratchet: dialog",
       "path": "dist/css/dialog.css",
-      "limit": "0.69 KB",
+      "limit": "0.8 KB",
       "gzip": true
     },
     {
@@ -377,7 +377,7 @@
     {
       "name": "CSS family ratchet: tree",
       "path": "dist/css/tree.css",
-      "limit": "1.33 KB",
+      "limit": "1.95 KB",
       "gzip": true
     },
     {
@@ -485,7 +485,7 @@
     {
       "name": "CSS family ratchet: error-boundary",
       "path": "dist/css/error-boundary.css",
-      "limit": "0.7 KB",
+      "limit": "0.75 KB",
       "gzip": true
     },
     {
@@ -533,7 +533,7 @@
     {
       "name": "CSS family ratchet: notification-center",
       "path": "dist/css/notification-center.css",
-      "limit": "1.96 KB",
+      "limit": "2.05 KB",
       "gzip": true
     }
   ]

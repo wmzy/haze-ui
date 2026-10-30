@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { createContext } from 'react';
 
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { group } from './tag-group-styles';
 
@@ -38,11 +38,9 @@ type TagGroupProps = {
  * SortableTagGroup (which statically imports the @dnd-kit runtime);
  * this base component stays free of the dnd runtime. */
 export default function TagGroup({ children, className, classNames }: TagGroupProps) {
-  // ConfigProvider `TagGroup.classNames` merges under the prop, per key.
   const config = useConfigDefaults('TagGroup');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
   return (
     <TagGroupItemClassNamesContext.Provider value={resolvedClassNames}>
       <div data-slot="tag-group" x-class={[group, className, resolvedClassNames?.root]} role="group">

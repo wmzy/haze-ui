@@ -5,7 +5,7 @@ import type { SelectVirtualizedConfig } from './SelectFloating';
 
 import { useControl } from 'react-use-control';
 
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { NativeHiddenFields } from '../../utils/native-form';
 
@@ -245,11 +245,9 @@ export default function Select<T extends string | number = string>({
     valueControl,
     multiple || tags ? ([] as T[]) : ('' as T)
   );
-  // ConfigProvider `Select.classNames` merges under the prop, per key.
   const config = useConfigDefaults('Select');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
 
   const handleValueChange = (next: T | T[]) => {
     setValue(next);

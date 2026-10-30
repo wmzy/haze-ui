@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { agenticStatusLabel, agenticStatusTone } from '../../utils/agentic-status';
+import { statusSolidColors } from '../../utils/status-solid-skin';
 import { disclosureMonoBody } from '../../utils/timeline-skin';
 
 type ToolCallStatus = AgenticStatus;
@@ -44,15 +45,16 @@ const statusIcon = css`
 `;
 
 /* Flat header discs — this family's own marker geometry (borderless,
-   half the ring size), filled through the shared agentic tone map. No
-   pulse animation: `pulse` keyframes were never defined, so the
-   declaration never ran — the running state stays a solid primary
-   disc. */
-const toneFill: Record<AgenticStatusTone, string> = {
-  muted: css`background: var(--haze-color-text-muted);`,
-  primary: css`background: var(--haze-color-primary);`,
-  success: css`background: var(--haze-color-success);`,
-  danger: css`background: var(--haze-color-danger);`,
+   half the ring size), filled through the shared solid status axis
+   (utils/status-solid-skin): each agentic tone picks its arm below,
+   the muted tone riding the `default` arm. No pulse animation:
+   `pulse` keyframes were never defined, so the declaration never ran
+   — the running state stays a solid primary disc. */
+const toneKey: Record<AgenticStatusTone, keyof typeof statusSolidColors> = {
+  muted: 'default',
+  primary: 'primary',
+  success: 'success',
+  danger: 'danger',
 };
 
 const body = css`
@@ -97,7 +99,7 @@ export default function ToolCallCard({
       <div data-slot='header' x-class={[header]}>
         <span
           data-slot='indicator'
-          x-class={[statusIcon, toneFill[agenticStatusTone[status]]]}
+          x-class={[statusIcon, statusSolidColors[toneKey[agenticStatusTone[status]]]]}
         />
         <span data-slot='tool-name'>{name}</span>
         <span data-slot='status' x-class={[statusLabel]}>

@@ -3,6 +3,8 @@ import type { ComponentPropsWithRef, ElementType, MouseEvent } from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import { fab, shapes, variants, anchored } from '../FloatButton/float-button-styles';
 import { useStrings } from '../LocaleProvider';
 
 type BackToTopOwnProps = {
@@ -29,29 +31,50 @@ type BackToTopProps<T extends ElementType = 'button'> = BackToTopOwnProps & {
   as?: T;
 } & Omit<ComponentPropsWithRef<T>, keyof BackToTopOwnProps | 'as' | 'type'>;
 
-const button = css`
-  position: fixed;
-  bottom: calc(var(--haze-space-6) + env(safe-area-inset-bottom));
-  /* physical: pinned to the physical bottom-end screen corner — a FAB
-     carries no reading-direction semantics, and the safe-area env has no
-     logical counterpart. */
-  right: calc(var(--haze-space-6) + env(safe-area-inset-right));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-primary);
-  color: var(--haze-color-bg);
-  border: none;
-  cursor: pointer;
-  box-shadow: var(--haze-shadow-lg);
-  font-size: var(--haze-text-lg);
-  transition: opacity var(--haze-duration-normal), transform var(--haze-duration-normal), visibility var(--haze-duration-normal);
+/**
+ * Icon-only deltas over the composed FloatButton skin (fab + circle +
+ * solid + anchored + focusRingVisible) — the button face is FloatButton's,
+ * this class only re-tunes it for an icon-only circle and re-binds the
+ * reveal/exit channels. Anchoring goes through the shared anchored
+ * class, so the corner flips to the inline-end (physical left) side
+ * under RTL — the FloatButton anchor semantics this adoption takes on.
+ *
+ * Every arm compounds the data-slot selector on purpose: the dev server
+ * injects css in import order while dist split-css appends shared
+ * layers after the family's own modules, so a plain-class tie against
+ * fab flips winners between environments (quiet-button-skin
+ * discipline, Banner's closeBtnSize precedent).
+ */
+const iconOnly = css`
+  &[data-slot='back-to-top'] {
+    /* A circle, not a pill: no inline padding (fab's space-3 pads the
+       description-bearing FAB and would stretch the circle past
+       min-width), the border-box contract so --haze-float-button-size
+       is the TOTAL diameter like the incumbent's fixed 2.5rem box, and
+       the incumbent's lg regular glyph — fab's sm/medium typography is
+       the text-FAB scale and would shrink and thicken the arrow. */
+    box-sizing: border-box;
+    padding-inline: 0;
+    font-size: var(--haze-text-lg);
+    font-weight: var(--haze-weight-normal);
+    /* Only the reveal/exit channels animate: fab's own list
+       (background/color/border-color/box-shadow) never applied to this
+       skin before, and the shadow is pinned below, so the list is
+       replaced rather than merged. */
+    transition:
+      opacity var(--haze-duration-normal),
+      transform var(--haze-duration-normal),
+      visibility var(--haze-duration-normal);
+  }
 
-  &:hover {
+  /* The hover lift is BackToTop's own (FloatButton hovers by elevation
+     and ink instead); the resting shadow-lg is pinned back because the
+     incumbent had no hover shadow change and fab's lg-to-xl arm would
+     introduce one. The :not(:focus-visible) guard keeps the keyboard
+     ring from being out-ranked by this arm's higher specificity. */
+  &[data-slot='back-to-top']:hover:not(:focus-visible) {
     transform: translateY(-2px);
+    box-shadow: var(--haze-shadow-lg);
   }
 `;
 
@@ -64,6 +87,8 @@ const hidden = css`
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+  /* 1rem (16px) equals space-4 numerically but is a motion distance,
+     not spacing — kept a literal like the off-ladder -2px lift above. */
   transform: translateY(1rem);
 `;
 
@@ -100,7 +125,7 @@ export default function BackToTop<T extends ElementType = 'button'>({
     <Tag
       {...(isNativeButton ? { type: 'button' as const } : {})}
       data-slot='back-to-top'
-      x-class={[button, !visible && hidden, className]}
+      x-class={[fab, focusRingVisible, shapes.circle, variants.solid, anchored, iconOnly, !visible && hidden, className]}
       aria-label={strings.label}
       {...rest}
       onClick={(event: MouseEvent<HTMLElement>) => {

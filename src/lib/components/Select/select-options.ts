@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 
 import type { CompoundOptionNode, CompoundOptionTypes } from '../../utils/compound-options';
 
-import { isValidElement } from 'react';
-
 import { walkCompoundOptions } from '../../utils/compound-options';
+
+import { reactNodeText } from '../../utils/text';
 
 import OptionGroup from './OptionGroup';
 
@@ -129,18 +129,12 @@ export function flattenSelectEntries<T extends string | number = string>(
 
 /**
  * Textual form of an option's label for string-only contexts: the
- * search filter and the `+N` overflow tooltip. String/number labels
- * pass through; element labels contribute their concatenated text
- * content (nested arrays and elements are walked).
+ * search filter and the `+N` overflow tooltip. Thin delegate to
+ * `reactNodeText` — string/number/boolean labels pass through, element
+ * labels contribute their concatenated text content.
  */
 export function selectOptionText(label: ReactNode): string {
-  if (typeof label === 'string') return label;
-  if (typeof label === 'number' || typeof label === 'boolean') return String(label);
-  if (Array.isArray(label)) return label.map(selectOptionText).join('');
-  if (isValidElement<{ children?: ReactNode }>(label)) {
-    return selectOptionText(label.props.children);
-  }
-  return '';
+  return reactNodeText(label);
 }
 
 /**

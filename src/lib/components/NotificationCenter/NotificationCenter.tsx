@@ -14,7 +14,7 @@ import { panelSurface, popoverPanelHidden } from '../../utils/panel-skin';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 import { statusSubtleColors } from '../../utils/status-skin';
 import { Badge } from '../Badge';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { Icon } from '../Icon';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -302,11 +302,10 @@ const panelActions = css`
 `;
 
 /* Footer actions: the shared quietIconButton chrome plus the compact
- * text-button metrics. Disabled handling stays local — the skin's :hover
- * wash is not guarded by :not(:disabled), so :hover:disabled (0,3,0)
- * re-mutes it instead of trusting source order (ImagePreview's toolButton
- * precedent); the disabled ink itself now rides the skin's muted base.
- * Ring convergence as on the trigger: 2px offset outline → the shared 3px
+ * text-button metrics. The skin's hover arm is :not(:disabled)-guarded,
+ * so a disabled action keeps the resting muted ink with no local
+ * re-mute patch — only the not-allowed cursor stays local. Ring
+ * convergence as on the trigger: 2px offset outline → the shared 3px
  * box-shadow ring; the forced-colors Highlight fallback stays local with
  * the doubled-pseudo specificity. */
 const actionBtn = css`
@@ -318,11 +317,6 @@ const actionBtn = css`
 
   &:disabled {
     cursor: not-allowed;
-  }
-
-  &:hover:disabled {
-    background: none;
-    color: var(--haze-color-text-muted);
   }
 
   @media (forced-colors: active) {
@@ -435,9 +429,7 @@ export default function NotificationCenter({
   // ConfigProvider `NotificationCenter.classNames` merges under the
   // prop, per key — an explicit slot on the component wins.
   const config = useConfigDefaults('NotificationCenter');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  const resolvedClassNames = mergeClassNames(config, classNames);
 
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);

@@ -2,6 +2,8 @@ import { expect } from 'vitest';
 import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 
+import { meterFill } from '../../utils/meter-skin';
+
 import Meter from './Meter';
 import { trackSizes } from './meter-styles';
 
@@ -122,6 +124,12 @@ describe('Meter', () => {
     expect(track()).toHaveClass(trackSizes.lg);
     rerender(<Meter value={10} size="sm" />);
     expect(track()).toHaveClass(trackSizes.sm);
+  });
+
+  it('wears the shared meter fill skin (geometry + motion from meter-skin)', () => {
+    render(<Meter value={10} />);
+    const bar = screen.getByRole('meter').querySelector('[data-slot="bar"]');
+    expect(bar).toHaveClass(meterFill);
   });
 
   it('applies className and classNames to every slot', () => {

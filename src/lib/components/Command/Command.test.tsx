@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 
 import { Command, CommandInput, CommandList, CommandItem, CommandGroup } from './index';
-import { commandItemScore, fuzzyMatch } from './command-filter';
+import { commandItemScore, commandItemText, fuzzyMatch } from './command-filter';
 
 describe('Command', () => {
   it('renders children', () => {
@@ -561,5 +561,19 @@ describe('command-filter fuzzy scoring', () => {
     expect(commandItemScore({ keywords: ['preferences'] }, 'pref')).not.toBeNull();
     expect(commandItemScore({ value: 'Settings' }, 'zzz')).toBeNull();
     expect(commandItemScore({}, '')).toBe(0);
+  });
+});
+
+describe('commandItemText', () => {
+  it('drops boolean children like React does', () => {
+    expect(commandItemText(true)).toBe('');
+    expect(commandItemText(false)).toBe('');
+  });
+
+  it('walks mixed children depth-first in document order', () => {
+    expect(commandItemText(['🍒', ' Cherry'])).toBe('🍒 Cherry');
+    expect(commandItemText([true, <span key="s">pie {false}</span>])).toBe(
+      'pie '
+    );
   });
 });

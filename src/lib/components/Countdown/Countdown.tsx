@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
 import { pad2 } from '../../utils/time-math';
+import { useLatest } from '../../hooks/useLatest';
 
 /** Decomposed remaining time handed to `format`/`render`. */
 type CountdownParts = {
@@ -75,11 +76,7 @@ export default function Countdown({
   // no interval drift accumulates.
   const [now, setNow] = useState(() => Date.now());
   const finishedRef = useRef(false);
-  const onFinishRef = useRef(onFinish);
-
-  useEffect(() => {
-    onFinishRef.current = onFinish;
-  }, [onFinish]);
+  const onFinishRef = useLatest(onFinish);
 
   useEffect(() => {
     const remaining = deadline - now;

@@ -2,6 +2,8 @@ import type { ComponentPropsWithRef, ElementType, MouseEvent } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+
 /**
  * Extends the rendered element's native attributes (anchor by default):
  * everything not listed below is spread onto it, so callers can inject
@@ -49,6 +51,10 @@ const link = css`
     color: var(--haze-color-text);
     background: var(--haze-color-bg-muted);
   }
+
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the link below — the navigation family's lone surface without a
+     keyboard focus indicator before this. */
 `;
 
 const activeLink = css`
@@ -72,7 +78,7 @@ export default function NavLink<T extends ElementType = 'a'>({
   return (
     <Tag
       data-slot='nav-link'
-      x-class={[link, isActive && activeLink, className]}
+      x-class={[link, focusRingVisible, isActive && activeLink, className]}
       href={href}
       aria-current={isActive ? 'page' : ariaCurrent}
       {...rest}

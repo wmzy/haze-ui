@@ -61,7 +61,12 @@ export default function Avatar({
   className,
   ref,
 }: AvatarProps) {
-  const [error, setError] = useState(false);
+  // Track the src that failed, not a sticky boolean: when src changes
+  // (upload finished, user switched) the new image must render again.
+  // Only that exact src stays failed — prop-change resync precedent:
+  // DataTable/column-filter.tsx.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const error = failedSrc !== null && failedSrc === src;
 
   return (
     <span ref={ref} data-slot="avatar" x-class={[base, sizes[size], className]}>
@@ -71,7 +76,7 @@ export default function Avatar({
           x-class={[imgStyle]}
           src={src}
           alt={alt ?? ''}
-          onError={() => setError(true)}
+          onError={() => setFailedSrc(src)}
         />
       ) : (
         (fallback ?? <span data-slot="img">{alt?.charAt(0).toUpperCase() ?? '?'}</span>)

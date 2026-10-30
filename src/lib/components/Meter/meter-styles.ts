@@ -3,6 +3,8 @@ import {css} from '@linaria/core';
 /**
  * Shared Meter skin — the labeled gauge chrome (root, header row with
  * label/value, track and bar classes) the `Meter` component wears.
+ * The bar's geometry/motion is delegated to utils/meter-skin's
+ * meterFill (composed in Meter.tsx); only its tone axis lives here.
  * Living in its own module keeps the component file free of style
  * internals (react-refresh boundary); split-css groups the emitted CSS
  * into `haze-ui/css/meter.css` with them.
@@ -82,10 +84,14 @@ export const trackSizes = {
   lg: css`height: 12px;`,
 } as const;
 
+/* The fill's geometry and motion ride the shared linear-meter skin
+ * (utils/meter-skin's meterFill, worn beside this class: full height,
+ * radius inherited from the pill track, width transition on the shared
+ * normal + haze-ease curve). Meter historically animated on slow + a
+ * bare ease; converging on the shared curve is the same intentional
+ * unification TokenCounter already made — only the tone axis stays
+ * local here. */
 export const bar = css`
-  height: 100%;
-  border-radius: var(--haze-radius-full);
-  transition: width var(--haze-duration-slow) ease;
   background: var(--haze-color-primary);
 
   &[data-color='default'] {

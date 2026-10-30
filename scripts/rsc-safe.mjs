@@ -60,6 +60,9 @@ export const RSC_SAFE_MODULES = new Set([
   // class constants — imported by RSC-safe BreadcrumbItem, StatusBar
   // and TabBar.
   'utils/focus-ring.ts',
+  // Shared navigation-item chrome (utils/nav-item-skin.ts): pure
+  // Linaria class constants — imported by RSC-safe TabBar.
+  'utils/nav-item-skin.ts',
   // Shared tag skin (tag list/chip/remove button): the same purity
   // class as menu-skins above.
   'utils/tag-skin.ts',

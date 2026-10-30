@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { monoPanelBase } from '../../utils/mono-panel-skin';
 
 type DiffLine = {
   type: 'added' | 'removed' | 'unchanged';
@@ -16,15 +17,8 @@ type DiffViewerProps = {
   className?: string;
 };
 
-const wrapper = css`
-  font-family: var(--haze-font-mono);
-  font-size: var(--haze-text-xs);
-  line-height: var(--haze-leading-relaxed);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  overflow: hidden;
-`;
-
+// Outer chrome shared with LogViewer (utils/mono-panel-skin); the
+// header/body/line classes below are family deltas.
 const header = css`
   display: flex;
   padding: var(--haze-space-2) var(--haze-space-3);
@@ -153,7 +147,7 @@ export default function DiffViewer({ oldValue, newValue, className }: DiffViewer
   const lines = useMemo(() => computeDiff(oldValue, newValue), [oldValue, newValue]);
 
   return (
-    <div data-slot="diff-viewer" x-class={[wrapper, className]}>
+    <div data-slot="diff-viewer" x-class={[monoPanelBase, className]}>
       <div data-slot="header" x-class={[header]}>{strings.header}</div>
       <div data-slot="body" x-class={[body]}>
         {lines.map((line, i) => (

@@ -14,7 +14,7 @@ import { findWrapIndex, useMenuKeyboard, useRovingTabindex, useTypeahead } from 
 import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
 import { reactNodeText } from '../../utils/text';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { VirtualList } from '../VirtualList';
 
 import MenuCheckboxItem from './MenuCheckboxItem';
@@ -182,12 +182,9 @@ export default function Menu({
   ref,
 }: MenuProps) {
   const [open, setOpen] = useControl(openControl, false);
-  // ConfigProvider `Menu.classNames` merges under the prop, per key —
-  // an explicit slot on the component wins over the provider's.
   const config = useConfigDefaults('Menu');
-  const resolvedClassNames = config.classNames
-    ? { ...config.classNames, ...classNames }
-    : classNames;
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 

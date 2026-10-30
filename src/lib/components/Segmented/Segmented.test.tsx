@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
 import {Form, FormItem, createForm, getValue} from '../../form';
+import { focusRingVisible } from '../../utils/focus-ring';
 
 import Segmented from './Segmented';
 import SegmentedCore from './SegmentedCore';
@@ -19,6 +20,13 @@ describe('Segmented', () => {
   it('applies className', () => {
     const { container } = render(<Segmented options={['A']} className="custom" />);
     expect(container.firstChild).toHaveClass('custom');
+  });
+
+  it('composes the shared keyboard focus ring on every segment', () => {
+    render(<Segmented options={['A', 'B']} value="A" />);
+    for (const segment of screen.getAllByRole('button')) {
+      expect(segment).toHaveClass(focusRingVisible);
+    }
   });
 
   it('calls onChange on click', async () => {

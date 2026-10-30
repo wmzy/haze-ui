@@ -33,6 +33,24 @@ describe('Avatar', () => {
     expect(screen.getByText('J')).toBeInTheDocument();
   });
 
+  it('recovers when src changes after an error, then falls back again if the new src fails', () => {
+    const { rerender } = render(<Avatar src="broken.png" alt="Jane" />);
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+    // New src (upload finished / user switched) must render as an image
+    // again — the failure must not be sticky across src changes.
+    rerender(<Avatar src="fixed.png" alt="Jane" />);
+    const img = screen.getByRole('img');
+    expect(img).toHaveAttribute('src', 'fixed.png');
+    expect(screen.queryByText('J')).not.toBeInTheDocument();
+
+    // Failing the new src brings the fallback back.
+    fireEvent.error(img);
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('J')).toBeInTheDocument();
+  });
+
   it('applies className', () => {
     const { container } = render(<Avatar className="custom" />);
     expect(container.firstChild).toHaveClass('custom');

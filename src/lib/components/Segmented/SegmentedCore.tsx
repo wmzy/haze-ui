@@ -8,6 +8,7 @@ import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
 
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { mergeRefs } from '../../utils/refs';
 
 import { sizes } from './segmented-styles';
@@ -64,22 +65,22 @@ const btn = css`
     cursor: not-allowed;
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--haze-color-focus-ring);
-  }
+  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
+     the segment buttons below — the local copy had drifted (a 2px
+     ring against the shared 3px) while duplicating the Highlight
+     arm; the family-specific forced-colors offsets stay local. */
 
   /* Forced-colors: unselected segments are transparent no-border
      buttons — the UA gives them nothing to draw. An inset 1px
      CanvasText outline adds the visible boundary without shifting
-     layout (borders would reflow the flex row); keyboard focus
-     upgrades it to the Highlight ring. */
+     layout (borders would reflow the flex row); the keyboard focus
+     Highlight ring from the composed focusRingVisible insets its
+     offset here so the ring stays inside the chip. */
   @media (forced-colors: active) {
     outline: 1px solid CanvasText;
     outline-offset: -1px;
 
     &:focus-visible {
-      outline: 2px solid Highlight;
       outline-offset: -2px;
     }
 
@@ -224,7 +225,7 @@ export default function SegmentedCore({
             ref={index === stopIndex ? attachStop : undefined}
             type="button"
             tabIndex={index === stopIndex ? 0 : -1}
-            x-class={[btn, value === val && activeBtn]}
+            x-class={[btn, focusRingVisible, value === val && activeBtn]}
             disabled={disabled}
             onClick={() => onChange(val)}
           >

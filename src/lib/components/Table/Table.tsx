@@ -8,7 +8,7 @@ import { spacing } from '../../tokens/spacing';
 import { useConfigDefaults, useConfigDensity } from '../ConfigProvider/useConfigDefaults';
 
 import { TableClassNamesProvider } from './TableContext';
-import { borderedStyle, stripedStyle } from './table-styles';
+import { baseStyle, borderedStyle, stripedStyle } from './table-styles';
 
 type TableProps = {
   /** Zebra-stripe even body rows (default off, ConfigProvider
@@ -33,14 +33,6 @@ type TableProps = {
 
 const wrapper = css`
   overflow-x: auto;
-`;
-
-const base = css`
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  color: var(--haze-color-text);
 `;
 
 export default function Table({
@@ -77,7 +69,7 @@ export default function Table({
           ref={ref}
           data-slot="table"
           x-class={[
-            base,
+            baseStyle,
             resolvedStriped && stripedStyle,
             resolvedBordered && borderedStyle,
             compactIsland && spacing,

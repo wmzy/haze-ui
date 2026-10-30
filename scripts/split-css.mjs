@@ -143,6 +143,13 @@ const sharedLayers = {
   // skins, slot skins, panel surfaces and divider shared by the three
   // menu families ride with each family's css.
   'utils/menu-skins': ['menu', 'dropdown-menu', 'context-menu', 'cascader', 'command'],
+  // Shared navigation-item chrome (utils/nav-item-skin.ts): the muted
+  // item base with its hover wash, the fixed-size icon slot, the corner
+  // badge anchor and the token-parameterized active arm that TabBar's
+  // icon-over-label items and ActivityRail's square rail items compose
+  // (sizing/typography, indicator geometry and the active token pair
+  // stay family-local deltas).
+  'utils/nav-item-skin': ['tab-bar', 'activity-rail'],
   // Shared field skin (utils/field-skin.ts): the surface chrome, the
   // :focus-within focus ring, the native input/textarea chrome and the
   // field size map the field families wear. masked-input and any other
@@ -198,12 +205,14 @@ const sharedLayers = {
   'utils/quiet-button-skin': [
     'async-section',
     'chat-message',
+    'ellipsis',
     'error-boundary',
     'image',
     'notification-center',
     'queue',
     'sidebar',
     'sources',
+    'spoiler',
   ],
   // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
   // the details/summary header + content typography shared by
@@ -248,6 +257,7 @@ const sharedLayers = {
     'prompt-input',
     'select',
     'time-picker',
+    'tree',
     'tree-select',
   ],
   // Picker chip row (utils/picker-chips.tsx): the chip capsule skin,
@@ -301,7 +311,12 @@ const sharedLayers = {
   // same-keyed css maps in one file collide under Linaria's member-key
   // class naming (see utils/status-skin.ts header). Progress/Indicator
   // reference status-skin types only (build-time elided, no css ride).
-  'utils/status-solid-skin': ['indicator', 'progress', 'token-counter'],
+  'utils/status-solid-skin': [
+    'indicator',
+    'progress',
+    'token-counter',
+    'tool-call-card',
+  ],
   'utils/status-stroke-skin': ['progress', 'sparkline'],
   // Shared spinner glyph (utils/spinner-glyph.tsx): the ring+arc svg
   // and the spin loop (reduced-motion collapsed to a single 0.01ms
@@ -317,7 +332,9 @@ const sharedLayers = {
   // radius-lg + bg + shadow-lg chrome (with the forced-colors
   // CanvasText border restatement) every overlay panel wears; width
   // bounds and padding stay call-site deltas composed via x-class.
-  // The bare variant (no typography) serves the picker/date panels.
+  // The bare variant (no typography) serves the picker/date panels,
+  // and the lifted variant (radius-xl + shadow-xl, borderless + the
+  // modal focus ring) serves Dialog's top-layer tier.
   // DateRangePicker deliberately not a consumer: its inline panel
   // floats one shadow step lower (shadow-md) and a layered override
   // would resolve by stylesheet order, which differs between dev
@@ -326,6 +343,7 @@ const sharedLayers = {
     'cascader',
     'color-picker',
     'confirm-dialog',
+    'dialog',
     'datepicker',
     'hover-card',
     'inline-citation',
@@ -357,6 +375,8 @@ const sharedLayers = {
   // field-skin's fieldFocusRing/focusWithinRing instead, pseudo-element
   // thumbs stay local.
   'utils/focus-ring': [
+    'activity-rail',
+    'back-to-top',
     'breadcrumb',
     'button',
     'calendar',
@@ -368,10 +388,12 @@ const sharedLayers = {
     'image',
     'inline-citation',
     'json-view',
+    'navigation-bar',
     'navigation-menu',
     'pagination',
     'rating',
     'schedule',
+    'segmented',
     'sidebar',
     'signature',
     'splitter',
@@ -396,14 +418,24 @@ const sharedLayers = {
   // MarkdownRenderer both render (MarkdownRenderer wins conflicts).
   'utils/prose-skin': ['rich-text-editor', 'markdown-renderer'],
   // Shared thin meter bar (utils/meter-skin.ts): track + fill + width
-  // transition for Plan's progress strip and TokenCounter's budget bar
-  // (colors/timing tones stay per-family deltas).
-  'utils/meter-skin': ['plan', 'token-counter'],
+  // transition for Plan's progress strip, TokenCounter's budget bar and
+  // Meter's gauge bar (colors/timing tones stay per-family deltas).
+  'utils/meter-skin': ['meter', 'plan', 'token-counter'],
   // The segmented date/time input engine (utils/segmented-field.tsx):
   // moved out of the DateField component dir so TimeField's
   // cross-family consumption rides a registered shared layer instead
   // of a sibling component directory.
   'utils/segmented-field': ['date-field', 'time-field'],
+  // Shared mono-panel base (utils/mono-panel-skin.ts): mono font +
+  // text-xs + relaxed leading + border + radius-md + overflow hidden
+  // outer chrome DiffViewer and LogViewer wore as byte-identical
+  // wrapper copies (family chrome stays local deltas).
+  'utils/mono-panel-skin': ['diff-viewer', 'log-viewer'],
+  // FloatButton's FAB skin exported for the sibling BackToTop: like
+  // segmented-field above, the cross-family consumption rides a
+  // registered shared layer instead of relying on the sibling
+  // component directory's group (BackToTop.css stays self-contained).
+  'components/FloatButton/float-button-styles': ['back-to-top'],
 };
 
 /**

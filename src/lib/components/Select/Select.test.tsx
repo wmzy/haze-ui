@@ -9,6 +9,7 @@ import Select from './Select';
 import SelectCore from './SelectCore';
 import Option from './Option';
 import OptionGroup from './OptionGroup';
+import { selectOptionText } from './select-options';
 
 describe('Option', () => {
   it('renders an option element', () => {
@@ -1984,5 +1985,18 @@ describe('Select options prop', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('selectOptionText', () => {
+  it('drops boolean labels like React does', () => {
+    expect(selectOptionText(true)).toBe('');
+    expect(selectOptionText(false)).toBe('');
+  });
+
+  it('concatenates mixed element children in document order', () => {
+    expect(
+      selectOptionText(['Copied ', 3, <span key="s">of {true}</span>])
+    ).toBe('Copied 3of ');
   });
 });

@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 import { useId } from 'react';
 
+import { textToggle } from '../../utils/quiet-button-skin';
 import { useStrings } from '../LocaleProvider';
 
 /**
@@ -52,19 +53,17 @@ const clip = css`
   }
 `;
 
+/* The toggle: the shared textToggle chrome (utils/quiet-button-skin —
+   undecorated primary ink + the guarded primary-hover shift) plus the
+   local block seat — button-reset appearance, the vertical breathing
+   padding, and the hover underline delta (Ellipsis's expand button
+   ships none, so the underline stays here per the skin's drift
+   discipline). */
 const toggle = css`
   appearance: none;
-  background: none;
-  border: none;
   padding: var(--haze-space-1) 0;
-  margin-top: var(--haze-space-1);
-  cursor: pointer;
-  color: var(--haze-color-primary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
 
-  &:hover {
-    color: var(--haze-color-primary-hover);
+  &:hover:not(:disabled) {
     text-decoration: underline;
   }
 `;
@@ -99,7 +98,7 @@ export default function Spoiler({
       <button
         type='button'
         data-slot='toggle'
-        x-class={[toggle]}
+        x-class={[textToggle, toggle]}
         aria-expanded={expanded}
         aria-controls={contentId}
         onClick={() => setExpanded((prev) => !prev)}

@@ -8,7 +8,8 @@ import { css } from '@linaria/core';
  * panel sizes itself); the surface itself is one class.
  *
  * The bare variant is the picker-panel subset (border + radius + bg +
- * shadow, no typography) Cascader/TreeSelect/date panels carry.
+ * shadow, no typography) Cascader/TreeSelect/date panels carry, and the
+ * lifted variant is the modal tier (Dialog) — see panelSurfaceLifted.
  *
  * Linaria CSS — every consumer family must be registered under
  * 'utils/panel-skin' in scripts/split-css.mjs `sharedLayers`.
@@ -43,6 +44,49 @@ export const panelSurfaceBare = css`
 
   @media (forced-colors: active) {
     border-color: CanvasText;
+  }
+`;
+
+/**
+ * Lifted surface: the modal-tier recipe one elevation step above
+ * `panelSurface` — radius-xl + shadow-xl, borderless in normal mode (a
+ * showModal panel sits in the top layer above every lg-tier popover,
+ * so it takes the higher step instead of layering an override on the
+ * lg chrome, which would resolve by stylesheet order and differ
+ * between dev injection and the css split). The radius keeps Dialog's
+ * component-token chain (`--haze-dialog-radius`) so per-component
+ * retheming survives the move; any other consumer leaves the variable
+ * unset and resolves to the xl step. Padding and width bounds stay
+ * call-site deltas.
+ */
+export const panelSurfaceLifted = css`
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--haze-dialog-radius, var(--haze-radius-xl));
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+  box-shadow: var(--haze-shadow-xl);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      var(--haze-shadow-xl),
+      0 0 0 3px var(--haze-color-focus-ring);
+  }
+
+  /* Forced-colors: the panel's opaque background flattens onto Canvas
+     and the surface declares border:none — an open modal would blend
+     into the page. A CanvasText boundary separates the panel from the
+     Canvas behind it (the box-shadow is dropped by the UA), and the
+     squashed focus ring is replaced by a Highlight outline. */
+  @media (forced-colors: active) {
+    border: 1px solid CanvasText;
+
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
   }
 `;
 

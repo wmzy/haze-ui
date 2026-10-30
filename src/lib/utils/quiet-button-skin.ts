@@ -8,7 +8,14 @@ import { css } from '@linaria/core';
  * border-hover + bg-subtle hover wash. Split out of per-component
  * hand-rolls that had drifted into byte-identical copies; the classes
  * ride with every consuming family's css via sharedLayers
- * (split-css.mjs).
+ * (split-css.mjs). The textToggle flavor extends the family to the
+ * undecorated primary-ink text button (Ellipsis's expand, Spoiler's
+ * show more/less).
+ *
+ * Hover arms across the module are :not(:disabled)-guarded (the
+ * library-wide convention — Pagination, TransferCore, tag-skin et al),
+ * so a disabled seat keeps the resting ink without a local re-mute
+ * patch.
  *
  * Drift discipline (field-skin precedent): a declaration only lives
  * here when every consumer ships it identically. Per-site deltas —
@@ -44,7 +51,7 @@ export const quietButton = css`
     background var(--haze-duration-fast),
     border-color var(--haze-duration-fast);
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: var(--haze-color-border-hover);
     background: var(--haze-color-bg-subtle);
   }
@@ -79,7 +86,7 @@ export const quietIconButton = css`
     background var(--haze-duration-fast),
     color var(--haze-duration-fast);
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: var(--haze-color-text);
     background: var(--haze-color-bg-muted);
   }
@@ -87,6 +94,32 @@ export const quietIconButton = css`
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+  }
+`;
+
+/**
+ * The text-toggle flavor: the undecorated primary-ink button — no
+ * border, no fill, primary color over the sans/sm text metrics, the
+ * margin-top seat a reveal affordance keeps under the content it
+ * expands, and the primary-hover ink shift on the guarded hover.
+ * Ellipsis's expand button and Spoiler's show more/less toggle wore
+ * this as per-family hand-rolls. The seat geometry stays local (the
+ * two consumers size padding differently — Ellipsis's zero-pad
+ * inline-flex row, Spoiler's block padding), and Spoiler's hover
+ * underline rides as a local delta arm per the drift discipline
+ * above; padding is deliberately absent here for the same reason.
+ */
+export const textToggle = css`
+  margin-top: var(--haze-space-1);
+  border: none;
+  background: none;
+  color: var(--haze-color-primary);
+  font-family: var(--haze-font-sans);
+  font-size: var(--haze-text-sm);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--haze-color-primary-hover);
   }
 `;
 

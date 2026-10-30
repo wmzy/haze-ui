@@ -7,6 +7,7 @@ import { useControl } from 'react-use-control';
 
 import { useNativeDialogShell } from '../../utils/native-dialog';
 import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
+import { panelSurfaceLifted } from '../../utils/panel-skin';
 
 /**
  * Imperative handle exposed through the React 19 `ref` prop (same API
@@ -99,38 +100,18 @@ type DialogProps = {
   ref?: Ref<DialogHandle>;
 };
 
-const overlay = css`
-  border: none;
-  box-sizing: border-box;
-  border-radius: var(--haze-dialog-radius, var(--haze-radius-xl));
+/**
+ * Panel deltas on the lifted modal surface (`panelSurfaceLifted`,
+ * utils/panel-skin): the modal lane's padding and width bounds, both
+ * behind Dialog's component tokens. Border/radius/shadow chrome,
+ * typography, the focus ring and both forced-colors arms come from
+ * the shared surface — declaration-for-declaration the recipe the
+ * hand-rolled overlay class carried before it converged.
+ */
+const panelDeltas = css`
   padding: var(--haze-dialog-padding, var(--haze-space-6));
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
-  box-shadow: var(--haze-shadow-xl);
   max-width: var(--haze-dialog-width, 480px);
   width: 100%;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow:
-      var(--haze-shadow-xl),
-      0 0 0 3px var(--haze-color-focus-ring);
-  }
-
-  /* Forced-colors: the panel's opaque background flattens onto Canvas
-     and the dialog declares border:none — an open modal would blend
-     into the page. A CanvasText boundary separates the panel from the
-     Canvas behind it (the box-shadow is dropped by the UA), and the
-     squashed focus ring is replaced by a Highlight outline. */
-  @media (forced-colors: active) {
-    border: 1px solid CanvasText;
-
-    &:focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: -2px;
-    }
-  }
 `;
 
 const titleText = css`
@@ -170,7 +151,7 @@ export default function Dialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[overlay, dialogPanelMotion, dialogBackdrop, className, classNames?.root]}
+      x-class={[panelSurfaceLifted, panelDeltas, dialogPanelMotion, dialogBackdrop, className, classNames?.root]}
     >
       {title !== undefined && (
         <h2 id={titleId} data-slot='title' x-class={[titleText, classNames?.header]}>

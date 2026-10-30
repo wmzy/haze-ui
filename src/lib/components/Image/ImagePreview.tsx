@@ -196,10 +196,10 @@ const toolbar = css`
 
 /* Toolbar tools + close: the quietIconButton chrome (borderless,
    muted→text ink, bg-muted hover, keyboard ring) plus the local
-   geometry/typography delta. The disabled arms re-mute the shared wash —
-   quietIconButton's :hover is not guarded by :not(:disabled), so
-   :hover:disabled (0,2,0) outspecifies it instead of trusting source
-   order. */
+   geometry/typography delta. The skin's hover arm is
+   :not(:disabled)-guarded, so a disabled tool keeps the resting muted
+   ink with no local re-mute patch — only the not-allowed cursor stays
+   local. */
 const toolButton = css`
   width: var(--haze-space-8);
   height: var(--haze-space-8);
@@ -217,11 +217,6 @@ const toolButton = css`
 
   &:disabled {
     cursor: not-allowed;
-  }
-
-  &:hover:disabled {
-    background: none;
-    color: var(--haze-color-text-muted);
   }
 `;
 

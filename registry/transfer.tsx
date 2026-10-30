@@ -20,6 +20,7 @@ import { Transfer, TransferCore } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/transfer.css';
+import 'haze-ui/css/checkbox.css';
 
 export { Transfer, TransferCore };
 export type { TransferProps, TransferItem, TransferCoreProps } from 'haze-ui';

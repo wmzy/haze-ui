@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { textToggle } from '../../utils/quiet-button-skin';
 import { useStrings } from '../LocaleProvider';
 import { Tooltip } from '../Tooltip';
 
@@ -42,21 +43,14 @@ const clampBase = css`
   overflow: hidden;
 `;
 
+/* The expand affordance: the shared textToggle chrome
+   (utils/quiet-button-skin — undecorated primary ink + the guarded
+   primary-hover shift) plus the local inline-flex seat and zero
+   padding. */
 const expandBtn = css`
   display: inline-flex;
   align-items: center;
-  margin-top: var(--haze-space-1);
   padding: 0;
-  border: none;
-  background: none;
-  color: var(--haze-color-primary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--haze-color-primary-hover);
-  }
 `;
 
 export default function Ellipsis({
@@ -123,7 +117,7 @@ export default function Ellipsis({
           data-slot="expand-button"
           aria-expanded={expanded}
           onClick={toggle}
-          x-class={[expandBtn]}
+          x-class={[textToggle, expandBtn]}
         >
           {expanded ? strings.collapse : strings.expand}
         </button>
