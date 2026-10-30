@@ -12,6 +12,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { getDirection, useDirection } from '../../utils/direction';
+import { outlineFocusVisible } from '../../utils/focus-ring';
 import { clamp } from '../../utils/math';
 import Button from '../Button/Button';
 import {
@@ -363,7 +364,6 @@ const monthCell = css`
   border-inline-start: 1px solid var(--haze-color-border);
 
   &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: -2px;
   }
 `;
@@ -378,7 +378,9 @@ const monthDay = css`
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-secondary);
   min-inline-size: var(--haze-space-5);
-  padding-block: var(--haze-space-05, 0);
+  /* 2px (half of space-1) has no ladder rung — the steps (1-6, 8, 10, 12,
+     16) skip 05, so the literal stays (InlineEdit's 1.75rem precedent). */
+  padding-block: 2px;
   text-align: center;
 `;
 
@@ -419,7 +421,7 @@ const dayHeaderCell = css`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--haze-space-05, 0);
+  gap: 2px;
   padding-block: var(--haze-space-1);
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-secondary);
@@ -497,7 +499,7 @@ const eventBlock = css`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--haze-space-05, 0);
+  gap: 2px;
   padding: var(--haze-space-1);
   border: none;
   border-inline-start: var(--haze-space-1) solid var(--haze-color-primary);
@@ -515,7 +517,6 @@ const eventBlock = css`
   z-index: var(--haze-z-local-1);
 
   &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: 1px;
   }
 
@@ -536,69 +537,51 @@ const eventTime = css`
   color: var(--haze-color-text-secondary);
 `;
 
-const eventTitle = css`
+/** One-line clip for dense event labels (event blocks, all-day & month chips). */
+const truncate = css`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
-const allDayChip = css`
+/** Chip skeleton shared by the all-day row, month cells, and the month
+ * overflow toggle; the variant classes below carry only their deltas
+ * (outline itself comes from `outlineFocusVisible`, clipping from
+ * `truncate`, both composed via x-class). */
+const chipBase = css`
   border: none;
+  font-size: var(--haze-text-xs);
+  font-family: inherit;
+  padding: 2px var(--haze-space-1);
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline-offset: 1px;
+  }
+`;
+
+/** Event-colored chip (colored bar + pill skin); all-day rows override
+ * the padding to the roomier full step. */
+const allDayChip = css`
   border-inline-start: var(--haze-space-1) solid var(--haze-color-primary);
   border-radius: var(--haze-radius-sm);
   background: var(--haze-color-primary-subtle);
   color: var(--haze-color-text);
-  font-size: var(--haze-text-xs);
-  font-family: inherit;
   padding: var(--haze-space-1);
-  text-align: start;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
-    outline-offset: 1px;
-  }
 `;
 
 const monthChip = css`
-  border: none;
   border-inline-start: var(--haze-space-1) solid var(--haze-color-primary);
   border-radius: var(--haze-radius-sm);
   background: var(--haze-color-primary-subtle);
   color: var(--haze-color-text);
-  font-size: var(--haze-text-xs);
-  font-family: inherit;
-  padding: var(--haze-space-05, 0) var(--haze-space-1);
-  text-align: start;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
-    outline-offset: 1px;
-  }
 `;
 
 const overflowChip = css`
-  border: none;
   background: transparent;
   color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-xs);
-  font-family: inherit;
-  padding: var(--haze-space-05, 0) var(--haze-space-1);
-  text-align: start;
-  cursor: pointer;
   align-self: flex-start;
-
-  &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
-    outline-offset: 1px;
-  }
 
   &:hover {
     color: var(--haze-color-text);
@@ -1035,7 +1018,10 @@ export default function Schedule({
                 type='button'
                 data-slot='event'
                 x-class={[
+                  chipBase,
                   allDayChip,
+                  truncate,
+                  outlineFocusVisible,
                   chipColors[placement.event.color ?? 'primary'],
                   classNames?.event,
                 ]}
@@ -1110,6 +1096,7 @@ export default function Schedule({
                   data-slot='event'
                   x-class={[
                     eventBlock,
+                    outlineFocusVisible,
                     chipColors[placement.event.color ?? 'primary'],
                     dragging && eventDragging,
                     classNames?.event,
@@ -1147,7 +1134,7 @@ export default function Schedule({
                   <span data-slot='event-time' x-class={[eventTime]}>
                     {timeFormatters.time.format(start)}
                   </span>
-                  <span data-slot='event-title' x-class={[eventTitle]}>
+                  <span data-slot='event-title' x-class={[truncate]}>
                     {placement.event.title}
                   </span>
                 </button>
@@ -1227,7 +1214,7 @@ export default function Schedule({
                   data-index={index}
                   data-date={dayKey}
                   data-outside={outside ? '' : undefined}
-                  x-class={[monthCell, outside && monthCellOutside]}
+                  x-class={[monthCell, outlineFocusVisible, outside && monthCellOutside]}
                   tabIndex={isSameDay(day, focusDate) ? 0 : -1}
                   aria-label={timeFormatters.cell.format(day)}
                   onClick={() => onDayClick?.(day)}
@@ -1258,7 +1245,10 @@ export default function Schedule({
                         type='button'
                         data-slot='event'
                         x-class={[
+                          chipBase,
                           monthChip,
+                          truncate,
+                          outlineFocusVisible,
                           chipColors[event.color ?? 'primary'],
                           classNames?.event,
                         ]}
@@ -1276,7 +1266,7 @@ export default function Schedule({
                     <button
                       type='button'
                       data-slot='overflow-chip'
-                      x-class={[overflowChip]}
+                      x-class={[chipBase, overflowChip, outlineFocusVisible]}
                       onClick={(ce) => {
                         ce.stopPropagation();
                         onDayClick?.(day);

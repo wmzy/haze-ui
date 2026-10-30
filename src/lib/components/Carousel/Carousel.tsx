@@ -214,18 +214,24 @@ export default function Carousel({
   const strings = useStrings('carousel');
   const fade = effect === 'fade';
 
+  // 值切换 effect 与回弹（snapBack）共用的平滑滚动路径：目标页不
+  // 存在（空轨道/挂载前）时静默不滚。useCallback 钉住身份——它进
+  // 了下方 effect 的依赖（Dialog 的 [flipOpen] 先例），而 ref 读取
+  // 不构成响应依赖。
+  const scrollSlideTo = useCallback((index: number) => {
+    const el = trackRef.current;
+    const child = el?.children[index] as HTMLElement | undefined;
+    child?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    });
+  }, []);
+
   useEffect(() => {
     if (fade) return; // 值切换即完成过渡，fade 不经过滚动 API
-    const el = trackRef.current;
-    if (!el) return;
-    const child = el.children[current] as HTMLElement | undefined;
-    if (child)
-      child.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'start',
-      });
-  }, [current, fade]);
+    scrollSlideTo(current);
+  }, [current, fade, scrollSlideTo]);
 
   // useCallback 保证句柄身份稳定（Dialog 的 [flipOpen] 依赖先例）。
   const goPrev = useCallback(
@@ -318,13 +324,7 @@ export default function Carousel({
   /** 平滑滚回当前页（回弹/取消路径；reduced-motion 下时长为 0）。 */
   const snapBack = () => {
     if (fade) return;
-    const el = trackRef.current;
-    const child = el?.children[current] as HTMLElement | undefined;
-    child?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'start',
-    });
+    scrollSlideTo(current);
   };
 
   const handleTrackPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {

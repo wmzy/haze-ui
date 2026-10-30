@@ -38,6 +38,7 @@ import { useRef } from 'react';
 import { computeFloatingPosition, mirrorPlacement } from './utils/collision';
 import { floatingPlacementClasses, placeFloatingPanel } from './utils/floating';
 import { useMenuKeyboard } from './utils/menuKeyboard';
+import { stubScrollIntoView } from './utils/testing/stub-scroll-into-view';
 
 // Direct component-file imports, mirroring ssr-render.node.test.tsx (the
 // ./index barrel drags in tokens/colors.ts, whose Linaria interpolation is
@@ -261,10 +262,8 @@ describe('RTL keyboard mirroring (dir=rtl)', () => {
 
   it('mirrors Carousel arrows: ArrowLeft advances the slide', async () => {
     // jsdom does not implement scrollIntoView (same mock as
-    // Carousel.test.tsx); restored afterwards — it is undefined in jsdom.
-    const proto = Element.prototype as {scrollIntoView?: (() => void) | undefined};
-    const scrollIntoView = proto.scrollIntoView;
-    proto.scrollIntoView = vi.fn();
+    // Carousel.test.tsx); the shared stub restores the prototype.
+    const { restore } = stubScrollIntoView();
     const user = userEvent.setup();
     try {
       renderRtl(<CarouselHarness />);
@@ -275,7 +274,7 @@ describe('RTL keyboard mirroring (dir=rtl)', () => {
       await user.keyboard('{ArrowRight}');
       expect(screen.getByTestId('slide')).toHaveTextContent('0');
     } finally {
-      proto.scrollIntoView = scrollIntoView;
+      restore();
     }
   });
 

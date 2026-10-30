@@ -7,7 +7,7 @@ import { css } from '@linaria/core';
 
 import { mergeRefs } from '../../utils/refs';
 import { srOnly } from '../../utils/sr-only';
-import { focusWithinRing } from '../../utils/field-skin';
+import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -40,20 +40,18 @@ type InlineCompletionProps = {
   'value' | 'onChange' | 'size' | 'defaultValue'
 >;
 
+/* Field surface: the border/radius/fill triple and the focus arm come
+   from utils/field-skin (fieldChrome + focusWithinRing composed
+   below) — the host input inside owns the focus, the wrapper paints
+   the ring. Local here: layout, the mono font and the surface
+   transition. */
 const wrapper = css`
   position: relative;
   display: flex;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   font-family: var(--haze-font-mono);
   transition:
     border-color var(--haze-duration-fast),
     box-shadow var(--haze-duration-fast);
-
-  /* Focus ring: the shared field wrapper arm (utils/field-skin's
-     focusWithinRing) composed below — the host input inside owns the
-     focus, the wrapper paints the ring. */
 `;
 
 /* The host paints above the ghost (both positioned, host later in DOM)
@@ -216,7 +214,7 @@ export default function InlineCompletion({
   };
 
   return (
-    <div data-slot='inline-completion' x-class={[wrapper, focusWithinRing, className]}>
+    <div data-slot='inline-completion' x-class={[fieldChrome, focusWithinRing, wrapper, className]}>
       {active && (
         <div
           ref={ghostRef}

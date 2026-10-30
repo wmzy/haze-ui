@@ -13,6 +13,8 @@ import { useState, useEffect } from 'react';
 import { useStrings } from '../LocaleProvider';
 import { Progress } from '../Progress';
 
+import { outlineFocusVisible } from '../../utils/focus-ring';
+
 type UploadListProps = {
   /** Tracked rows, in value order. */
   entries: UploadEntry[];
@@ -45,6 +47,40 @@ type UploadListProps = {
   ref?: Ref<HTMLUListElement>;
 };
 
+/** Inline glyph geometry shared by the default rows and the
+ * picture-card cells — `currentColor` strokes over viewBox 0 0 24 24.
+ * Inner nodes only where the two call sites size the `<svg>`
+ * differently; `retryGlyph` is the whole svg because both sites draw
+ * it at 16px. Geometry is pinned by the e2e visual baselines. */
+const errorGlyph = (
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </>
+);
+
+const retryGlyph = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10" />
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+  </svg>
+);
+
+const fileGlyph = (
+  <>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+  </>
+);
+
+const xGlyph = (
+  <>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </>
+);
+
 const listBase = css`
   display: flex;
   flex-direction: column;
@@ -74,12 +110,17 @@ const rowBase = css`
   min-width: 0;
 `;
 
-const nameClass = css`
-  flex: 1;
-  min-width: 0;
+/** Single-line ellipsis clamp shared by the row name and the
+ * picture-card fallback name. */
+const truncate = css`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+`;
+
+const nameClass = css`
+  flex: 1;
+  min-width: 0;
 `;
 
 const statusIcon = css`
@@ -123,8 +164,8 @@ const actionButton = css`
     color: var(--haze-color-text);
   }
 
+  /* the outline itself composes shared outlineFocusVisible */
   &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: 1px;
   }
 `;
@@ -165,10 +206,10 @@ const cardRemove = css`
     color: var(--haze-color-danger);
   }
 
-  /* keyboard users never hover: reveal on focus itself */
+  /* keyboard users never hover: reveal on focus itself; the outline
+     itself composes shared outlineFocusVisible */
   &:focus-visible {
     opacity: 1;
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: 1px;
   }
 `;
@@ -219,9 +260,6 @@ const cardFallback = css`
 
 const cardFallbackName = css`
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-secondary);
 `;
@@ -303,8 +341,8 @@ const previewHit = css`
   background: transparent;
   cursor: zoom-in;
 
+  /* the outline itself composes shared outlineFocusVisible */
   &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: 1px;
   }
 `;
@@ -378,13 +416,11 @@ function DefaultRow({
         {status === 'error' && (
           <span data-slot='icon' x-class={[statusIcon, errorIcon]} role="img" aria-label={error ?? strings.error}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
+              {errorGlyph}
             </svg>
           </span>
         )}
-        <span data-slot='name' x-class={[nameClass]} title={file.name}>
+        <span data-slot='name' x-class={[nameClass, truncate]} title={file.name}>
           {file.name}
         </span>
         {status === 'uploading' && (
@@ -403,14 +439,13 @@ function DefaultRow({
           <button
             type="button"
             data-slot='cancel-button'
-            x-class={[actionButton]}
+            x-class={[actionButton, outlineFocusVisible]}
             aria-label={strings.cancel}
             data-action="cancel"
             onClick={actions.cancel}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+              {xGlyph}
             </svg>
           </button>
         ) : (
@@ -419,21 +454,18 @@ function DefaultRow({
               <button
                 type="button"
                 data-slot='retry-button'
-                x-class={[actionButton]}
+                x-class={[actionButton, outlineFocusVisible]}
                 aria-label={strings.retry}
                 data-action="retry"
                 onClick={actions.retry}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="23 4 23 10 17 10" />
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                </svg>
+                {retryGlyph}
               </button>
             )}
             <button
               type="button"
               data-slot='remove-button'
-              x-class={[actionButton]}
+              x-class={[actionButton, outlineFocusVisible]}
               aria-label={removeLabel ?? strings.remove}
               data-action="remove"
               onClick={actions.remove}
@@ -478,8 +510,7 @@ function PictureThumb({
     />
   ) : (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
+      {fileGlyph}
     </svg>
   );
   return (
@@ -488,7 +519,7 @@ function PictureThumb({
         <button
           type="button"
           data-slot='preview'
-          x-class={[previewHit]}
+          x-class={[previewHit, outlineFocusVisible]}
           aria-label={file.name}
           data-action="preview"
           onClick={() => onPreview(file)}
@@ -542,10 +573,9 @@ function PictureCard({
       aria-label={onPreview ? undefined : file.name}
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
+        {fileGlyph}
       </svg>
-      <span data-slot='name' x-class={[cardFallbackName]} title={file.name}>
+      <span data-slot='name' x-class={[cardFallbackName, truncate]} title={file.name}>
         {file.name}
       </span>
     </span>
@@ -557,7 +587,7 @@ function PictureCard({
         <button
           type="button"
           data-slot='preview'
-          x-class={[previewHit]}
+          x-class={[previewHit, outlineFocusVisible]}
           aria-label={file.name}
           data-action="preview"
           onClick={() => onPreview(file)}
@@ -576,24 +606,19 @@ function PictureCard({
       {status === 'error' && (
         <div data-slot='error-overlay' x-class={[cardErrorOverlay]}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
+            {errorGlyph}
           </svg>
           <span>{error ?? strings.error}</span>
           {isFile && error == null && (
             <button
               type="button"
               data-slot='retry-button'
-              x-class={[actionButton]}
+              x-class={[actionButton, outlineFocusVisible]}
               aria-label={strings.retry}
               data-action="retry"
               onClick={actions.retry}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 4 23 10 17 10" />
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-              </svg>
+              {retryGlyph}
             </button>
           )}
         </div>
@@ -601,15 +626,14 @@ function PictureCard({
       <button
         type="button"
         data-slot='remove-button'
-        x-class={[cardRemove]}
+        x-class={[cardRemove, outlineFocusVisible]}
         data-card-remove
         aria-label={removeLabel ?? strings.remove}
         data-action="remove"
         onClick={actions.remove}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
+          {xGlyph}
         </svg>
       </button>
     </>

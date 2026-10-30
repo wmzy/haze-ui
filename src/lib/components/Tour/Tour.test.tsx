@@ -4,15 +4,17 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import { stubScrollIntoView } from '../../utils/testing/stub-scroll-into-view';
 
 import Tour from './Tour';
 
 // jsdom does not implement scrollIntoView (Carousel precedent); the stub
 // is kept in a variable so call assertions never dereference the method.
-const scrollIntoView = vi.fn();
-beforeEach(() => {
-  Element.prototype.scrollIntoView = scrollIntoView;
-});
+// clearMocks (vitest default) resets it between tests; the prototype is
+// restored after the file's last test.
+const { fn: scrollIntoView, restore: restoreScrollIntoView } =
+  stubScrollIntoView();
+afterAll(restoreScrollIntoView);
 
 const steps: TourProps['steps'] = [
   { target: '#tour-a', title: 'First stop', content: 'Step one content' },

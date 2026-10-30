@@ -81,6 +81,14 @@ const thumb = css`
   display: block;
 `;
 
+/** Single-line ellipsis clamp shared by the extension badge and the
+ * file name. */
+const truncate = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 const extBadge = css`
   position: absolute;
   bottom: 0;
@@ -95,9 +103,6 @@ const extBadge = css`
   padding: 0 var(--haze-space-1);
   background: var(--haze-color-bg-muted);
   color: var(--haze-color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 const info = css`
@@ -111,9 +116,6 @@ const info = css`
 const nameClass = css`
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 const meta = css`
@@ -287,14 +289,14 @@ export default function FilePreview({
         <span data-slot='icon' x-class={[thumbWrap]}>
           <FileGlyph />
           {extension && (
-            <span data-slot='badge' x-class={[extBadge]} aria-hidden='true'>
+            <span data-slot='badge' x-class={[extBadge, truncate]} aria-hidden='true'>
               {extension}
             </span>
           )}
         </span>
       )}
       <div data-slot='body' x-class={[info]}>
-        <span data-slot='name' x-class={[nameClass]} title={file.name}>
+        <span data-slot='name' x-class={[nameClass, truncate]} title={file.name}>
           {file.name}
         </span>
         <div data-slot='meta' x-class={[meta]}>

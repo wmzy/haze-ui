@@ -13,6 +13,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { quantize } from '../../utils/math';
+import { srOnly } from '../../utils/sr-only';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import {
@@ -230,15 +231,6 @@ const notice = css`
   border-radius: var(--haze-radius-md);
   color: var(--haze-color-text-muted);
   font-size: var(--haze-text-sm);
-`;
-
-const srOnly = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 `;
 
 /** Inline percentage free of binary-float noise (0.1 · 100 must render

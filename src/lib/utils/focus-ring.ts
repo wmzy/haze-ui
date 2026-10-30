@@ -31,3 +31,27 @@ export const focusRingVisible = css`
     }
   }
 `;
+
+/**
+ * Outline-only focus indicator — the bare `:focus-visible` outline
+ * arm that five families (Schedule, Upload, JsonView, Splitter, Toast)
+ * wore as byte-identical copies. Compose where the box-shadow ring
+ * would repaint the surface (dense grids, overlaid glyphs) or where
+ * the site already paints its own box-shadow:
+ * `x-class={[cell, outlineFocusVisible]}`.
+ *
+ * Per-site extras (UploadList's focus-reveal `opacity`, any
+ * `outline-offset`) stay local as additive arms — they don't conflict
+ * with the outline declaration, so rule order never matters.
+ *
+ * No forced-colors arm on purpose: the incumbent sites never declared
+ * one and forced-colors already forces outlines to system colors.
+ *
+ * Linaria CSS — every consumer family must be registered under
+ * 'utils/focus-ring' in scripts/split-css.mjs `sharedLayers`.
+ */
+export const outlineFocusVisible = css`
+  &:focus-visible {
+    outline: 2px solid var(--haze-color-focus-ring);
+  }
+`;

@@ -1,10 +1,10 @@
 import type { ReactNode, Ref } from 'react';
 
-import { css } from '@linaria/core';
-
 import {
+  pickerOptionActive,
   pickerOptionRow,
   pickerOptionRowComfortable,
+  pickerOptionSelected,
 } from '../../utils/picker-trigger';
 
 type ComboboxOptionProps<T extends string | number = string> = {
@@ -40,15 +40,6 @@ type ComboboxOptionProps<T extends string | number = string> = {
   children: ReactNode;
 };
 
-const highlightedStyle = css`
-  background: var(--haze-color-bg-subtle);
-`;
-
-const selectedStyle = css`
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-primary);
-`;
-
 export default function ComboboxOption<T extends string | number = string>({
   value,
   highlighted = false,
@@ -79,8 +70,8 @@ export default function ComboboxOption<T extends string | number = string>({
       x-class={[
         pickerOptionRow,
         pickerOptionRowComfortable,
-        highlighted && highlightedStyle,
-        selected && selectedStyle,
+        highlighted && pickerOptionActive,
+        selected && pickerOptionSelected,
         className,
       ]}
       onClick={() => {

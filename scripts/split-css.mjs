@@ -101,6 +101,7 @@ const sharedLayers = {
     'color-picker',
     'file-input',
     'file-preview',
+    'image-crop',
     'inline-completion',
     'otp-input',
     'rating',
@@ -339,19 +340,26 @@ const sharedLayers = {
     'float-button',
     'image',
     'inline-citation',
+    'json-view',
     'navigation-menu',
     'pagination',
     'rating',
+    'schedule',
     'sidebar',
     'signature',
+    'splitter',
     'status-bar',
     'switch',
     'tab-bar',
     'tabs',
     'time-picker',
+    'toast',
     'toggle',
     'toolbar',
   ],
+  // (utils/focus-ring.ts also exports outlineFocusVisible — the bare
+  // outline arm Schedule/Upload/JsonView/Splitter/Toast wear; those
+  // families are in the list above.)
   // Shared attached-row seam (utils/seam-skin.ts): the -1px seam +
   // corner collapse + focus z-lift recipe InputGroup/PhoneInput rows
   // and ButtonGroup (both orientations) wear.

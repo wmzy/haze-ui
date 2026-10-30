@@ -285,6 +285,39 @@ export default function SelectCore<T extends string | number = string>({
     return raw !== undefined ? raw : (dom as T);
   };
 
+  // The native single-select surface both terminal paths paint: the
+  // element, its prop wiring and the option children are identical, so
+  // the JSX is declared here once — only the ref (the clearable path
+  // merges the internal focus-restore handle) and the keydown chain
+  // (the clearable path prepends the Backspace-clear branch) are
+  // passed in. `onKeyDown` stays ahead of the rest spread: the
+  // clearable caller spreads a keydown-less rest, the plain caller
+  // lets the consumer's handler (inside `rest`) win — the extraction
+  // order the keyboard tests pin. The param keeps the name `rest` so
+  // the rest-forward source contract (rest-forward.test.ts) sees the
+  // spread.
+  type SelectRest = typeof rest;
+  const selectElement = (
+    selectRefProp: Ref<HTMLSelectElement> | undefined,
+    keyDown: ComponentPropsWithoutRef<'select'>['onKeyDown'],
+    rest: SelectRest
+  ) => (
+    <select
+      ref={selectRefProp}
+      data-slot='trigger'
+      x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
+      value={selectedValue}
+      onChange={(e) => {
+        onChange(valueFromDom(e.target.value));
+        onNativeChange?.(e);
+      }}
+      onKeyDown={keyDown}
+      {...rest}
+    >
+      {children}
+    </select>
+  );
+
   // Clearable single select without searchable: keep the native element
   // and overlay the affordance. The consumer's onKeyDown (still inside
   // `rest`) must run after the Backspace-clear branch, so it is pulled
@@ -297,16 +330,9 @@ export default function SelectCore<T extends string | number = string>({
         x-class={nativeClearWrap}
         data-clearable={selectedValue !== '' || undefined}
       >
-        <select
-          ref={setNativeSelectRef}
-          data-slot='trigger'
-          x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
-          value={selectedValue}
-          onChange={(e) => {
-            onChange(valueFromDom(e.target.value));
-            onNativeChange?.(e);
-          }}
-          onKeyDown={(e: ReactKeyboardEvent<HTMLSelectElement>) => {
+        {selectElement(
+          setNativeSelectRef,
+          (e: ReactKeyboardEvent<HTMLSelectElement>) => {
             // Keyboard parity for the pointer-only × (the same
             // rationale as the floating trigger's Backspace clear).
             if (e.key === 'Backspace' && selectedValue !== '') {
@@ -315,11 +341,9 @@ export default function SelectCore<T extends string | number = string>({
               return;
             }
             consumerKeyDown?.(e);
-          }}
-          {...restWithoutKeyDown}
-        >
-          {children}
-        </select>
+          },
+          restWithoutKeyDown
+        )}
         {selectedValue !== '' && (
           <span
             aria-hidden='true'
@@ -346,19 +370,11 @@ export default function SelectCore<T extends string | number = string>({
 
   return (
     <span x-class={nativeWrap}>
-      <select
-        ref={ref as Ref<HTMLSelectElement> | undefined}
-        data-slot='trigger'
-        x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
-        value={selectedValue}
-        onChange={(e) => {
-          onChange(valueFromDom(e.target.value));
-          onNativeChange?.(e);
-        }}
-        {...rest}
-      >
-        {children}
-      </select>
+      {selectElement(
+        ref as Ref<HTMLSelectElement> | undefined,
+        undefined,
+        rest
+      )}
       <PickerCaret x-class={pickerNativeCaret} />
     </span>
   );

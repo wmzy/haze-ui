@@ -6,6 +6,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import { stubScrollIntoView } from '../../utils/testing/stub-scroll-into-view';
 
 import Tree from './Tree';
 import { useTree } from './useTree';
@@ -178,15 +179,13 @@ describe('useTree', () => {
     render(<Harness api={api} />);
 
     const scrolled: HTMLElement[] = [];
-    const hadOwn = Object.prototype.hasOwnProperty.call(
-      Element.prototype,
-      'scrollIntoView'
-    );
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- test-local capture: save & restore prototype method
-    const original = Element.prototype.scrollIntoView;
-    Element.prototype.scrollIntoView = function capture(this: HTMLElement) {
+    // jsdom ships no scrollIntoView; capture the scrolled elements
+    // through the shared stub (restores the prototype afterwards).
+    const { restore } = stubScrollIntoView(function capture(
+      this: HTMLElement
+    ) {
       scrolled.push(this);
-    };
+    });
     try {
       // Collapsed ancestors and no autoExpand: the request stays pending,
       // nothing expands, nothing scrolls.
@@ -199,10 +198,7 @@ describe('useTree', () => {
       expect(scrolled).toHaveLength(1);
       expect(scrolled[0]!.getAttribute('data-tree-key')).toBe('a-1-x');
     } finally {
-      if (hadOwn) Element.prototype.scrollIntoView = original;
-      else
-        delete (Element.prototype as { scrollIntoView?: unknown })
-          .scrollIntoView;
+      restore();
     }
   });
 

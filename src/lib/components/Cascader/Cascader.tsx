@@ -23,6 +23,7 @@ import {
   pickerCaret,
   pickerEmptyBlock,
   pickerLoadingBlock,
+  pickerOptionSelected,
   pickerSearchInput,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
@@ -286,12 +287,6 @@ const item = css`
   text-align: start;
   cursor: pointer;
   transition: background var(--haze-duration-fast);
-`;
-
-/** Option on the active drill-down path (parent columns). */
-const itemInPath = css`
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-primary);
 `;
 
 const itemLabel = css`
@@ -699,7 +694,7 @@ export default function Cascader({
         aria-expanded={hasChildren ? inPath : undefined}
         aria-setsize={virtual ? columns[level]?.length : undefined}
         aria-posinset={virtual ? index + 1 : undefined}
-        x-class={[menuOptionStates, item, inPath && itemInPath, virtual && pickerVirtualRow, classNames?.option]}
+        x-class={[menuOptionStates, item, inPath && pickerOptionSelected, virtual && pickerVirtualRow, classNames?.option]}
         onClick={() => activate(option, level)}
         onMouseEnter={() => handleItemEnter(option, level)}
       >

@@ -18,7 +18,9 @@ import {
   pickerListbox,
   pickerListboxVirtual,
   pickerLoadingBlock,
+  pickerOptionActive,
   pickerOptionRow,
+  pickerOptionSelected,
   pickerPanelWidth,
   pickerSearchInput,
   pickerTrigger,
@@ -315,20 +317,6 @@ const LISTBOX_MAX_HEIGHT = 200;
  * to fill it (`pickerVirtualRow`, utils/picker-trigger), so the two
  * cannot drift apart. */
 const OPTION_ROW_HEIGHT = 29;
-
-/** The shared option-row skeleton (`pickerOptionRow`,
- * utils/picker-trigger) — this file adds only the highlighted state
- * (the keyboard highlight is not hover) and the selected styles. */
-const optionActive = css`
-  background: var(--haze-color-bg-subtle);
-`;
-
-/** Single-mode selected option: the multiple mode shows its visual
- * checkbox instead — one selectedness cue per mode, never both. */
-const optionSelected = css`
-  color: var(--haze-color-primary);
-  font-weight: var(--haze-weight-medium);
-`;
 
 /**
  * Purely visual checkbox in front of each option, mirroring
@@ -762,8 +750,8 @@ export default function SelectFloating<T extends string | number = string>({
         aria-posinset={i + 1}
         x-class={[
           pickerOptionRow,
-          i === activeIndex && optionActive,
-          !isMulti && isSelected && optionSelected,
+          i === activeIndex && pickerOptionActive,
+          !isMulti && isSelected && pickerOptionSelected,
           virtual && pickerVirtualRow,
           classNames?.option,
         ]}

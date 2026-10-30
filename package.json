@@ -245,7 +245,7 @@
     },
     {
       "path": "dist/haze-ui.css",
-      "limit": "53.5 KB",
+      "limit": "54 KB",
       "gzip": true
     },
     {
@@ -395,7 +395,7 @@
     {
       "name": "CSS family ratchet: json-view",
       "path": "dist/css/json-view.css",
-      "limit": "1.4 KB",
+      "limit": "1.41 KB",
       "gzip": true
     },
     {

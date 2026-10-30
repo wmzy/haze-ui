@@ -22,7 +22,8 @@ import { pickerFieldInput } from './field-skin';
  * the virtual row stretch, the searchable-panel search input
  * (Select/Cascader/TreeSelect), the loading/empty state blocks, the
  * group-heading typography, the option-row skeleton (+ density
- * variant), and the readonly input trigger the date/time families
+ * variant, highlighted/selected decorations), and the readonly input
+ * trigger the date/time families
  * anchor their popup panels on (PickerInputTrigger). The chip-row
  * affordances (chip capsule skin, pointer-only remove × and clear
  * affordance, the chips + overflow-badge JSX) live next door in
@@ -37,8 +38,10 @@ import { pickerFieldInput } from './field-skin';
  * had), Select's tags-box focus delta (`:focus, :focus-within` for
  * the box whose inline input owns focus, broader than the shared
  * `:focus-visible`), per-site caret deltas (centering, inline-end
- * push), panel paddings/radius deltas and the per-family
- * highlighted/selected decorations. The native-select skin's
+ * push), panel paddings/radius deltas and Select's multiple-mode
+ * checkbox visual (the only selectedness decoration still local —
+ * choice-skin keeps its decorations local by design). The
+ * native-select skin's
  * hover/focus/disabled arms are shared verbatim — SelectCore and
  * ModelPicker agree token for token.
  */
@@ -278,8 +281,9 @@ export const pickerGroupLabel = css`
 /**
  * Option-row skeleton of the picker listboxes (Select's option rows,
  * Combobox's options): row layout, typography, cursor and the
- * hover/active/disabled arms. Selected/highlighted decorations stay
- * local per family (Select's checkbox visual included — choice-skin
+ * hover/active/disabled arms. The highlighted/selected decorations
+ * live just below (`pickerOptionActive`/`pickerOptionSelected`);
+ * Select's multiple-mode checkbox visual stays local (choice-skin
  * keeps its decorations local by design).
  */
 export const pickerOptionRow = css`
@@ -318,6 +322,29 @@ export const pickerOptionRow = css`
 export const pickerOptionRowComfortable = css`
   padding: var(--haze-space-2) var(--haze-space-3);
   transition: background var(--haze-duration-fast);
+`;
+
+/**
+ * Highlighted (keyboard-active) option row over the
+ * `pickerOptionRow` skeleton: the bg-subtle wash — the keyboard
+ * highlight, not hover. Select, Combobox ride this layer already
+ * via sharedLayers (their copies were byte-identical).
+ */
+export const pickerOptionActive = css`
+  background: var(--haze-color-bg-subtle);
+`;
+
+/**
+ * Selected option decoration: medium weight plus the primary tint —
+ * Select's single mode, Combobox's options and Cascader's active
+ * drill-down path (byte-identical copies before this module; the
+ * declaration order differs in Select's copy, immaterial — the two
+ * longhands never contend). Select's multiple mode shows its local
+ * checkbox visual instead — one selectedness cue per mode.
+ */
+export const pickerOptionSelected = css`
+  font-weight: var(--haze-weight-medium);
+  color: var(--haze-color-primary);
 `;
 
 /**

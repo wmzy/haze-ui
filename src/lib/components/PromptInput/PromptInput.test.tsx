@@ -2,6 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import { stubScrollIntoView } from '../../utils/testing/stub-scroll-into-view';
+
 import LocaleProvider from '../LocaleProvider';
 
 import PromptInput from './PromptInput';
@@ -212,14 +214,9 @@ describe('PromptInput', () => {
 
   it('scrolls the keyboard highlight into view', async () => {
     const user = userEvent.setup();
-    const scrollIntoView = vi.fn();
-    // jsdom ships no scrollIntoView; stub it on the prototype for the
-    // duration of the test and restore (remove) afterwards.
-    const proto = window.HTMLElement.prototype as {
-      scrollIntoView?: (arg?: unknown) => void;
-    };
-    const original = proto.scrollIntoView;
-    proto.scrollIntoView = scrollIntoView;
+    // jsdom ships no scrollIntoView; the shared stub restores the
+    // prototype afterwards.
+    const { fn: scrollIntoView, restore } = stubScrollIntoView();
     try {
       render(<PromptInput getSuggestions={filterPeople} />);
       const textarea = screen.getByRole('textbox');
@@ -231,8 +228,7 @@ describe('PromptInput', () => {
       await user.keyboard('{ArrowDown}');
       expect(scrollIntoView).toHaveBeenCalledTimes(2);
     } finally {
-      if (original === undefined) delete proto.scrollIntoView;
-      else proto.scrollIntoView = original;
+      restore();
     }
   });
 
