@@ -28,6 +28,7 @@ import {
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
 import { usePendingFocus } from '../../utils/use-pending-focus';
 import { useSearchReport } from '../../utils/use-search-report';
@@ -167,13 +168,11 @@ const trigger = css`
   text-align: start;
 `;
 
-/** Path label row: truncates instead of growing the trigger sideways. */
+/** Path label row: truncates (shared truncate, utils/truncate,
+ * composed at the call site) instead of growing the trigger sideways. */
 const triggerValue = css`
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-align: start;
 `;
 
@@ -289,12 +288,11 @@ const item = css`
   transition: background var(--haze-duration-fast);
 `;
 
+/** Column item label — the clipping contract rides the shared truncate
+ * class (utils/truncate), composed at the call site. */
 const itemLabel = css`
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 `;
 
 // ---------------------------------------------------------------------------
@@ -698,7 +696,7 @@ export default function Cascader({
         onClick={() => activate(option, level)}
         onMouseEnter={() => handleItemEnter(option, level)}
       >
-        <span data-slot='label' x-class={[itemLabel, classNames?.label]}>{option.label}</span>
+        <span data-slot='label' x-class={[truncate, itemLabel, classNames?.label]}>{option.label}</span>
         {hasChildren && (
           <span role='img' data-slot='icon' x-class={[pickerCaret, classNames?.icon]} aria-label={strings.expand}>
             <ChevronRight />
@@ -762,7 +760,7 @@ export default function Cascader({
         caretClassName={classNames?.icon}
         x-class={[trigger, classNames?.trigger]}
       >
-        <span data-slot='value' x-class={[triggerValue, classNames?.value]}>
+        <span data-slot='value' x-class={[truncate, triggerValue, classNames?.value]}>
           {selectedPath.length === 0 ? (
             <span data-slot='placeholder' x-class={[triggerPlaceholder, classNames?.placeholder]}>{placeholder}</span>
           ) : (

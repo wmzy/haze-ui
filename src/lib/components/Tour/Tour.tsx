@@ -11,6 +11,7 @@ import { computeFloatingPosition, resolvePadding } from '../../utils/collision';
 import { presenceOverlayFade } from '../../utils/dialog-skin';
 import { getDirection } from '../../utils/direction';
 import { Presence } from '../../utils/presence';
+import { addViewportPlacementListener } from '../../utils/viewport-placement';
 import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -350,23 +351,8 @@ export default function Tour({
     place();
 
     // Viewport movement re-places card and spotlight, rAF-throttled so a
-    // scroll storm costs at most one placement per frame. Scroll does not
-    // bubble, but it captures down to window.
-    let raf = 0;
-    const onViewportChange = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        place();
-      });
-    };
-    window.addEventListener('resize', onViewportChange);
-    window.addEventListener('scroll', onViewportChange, true);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener('resize', onViewportChange);
-      window.removeEventListener('scroll', onViewportChange, true);
-    };
+    // scroll storm costs at most one placement per frame.
+    return addViewportPlacementListener(place, { throttle: true });
   }, [open, steps, index, total, placement]);
 
   // Focus lands on the card (not a button) once per step: a stable landing

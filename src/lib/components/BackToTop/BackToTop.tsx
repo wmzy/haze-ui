@@ -48,7 +48,7 @@ const button = css`
   cursor: pointer;
   box-shadow: var(--haze-shadow-lg);
   font-size: var(--haze-text-lg);
-  transition: opacity var(--haze-duration-normal), transform var(--haze-duration-normal);
+  transition: opacity var(--haze-duration-normal), transform var(--haze-duration-normal), visibility var(--haze-duration-normal);
 
   &:hover {
     transform: translateY(-2px);
@@ -56,6 +56,12 @@ const button = css`
 `;
 
 const hidden = css`
+  /* visibility, not just opacity/pointer-events: an invisible button
+     must also leave the tab order and the a11y tree. It rides the
+     transition above — discrete interpolation keeps it visible for
+     any t in (0,1), so the fade-out finishes before the button
+     disappears and the reveal flips immediately. */
+  visibility: hidden;
   opacity: 0;
   pointer-events: none;
   transform: translateY(1rem);

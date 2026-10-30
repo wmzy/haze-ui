@@ -4,7 +4,11 @@
  * class declaration is ever split across modules (dev CSS injection
  * order and the dist split disagree; only same-file rules may cascade).
  * Sibling of Calendar.tsx — split-css groups this dir into the
- * 'calendar' family automatically. */
+ * 'calendar' family automatically.
+ *
+ * No keyboard focus ring lives here: headerBtn/titleBtn/dayBtn wear
+ * focusRingVisible (utils/focus-ring.ts) composed at their x-class
+ * sites in Calendar.tsx and grids.tsx. */
 import { css } from '@linaria/core';
 
 export const calendarWrapper = css`
@@ -35,11 +39,6 @@ export const headerBtn = css`
 
   &:hover {
     background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -76,11 +75,6 @@ export const titleBtn = css`
 
   &:hover {
     background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -153,11 +147,6 @@ export const dayBtn = css`
 
   &:hover {
     background: var(--haze-color-bg-subtle);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {

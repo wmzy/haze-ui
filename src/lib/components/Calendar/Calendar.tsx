@@ -26,6 +26,7 @@ import {
   parseYearValue,
   resolveWeekStart,
 } from '../../utils/date-math';
+import { focusRingVisible } from '../../utils/focus-ring';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -480,7 +481,7 @@ export default function Calendar({
       ref={monthTitleRef}
       data-slot='title'
       type='button'
-      x-class={[titleBtn, headerTitle, classNames?.title]}
+      x-class={[titleBtn, focusRingVisible, headerTitle, classNames?.title]}
       aria-haspopup='grid'
       aria-expanded={panelView === 'months'}
       onClick={panelView === 'months' ? closeMonthsView : openMonthsView}
@@ -493,7 +494,7 @@ export default function Calendar({
       ref={yearTitleRef}
       data-slot='title'
       type='button'
-      x-class={[titleBtn, headerTitle, classNames?.title]}
+      x-class={[titleBtn, focusRingVisible, headerTitle, classNames?.title]}
       aria-haspopup='grid'
       aria-expanded={panelView === 'years'}
       onClick={panelView === 'years' ? closeYearsView : openYearsFromHeader}
@@ -550,6 +551,7 @@ export default function Calendar({
       type='button'
       x-class={[
         headerBtn,
+        focusRingVisible,
         slot === 'prev' ? classNames?.prev : classNames?.next,
       ]}
       onClick={onClick}
@@ -621,7 +623,7 @@ export default function Calendar({
             <button
               data-slot='title'
               type='button'
-              x-class={[titleBtn, headerTitle, classNames?.title]}
+              x-class={[titleBtn, focusRingVisible, headerTitle, classNames?.title]}
               aria-haspopup='grid'
               onClick={openYearsFromMonths}
             >
@@ -762,7 +764,7 @@ export default function Calendar({
               ref={yearTitleRef}
               data-slot='title'
               type='button'
-              x-class={[titleBtn, headerTitle, classNames?.title]}
+              x-class={[titleBtn, focusRingVisible, headerTitle, classNames?.title]}
               aria-haspopup='grid'
               aria-expanded={modeYearsOpen}
               onClick={modeYearsOpen ? closeModeYears : openModeYears}
@@ -774,7 +776,7 @@ export default function Calendar({
             <button
               data-slot='today-button'
               type='button'
-              x-class={[headerBtn, classNames?.todayButton]}
+              x-class={[headerBtn, focusRingVisible, classNames?.todayButton]}
               onClick={() => {
                 if (drilled) setModeYearsOpen(false);
                 goToday();
@@ -822,7 +824,7 @@ export default function Calendar({
           <button
             data-slot='today-button'
             type='button'
-            x-class={[headerBtn, classNames?.todayButton]}
+            x-class={[headerBtn, focusRingVisible, classNames?.todayButton]}
             onClick={goToday}
           >
             {strings.today}

@@ -4,6 +4,8 @@ import type { ControlOrValue } from 'react-use-control';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { warnItemsChildrenConflict } from '../../utils/warn-items-children';
+
 import { CheckboxCore } from '../Checkbox';
 
 type TaskListProps = {
@@ -201,9 +203,7 @@ function TaskList({ items, children, className, ...rest }: TaskListProps) {
     // Dev-time guard rather than a throw: rendering continues with the
     // items path so a partially-migrated call site still shows tasks,
     // while the console names the contract breach.
-    console.error(
-      '[haze-ui] TaskList: `items` and compound `children` are mutually exclusive — rendering `items` and ignoring `children`.'
-    );
+    warnItemsChildrenConflict('TaskList');
   }
 
   return (

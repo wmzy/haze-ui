@@ -91,6 +91,21 @@ describe('SwipeAction', () => {
     expect(content).toHaveStyle({ transform: 'translateX(0px)' });
   });
 
+  it('resets the drag offset and skips commit on pointercancel', () => {
+    const onSwipeRight = vi.fn();
+    render(<SwipeAction onSwipeRight={onSwipeRight}>Content</SwipeAction>);
+    const content = screen.getByText('Content');
+    fireEvent.pointerDown(content, { pointerId: 1, clientX: 100 });
+    fireEvent.pointerMove(content, { pointerId: 1, clientX: 200 });
+    expect(content).toHaveStyle({ transform: 'translateX(100px)' });
+    // engine-cancelled gesture (palm rejection, scroll takeover): snap
+    // back to rest instead of leaving the offset stuck mid-drag, and
+    // never fire the swipe callback
+    fireEvent.pointerCancel(content, { pointerId: 1 });
+    expect(content).toHaveStyle({ transform: 'translateX(0px)' });
+    expect(onSwipeRight).not.toHaveBeenCalled();
+  });
+
   it('ignores moves without a prior pointerdown', async () => {
     const user = userEvent.setup();
     render(<SwipeAction>Content</SwipeAction>);

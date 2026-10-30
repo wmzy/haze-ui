@@ -23,6 +23,7 @@ import {
   pickerSearchInput,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
 import { findNodeByKey, mergeLoadedChildren } from '../../utils/tree-utils';
 import { useStrings } from '../LocaleProvider';
@@ -155,13 +156,11 @@ const trigger = css`
   }
 `;
 
-/** Single-mode label: truncates instead of growing the trigger. */
+/** Single-mode label: truncates (shared truncate, utils/truncate,
+ * composed at the call site) instead of growing the trigger. */
 const triggerValue = css`
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-align: start;
 `;
 
@@ -526,9 +525,9 @@ export default function TreeSelect({
       />
     )
   ) : selectedNode ? (
-    <span data-slot='value' x-class={triggerValue}>{selectedNode.title ?? selectedNode.key}</span>
+    <span data-slot='value' x-class={[truncate, triggerValue]}>{selectedNode.title ?? selectedNode.key}</span>
   ) : (
-    <span data-slot='placeholder' x-class={[triggerValue, placeholderText]}>
+    <span data-slot='placeholder' x-class={[truncate, triggerValue, placeholderText]}>
       {placeholder ?? strings.placeholder}
     </span>
   );

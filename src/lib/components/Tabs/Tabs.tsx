@@ -6,6 +6,8 @@ import type { TabStatus } from './Tab';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { warnItemsChildrenConflict } from '../../utils/warn-items-children';
+
 import { TabsProvider } from './TabsContext';
 import Tab from './Tab';
 import TabList from './TabList';
@@ -123,9 +125,7 @@ export default function Tabs({
     // Dev-time guard rather than a throw: rendering continues with the
     // items path so a partially-migrated call site still shows tabs,
     // while the console names the contract breach.
-    console.error(
-      '[haze-ui] Tabs: `items` and compound `children` are mutually exclusive — rendering `items` and ignoring `children`.'
-    );
+    warnItemsChildrenConflict('Tabs');
   }
 
   const content = useItems ? (

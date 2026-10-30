@@ -32,7 +32,6 @@ export type ConversationScript = {
 export type MockModel = {
   value: string;
   label: string;
-  description: string;
   contextLength: string;
   /** TokenCounter max — modest so the bar stays legible. */
   contextTokens: number;
@@ -48,7 +47,6 @@ export const MODELS: MockModel[] = [
   {
     value: 'haze-swift',
     label: 'Haze Swift',
-    description: 'Snappy, terse answers',
     contextLength: '4k',
     contextTokens: 4096,
     streamSpeed: 10,
@@ -58,7 +56,6 @@ export const MODELS: MockModel[] = [
   {
     value: 'haze-balanced',
     label: 'Haze Balanced',
-    description: 'Default quality',
     contextLength: '8k',
     contextTokens: 8192,
     streamSpeed: 22,
@@ -68,7 +65,6 @@ export const MODELS: MockModel[] = [
   {
     value: 'haze-deep',
     label: 'Haze Deep',
-    description: 'Longer reasoning, richer answers',
     contextLength: '16k',
     contextTokens: 16384,
     streamSpeed: 34,

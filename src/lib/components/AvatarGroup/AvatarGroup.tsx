@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { css } from '@linaria/core';
-import { Children } from 'react';
+import { Children, isValidElement } from 'react';
 
 type AvatarGroupProps = {
   /** Maximum number of avatars rendered before the overflow chip. */
@@ -69,7 +69,14 @@ export default function AvatarGroup({
   return (
     <div data-slot="avatar-group" x-class={[base, className]} {...rest}>
       {visible.map((child, index) => (
-        <span key={index} data-slot="item" x-class={[item, index > 0 && itemStacked]}>
+        // Element key first — Children.toArray's ".$"-prefixed keys are
+        // stable across re-slices (max changes); positional fallback only
+        // covers keyless string/number children.
+        <span
+          key={isValidElement(child) && child.key ? child.key : index}
+          data-slot="item"
+          x-class={[item, index > 0 && itemStacked]}
+        >
           {child}
         </span>
       ))}

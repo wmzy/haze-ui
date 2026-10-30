@@ -27,13 +27,14 @@ import type { VirtualListHandle } from '../VirtualList';
 
 import type { DataTableFiltersState } from './filters';
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTable } from '@tanstack/react-table';
 import { css } from '@linaria/core';
 import { useControl, useThru, watch, isControl } from 'react-use-control';
 
 
 import { useDirection } from '../../utils/direction';
+import { mergeRefs } from '../../utils/refs';
 
 import { CheckboxCore } from '../Checkbox';
 import {
@@ -847,13 +848,9 @@ export default function DataTable<TData extends RowData>({
   // row/column id so it survives reorders and the virtualized window.
   const [editingCell, setEditingCell] = useState<NavCell | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  // The consumer ref and the internal rootRef both land on the wrapper:
-  // a callback fans the node out to each target.
-  const setRootRef = useCallback((node: HTMLDivElement | null) => {
-    rootRef.current = node;
-    if (typeof ref === 'function') ref(node);
-    else if (ref) ref.current = node;
-  }, [ref]);
+  // The consumer ref and the internal rootRef both land on the wrapper
+  // through mergeRefs.
+  const setRootRef = mergeRefs(rootRef, ref);
   const virtualListRef = useRef<VirtualListHandle | null>(null);
 
   // Declared intent (LocaleProvider chain → document) for the drag math,

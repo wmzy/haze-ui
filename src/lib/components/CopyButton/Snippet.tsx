@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
+import { truncate } from '../../utils/truncate';
+
 import CopyButton from './CopyButton';
+
 
 import { content as contentClass, snippet } from './snippet-styles';
 
@@ -72,7 +75,7 @@ export default function Snippet({
     >
       <code
         data-slot="content"
-        x-class={[contentClass, classNames?.content]}
+        x-class={[truncate, contentClass, classNames?.content]}
       >
         {children ?? value}
       </code>

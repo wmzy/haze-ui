@@ -113,7 +113,32 @@ const sharedLayers = {
     'tag-input',
     'tabs',
     'trace',
+    'visually-hidden',
   ],
+  // Shared truncate triad (utils/truncate.ts): overflow hidden +
+  // text-overflow ellipsis + white-space nowrap as one class — the
+  // one-line clip idiom 12 files wore as local copies before the
+  // promotion. Pure css module; Typography is an RSC-safe consumer
+  // (see scripts/rsc-safe.mjs).
+  'utils/truncate': [
+    'cascader',
+    'conversation-list',
+    'copy-button',
+    'file-preview',
+    'heatmap',
+    'schedule',
+    'select',
+    'tree',
+    'tree-select',
+    'typography',
+    'upload',
+  ],
+  // Shared unsupported-notice skin (utils/unsupported-skin.ts): the
+  // dashed fallback surface the canvas components (Signature,
+  // ImageCrop) paint when 2d context is unavailable. Per-site sizing
+  // (ImageCrop's aspect box, Signature's px dimensions) stays local as
+  // companion classes. Pure css module (scripts/rsc-safe.mjs).
+  'utils/unsupported-skin': ['image-crop', 'signature'],
   // Menu-family shared skins (utils/menu-skins.ts): the item base/state
   // skins, slot skins, panel surfaces and divider shared by the three
   // menu families ride with each family's css.
@@ -131,6 +156,7 @@ const sharedLayers = {
     'chat-input',
     'color-picker',
     'combobox',
+    'command',
     'date-range-picker',
     'datepicker',
     'file-input',
@@ -333,6 +359,7 @@ const sharedLayers = {
   'utils/focus-ring': [
     'breadcrumb',
     'button',
+    'calendar',
     'chat-container',
     'color-picker',
     'data-table',

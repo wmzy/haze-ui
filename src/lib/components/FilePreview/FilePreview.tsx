@@ -7,6 +7,7 @@ import { useStrings } from '../LocaleProvider';
 import { Progress } from '../Progress';
 
 import { srOnly } from '../../utils/sr-only';
+import { truncate } from '../../utils/truncate';
 
 import { formatFileSize, getFileExtension } from './file-preview-format';
 
@@ -79,14 +80,6 @@ const thumb = css`
   height: 100%;
   object-fit: cover;
   display: block;
-`;
-
-/** Single-line ellipsis clamp shared by the extension badge and the
- * file name. */
-const truncate = css`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 const extBadge = css`

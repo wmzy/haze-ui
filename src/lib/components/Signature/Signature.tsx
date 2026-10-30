@@ -12,6 +12,7 @@ import { useControl } from 'react-use-control';
 import { useStrings } from '../LocaleProvider';
 import { focusWithinRing } from '../../utils/field-skin';
 import { focusRingVisible } from '../../utils/focus-ring';
+import { unsupportedNotice } from '../../utils/unsupported-skin';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import {
@@ -143,16 +144,6 @@ const toolButton = css`
     opacity: 0.5;
     cursor: not-allowed;
   }
-`;
-
-const unsupportedNotice = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-sm);
 `;
 
 export default function Signature({

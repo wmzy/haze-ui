@@ -9,7 +9,6 @@ import { useStrings } from '../LocaleProvider';
 type ModelOption = {
   value: string;
   label: string;
-  description?: string;
   contextLength?: string;
 };
 

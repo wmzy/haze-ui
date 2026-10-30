@@ -28,6 +28,7 @@ import {
 import { computeFloatingPosition, mirrorPlacement, resolvePadding } from './collision';
 import { getDirection } from './direction';
 import { whenExitSettles } from './presence';
+import { addViewportPlacementListener } from './viewport-placement';
 
 /**
  * Internal floating-panel primitives shared by Popover, DropdownMenu,
@@ -1082,11 +1083,9 @@ export function useFloatingPosition({
           dx === 0 && dy === 0 ? '' : `${dx}px ${dy}px`;
       };
       nudge();
-      window.addEventListener('scroll', nudge, true);
-      window.addEventListener('resize', nudge);
+      const teardown = addViewportPlacementListener(nudge);
       return () => {
-        window.removeEventListener('scroll', nudge, true);
-        window.removeEventListener('resize', nudge);
+        teardown();
         panel.style.translate = '';
       };
     }
@@ -1095,12 +1094,7 @@ export function useFloatingPosition({
     if (!trigger) return;
     const place = () => placeFloatingPanel(panel, trigger, placement, collision);
     place();
-    window.addEventListener('scroll', place, true);
-    window.addEventListener('resize', place);
-    return () => {
-      window.removeEventListener('scroll', place, true);
-      window.removeEventListener('resize', place);
-    };
+    return addViewportPlacementListener(place);
   }, [native, anchored, shown, placement, collision, triggerRef, panelRef]);
 }
 

@@ -1,6 +1,8 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { Children, isValidElement } from 'react';
+import type { CompoundOptionNode, CompoundOptionTypes } from '../../utils/compound-options';
+
+import { walkCompoundOptions } from '../../utils/compound-options';
 
 import ComboboxGroup from './ComboboxGroup';
 import ComboboxOption from './ComboboxOption';
@@ -19,63 +21,55 @@ export type ComboboxOptionData<T extends string | number = string> = {
   group?: string;
 };
 
-/** Props of a declarative <ComboboxOption> child, as far as option
- * extraction is concerned. */
-type OptionLikeProps = {
-  value?: string | number;
-  disabled?: boolean;
-  children?: ReactNode;
+/** Family membership for the shared compound walker: Combobox matches
+ * its two components exactly — stray non-family children are ignored. */
+const comboboxOptionTypes: CompoundOptionTypes = {
+  group: (type) => type === ComboboxGroup,
+  option: (type) => type === ComboboxOption,
 };
 
-/** Props of a <ComboboxGroup> child. */
-type GroupLikeProps = {
-  label?: ReactNode;
-  children?: ReactNode;
-};
-
-const isGroupElement = (
-  child: ReactNode
-): child is ReactElement<GroupLikeProps> =>
-  isValidElement<GroupLikeProps>(child) && child.type === ComboboxGroup;
-
-const isOptionElement = (
-  child: ReactNode
-): child is ReactElement<OptionLikeProps> =>
-  isValidElement<OptionLikeProps>(child) && child.type === ComboboxOption;
+/**
+ * Folds the walked node stream into data rows. The label must be
+ * textual (filtering compares strings): string/number children pass
+ * through, anything else falls back to the stringified value, the same
+ * tolerance Select's extraction shows. The group stamp is the nearest
+ * enclosing *string* group title — a non-string label passes the
+ * inherited stamp through, matching the original recursion's
+ * `option.group ?? label` unwinding.
+ */
+const collectOptions = <T extends string | number = string>(
+  nodes: CompoundOptionNode[],
+  group: string | undefined
+): ComboboxOptionData<T>[] =>
+  nodes.flatMap((node): ComboboxOptionData<T>[] => {
+    if (node.kind === 'group') {
+      return collectOptions<T>(
+        node.nodes,
+        typeof node.label === 'string' ? node.label : group
+      );
+    }
+    return [
+      {
+        value: node.value as T,
+        label:
+          typeof node.label === 'string' || typeof node.label === 'number'
+            ? String(node.label)
+            : String(node.value),
+        disabled: node.disabled,
+        group,
+      },
+    ];
+  });
 
 /**
  * Flattens declarative compound children — `<ComboboxOption>` rows,
  * optionally inside `<ComboboxGroup label>` sections — into the same
- * `ComboboxOptionData[]` the `options` prop takes. The label must be
- * textual (filtering compares strings): string/number children pass
- * through, anything else falls back to the stringified value, the same
- * tolerance Select's extraction shows. Stray non-family children are
- * ignored, and group nesting assigns the nearest enclosing label.
+ * `ComboboxOptionData[]` the `options` prop takes. Stray non-family
+ * children are ignored, and group nesting assigns the nearest
+ * enclosing label.
  */
 export function extractComboboxOptions<T extends string | number = string>(
   children: ReactNode
 ): ComboboxOptionData<T>[] {
-  return Children.toArray(children).flatMap((child): ComboboxOptionData<T>[] => {
-    if (isGroupElement(child)) {
-      const group =
-        typeof child.props.label === 'string' ? child.props.label : undefined;
-      return extractComboboxOptions<T>(child.props.children).map((option) => ({
-        ...option,
-        group: option.group ?? group,
-      }));
-    }
-    if (!isOptionElement(child)) return [];
-    const { value, disabled, children: label } = child.props;
-    if (value === undefined) return [];
-    return [
-      {
-        value: value as T,
-        label:
-          typeof label === 'string' || typeof label === 'number'
-            ? String(label)
-            : String(value),
-        disabled: disabled === true,
-      },
-    ];
-  });
+  return collectOptions<T>(walkCompoundOptions(children, comboboxOptionTypes), undefined);
 }

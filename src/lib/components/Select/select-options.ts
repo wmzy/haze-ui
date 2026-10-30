@@ -1,6 +1,10 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { Children, isValidElement } from 'react';
+import type { CompoundOptionNode, CompoundOptionTypes } from '../../utils/compound-options';
+
+import { isValidElement } from 'react';
+
+import { walkCompoundOptions } from '../../utils/compound-options';
 
 import OptionGroup from './OptionGroup';
 
@@ -26,30 +30,50 @@ export type SelectEntryData<T extends string | number = string> =
   | { kind: 'option'; option: SelectOptionData<T> }
   | { kind: 'group'; label: string; options: SelectOptionData<T>[] };
 
-/** Props of an <Option> or plain <option> element, as far as option
- * extraction is concerned. */
-type OptionLikeProps = {
-  value?: string | number | readonly string[];
-  disabled?: boolean;
-  children?: ReactNode;
+/** Family membership for the shared compound walker: `<OptionGroup>`
+ * and plain `<optgroup>` wrap groups, and every other element is an
+ * option candidate — plain `<option>` rows included. */
+const selectOptionTypes: CompoundOptionTypes = {
+  group: (type) => type === OptionGroup || type === 'optgroup',
+  option: (type) => type !== OptionGroup && type !== 'optgroup',
 };
 
-/** Props of an <OptionGroup> or plain <optgroup> element. */
-type GroupLikeProps = {
-  label?: string;
-  children?: ReactNode;
+/** The walker's node type for Select children: `<Option value>` may
+ * hold the multi-value array shape, which the flat option paths drop. */
+type SelectWalkNode = CompoundOptionNode<string | number | readonly string[]>;
+type SelectOptionNode = Extract<SelectWalkNode, { kind: 'option' }>;
+
+/** One walked option node → SelectOptionData. Array-valued options
+ * (the multi-value shape) are not single selectable entries and drop
+ * out here; a missing label falls back to the stringified value. The
+ * JSX prop keeps the raw value — only the DOM stringifies it (the
+ * native single-mode path maps it back; see SelectCore). */
+const optionData = <T extends string | number>(
+  node: SelectOptionNode
+): SelectOptionData<T> | undefined => {
+  if (Array.isArray(node.value)) return undefined;
+  return {
+    value: node.value as T,
+    label: node.label ?? String(node.value),
+    disabled: node.disabled,
+  };
 };
 
-const isGroupElement = (
-  child: ReactNode
-): child is ReactElement<GroupLikeProps> =>
-  isValidElement<GroupLikeProps>(child) &&
-  (child.type === OptionGroup || child.type === 'optgroup');
+/** Depth-first option flattening of the walked node stream (groups in
+ * document order). */
+const walkNodes = <T extends string | number>(
+  nodes: SelectWalkNode[]
+): SelectOptionData<T>[] =>
+  nodes.flatMap((node): SelectOptionData<T>[] => {
+    if (node.kind === 'group') return walkNodes<T>(node.nodes);
+    const option = optionData<T>(node);
+    return option ? [option] : [];
+  });
 
-const isOptionElement = (child: ReactNode): child is ReactElement<OptionLikeProps> =>
-  isValidElement<OptionLikeProps>(child) &&
-  child.type !== OptionGroup &&
-  child.type !== 'optgroup';
+const walkSelectChildren = <
+  T extends string | number | readonly string[],
+>(children: ReactNode) =>
+  walkCompoundOptions<T>(children, selectOptionTypes);
 
 /**
  * Flattens the Select's children — <Option> and plain <option> elements
@@ -61,23 +85,7 @@ const isOptionElement = (child: ReactNode): child is ReactElement<OptionLikeProp
 export function extractSelectOptions<T extends string | number = string>(
   children: ReactNode
 ): SelectOptionData<T>[] {
-  return Children.toArray(children).flatMap((child) => {
-    if (isGroupElement(child)) {
-      return extractSelectOptions<T>(child.props.children);
-    }
-    if (!isOptionElement(child)) return [];
-    const { value, disabled, children: label } = child.props;
-    if (value === undefined || Array.isArray(value)) return [];
-    // The JSX prop holds the raw value — only the DOM stringifies it
-    // (the native single-mode path maps it back; see SelectCore).
-    return [
-      {
-        value: value as T,
-        label: label ?? String(value),
-        disabled: disabled === true,
-      },
-    ];
-  });
+  return walkNodes<T>(walkSelectChildren<string | number | readonly string[]>(children));
 }
 
 /**
@@ -90,32 +98,23 @@ export function extractSelectOptions<T extends string | number = string>(
 export function extractSelectEntries<T extends string | number = string>(
   children: ReactNode
 ): SelectEntryData<T>[] {
-  return Children.toArray(children).flatMap((child): SelectEntryData<T>[] => {
-    if (isGroupElement(child)) {
-      const options = extractSelectOptions<T>(child.props.children);
-      if (options.length === 0) return [];
-      return [
-        {
-          kind: 'group',
-          label: typeof child.props.label === 'string' ? child.props.label : '',
-          options,
-        },
-      ];
+  return walkSelectChildren<string | number | readonly string[]>(children).flatMap(
+    (node): SelectEntryData<T>[] => {
+      if (node.kind === 'group') {
+        const options = walkNodes<T>(node.nodes);
+        if (options.length === 0) return [];
+        return [
+          {
+            kind: 'group',
+            label: typeof node.label === 'string' ? node.label : '',
+            options,
+          },
+        ];
+      }
+      const option = optionData<T>(node);
+      return option ? [{ kind: 'option', option }] : [];
     }
-    if (!isOptionElement(child)) return [];
-    const { value, disabled, children: label } = child.props;
-    if (value === undefined || Array.isArray(value)) return [];
-    return [
-      {
-        kind: 'option',
-        option: {
-          value: value as T,
-          label: label ?? String(value),
-          disabled: disabled === true,
-        },
-      },
-    ];
-  });
+  );
 }
 
 /** Depth-first flattening of the entry structure (groups in document

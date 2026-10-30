@@ -14,6 +14,7 @@ import { useControl } from 'react-use-control';
 import { getDirection, useDirection } from '../../utils/direction';
 import { outlineFocusVisible } from '../../utils/focus-ring';
 import { clamp } from '../../utils/math';
+import { truncate } from '../../utils/truncate';
 import Button from '../Button/Button';
 import {
   addDays,
@@ -537,17 +538,10 @@ const eventTime = css`
   color: var(--haze-color-text-secondary);
 `;
 
-/** One-line clip for dense event labels (event blocks, all-day & month chips). */
-const truncate = css`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
 /** Chip skeleton shared by the all-day row, month cells, and the month
  * overflow toggle; the variant classes below carry only their deltas
- * (outline itself comes from `outlineFocusVisible`, clipping from
- * `truncate`, both composed via x-class). */
+ * (outline itself comes from `outlineFocusVisible`, clipping from the
+ * shared `truncate` (utils/truncate), both composed via x-class). */
 const chipBase = css`
   border: none;
   font-size: var(--haze-text-xs);

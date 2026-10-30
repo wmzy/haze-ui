@@ -14,6 +14,7 @@ import { useControl } from 'react-use-control';
 
 import { quantize } from '../../utils/math';
 import { srOnly } from '../../utils/sr-only';
+import { unsupportedNotice } from '../../utils/unsupported-skin';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import {
@@ -220,17 +221,13 @@ const handlePositions: Record<CropCorner, string> = {
   `,
 };
 
-const notice = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Local companion of the shared unsupported-notice shape
+ * (utils/unsupported-skin.ts): the dashed-frame recipe lives in the
+ * shared class; only the crop-stage geometry stays local. */
+const noticeBox = css`
   box-sizing: border-box;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border: 1px dashed var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  color: var(--haze-color-text-muted);
-  font-size: var(--haze-text-sm);
 `;
 
 /** Inline percentage free of binary-float noise (0.1 · 100 must render
@@ -462,11 +459,11 @@ export default function ImageCrop({
         onError={handleError}
       />
       {failed ? (
-        <div data-slot="error-notice" role="status" x-class={[notice]}>
+        <div data-slot="error-notice" role="status" x-class={[unsupportedNotice, noticeBox]}>
           {errorLabel}
         </div>
       ) : unsupported ? (
-        <div data-slot="unsupported-notice" role="status" x-class={[notice]}>
+        <div data-slot="unsupported-notice" role="status" x-class={[unsupportedNotice, noticeBox]}>
           {unsupportedLabel}
         </div>
       ) : natural === null ? (

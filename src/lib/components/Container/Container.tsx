@@ -15,13 +15,16 @@ const container = css`
   font-family: var(--haze-font-sans);
 `;
 
-const sizes: Record<string, string> = {
+// `satisfies` ties every size variant to a skin entry: extending the
+// union in ContainerProps without a map row (or adding a stray row)
+// fails at compile time instead of rendering an undefined class.
+const sizes = {
   sm: css`max-width: 640px;`,
   md: css`max-width: 768px;`,
   lg: css`max-width: 1024px;`,
   xl: css`max-width: 1280px;`,
   full: css`max-width: 100%;`,
-};
+} satisfies Record<NonNullable<ContainerProps['size']>, string>;
 
 export default function Container({ size = 'lg', children, className }: ContainerProps) {
   return (

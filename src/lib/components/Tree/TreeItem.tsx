@@ -8,6 +8,7 @@ import { useId } from 'react';
 import { choiceBase } from '../../utils/choice-skin';
 import { spinAnimation } from '../../utils/spinner-glyph';
 import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
+import { truncate } from '../../utils/truncate';
 import { useStrings } from '../LocaleProvider';
 
 type TreeItemProps = {
@@ -190,13 +191,12 @@ const nodeIcon = css`
   }
 `;
 
+/** Node title — the clipping contract rides the shared truncate class
+ * (utils/truncate), composed at the call site. */
 const title = css`
   flex: 1;
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 /* The spin loop (incl. the reduced-motion collapse) comes from
@@ -496,7 +496,7 @@ export default function TreeItem({
           </span>
         )}
 
-        <span data-slot='title' className={title} id={titleId}>{titleContent}</span>
+        <span data-slot='title' x-class={[truncate, title]} id={titleId}>{titleContent}</span>
 
         {loadFailed && (
           <span

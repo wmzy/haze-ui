@@ -6,7 +6,7 @@ import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
-import { fieldChrome, fieldSizes } from '../../utils/field-skin';
+import { fieldChrome, fieldFocusRing, fieldSizes } from '../../utils/field-skin';
 
 type InlineEditProps = {
   value?: ControlOrValue<string>;
@@ -39,13 +39,12 @@ const display = css`
 /* The field surface (border/radius/fill) and the sm size tier
  * (padding/typography) come from utils/field-skin.ts — the local class
  * keeps only the inline-editor deltas (ink, the content floor, the
- * focus skin). The primary border + ring ride a :focus arm: editing IS
- * the focused state (the input carries `autoFocus` so focus lands at
- * commit time — before the first paint — and blur commits), and the
+ * rest-state outline reset). The :focus skin (primary border + ring)
+ * is field-skin's fieldFocusRing leaf, composed below: editing IS the
+ * focused state (the input carries `autoFocus` so focus lands at
+ * commit time — before the first paint — and blur commits), and its
  * pseudo specificity beats fieldChrome's border shorthand under any
- * stylesheet emission order — split-css concatenates groups
- * alphabetically, so utils/ layers land AFTER the consuming
- * component's own module CSS. */
+ * stylesheet emission order. */
 const editing = css`
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
@@ -53,11 +52,6 @@ const editing = css`
   /* Content floor: an emptied draft keeps the field's footprint
    * (space-8 is the exact 2rem token). */
   min-width: var(--haze-space-8);
-
-  &:focus {
-    border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 `;
 
 const placeholderStyle = css`
@@ -118,7 +112,7 @@ export default function InlineEdit({
         data-slot='inline-edit'
         {...rest}
         autoFocus
-        x-class={[fieldChrome, fieldSizes.sm, editing, className]}
+        x-class={[fieldChrome, fieldSizes.sm, fieldFocusRing, editing, className]}
         aria-label={placeholderLabel}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}

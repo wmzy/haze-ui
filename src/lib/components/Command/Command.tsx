@@ -5,6 +5,7 @@ import { css } from '@linaria/core';
 import { Children, createContext, useContext, useEffect, useId, useMemo, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import { fieldFocusRing } from '../../utils/field-skin';
 import { focusListEdge, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { menuOptionStates } from '../../utils/menu-skins';
 import { mergeRefs } from '../../utils/refs';
@@ -149,6 +150,12 @@ type CommandInputProps = {
   ref?: Ref<HTMLInputElement>;
 };
 
+/* WCAG 2.4.11 focus-appearance: the palette input is the component's
+   tab stop yet previously showed nothing on focus — it composes the
+   Input family ring (field-skin's fieldFocusRing: border tint +
+   focus-ring halo) at its x-class site below. The leaf's four-side
+   border-color is equivalent to a border-bottom-color tint: only the
+   bottom edge has width (the other three are `border: none`). */
 const inputStyle = css`
   width: 100%;
   padding: var(--haze-space-3) var(--haze-space-4);
@@ -159,14 +166,6 @@ const inputStyle = css`
   font-size: var(--haze-text-sm);
   font-family: var(--haze-font-sans);
   outline: none;
-
-  /* WCAG 2.4.11 focus-appearance: the palette input is the component's
-     tab stop yet previously showed nothing on focus — the Input family
-     ring (border tint + focus-ring halo) applies here too. */
-  &:focus {
-    border-bottom-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-  }
 
   &::placeholder {
     color: var(--haze-color-text-muted);
@@ -179,7 +178,7 @@ export function CommandInput({ placeholder, className, ref }: CommandInputProps)
     <input
       ref={mergeRefs(inputRef, ref)}
       data-slot='input'
-      x-class={[inputStyle, className]}
+      x-class={[inputStyle, fieldFocusRing, className]}
       type="text"
       placeholder={placeholder}
       value={query}

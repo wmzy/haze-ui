@@ -1,5 +1,7 @@
 import type { ComponentPropsWithoutRef, CSSProperties, Ref } from 'react';
 
+import { truncate } from '../../utils/truncate';
+
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
 // the file basename, and a shared `styles` basename collides with
 // Button/styles.ts (identical `haze-styles__*` selectors cross-wire the
@@ -255,7 +257,7 @@ export default function Heatmap({
         <span
           key={span.key}
           data-slot='month'
-          x-class={[heatmapMonth, classNames?.month]}
+          x-class={[truncate, heatmapMonth, classNames?.month]}
           style={{ gridColumn: `${span.start + 2} / span ${span.span}` }}
         >
           {span.label}

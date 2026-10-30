@@ -215,8 +215,8 @@ const itemIcon = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: var(--haze-space-5);
+  height: var(--haze-space-5);
   flex-shrink: 0;
 
   & > svg {

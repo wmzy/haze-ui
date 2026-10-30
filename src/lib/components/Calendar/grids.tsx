@@ -28,6 +28,7 @@ import {
   formatWeekValue,
   getISOWeek,
 } from '../../utils/date-math';
+import { focusRingVisible } from '../../utils/focus-ring';
 
 import {
   cellContents,
@@ -192,6 +193,7 @@ export function renderMonthPane(
                     data-haze-day={dateStr}
                     x-class={[
                       dayBtn,
+                      focusRingVisible,
                       selected && daySelected,
                       !selected && isInRange(dateStr) && dayInRange,
                       c.outside && dayOutside,
@@ -306,7 +308,7 @@ export function renderPeriodGrid(
                   {...(month
                     ? { 'data-haze-month': value }
                     : { 'data-haze-year': value })}
-                  x-class={[dayBtn, active && daySelected, month ? classNames?.monthCell : classNames?.yearCell]}
+                  x-class={[dayBtn, focusRingVisible, active && daySelected, month ? classNames?.monthCell : classNames?.yearCell]}
                   disabled={spec.isDisabled?.(value)}
                   onClick={() => spec.onPick(value)}
                 >
@@ -428,7 +430,7 @@ export function renderQuarterGrid(
                 type='button'
                 data-slot='quarter-cell'
                 data-haze-quarter={quarter}
-                x-class={[dayBtn, selected && daySelected, classNames?.quarterCell]}
+                x-class={[dayBtn, focusRingVisible, selected && daySelected, classNames?.quarterCell]}
                 disabled={spec.isDisabled(quarter)}
                 onClick={() => spec.onPick(quarter)}
               >

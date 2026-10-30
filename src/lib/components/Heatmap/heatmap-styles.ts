@@ -28,13 +28,12 @@ export const heatmapBase = css`
   color: var(--haze-color-text-muted);
 `;
 
-/** A month label spanning its week columns along the top row. */
+/** A month label spanning its week columns along the top row — the
+ * single-line clipping contract rides the shared truncate class
+ * (utils/truncate), composed in Heatmap.tsx. */
 export const heatmapMonth = css`
   align-self: end;
   padding-bottom: var(--haze-space-1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   min-width: 0;
 `;
 

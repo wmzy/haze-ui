@@ -2,6 +2,8 @@ import type { CSSProperties, ReactNode, JSX } from 'react';
 
 import { css } from '@linaria/core';
 
+import { truncate } from '../../utils/truncate';
+
 // Title
 type TitleProps = {
   level?: 1 | 2 | 3 | 4 | 5;
@@ -77,21 +79,17 @@ const textMark = css`
 
 /*
  * Pure-CSS truncation — no hooks, so Typography stays in the RSC-safe
- * set (scripts/rsc-safe.mjs). Single line is a static class; the
- * multi-line `-webkit-line-clamp` box model carries an arbitrary
- * runtime line count, so it ships as an inline style instead of a
- * Linaria class per value. Supported by all three modern engines
+ * set (scripts/rsc-safe.mjs; the shared utils/truncate it composes is
+ * pure CSS and safe-listed the same way). Single line is the shared
+ * `truncate` class (utils/truncate); the multi-line
+ * `-webkit-line-clamp` box model carries an arbitrary runtime line
+ * count, so it ships as an inline style instead of a Linaria class
+ * per value. Supported by all three modern engines
  * (Blink / Gecko / WebKit).
  */
 
 /** `ellipsis` prop shape shared by Text and Paragraph. */
 type TextEllipsis = boolean | { lines?: number };
-
-const ellipsisSingle = css`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
 
 /** Resolved line budget; `{}` and `true` both mean a single line. */
 function ellipsisLines(ellipsis: TextEllipsis | undefined): number {
@@ -145,7 +143,7 @@ export function Text({
         strong && !code && textStrong,
         code && textCode,
         mark && textMark,
-        clamped && lines === 1 && ellipsisSingle,
+        clamped && lines === 1 && truncate,
         className,
       ]}
       style={clamped && lines > 1 ? lineClampStyle(lines) : undefined}
@@ -181,7 +179,7 @@ export function Paragraph({ ellipsis, className, children }: ParagraphProps) {
       data-slot="paragraph"
       x-class={[
         paragraphBase,
-        clamped && lines === 1 && ellipsisSingle,
+        clamped && lines === 1 && truncate,
         className,
       ]}
       style={clamped && lines > 1 ? lineClampStyle(lines) : undefined}

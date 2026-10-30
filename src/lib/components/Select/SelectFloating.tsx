@@ -27,6 +27,7 @@ import {
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import { truncate } from '../../utils/truncate';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useListboxNavigation } from '../../utils/use-listbox-navigation';
 import { usePanelQuery } from '../../utils/use-panel-query';
@@ -220,21 +221,18 @@ const sizes = {
   `,
 } as const;
 
+/** Placeholder text — the clipping contract rides the shared truncate
+ * class (utils/truncate), composed at the call site. */
 const placeholderText = css`
   color: var(--haze-color-text-muted);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 `;
 
-/** The single-mode trigger's selected label — same clipping contract as
- * the placeholder, plus min-width so it can shrink inside the flex
- * trigger and ellipsize instead of stretching it. */
+/** The single-mode trigger's selected label — same clipping contract
+ * as the placeholder (shared truncate, utils/truncate, composed at the
+ * call site), plus min-width so it can shrink inside the flex trigger
+ * and ellipsize instead of stretching it. */
 const triggerLabel = css`
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 `;
 
 /**
@@ -816,14 +814,14 @@ export default function SelectFloating<T extends string | number = string>({
     tags || selected.length > 0 ? (
       chips
     ) : (
-      <span data-slot='placeholder' x-class={placeholderText}>
+      <span data-slot='placeholder' x-class={[truncate, placeholderText]}>
         {placeholder ?? strings.placeholder}
       </span>
     )
   ) : selectedValue === '' ? (
-    <span data-slot='placeholder' x-class={placeholderText}>{placeholder ?? strings.placeholder}</span>
+    <span data-slot='placeholder' x-class={[truncate, placeholderText]}>{placeholder ?? strings.placeholder}</span>
   ) : (
-    <span data-slot='value' x-class={triggerLabel}>{labelFor(selectedValue)}</span>
+    <span data-slot='value' x-class={[truncate, triggerLabel]}>{labelFor(selectedValue)}</span>
   );
 
   // The options area of the panel. An empty visible list (loading, or a

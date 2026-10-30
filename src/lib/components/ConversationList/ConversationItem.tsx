@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { truncate } from '../../utils/truncate';
+
 type ConversationItemProps = {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -40,20 +42,17 @@ const body = css`
   min-width: 0;
 `;
 
+/** Title/subtitle text — the single-line clipping contract rides the
+ * shared truncate class (utils/truncate), composed at the call site;
+ * only the typography deltas stay here. */
 const titleStyle = css`
   font-size: var(--haze-text-sm);
   font-weight: var(--haze-weight-medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const subtitleStyle = css`
   font-size: var(--haze-text-xs);
   color: var(--haze-color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin-top: var(--haze-space-0);
 `;
 
@@ -78,8 +77,8 @@ export default function ConversationItem({
       aria-current={active ? 'true' : undefined}
     >
       <div x-class={[body]}>
-        <div data-slot='title' x-class={[titleStyle]}>{title}</div>
-        {subtitle && <div data-slot='description' x-class={[subtitleStyle]}>{subtitle}</div>}
+        <div data-slot='title' x-class={[truncate, titleStyle]}>{title}</div>
+        {subtitle && <div data-slot='description' x-class={[truncate, subtitleStyle]}>{subtitle}</div>}
       </div>
       {end && <div data-slot='suffix' x-class={[endSlot]}>{end}</div>}
     </button>

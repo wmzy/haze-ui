@@ -45,6 +45,13 @@ export const RSC_SAFE_MODULES = new Set([
   // (externalized) — no hooks, no DOM access. Its css rides with the
   // consuming component groups (sharedLayers in split-css.mjs).
   'utils/sr-only.ts',
+  // Shared truncate triad (utils/truncate.ts): the same purity class
+  // as sr-only above — one Linaria class, externalized @linaria/core
+  // only. Typography is an RSC-safe consumer.
+  'utils/truncate.ts',
+  // Shared unsupported-notice skin (utils/unsupported-skin.ts): pure
+  // Linaria class constant — same purity class as sr-only above.
+  'utils/unsupported-skin.ts',
   // Shared field skin: pure Linaria class constants (surface chrome,
   // :focus-within ring, native input/textarea chrome, size map) — no
   // hooks, no DOM access, only the externalized @linaria/core import.

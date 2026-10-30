@@ -14,6 +14,7 @@ import { useStrings } from '../LocaleProvider';
 import { Progress } from '../Progress';
 
 import { outlineFocusVisible } from '../../utils/focus-ring';
+import { truncate } from '../../utils/truncate';
 
 type UploadListProps = {
   /** Tracked rows, in value order. */
@@ -108,14 +109,6 @@ const rowBase = css`
   align-items: center;
   gap: var(--haze-space-2);
   min-width: 0;
-`;
-
-/** Single-line ellipsis clamp shared by the row name and the
- * picture-card fallback name. */
-const truncate = css`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
 const nameClass = css`
