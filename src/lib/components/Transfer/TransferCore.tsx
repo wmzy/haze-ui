@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { CheckboxCore } from '../Checkbox';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
+import { quietSquareButton } from '../../utils/quiet-button-skin';
 
 type TransferItem = {
   key: string;
@@ -94,31 +95,12 @@ const actions = css`
   gap: var(--haze-space-2);
 `;
 
-const actionBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* 2.25rem (36px) sits between the space steps (32/40) — literal on
-     purpose (InlineEdit's 1.75rem precedent). */
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: var(--haze-color-bg-subtle);
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+/* The move buttons wear the shared quiet square skin
+ * (utils/quiet-button-skin quietSquareButton) — the 36px seat, border
+ * surface, hover wash and disabled mute this hand-roll carried. No
+ * local delta remains: the former 2.25rem literals are the shared
+ * calc's value at the default density (see the shared class's
+ * header). */
 
 /** Pure list toggle shared by both panels — returns the next list. */
 const toggleIn = (list: string[], key: string): string[] =>
@@ -196,7 +178,7 @@ export default function TransferCore({
         <button
           type="button"
           data-slot="move-button"
-          x-class={[actionBtn]}
+          x-class={[quietSquareButton]}
           disabled={selectedSource.length === 0}
           onClick={moveToTarget}
           aria-label={strings.moveToTarget}
@@ -206,7 +188,7 @@ export default function TransferCore({
         <button
           type="button"
           data-slot="move-button"
-          x-class={[actionBtn]}
+          x-class={[quietSquareButton]}
           disabled={selectedTarget.length === 0}
           onClick={moveToSource}
           aria-label={strings.moveToSource}

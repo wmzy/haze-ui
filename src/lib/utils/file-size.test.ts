@@ -1,4 +1,4 @@
-import { formatFileSize, getFileExtension } from './file-preview-format';
+import { formatFileSize, getFileExtension } from './file-size';
 
 describe('formatFileSize', () => {
   it('returns empty string for missing, non-finite or negative input', () => {

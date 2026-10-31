@@ -107,3 +107,19 @@ export function useNavigationMenuItemContext() {
   }
   return ctx;
 }
+
+/**
+ * Focus rests inside this item's panel? The predicate the family's
+ * three focus-aware close guards share (trigger pointer-leave, content
+ * pointer-leave, item close focus-return): a keyboard user working in
+ * the panel must never have it vanish under incidental pointer
+ * movement. Lives here because every caller reaches the panel through
+ * the item context's refs.
+ */
+export function isFocusInsidePanel(panel: HTMLElement | null): boolean {
+  return (
+    panel !== null &&
+    document.activeElement instanceof Node &&
+    panel.contains(document.activeElement)
+  );
+}

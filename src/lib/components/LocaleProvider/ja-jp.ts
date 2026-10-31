@@ -139,6 +139,7 @@ const jaJP: HazeStrings = {
   dataTable: {
     selectAll: 'すべて選択',
     filterPlaceholder: 'フィルター',
+    columns: '列',
   },
   diffViewer: {
     header: '差分',
@@ -174,6 +175,11 @@ const jaJP: HazeStrings = {
     nextImage: '次の画像',
     counter: '{current} / {total}',
     thumbnail: '画像 {index} / {total} を表示: {alt}',
+  },
+  imageCrop: {
+    cropLabel: '切り取り領域',
+    unsupportedLabel: 'このブラウザでは画像の切り取りを利用できません。',
+    errorLabel: '画像の読み込みに失敗しました',
   },
   inlineEdit: {
     placeholder: 'クリックして編集',

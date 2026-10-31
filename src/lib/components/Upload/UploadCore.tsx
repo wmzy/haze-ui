@@ -14,7 +14,7 @@ import { useRef, useState, useCallback, useEffect, useImperativeHandle } from 'r
 
 import { useStrings } from '../LocaleProvider';
 import { useLatest } from '../../hooks/useLatest';
-import { formatFileSize } from '../FilePreview/file-preview-format';
+import { formatFileSize } from '../../utils/file-size';
 import { clamp } from '../../utils/math';
 
 import UploadList from './UploadList';

@@ -38,7 +38,10 @@ const checkboxSkin = css`
     width: 5px;
     height: 9px;
     border: solid var(--haze-color-text-inverse);
-    /* physical: drawing primitive of the same unmirrored checkmark. */
+    /* physical: drawing primitive of the same unmirrored checkmark.
+       The twin of this primitive lives in SelectFloating.tsx
+       (checkboxVisual) — keep the drawing geometry (5x9, 0 2px 2px 0,
+       rotate 45deg) in sync when tuning. */
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }

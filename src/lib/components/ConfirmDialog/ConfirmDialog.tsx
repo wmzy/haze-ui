@@ -31,7 +31,9 @@ type ConfirmDialogProps = {
 
 /**
  * Sheet deltas on the shared panel surface (utils/panel-skin): the modal
- * lane (space-6 padding, 480px max, full width up to it). Border,
+ * lane behind Dialog's component tokens — declaration-for-declaration
+ * Dialog's `panelDeltas` (`--haze-dialog-padding`/`--haze-dialog-width`),
+ * so theming Dialog themes ConfirmDialog's sheet identically. Border,
  * radius, elevation, typography and the forced-colors arm come from the
  * surface — the hand-rolled sheet this replaces carried no
  * forced-colors border at all. The enter/exit animations and the
@@ -41,8 +43,8 @@ type ConfirmDialogProps = {
  * replaces the old self-drawn mask div's z-index tier.
  */
 const sheet = css`
-  padding: var(--haze-space-6);
-  max-width: 480px;
+  padding: var(--haze-dialog-padding, var(--haze-space-6));
+  max-width: var(--haze-dialog-width, 480px);
   width: 100%;
 `;
 

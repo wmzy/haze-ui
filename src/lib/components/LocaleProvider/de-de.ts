@@ -141,6 +141,7 @@ const deDE: HazeStrings = {
   dataTable: {
     selectAll: 'Alle Zeilen auswählen',
     filterPlaceholder: 'Filtern',
+    columns: 'Spalten',
   },
   diffViewer: {
     header: 'Diff',
@@ -176,6 +177,11 @@ const deDE: HazeStrings = {
     nextImage: 'Nächstes Bild',
     counter: '{current} / {total}',
     thumbnail: 'Bild {index} von {total} anzeigen: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Zuschneidebereich',
+    unsupportedLabel: 'Bildzuschnitt wird in diesem Browser nicht unterstützt.',
+    errorLabel: 'Bild konnte nicht geladen werden.',
   },
   inlineEdit: {
     placeholder: 'Zum Bearbeiten klicken',

@@ -139,6 +139,7 @@ const zhCN: HazeStrings = {
   dataTable: {
     selectAll: '全选',
     filterPlaceholder: '筛选',
+    columns: '列',
   },
   diffViewer: {
     header: '差异',
@@ -174,6 +175,11 @@ const zhCN: HazeStrings = {
     nextImage: '下一张',
     counter: '{current} / {total}',
     thumbnail: '查看第 {index} 张（共 {total} 张）：{alt}',
+  },
+  imageCrop: {
+    cropLabel: '裁剪区域',
+    unsupportedLabel: '当前浏览器不支持图片裁剪。',
+    errorLabel: '图片加载失败',
   },
   inlineEdit: {
     placeholder: '点击编辑',

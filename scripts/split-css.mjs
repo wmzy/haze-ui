@@ -175,6 +175,9 @@ const sharedLayers = {
     'otp-input',
     'prompt-input',
     'rich-text-editor',
+    // Select consumes fieldSizes for its native trigger and floating
+    // trigger sizing (formerly two local byte-identical copies).
+    'select',
     'signature',
     'tag-input',
     'textarea',
@@ -209,11 +212,21 @@ const sharedLayers = {
     'error-boundary',
     'image',
     'notification-center',
+    'pagination',
     'queue',
     'sidebar',
     'sources',
     'spoiler',
+    'transfer',
   ],
+  // Shared action-button variant arms (utils/button-variant-skin.ts):
+  // the solid and ghost surfaces Button and FloatButton wear
+  // byte-identically; their outline arms stay per-family (drifting
+  // backgrounds by design) as local map values. back-to-top rides
+  // along: it consumes the FloatButton variant classes through
+  // float-button-styles, whose own group inlining does not carry the
+  // utils layer.
+  'utils/button-variant-skin': ['back-to-top', 'button', 'float-button'],
   // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
   // the details/summary header + content typography shared by
   // Accordion's items and Disclosure ride with both families' css.
@@ -293,6 +306,9 @@ const sharedLayers = {
     'banner',
     'badge',
     'chip',
+    // Mark consumes the subtle color axis for its non-warning keys
+    // (warning/default keep their local mark-flavored pair).
+    'mark',
     'notification-center',
     'tag',
     'toast',

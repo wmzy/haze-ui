@@ -1,6 +1,6 @@
 import { css } from '@linaria/core';
 
-import { attachedRow } from '../../utils/seam-skin';
+import { attachedRowStretched } from '../../utils/seam-skin';
 
 /**
  * Shared InputGroup skin — the attached-field merging rules the group
@@ -11,29 +11,21 @@ import { attachedRow } from '../../utils/seam-skin';
  *
  * ## Merging model
  *
- * The group wrapper wears the shared attached-row seam recipe
- * (`utils/seam-skin.ts` `attachedRow` — the -1px overlap seam, the
+ * The group wrapper wears the shared attached-row recipe — the seam
+ * (`utils/seam-skin.ts` `attachedRow`: the -1px overlap seam, the
  * positional corner rounding and the focus z-lift) composed with the
- * local row geometry below into the single `group` class. Addons
- * therefore attach to `Input`/`Select`/`Button` children without
- * either side knowing about the other — the children render
- * as-authored.
+ * stretched row geometry (`attachedRowStretched`, same module) into
+ * the single `group` class below. Addons therefore attach to
+ * `Input`/`Select`/`Button` children without either side knowing
+ * about the other — the children render as-authored.
  *
  * Sizing mirrors `InputCore`'s per-size paddings (see addonSizes), so
  * an addon and the field it hugs are the same height at every step.
  */
 
-/** The row geometry — container declarations only; the seam, corner
- * and focus-lift arms live in utils/seam-skin. */
-const groupBox = css`
-  display: inline-flex;
-  align-items: stretch;
-  inline-size: 100%;
-`;
-
-/** The wrapper's one class: shared seam recipe + local geometry,
- * space-joined the way `x-class` would compose them. */
-export const group = `${attachedRow} ${groupBox}`;
+/** The wrapper's one class: shared seam recipe + stretched row
+ * geometry (utils/seam-skin `attachedRowStretched`). */
+export const group = attachedRowStretched;
 
 /**
  * The addon surface: a tinted, bordered cell distinct from the field,

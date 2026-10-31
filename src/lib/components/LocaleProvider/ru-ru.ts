@@ -141,6 +141,7 @@ const ruRU: HazeStrings = {
   dataTable: {
     selectAll: 'Выбрать все строки',
     filterPlaceholder: 'Фильтр',
+    columns: 'Колонки',
   },
   diffViewer: {
     header: 'Diff',
@@ -176,6 +177,11 @@ const ruRU: HazeStrings = {
     nextImage: 'Следующее изображение',
     counter: '{current} / {total}',
     thumbnail: 'Просмотр изображения {index} из {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Область обрезки',
+    unsupportedLabel: 'Обрезка изображений не поддерживается в этом браузере.',
+    errorLabel: 'Не удалось загрузить изображение.',
   },
   inlineEdit: {
     placeholder: 'Нажмите, чтобы изменить',

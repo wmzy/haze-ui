@@ -7,6 +7,7 @@ import {useFloating} from '../../utils/floating';
 
 import NavigationMenuContent from './NavigationMenuContent';
 import {
+  isFocusInsidePanel,
   NavigationMenuItemProvider,
   useNavigationMenuContext,
 } from './NavigationMenuContext';
@@ -88,9 +89,7 @@ export default function NavigationMenuItem({
     const wasOpen = wasOpenRef.current;
     wasOpenRef.current = open;
     if (!wasOpen || open) return;
-    const panel = panelRef.current;
-    const active = document.activeElement;
-    if (!panel || !(active instanceof Node) || !panel.contains(active)) return;
+    if (!isFocusInsidePanel(panelRef.current)) return;
     triggerRef.current?.focus();
   }, [open]);
 

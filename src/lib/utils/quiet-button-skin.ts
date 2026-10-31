@@ -10,7 +10,8 @@ import { css } from '@linaria/core';
  * ride with every consuming family's css via sharedLayers
  * (split-css.mjs). The textToggle flavor extends the family to the
  * undecorated primary-ink text button (Ellipsis's expand, Spoiler's
- * show more/less).
+ * show more/less), and quietSquareButton to the fixed square seat
+ * (Pagination's page buttons, Transfer's move actions).
  *
  * Hover arms across the module are :not(:disabled)-guarded (the
  * library-wide convention — Pagination, TransferCore, tag-skin et al),
@@ -120,6 +121,50 @@ export const textToggle = css`
 
   &:hover:not(:disabled) {
     color: var(--haze-color-primary-hover);
+  }
+`;
+
+/**
+ * The square flavor: the 36px action seat Pagination's page buttons
+ * and Transfer's move actions wore as per-family hand-rolls. Carries
+ * only what both shipped identically — the centered inline-flex
+ * skeleton, the bordered bg surface over text ink, text-sm metrics
+ * and the guarded hover wash / disabled mute. The geometry unifies on
+ * calc(var(--haze-space-8) + var(--haze-space-1)): the ladder has no
+ * 36px step (only 32/40), and the sum equals both originals at the
+ * default density — Pagination's own calc and Transfer's 2.25rem
+ * literal are the same 36px (InlineEdit's 1.75rem off-ladder
+ * precedent kept the literal; here the sum tracks the density scale,
+ * so compact density now shrinks Transfer's seat alongside
+ * Pagination's, which always did). min-width rather than width so
+ * wider content — multi-digit page numbers — grows the box, exactly
+ * Pagination's original behavior; a glyph-only seat (Transfer's
+ * angle marks) never reaches the minimum. Neither family shipped a
+ * transition or forced-colors arm in this chrome, so none lives here.
+ * Pagination's padding, transition and forced-colors deltas stay
+ * local companions; Transfer wears the base bare.
+ */
+export const quietSquareButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--haze-space-8) + var(--haze-space-1));
+  height: calc(var(--haze-space-8) + var(--haze-space-1));
+  border: 1px solid var(--haze-color-border);
+  border-radius: var(--haze-radius-md);
+  background: var(--haze-color-bg);
+  color: var(--haze-color-text);
+  font-size: var(--haze-text-sm);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--haze-color-bg-subtle);
+    border-color: var(--haze-color-border-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 

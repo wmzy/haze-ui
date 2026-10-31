@@ -141,6 +141,7 @@ const koKR: HazeStrings = {
   dataTable: {
     selectAll: '모든 행 선택',
     filterPlaceholder: '필터',
+    columns: '열',
   },
   diffViewer: {
     header: '차이',
@@ -176,6 +177,11 @@ const koKR: HazeStrings = {
     nextImage: '다음 이미지',
     counter: '{current} / {total}',
     thumbnail: '이미지 {index} / {total} 보기: {alt}',
+  },
+  imageCrop: {
+    cropLabel: '자르기 영역',
+    unsupportedLabel: '이 브라우저에서는 이미지 자르기가 지원되지 않습니다.',
+    errorLabel: '이미지를 불러오지 못했습니다.',
   },
   inlineEdit: {
     placeholder: '클릭하여 편집',

@@ -328,7 +328,10 @@ const toolbarTitle = css`
   margin-inline: var(--haze-space-1);
 `;
 
-const monthGrid = css`
+/* The framed viewport both grid views render into (month + time): a
+   bordered, rounded column whose overflow-hidden clips the inner
+   cells' own seam borders at the frame edge. */
+const framedGrid = css`
   display: flex;
   flex-direction: column;
   border: 1px solid var(--haze-color-border);
@@ -391,15 +394,6 @@ const monthDayToday = css`
   color: var(--haze-color-text-inverse);
   border-radius: var(--haze-radius-full);
   font-weight: var(--haze-weight-medium);
-`;
-
-const timeGrid = css`
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  overflow: hidden;
 `;
 
 const headerRow = css`
@@ -970,7 +964,7 @@ export default function Schedule({
   const renderTimeGrid = () => (
     <div
       data-slot='time-grid'
-      x-class={[timeGrid, classNames?.timeGrid]}
+      x-class={[framedGrid, classNames?.timeGrid]}
     >
       <div data-slot='day-header' x-class={[headerRow]}>
         <div x-class={[headerGutter]} aria-hidden />
@@ -1173,7 +1167,7 @@ export default function Schedule({
     return (
       <div
         data-slot='month-grid'
-        x-class={[monthGrid, classNames?.monthGrid]}
+        x-class={[framedGrid, classNames?.monthGrid]}
         role='grid'
         aria-label={titleText}
         ref={monthGridRef}

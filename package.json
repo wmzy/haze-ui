@@ -212,13 +212,13 @@
       "name": "Button only (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{Button}",
-      "limit": "7.25 KB"
+      "limit": "7.5 KB"
     },
     {
       "name": "TagGroup+TagGroupItem only — dnd-free (bundled from barrel)",
       "path": "dist/index.js",
       "import": "{TagGroup, TagGroupItem}",
-      "limit": "7.05 KB"
+      "limit": "7.25 KB"
     },
     {
       "name": "SortableTagInput — pulls the @dnd-kit trio (from barrel)",
@@ -236,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "24.8 KB"
+      "limit": "25 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
@@ -275,7 +275,7 @@
     {
       "name": "CSS family ratchet: ellipsis",
       "path": "dist/css/ellipsis.css",
-      "limit": "0.56 KB",
+      "limit": "0.65 KB",
       "gzip": true
     },
     {
@@ -371,7 +371,7 @@
     {
       "name": "CSS family ratchet: chat-message",
       "path": "dist/css/chat-message.css",
-      "limit": "1 KB",
+      "limit": "1.15 KB",
       "gzip": true
     },
     {
@@ -401,7 +401,7 @@
     {
       "name": "CSS family ratchet: sources",
       "path": "dist/css/sources.css",
-      "limit": "1.55 KB",
+      "limit": "1.7 KB",
       "gzip": true
     },
     {
@@ -425,7 +425,7 @@
     {
       "name": "CSS family ratchet: queue",
       "path": "dist/css/queue.css",
-      "limit": "850 B",
+      "limit": "900 B",
       "gzip": true
     },
     {
@@ -485,7 +485,7 @@
     {
       "name": "CSS family ratchet: error-boundary",
       "path": "dist/css/error-boundary.css",
-      "limit": "0.75 KB",
+      "limit": "0.85 KB",
       "gzip": true
     },
     {
@@ -533,7 +533,7 @@
     {
       "name": "CSS family ratchet: notification-center",
       "path": "dist/css/notification-center.css",
-      "limit": "2.05 KB",
+      "limit": "2.15 KB",
       "gzip": true
     }
   ]

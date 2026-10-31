@@ -5,14 +5,15 @@ import type { VirtualListHandle } from '../VirtualList';
 import type { MenuClassNames } from './MenuContext';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
-import { FloatingPanel, useFloating } from '../../utils/floating';
-import { useFocusScope } from '../../utils/focus-scope';
-import { findWrapIndex, useMenuKeyboard, useRovingTabindex, useTypeahead } from '../../utils/menuKeyboard';
+import { FloatingPanel } from '../../utils/floating';
+import { useMenuPanel } from '../../utils/menu-panel';
+import { findWrapIndex, useTypeahead } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
+import { PICKER_ROW_HEIGHT } from '../../utils/picker-trigger';
 import { reactNodeText } from '../../utils/text';
 import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { VirtualList } from '../VirtualList';
@@ -99,11 +100,11 @@ const menuFamily = {
   SubContent: MenuSubContent,
 };
 
-/* Fixed row height of the virtualized path: the natural item box —
-   space-2 padding block (8+8) plus the text-sm line box at
-   leading-normal (14 × 1.5 = 21). Rows are stretched to fill it
-   (`virtualizedBody`), so item and row heights cannot drift apart. */
-const VIRTUAL_ROW_HEIGHT = 37;
+/* Fixed row height of the virtualized path — the shared picker row
+   height (utils/picker-trigger's PICKER_ROW_HEIGHT, where the natural
+   row-box math and the stretch contract live); local alias kept for
+   the family-facing name. */
+const VIRTUAL_ROW_HEIGHT = PICKER_ROW_HEIGHT;
 
 /* Scrollport height of the virtualized list: eight rows (8 × 37).
    Shorter lists size to their rows through Math.min at the call site
@@ -186,14 +187,14 @@ export default function Menu({
   // Per-key merge of the config section under the prop.
   const resolvedClassNames = mergeClassNames(config, classNames);
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
-  const floating = useFloating({ open, setOpen, triggerRef, panelRef, animated: true });
-
-  useRovingTabindex({ menuRef: panelRef, active: open });
-  const handleKeyDown = useMenuKeyboard({
-    menuRef: panelRef,
-    onClose: () => setOpen(false),
+  // Panel wiring (floating + roving tabindex + menu keyboard + focus
+  // scope) rides the shared hook — the declaration-order race contract
+  // lives there (utils/menu-panel).
+  const { floating, handleKeyDown, panelRef, setPanelRef } = useMenuPanel({
+    open,
+    setOpen,
+    triggerRef,
   });
 
   // --- virtualization ------------------------------------------------------
@@ -390,22 +391,6 @@ export default function Menu({
       }
     }
   }
-
-  // Declared after useFloating and useRovingTabindex: the showPopover
-  // effect (a native popover is display:none until shown — focusing it
-  // would be silently dropped in Chromium) and the roving sync (the
-  // first item must be the tab stop before autoFocus runs) both fire
-  // first in the same commit. returnFocus repairs the Escape gap: the
-  // hidden panel would otherwise leave focus on <body>.
-  const setScope = useFocusScope({ enabled: open, autoFocus: true, returnFocus: true });
-
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      setScope(node);
-    },
-    [panelRef, setScope]
-  );
 
   return (
     <MenuClassNamesProvider value={resolvedClassNames}>

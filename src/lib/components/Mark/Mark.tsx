@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef } from 'react';
 
 import { css } from '@linaria/core';
 
+import { statusSubtleColors } from '../../utils/status-skin';
+
 type MarkProps = {
   /** Semantic highlight color — maps to the status tokens. */
   color?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
@@ -22,38 +24,17 @@ const base = css`
   }
 `;
 
-const neutral = css`
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-`;
-
-const primary = css`
-  background: var(--haze-color-primary-subtle);
-  color: var(--haze-color-primary);
-`;
-
-const success = css`
-  background: var(--haze-color-success-subtle);
-  color: var(--haze-color-success);
-`;
-
-const danger = css`
-  background: var(--haze-color-danger-subtle);
-  color: var(--haze-color-danger);
-`;
-
-const info = css`
-  background: var(--haze-color-info-subtle);
-  color: var(--haze-color-info);
-`;
-
+/* Tone surfaces come from the shared status skin (utils/status-skin
+ * `statusSubtleColors` — the same subtle pairing Badge/Tag wear);
+ * `warning` stays local because it is the full element chassis
+ * (padding, radius, forced-colors arm), not just the tone pair. */
 const colors = {
-  default: neutral,
+  default: statusSubtleColors.default,
   warning: base,
-  primary,
-  success,
-  danger,
-  info,
+  primary: statusSubtleColors.primary,
+  success: statusSubtleColors.success,
+  danger: statusSubtleColors.danger,
+  info: statusSubtleColors.info,
 } as const;
 
 /**

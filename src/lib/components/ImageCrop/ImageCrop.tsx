@@ -12,6 +12,7 @@ import { useCallback, useEffect, useId, useImperativeHandle, useRef, useState } 
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { useStrings } from '../LocaleProvider';
 import { quantize } from '../../utils/math';
 import { srOnly } from '../../utils/sr-only';
 import { unsupportedNotice } from '../../utils/unsupported-skin';
@@ -68,11 +69,14 @@ type ImageCropProps = {
   /** Overlay mask of the crop box: rectangular frame or a full-radius
    * circle for avatars (pair with `aspect={1}` for a true circle). */
   shape?: 'rect' | 'circle';
-  /** Accessible label of the focusable crop region. */
+  /** Accessible label of the focusable crop region.
+   * Default from `imageCrop.cropLabel`. */
   cropLabel?: string;
-  /** Notice rendered when the canvas 2d context is unavailable. */
+  /** Notice rendered when the canvas 2d context is unavailable.
+   * Default from `imageCrop.unsupportedLabel`. */
   unsupportedLabel?: string;
-  /** Notice rendered when `src` fails to load. */
+  /** Notice rendered when `src` fails to load.
+   * Default from `imageCrop.errorLabel`. */
   errorLabel?: string;
   /** Locks dragging, handle resizing and keyboard operation. */
   disabled?: boolean;
@@ -242,15 +246,20 @@ export default function ImageCrop({
   onChange,
   aspect,
   shape = 'rect',
-  cropLabel = 'Crop region',
-  unsupportedLabel = 'Image cropping is not supported in this browser.',
-  errorLabel = 'Failed to load the image.',
+  cropLabel,
+  unsupportedLabel,
+  errorLabel,
   disabled = false,
   crossOrigin,
   className,
   ref,
   ...rest
 }: ImageCropProps) {
+  const strings = useStrings('imageCrop');
+  // Props win; the locale pack only fills the gap (Signature's contract).
+  const resolvedCropLabel = cropLabel ?? strings.cropLabel;
+  const resolvedUnsupportedLabel = unsupportedLabel ?? strings.unsupportedLabel;
+  const resolvedErrorLabel = errorLabel ?? strings.errorLabel;
   const [stored, setStored] = useControl<CropRect | undefined>(
     valueControl,
     undefined
@@ -460,11 +469,11 @@ export default function ImageCrop({
       />
       {failed ? (
         <div data-slot="error-notice" role="status" x-class={[unsupportedNotice, noticeBox]}>
-          {errorLabel}
+          {resolvedErrorLabel}
         </div>
       ) : unsupported ? (
         <div data-slot="unsupported-notice" role="status" x-class={[unsupportedNotice, noticeBox]}>
-          {unsupportedLabel}
+          {resolvedUnsupportedLabel}
         </div>
       ) : natural === null ? (
         <div data-slot="loading" aria-hidden="true" x-class={[loading]} />
@@ -482,7 +491,7 @@ export default function ImageCrop({
             data-shape={shape}
             x-class={[cropBox, shape === 'circle' && cropCircle]}
             role="group"
-            aria-label={cropLabel}
+            aria-label={resolvedCropLabel}
             aria-describedby={descriptionId}
             aria-disabled={disabled || undefined}
             tabIndex={disabled ? -1 : 0}

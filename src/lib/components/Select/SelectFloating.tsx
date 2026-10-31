@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { fieldSizes } from '../../utils/field-skin';
 import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
 import {
   dropLastPickerValue,
@@ -181,7 +182,8 @@ const wrapper = css`
  * focus arm — `:focus` for the button, `:focus-within` for the tags
  * box whose inline input owns focus (on the button trigger the two
  * pseudo-classes coincide — it has no focusable descendants). The
- * font-size/padding metrics ride the `sizes` variants. */
+ * font-size/padding metrics ride the shared `fieldSizes` variants
+ * (utils/field-skin). */
 const trigger = css`
   flex-wrap: wrap;
   gap: var(--haze-space-1);
@@ -212,21 +214,6 @@ const trigger = css`
     pointer-events: none;
   }
 `;
-
-const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-4);
-    font-size: var(--haze-text-base);
-  `,
-} as const;
 
 /** Placeholder text — the clipping contract rides the shared truncate
  * class (utils/truncate), composed at the call site. */
@@ -362,7 +349,10 @@ const checkboxVisual = css`
     width: 5px;
     height: 9px;
     border: solid var(--haze-color-text-inverse);
-    /* physical: drawing primitive of the same unmirrored checkmark. */
+    /* physical: drawing primitive of the same unmirrored checkmark.
+       The twin of this primitive lives in CheckboxCore.tsx — keep the
+       drawing geometry (5x9, 0 2px 2px 0, rotate 45deg) in sync when
+       tuning. */
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
@@ -969,7 +959,7 @@ export default function SelectFloating<T extends string | number = string>({
             setOpen(true);
             searchRef.current?.focus();
           }}
-          x-class={[pickerTrigger, trigger, sizes[size], className, classNames?.trigger]}
+          x-class={[pickerTrigger, trigger, fieldSizes[size], className, classNames?.trigger]}
         >
           {triggerBody}
           {tagsInput}
@@ -993,7 +983,7 @@ export default function SelectFloating<T extends string | number = string>({
           data-clearable={clearable || undefined}
           onKeyDown={handleKeyDown}
           caretClassName={caret}
-          x-class={[trigger, sizes[size], className, classNames?.trigger]}
+          x-class={[trigger, fieldSizes[size], className, classNames?.trigger]}
         >
           {triggerBody}
           {clearAffordance}

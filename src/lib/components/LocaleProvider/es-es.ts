@@ -141,6 +141,7 @@ const esES: HazeStrings = {
   dataTable: {
     selectAll: 'Seleccionar todas las filas',
     filterPlaceholder: 'Filtrar',
+    columns: 'Columnas',
   },
   diffViewer: {
     header: 'Diff',
@@ -176,6 +177,11 @@ const esES: HazeStrings = {
     nextImage: 'Imagen siguiente',
     counter: '{current} / {total}',
     thumbnail: 'Ver imagen {index} de {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Región de recorte',
+    unsupportedLabel: 'El recorte de imágenes no es compatible con este navegador.',
+    errorLabel: 'No se pudo cargar la imagen.',
   },
   inlineEdit: {
     placeholder: 'Haz clic para editar',

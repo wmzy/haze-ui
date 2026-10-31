@@ -148,6 +148,7 @@ const arSA: HazeStrings = {
   dataTable: {
     selectAll: 'تحديد جميع الصفوف',
     filterPlaceholder: 'تصفية',
+    columns: 'أعمدة',
   },
   diffViewer: {
     header: 'الفروق',
@@ -183,6 +184,11 @@ const arSA: HazeStrings = {
     nextImage: 'الصورة التالية',
     counter: '{current} / {total}',
     thumbnail: 'عرض الصورة {index} من {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'منطقة الاقتصاص',
+    unsupportedLabel: 'قص الصور غير مدعوم في هذا المتصفح.',
+    errorLabel: 'فشل تحميل الصورة.',
   },
   inlineEdit: {
     placeholder: 'انقر للتحرير',

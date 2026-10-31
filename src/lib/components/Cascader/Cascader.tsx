@@ -17,6 +17,7 @@ import { useFocusScope } from '../../utils/focus-scope';
 import { menuOptionStates } from '../../utils/menu-skins';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import {
+  PICKER_ROW_HEIGHT,
   ChevronRight,
   PickerPanelEmpty,
   PickerPanelLoading,
@@ -45,11 +46,10 @@ export type CascaderOption = {
 /** Metrics override for the `virtualized` columns of Cascader. */
 type CascaderVirtualizedConfig = {
   /**
-   * Row height in px of one column item. Defaults to 37 — the natural
-   * box of a column item: space-2 padding top+bottom + text-sm at
-   * leading-normal = 8 + 21 + 8. Virtualization math needs it as a JS
-   * number; items are stretched to fill it (`pickerVirtualRow`,
-   * utils/picker-trigger), so the two cannot drift apart.
+   * Row height in px of one column item. Defaults to the shared picker
+   * row height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+   * natural row-box math and the no-drift contract live); items are
+   * stretched to fill it (`pickerVirtualRow`, utils/picker-trigger).
    */
   itemHeight?: number;
   /** Extra rows kept mounted above/below the visible window. Defaults
@@ -261,11 +261,11 @@ const columnVirtual = css`
  * size to their rows (min at the call site). */
 const COLUMN_MAX_HEIGHT = 220;
 
-/** Fixed row height for the virtualized path: the natural column-item
- * box — space-2 padding top+bottom (8+8) + text-sm at leading-normal
- * (21) = 37. Items are stretched to fill it (`pickerVirtualRow`,
- * utils/picker-trigger), so the two cannot drift apart. */
-const ITEM_ROW_HEIGHT = 37;
+/** Fixed row height for the virtualized path — the shared picker row
+ * height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+ * natural row-box math and the no-drift contract live); local alias
+ * kept for the family-facing name. */
+const ITEM_ROW_HEIGHT = PICKER_ROW_HEIGHT;
 
 /** Column option chrome: the row skeleton and sm metrics — the
  * hover/press/focus interaction states ride `menuOptionStates`

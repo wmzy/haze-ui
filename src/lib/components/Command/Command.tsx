@@ -8,6 +8,7 @@ import { useControl } from 'react-use-control';
 import { fieldFocusRing } from '../../utils/field-skin';
 import { focusListEdge, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { menuOptionStates } from '../../utils/menu-skins';
+import { PICKER_ROW_HEIGHT } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { stateOptionRow } from '../../utils/state-option-skin';
 import Kbd from '../Kbd/Kbd';
@@ -201,10 +202,10 @@ export function CommandInput({ placeholder, className, ref }: CommandInputProps)
 /** Metrics override for CommandList's `virtualized` prop. */
 type CommandListVirtualizedConfig = {
   /**
-   * Row height in px of one item row. Defaults to 37 — CommandItem's
-   * natural single-line box (space-2 padding top+bottom + text-sm at
-   * leading-normal = 8 + 21 + 8, the same math as Combobox's virtual
-   * rows). Items are stretched to fill it, so the two cannot drift.
+   * Row height in px of one item row. Defaults to the shared picker
+   * row height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+   * natural row-box math and the no-drift contract live). Items are
+   * stretched to fill it, so the two cannot drift.
    */
   itemHeight?: number;
   /** Extra rows kept mounted around the visible window. Defaults to
@@ -239,8 +240,12 @@ type CommandListProps = {
   className?: string;
 };
 
-/** Fixed row height for the virtualized path (see CommandListVirtualizedConfig.itemHeight). */
-const ITEM_ROW_HEIGHT = 37;
+/** Fixed row height for the virtualized path (see
+ * CommandListVirtualizedConfig.itemHeight) — the shared picker row
+ * height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+ * natural row-box math and the no-drift contract live); local alias
+ * kept for the family-facing name. */
+const ITEM_ROW_HEIGHT = PICKER_ROW_HEIGHT;
 
 /** Scrollport height cap for the virtualized path — mirrors listStyle's max-height. */
 const LIST_MAX_HEIGHT = 300;

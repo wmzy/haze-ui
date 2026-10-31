@@ -141,6 +141,7 @@ const frFR: HazeStrings = {
   dataTable: {
     selectAll: 'Sélectionner toutes les lignes',
     filterPlaceholder: 'Filtrer',
+    columns: 'Colonnes',
   },
   diffViewer: {
     header: 'Diff',
@@ -176,6 +177,11 @@ const frFR: HazeStrings = {
     nextImage: 'Image suivante',
     counter: '{current} / {total}',
     thumbnail: 'Voir l’image {index} sur {total} : {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Zone de recadrage',
+    unsupportedLabel: 'Le recadrage d’images n’est pas pris en charge par ce navigateur.',
+    errorLabel: 'Échec du chargement de l’image.',
   },
   inlineEdit: {
     placeholder: 'Cliquer pour modifier',

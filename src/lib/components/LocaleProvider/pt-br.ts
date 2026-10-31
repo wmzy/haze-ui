@@ -142,6 +142,7 @@ const ptBR: HazeStrings = {
   dataTable: {
     selectAll: 'Selecionar todas as linhas',
     filterPlaceholder: 'Filtrar',
+    columns: 'Colunas',
   },
   diffViewer: {
     header: 'Diff',
@@ -177,6 +178,11 @@ const ptBR: HazeStrings = {
     nextImage: 'Próxima imagem',
     counter: '{current} / {total}',
     thumbnail: 'Ver imagem {index} de {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Região de corte',
+    unsupportedLabel: 'O corte de imagens não é suportado neste navegador.',
+    errorLabel: 'Falha ao carregar a imagem.',
   },
   inlineEdit: {
     placeholder: 'Clique para editar',

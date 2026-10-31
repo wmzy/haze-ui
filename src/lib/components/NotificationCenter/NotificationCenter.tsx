@@ -2,14 +2,13 @@ import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { css } from '@linaria/core';
-import { useCallback, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { Bell } from '../../icons';
 import { classnames } from '../../utils/classnames';
-import { FloatingPanel, useFloating } from '../../utils/floating';
-import { useFocusScope } from '../../utils/focus-scope';
-import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { FloatingPanel } from '../../utils/floating';
+import { useMenuPanel } from '../../utils/menu-panel';
 import { panelSurface, popoverPanelHidden } from '../../utils/panel-skin';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 import { statusSubtleColors } from '../../utils/status-skin';
@@ -433,41 +432,16 @@ export default function NotificationCenter({
 
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
-  const floating = useFloating({
+  // Panel wiring (floating + roving tabindex + menu keyboard + focus
+  // scope) rides the shared hook — the declaration-order race contract
+  // lives there (utils/menu-panel).
+  const { floating, handleKeyDown: handlePanelKeyDown, setPanelRef } = useMenuPanel({
     open,
     setOpen,
     triggerRef,
-    panelRef,
-    animated: true,
-  });
-
-  useRovingTabindex({
-    menuRef: panelRef,
-    active: open,
     selector: PANEL_ITEM_SELECTOR,
   });
-  const handlePanelKeyDown = useMenuKeyboard({
-    menuRef: panelRef,
-    onClose: () => setOpen(false),
-    selector: PANEL_ITEM_SELECTOR,
-  });
-
-  // Declared after the roving sync (the first row must be the tab stop
-  // before autoFocus runs) — the Menu ordering contract.
-  const setScope = useFocusScope({
-    enabled: open,
-    autoFocus: true,
-    returnFocus: true,
-  });
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      setScope(node);
-    },
-    [setScope]
-  );
 
   const unreadCount = items.reduce(
     (count, item) => (item.read ? count : count + 1),

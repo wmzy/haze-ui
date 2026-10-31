@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { ghostVariant, solidVariant } from '../../utils/button-variant-skin';
+
 /**
  * Shared Button skin — the base, variant and size classes `Button` and
  * `ButtonLink` both wear. Living in their own module keeps the two
@@ -74,19 +76,18 @@ export const base = css`
   }
 `;
 
+/**
+ * Variant surfaces — solid and ghost wear the byte-identical arms
+ * Button and FloatButton share (utils/button-variant-skin); the map
+ * keeps its key set and single-class string values, only the two
+ * class constants move.
+ */
 export const variants = {
-  solid: css`
-    background: var(--haze-color-primary);
-    color: var(--haze-color-text-inverse);
-
-    &:hover {
-      background: var(--haze-color-primary-hover);
-    }
-
-    &:active {
-      background: var(--haze-color-primary-active);
-    }
-  `,
+  solid: solidVariant,
+  // The outline arm stays local on purpose: Button paints a
+  // transparent surface with an explicit border-color while FloatButton
+  // fills a bg surface whose border rides its base class — the two
+  // families drifted the arm by design, so each map keeps its own.
   outline: css`
     background: transparent;
     border-color: var(--haze-color-border);
@@ -101,18 +102,7 @@ export const variants = {
       background: var(--haze-color-bg-muted);
     }
   `,
-  ghost: css`
-    background: transparent;
-    color: var(--haze-color-text);
-
-    &:hover {
-      background: var(--haze-color-bg-subtle);
-    }
-
-    &:active {
-      background: var(--haze-color-bg-muted);
-    }
-  `,
+  ghost: ghostVariant,
 } as const;
 
 export const sizeSm = css`

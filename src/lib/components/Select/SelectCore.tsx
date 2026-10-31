@@ -6,6 +6,7 @@ import type { SelectClassNames } from './Select';
 import { css } from '@linaria/core';
 import { useCallback, useRef } from 'react';
 
+import { fieldSizes } from '../../utils/field-skin';
 import { PickerCaret, pickerNativeCaret, pickerNativeSelect } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
@@ -118,21 +119,6 @@ type SelectCoreProps<T extends string | number = string> = {
   ComponentPropsWithoutRef<'select'>,
   'value' | 'onChange' | 'size' | 'multiple'
 >;
-
-const sizes = {
-  sm: css`
-    padding: var(--haze-space-1) var(--haze-space-2);
-    font-size: var(--haze-text-sm);
-  `,
-  md: css`
-    padding: var(--haze-space-2) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
-  `,
-  lg: css`
-    padding: var(--haze-space-3) var(--haze-space-4);
-    font-size: var(--haze-text-base);
-  `,
-} as const;
 
 /**
  * Positioning host of the native single-select paths: the inline-svg
@@ -305,7 +291,7 @@ export default function SelectCore<T extends string | number = string>({
     <select
       ref={selectRefProp}
       data-slot='trigger'
-      x-class={[pickerNativeSelect, sizes[size], className, classNames?.trigger]}
+      x-class={[pickerNativeSelect, fieldSizes[size], className, classNames?.trigger]}
       value={selectedValue}
       onChange={(e) => {
         onChange(valueFromDom(e.target.value));

@@ -38,6 +38,21 @@ const serializeDate = (values: (number | null)[]): string | null => {
   return formatDate(year, month - 1, day);
 };
 
+/* Intl.DateTimeFormat construction is comparatively expensive; the
+ * month-name formatter caches one instance per locale (undefined
+ * normalizes to the 'default' key — CountUp's per-decimals cache is
+ * the precedent). */
+const monthFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getMonthFormatter(locale: string | undefined): Intl.DateTimeFormat {
+  const key = locale ?? 'default';
+  const cached = monthFormatters.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.DateTimeFormat(locale, { month: 'long' });
+  monthFormatters.set(key, formatter);
+  return formatter;
+}
+
 export default function DateFieldCore({
   value,
   onChange,
@@ -54,7 +69,7 @@ export default function DateFieldCore({
     ? [parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate()]
     : [null, null, null];
 
-  const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long' });
+  const monthFormatter = getMonthFormatter(locale);
   const segments: SegmentSpec[] = [
     {
       kind: 'numeric',

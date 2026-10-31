@@ -9,6 +9,7 @@ import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { focusRingVisible } from '../../utils/focus-ring';
+import { quietSquareButton } from '../../utils/quiet-button-skin';
 
 import { sizes } from './pagination-styles';
 
@@ -41,68 +42,65 @@ const nav = css`
   font-family: var(--haze-font-sans);
 `;
 
-const btn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: calc(var(--haze-space-8) + var(--haze-space-1));
-  height: calc(var(--haze-space-8) + var(--haze-space-1));
+/* Page-button chrome lives in the shared quiet square skin
+ * (utils/quiet-button-skin quietSquareButton); the deltas kept here
+ * are the horizontal padding multi-digit page numbers need past the
+ * shared 36px minimum and the hover transition, plus the forced-colors
+ * arms below. */
+const btnDelta = css`
   padding: 0 var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  cursor: pointer;
   transition: background var(--haze-duration-fast), border-color var(--haze-duration-fast);
-
-  &:hover:not(:disabled) {
-    background: var(--haze-color-bg-subtle);
-    border-color: var(--haze-color-border-hover);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 
   /* Forced-colors deltas over focusRingVisible: the page button's
      Highlight ring is inset; disabled pages drop the dim and render
-     GrayText. */
+     GrayText. The disabled arm compounds &[data-slot] (every seat
+     carries one) because it overrides the shared disabled mute at the
+     same specificity, and dev-server injection and the dist split
+     disagree on rule order (Banner closeBtnSize precedent); the
+     focus-visible offset is additive over focusRingVisible, which
+     declares no outline-offset, so it needs no arming. */
   @media (forced-colors: active) {
     &:focus-visible {
       outline-offset: -2px;
     }
 
-    &:disabled {
+    &[data-slot]:disabled {
       opacity: 1;
       color: GrayText;
     }
   }
 `;
 
+/* The current page's primary chip, composed over quietSquareButton.
+ * Every arm compounds &[aria-current='page'] — the attribute is set
+ * exactly when this class is applied — because the chip must beat the
+ * shared surface's same-specificity base and hover arms, and cascade
+ * order differs between dev injection and the dist split
+ * (quiet-button-skin discipline, Banner's closeBtnSize precedent). */
 const activeBtn = css`
-  background: var(--haze-color-primary);
-  border-color: var(--haze-color-primary);
-  color: var(--haze-color-text-inverse);
-
-  &:hover:not(:disabled) {
-    background: var(--haze-color-primary-hover);
-    border-color: var(--haze-color-primary-hover);
-  }
-
-  /* Forced-colors: the primary fill flattens onto Canvas — the
-     current page would be indistinguishable from its siblings. The
-     Windows-native Highlight chip renders instead (held stable on
-     hover, which the UA would flatten back to Canvas). */
-  @media (forced-colors: active) {
-    background: Highlight;
-    border-color: Highlight;
-    color: HighlightText;
+  &[aria-current='page'] {
+    background: var(--haze-color-primary);
+    border-color: var(--haze-color-primary);
+    color: var(--haze-color-text-inverse);
 
     &:hover:not(:disabled) {
+      background: var(--haze-color-primary-hover);
+      border-color: var(--haze-color-primary-hover);
+    }
+
+    /* Forced-colors: the primary fill flattens onto Canvas — the
+       current page would be indistinguishable from its siblings. The
+       Windows-native Highlight chip renders instead (held stable on
+       hover, which the UA would flatten back to Canvas). */
+    @media (forced-colors: active) {
       background: Highlight;
       border-color: Highlight;
+      color: HighlightText;
+
+      &:hover:not(:disabled) {
+        background: Highlight;
+        border-color: Highlight;
+      }
     }
   }
 `;
@@ -289,7 +287,7 @@ export default function Pagination({
       <button
         data-slot='prev'
         type="button"
-        x-class={[btn, focusRingVisible]}
+        x-class={[quietSquareButton, btnDelta, focusRingVisible]}
         disabled={page <= 1}
         onClick={() => navigate(page - 1, pageSize)}
         aria-label={strings.previous}
@@ -333,7 +331,7 @@ export default function Pagination({
               key={p}
               data-slot='item'
               type="button"
-              x-class={[btn, focusRingVisible, p === page && activeBtn]}
+              x-class={[quietSquareButton, btnDelta, focusRingVisible, p === page && activeBtn]}
               aria-current={p === page ? 'page' : undefined}
               onClick={() => navigate(p, pageSize)}
             >
@@ -345,7 +343,7 @@ export default function Pagination({
       <button
         data-slot='next'
         type="button"
-        x-class={[btn, focusRingVisible]}
+        x-class={[quietSquareButton, btnDelta, focusRingVisible]}
         disabled={page >= totalPages}
         onClick={() => navigate(page + 1, pageSize)}
         aria-label={strings.next}

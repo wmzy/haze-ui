@@ -6,10 +6,9 @@ import { useStrings } from '../LocaleProvider';
 
 import { Progress } from '../Progress';
 
+import { formatFileSize, getFileExtension } from '../../utils/file-size';
 import { srOnly } from '../../utils/sr-only';
 import { truncate } from '../../utils/truncate';
-
-import { formatFileSize, getFileExtension } from './file-preview-format';
 
 /** The attached file's descriptor — name plus optional metadata. */
 type FilePreviewFile = {

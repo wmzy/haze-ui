@@ -1341,7 +1341,7 @@ export default function DataTable<TData extends RowData>({
   const columnMenu = columnToggle ? (
     <DropdownMenu className={pageSize !== undefined ? footerMenu : undefined}>
       <DropdownMenuTrigger x-class={[columnsTrigger]}>
-        Columns
+        {strings.columns}
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         {table

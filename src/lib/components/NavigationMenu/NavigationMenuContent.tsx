@@ -8,6 +8,7 @@ import {FloatingPanel} from '../../utils/floating';
 import {panelSurface} from '../../utils/panel-skin';
 
 import {
+  isFocusInsidePanel,
   useNavigationMenuContext,
   useNavigationMenuItemContext,
 } from './NavigationMenuContext';
@@ -75,14 +76,7 @@ export default function NavigationMenuContent({
       className={classnames(panelDeltas, className, classNames?.content)}
       onMouseEnter={cancelHoverTimers}
       onMouseLeave={() => {
-        const panel = panelRef.current;
-        if (
-          panel !== null &&
-          document.activeElement instanceof Node &&
-          panel.contains(document.activeElement)
-        ) {
-          return;
-        }
+        if (isFocusInsidePanel(panelRef.current)) return;
         scheduleClose();
       }}
       {...rest}

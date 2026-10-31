@@ -11,6 +11,7 @@ import {css} from '@linaria/core';
 import { focusRingVisible } from '../../utils/focus-ring';
 
 import {
+  isFocusInsidePanel,
   useNavigationMenuContext,
   useNavigationMenuItemContext,
 } from './NavigationMenuContext';
@@ -107,18 +108,6 @@ export default function NavigationMenuTrigger({
   const {value, open, floating, triggerRef, hasContent} =
     useNavigationMenuItemContext();
 
-  // A keyboard user working inside this panel must not have it vanish
-  // under incidental pointer movement — pointer-leave close requests
-  // are dropped while focus rests in the panel.
-  const focusInsidePanel = () => {
-    const panel = floating.panelRef.current;
-    return (
-      panel !== null &&
-      document.activeElement instanceof Node &&
-      panel.contains(document.activeElement)
-    );
-  };
-
   const handleClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     onClick?.(event);
     if (!hasContent || event.defaultPrevented) return;
@@ -165,7 +154,10 @@ export default function NavigationMenuTrigger({
       }}
       onMouseLeave={(event) => {
         onMouseLeave?.(event);
-        if (focusInsidePanel()) return;
+        // A keyboard user working inside this panel must not have it
+        // vanish under incidental pointer movement — pointer-leave
+        // close requests are dropped while focus rests in the panel.
+        if (isFocusInsidePanel(floating.panelRef.current)) return;
         scheduleClose();
       }}
       onFocus={(event) => {

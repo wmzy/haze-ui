@@ -138,6 +138,7 @@ const defaultStrings = {
   dataTable: {
     selectAll: 'Select all rows',
     filterPlaceholder: 'Filter',
+    columns: 'Columns',
   },
   diffViewer: {
     header: 'Diff',
@@ -173,6 +174,11 @@ const defaultStrings = {
     nextImage: 'Next image',
     counter: '{current} / {total}',
     thumbnail: 'View image {index} of {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Crop region',
+    unsupportedLabel: 'Image cropping is not supported in this browser.',
+    errorLabel: 'Failed to load the image.',
   },
   inlineEdit: {
     placeholder: 'Click to edit',

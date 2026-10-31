@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { ghostVariant, solidVariant } from '../../utils/button-variant-skin';
+
 /**
  * Shared FloatButton skin — the button face both `FloatButton` and the
  * `FloatButtonGroup` trigger wear, plus the fixed anchor and the
@@ -27,6 +29,9 @@ import { css } from '@linaria/core';
  * `variant` mirrors Button's `solid | outline | ghost` family and reads
  * the same color tokens, so a FloatButton re-themes together with
  * Buttons — only the elevation (FAB shadow) is FloatButton-specific.
+ * The solid and ghost surfaces are not mirrors but the very arms
+ * themselves: they ride utils/button-variant-skin, the shared layer
+ * Button's own map consumes (see variants below).
  */
 
 export const fab = css`
@@ -83,19 +88,31 @@ export const shapes = {
   `,
 } as const;
 
+/**
+ * The FAB's ghost flattens the resting elevation. It is the one
+ * declaration the shared ghost arm (utils/button-variant-skin) leaves
+ * to the family — the shared arm declares no box-shadow — so this
+ * delta composes behind it order-immunely (the additive-delta
+ * contract utils/focus-ring.ts documents), space-joined the way
+ * x-class would (InputGroup's group precedent). Declared after fab so
+ * the flattening also wins the same-specificity tie against the base
+ * shadow-lg inside this module's own cascade — intra-module order
+ * survives both dev injection and the dist split.
+ */
+const ghostShadowless = css`
+  box-shadow: none;
+`;
+
+/**
+ * Variant surfaces — solid and ghost wear the very arms Button's map
+ * consumes (utils/button-variant-skin); the map keeps its key set and
+ * single-class string values. The outline arm stays local: Button
+ * paints a transparent surface with an explicit border-color while
+ * the FAB fills a bg surface whose border rides the fab base above —
+ * drifted by design, so a local value it stays.
+ */
 export const variants = {
-  solid: css`
-    background: var(--haze-color-primary);
-    color: var(--haze-color-text-inverse);
-
-    &:hover {
-      background: var(--haze-color-primary-hover);
-    }
-
-    &:active {
-      background: var(--haze-color-primary-active);
-    }
-  `,
+  solid: solidVariant,
   outline: css`
     background: var(--haze-color-bg);
     color: var(--haze-color-text);
@@ -109,19 +126,7 @@ export const variants = {
       background: var(--haze-color-bg-muted);
     }
   `,
-  ghost: css`
-    background: transparent;
-    color: var(--haze-color-text);
-    box-shadow: none;
-
-    &:hover {
-      background: var(--haze-color-bg-subtle);
-    }
-
-    &:active {
-      background: var(--haze-color-bg-muted);
-    }
-  `,
+  ghost: `${ghostVariant} ${ghostShadowless}`,
 } as const;
 
 /**

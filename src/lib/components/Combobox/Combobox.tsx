@@ -22,6 +22,7 @@ import {
   togglePickerValue,
 } from '../../utils/picker-selection';
 import {
+  PICKER_ROW_HEIGHT,
   pickerGroupLabel,
   pickerListbox,
   pickerListboxVirtual,
@@ -48,11 +49,10 @@ import { extractComboboxOptions } from './combobox-options';
 /** Metrics override for the `virtualized` option list of Combobox. */
 type ComboboxVirtualizedConfig = {
   /**
-   * Row height in px of one option row. Defaults to 37 —
-   * ComboboxOption's natural box: space-2 padding top+bottom + text-sm
-   * at leading-normal = 8 + 21 + 8. Virtualization math needs it as a
-   * JS number; rows are stretched to fill it (`pickerVirtualRow`,
-   * utils/picker-trigger), so the two cannot drift apart.
+   * Row height in px of one option row. Defaults to the shared picker
+   * row height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+   * natural row-box math and the no-drift contract live); rows are
+   * stretched to fill it (`pickerVirtualRow`).
    */
   itemHeight?: number;
   /** Extra rows kept mounted above/below the visible window. Defaults
@@ -294,12 +294,11 @@ const stateRow = css`
  * height. */
 const VIRTUAL_LIST_HEIGHT = 200;
 
-/** Fixed row height for the virtualized path: ComboboxOption's natural
- * box — space-2 padding top+bottom + text-sm at leading-normal =
- * 8 + 21 + 8. Virtualization math needs it as a JS number; rows are
- * stretched to fill it (`pickerVirtualRow`, utils/picker-trigger), so
- * the two cannot drift apart. */
-const OPTION_ROW_HEIGHT = 37;
+/** Fixed row height for the virtualized path — the shared picker row
+ * height (utils/picker-trigger's `PICKER_ROW_HEIGHT`, where the
+ * natural row-box math and the no-drift contract live); local alias
+ * kept for the family-facing name. */
+const OPTION_ROW_HEIGHT = PICKER_ROW_HEIGHT;
 
 /**
  * Wraps the first case-insensitive occurrence of `query` inside

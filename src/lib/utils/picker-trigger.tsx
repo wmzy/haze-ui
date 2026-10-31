@@ -201,6 +201,21 @@ export const pickerListboxVirtual = css`
 `;
 
 /**
+ * Fixed row height, in px, of a virtualized picker/menu row: the
+ * natural row box — space-2 padding block (8+8) plus the text-sm line
+ * box at leading-normal (14 × 1.5 = 21). Virtualization math needs it
+ * as a JS number while the row chrome stretches rows to fill it
+ * (`pickerVirtualRow` below), so the number and the row skeleton
+ * cannot be allowed to drift apart. Single source for the four
+ * virtualized consumers — Combobox, Cascader, Command and Menu (each
+ * keeps a local alias under its family-facing name). Select's virtual
+ * rows deliberately stay at their own 29 (SelectFloating's
+ * OPTION_ROW_HEIGHT — space-1 block padding plus the taller 1.125rem
+ * checkbox line box): a different row chrome, not a drift of this one.
+ */
+export const PICKER_ROW_HEIGHT = 37;
+
+/**
  * Stretch a virtualized option over its absolutely-positioned,
  * fixed-height row wrapper so hover/highlight cover the full row.
  */

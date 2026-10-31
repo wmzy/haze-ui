@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
+import { outlineFocusVisible } from '../../utils/focus-ring';
 import {
   axisKeyDelta,
   endPointerDrag,
@@ -389,6 +390,7 @@ export function Splitter({
               onClick={() => togglePane(leadIndex, index)}
               x-class={[
                 collapseButtonBase,
+                outlineFocusVisible,
                 orientation === 'horizontal'
                   ? collapseLeadHorizontal
                   : collapseLeadVertical,
@@ -412,6 +414,7 @@ export function Splitter({
               onClick={() => togglePane(index, leadIndex)}
               x-class={[
                 collapseButtonBase,
+                outlineFocusVisible,
                 orientation === 'horizontal'
                   ? collapseTrailHorizontal
                   : collapseTrailVertical,
@@ -578,8 +581,10 @@ const collapseButtonBase = css`
     color: var(--haze-color-text);
   }
 
+  /* Only the offset is local — the outline arm itself is the shared
+     outlineFocusVisible (utils/focus-ring.ts), composed at the
+     x-class sites; additive delta per that module's header contract. */
   &:focus-visible {
-    outline: 2px solid var(--haze-color-focus-ring);
     outline-offset: 1px;
   }
 

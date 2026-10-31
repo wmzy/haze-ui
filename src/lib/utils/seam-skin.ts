@@ -4,10 +4,11 @@ import { css } from '@linaria/core';
  * Shared attached-row seam skin — the merging recipe a row of
  * border-carrying children wears to read as one control: ButtonGroup's
  * bar, InputGroup's field row, PhoneInput's country+number row. Only
- * the child-relative rules live here; each consumer keeps its own
- * container geometry (display/align/inline-size, the vertical bar's
- * flex-direction, divider cross-sizing) as a local companion class,
- * and the styles modules ship both as their single exported class
+ * the child-relative rules live here, plus the stretched-row geometry
+ * plain rows share (`attachedRowStretched` below); consumers with a
+ * genuinely different container (ButtonGroup's orientation-aware bar)
+ * keep their own geometry as a local companion class, and the styles
+ * modules ship the composed pair as their single exported class
  * (space-joined — the same string `x-class` would compose). The
  * classes ride with every consuming family's css via sharedLayers
  * (split-css.mjs).
@@ -73,3 +74,21 @@ export const attachedRow = css`
     border-end-end-radius: 0;
   }
 `;
+
+/**
+ * The row geometry every plain attached row wears: an inline-flex
+ * strip of stretch-aligned children filling the container's inline
+ * size (InputGroup's field row, PhoneInput's country+number row —
+ * neither ever goes vertical). ButtonGroup keeps a local companion
+ * instead: its bar adds the vertical flex-direction arm, a genuine
+ * geometry difference rather than spelling drift.
+ */
+export const stretchedRow = css`
+  display: inline-flex;
+  align-items: stretch;
+  inline-size: 100%;
+`;
+
+/** The default horizontal attached row: seam recipe + stretched-row
+ * geometry, space-joined the way `x-class` would compose them. */
+export const attachedRowStretched = `${attachedRow} ${stretchedRow}`;

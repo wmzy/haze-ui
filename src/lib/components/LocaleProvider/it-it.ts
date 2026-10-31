@@ -141,6 +141,7 @@ const itIT: HazeStrings = {
   dataTable: {
     selectAll: 'Seleziona tutte le righe',
     filterPlaceholder: 'Filtra',
+    columns: 'Colonne',
   },
   diffViewer: {
     header: 'Diff',
@@ -176,6 +177,11 @@ const itIT: HazeStrings = {
     nextImage: 'Immagine successiva',
     counter: '{current} / {total}',
     thumbnail: 'Visualizza immagine {index} di {total}: {alt}',
+  },
+  imageCrop: {
+    cropLabel: 'Area di ritaglio',
+    unsupportedLabel: 'Il ritaglio delle immagini non è supportato in questo browser.',
+    errorLabel: 'Caricamento dell’immagine non riuscito.',
   },
   inlineEdit: {
     placeholder: 'Fai clic per modificare',
