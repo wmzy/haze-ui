@@ -146,7 +146,9 @@ export const islamicUmalquraAdapter: HazeDateAdapter = {
   },
 
   addMonths(parts, delta) {
-    return clampMonthShift(parts, delta, islamicUmalquraAdapter.getDaysInMonth);
+    return clampMonthShift(parts, delta, (year, month) =>
+      islamicUmalquraAdapter.getDaysInMonth(year, month)
+    );
   },
 
   monthNames(locale = 'en', style: MonthNameStyle = 'long') {

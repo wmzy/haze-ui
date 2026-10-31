@@ -23,7 +23,9 @@ describe('useTypeahead', () => {
     try {
       const { result } = renderHook(() => useTypeahead());
       act(() => expect(result.current('g')).toBe('g'));
-      act(() => vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS + 100));
+      act(() => {
+        vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS + 100);
+      });
       // Fresh buffer: 'a' alone, not a continuation of 'ga'
       act(() => expect(result.current('a')).toBe('a'));
     } finally {
@@ -37,10 +39,14 @@ describe('useTypeahead', () => {
       const { result } = renderHook(() => useTypeahead());
       act(() => expect(result.current('f')).toBe('f'));
       // Almost at the end of the first window — the push must restart it
-      act(() => vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS - 100));
+      act(() => {
+        vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS - 100);
+      });
       act(() => expect(result.current('i')).toBe('fi'));
       // Past the first push's window, still inside the restarted one
-      act(() => vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS - 100));
+      act(() => {
+        vi.advanceTimersByTime(TYPEAHEAD_WINDOW_MS - 100);
+      });
       act(() => expect(result.current('x')).toBe('fix'));
     } finally {
       vi.useRealTimers();
@@ -49,7 +55,9 @@ describe('useTypeahead', () => {
 
   it('clears the reset timer on unmount without error', () => {
     const { result, unmount } = renderHook(() => useTypeahead());
-    act(() => result.current('a'));
+    act(() => {
+      result.current('a');
+    });
     expect(() => unmount()).not.toThrow();
   });
 });

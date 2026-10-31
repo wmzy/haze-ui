@@ -171,6 +171,11 @@ describe('PhoneInput', () => {
     ).toBeInTheDocument();
   });
 
+  // axe walks the full country-option listbox (~240 options rendered for
+  // the dial-code picker): ~1.7s locally, 5.4s+ under the coverage job's
+  // v8 instrumentation on shared CI runners — over the 5s default. The
+  // assertion is a violations diff, not wall-clock, so a generous timeout
+  // only absorbs runner speed, never a perf regression.
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(<PhoneInput aria-label="phone" />);
@@ -178,5 +183,5 @@ describe('PhoneInput', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
-  });
+  }, 20_000);
 });
