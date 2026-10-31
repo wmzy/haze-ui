@@ -1168,8 +1168,7 @@
     {
       "name": "placeholder",
       "type": "string",
-      "default": "'Select date'",
-      "description": "Input placeholder"
+      "description": "Input placeholder (default from the datepicker locale pack: Select date)"
     },
     {
       "name": "className",

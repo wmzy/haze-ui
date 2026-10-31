@@ -136,6 +136,7 @@ const ptBR: HazeStrings = {
     presetLastMonth: 'Mês passado',
   },
   datepicker: {
+    placeholder: 'Selecione a data',
     time: 'Hora',
   },
   dataTable: {

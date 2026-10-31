@@ -216,6 +216,13 @@ export const menuItemIndicator = css`
   margin-inline-end: var(--haze-space-2);
 `;
 
+/** Group wrapper box: a plain block section container. Shared by the
+ * Group and RadioGroup parts of the Menu and DropdownMenu families
+ * (each family used to carry its own local copy of this class). */
+export const menuGroup = css`
+  display: block;
+`;
+
 /** Group heading: muted, one step smaller than item text. Shared by the
  * Group and RadioGroup parts of all three families. */
 export const menuGroupLabel = css`

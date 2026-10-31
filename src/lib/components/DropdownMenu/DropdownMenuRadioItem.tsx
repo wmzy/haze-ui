@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuRadioItemImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -20,9 +20,6 @@ type DropdownMenuRadioItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's chrome (utils/menu-item-parts with the
-// menuPopupItem skin); the leading slot is the fixed-size selection dot.
-
 /**
  * One option of a DropdownMenuRadioGroup (`role="menuitemradio"`):
  * activating it (click, Enter, Space) selects its `value` in the
@@ -31,34 +28,31 @@ type DropdownMenuRadioItemProps = {
  */
 export default function DropdownMenuRadioItem({
   value,
-  disabled = false,
-  danger = false,
+  disabled,
+  danger,
   icon,
   kbdLabel,
   className,
   children,
 }: DropdownMenuRadioItemProps) {
+  // Radio-group context first — an item outside a radio group throws
+  // the radio error even when it is also outside its DropdownMenu.
   const { checked, select } = useMenuRadioItem(value);
   const classNames = useDropdownMenuContext().classNames;
-
   return (
-    <MenuItemShell
+    <MenuRadioItemImpl
       skin='popup'
-      itemRole='menuitemradio'
-      itemSlot='menu-radio-item'
       familyClass={classNames?.radioItem}
-      ariaChecked={checked}
-      indicator='dot'
-      indicatorShown={checked}
+      checked={checked}
+      onSelect={select}
       disabled={disabled}
       danger={danger}
       icon={icon}
       kbdLabel={kbdLabel}
       className={className}
-      onClick={select}
     >
       {children}
-    </MenuItemShell>
+    </MenuRadioItemImpl>
   );
 }
 

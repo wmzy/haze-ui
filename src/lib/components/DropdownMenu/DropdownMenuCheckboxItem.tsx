@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { useControl } from 'react-use-control';
-
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuCheckboxItemImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -23,10 +21,6 @@ type DropdownMenuCheckboxItemProps = {
   children: ReactNode;
 };
 
-// DropdownMenuItem's chrome (utils/menu-item-parts with the
-// menuPopupItem skin); the leading slot is the fixed-size check
-// indicator.
-
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or
  * Space flips `checked`; the state is controllable through the standard
@@ -35,40 +29,30 @@ type DropdownMenuCheckboxItemProps = {
  * closes the menu on activation).
  */
 export default function DropdownMenuCheckboxItem({
-  checked: checkedControl,
+  checked,
   onCheckedChange,
-  disabled = false,
-  danger = false,
+  disabled,
+  danger,
   icon,
   kbdLabel,
   className,
   children,
 }: DropdownMenuCheckboxItemProps) {
   const classNames = useDropdownMenuContext().classNames;
-  const [checked, setChecked] = useControl(checkedControl, false);
-
   return (
-    <MenuItemShell
+    <MenuCheckboxItemImpl
       skin='popup'
-      itemRole='menuitemcheckbox'
-      itemSlot='menu-checkbox-item'
       familyClass={classNames?.checkboxItem}
-      ariaChecked={checked}
-      indicator='check'
-      indicatorShown={checked}
+      checked={checked}
+      onCheckedChange={onCheckedChange}
       disabled={disabled}
       danger={danger}
       icon={icon}
       kbdLabel={kbdLabel}
       className={className}
-      onClick={() => {
-        const next = !checked;
-        setChecked(next);
-        onCheckedChange?.(next);
-      }}
     >
       {children}
-    </MenuItemShell>
+    </MenuCheckboxItemImpl>
   );
 }
 

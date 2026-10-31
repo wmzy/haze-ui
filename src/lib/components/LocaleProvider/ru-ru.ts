@@ -135,6 +135,7 @@ const ruRU: HazeStrings = {
     presetLastMonth: 'Прошлый месяц',
   },
   datepicker: {
+    placeholder: 'Выберите дату',
     time: 'Время',
   },
   dataTable: {

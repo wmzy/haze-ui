@@ -18,22 +18,22 @@ import { menuOptionStates } from '../../utils/menu-skins';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 import {
   ChevronRight,
+  PickerPanelEmpty,
+  PickerPanelLoading,
   PickerTrigger,
   pickerArrowOpen,
   pickerCaret,
-  pickerEmptyBlock,
-  pickerLoadingBlock,
   pickerOptionSelected,
   pickerSearchInput,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
 import { mergeRefs } from '../../utils/refs';
+import Spinner from '../Spinner/Spinner';
 import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
 import { usePendingFocus } from '../../utils/use-pending-focus';
 import { useSearchReport } from '../../utils/use-search-report';
 import { useStrings } from '../LocaleProvider';
-import Spinner from '../Spinner/Spinner';
 import { VirtualList } from '../VirtualList';
 
 export type CascaderOption = {
@@ -738,12 +738,9 @@ export default function Cascader({
   ));
 
   const panelBody = loading ? (
-    <div data-slot='loading' x-class={[pickerLoadingBlock, classNames?.loading]}>
-      <Spinner size='sm' />
-      <span>{searchStrings.loading}</span>
-    </div>
+    <PickerPanelLoading label={searchStrings.loading} className={classNames?.loading} spinner={<Spinner size='sm' />} />
   ) : searchMode && options.length === 0 ? (
-    <div data-slot='empty' x-class={[pickerEmptyBlock, classNames?.empty]}>{searchStrings.noMatch}</div>
+    <PickerPanelEmpty label={searchStrings.noMatch} className={classNames?.empty} />
   ) : (
     columnsBody
   );

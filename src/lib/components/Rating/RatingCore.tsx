@@ -1,11 +1,11 @@
 import type { KeyboardEvent as ReactKeyboardEvent, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { getDirection } from '../../utils/direction';
 import { focusRingVisible } from '../../utils/focus-ring';
-import { mergeRefs } from '../../utils/refs';
+import { useCallbackRef } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 
@@ -83,10 +83,7 @@ export default function RatingCore({
   const strings = useStrings('rating');
   // The consumer's ref rides the current roving tab-stop star; as the
   // rating moves, the ref detaches and re-attaches to the new stop.
-  const attachStop = useCallback(
-    (node: HTMLSpanElement | null) => mergeRefs(ref)(node),
-    [ref]
-  );
+  const attachStop = useCallbackRef(ref);
 
   const handleClick = (index: number) => {
     onChange(index + 1);

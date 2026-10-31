@@ -1,3 +1,7 @@
+// Explicit vitest expect: jest-axe's @types/jest pollutes the global
+// expect (jest.Expect), whose call signature drops the optional
+// message argument used below.
+import { expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import MarkdownRenderer from './MarkdownRenderer';
@@ -78,6 +82,78 @@ describe('MarkdownRenderer', () => {
   });
 });
 
+describe('MarkdownRenderer XSS hardening', () => {
+  it('neutralizes javascript: URLs to a dead anchor', () => {
+    const { container } = render(<MarkdownRenderer content={'[click](javascript:alert(1))'} />);
+    const a = container.querySelector('a');
+    expect(a).toBeInTheDocument();
+    expect(a).toHaveAttribute('href', '#');
+    expect(container.innerHTML).not.toContain('javascript');
+    // The link text survives the downgrade.
+    expect(screen.getByText('click')).toBeInTheDocument();
+  });
+
+  it('enforces the URL scheme whitelist on link hrefs', () => {
+    const cases: [string, string][] = [
+      ['[ok](https://example.com/?a=1&b=2)', 'https://example.com/?a=1&b=2'],
+      ['[ok](mailto:user@example.com)', 'mailto:user@example.com'],
+      ['[ok](docs/page.md)', 'docs/page.md'],
+      ['[ok](#section)', '#section'],
+      ['[bad](javascript:alert(1))', '#'],
+      ['[bad](JavaScript:alert(1))', '#'],
+      // The browser URL parser strips embedded tab/CR/LF before matching
+      // schemes — the whitelist must not let this through as "relative".
+      ['[bad](java\tscript:alert(1))', '#'],
+      ['[bad](data:text/html;base64,PHNjcmlwdD4)', '#'],
+      ['[bad](vbscript:msgbox)', '#'],
+      // Protocol-relative inherits the page protocol — refused.
+      ['[bad](//evil.example.com)', '#'],
+    ];
+    for (const [content, href] of cases) {
+      const { container } = render(<MarkdownRenderer content={content} />);
+      expect(container.querySelector('a'), `content: ${content}`).toHaveAttribute('href', href);
+    }
+  });
+
+  it('escapes raw HTML in body text instead of rendering it', () => {
+    const { container } = render(<MarkdownRenderer content={'<img src=x onerror=alert(1)>'} />);
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.querySelector('[onerror]')).not.toBeInTheDocument();
+    expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
+  });
+
+  it('keeps image alt quotes inside the attribute', () => {
+    const { container } = render(
+      <MarkdownRenderer content={'![a" onerror="alert(1)](x)'} />,
+    );
+    expect(container.querySelector('[onerror]')).not.toBeInTheDocument();
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.textContent).toContain('a" onerror="alert(1)');
+  });
+
+  it('drops images whose src fails the scheme whitelist', () => {
+    const { container } = render(<MarkdownRenderer content={'![](javascript:alert(1))'} />);
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(container.innerHTML).not.toContain('javascript');
+  });
+
+  it('shows fenced code HTML as text, never as elements', () => {
+    const { container } = render(
+      <MarkdownRenderer content={'```html\n<script>alert(1)</script>\n```'} />,
+    );
+    expect(container.querySelector('script')).not.toBeInTheDocument();
+    const code = container.querySelector('pre code');
+    expect(code).toBeInTheDocument();
+    expect(code).toHaveTextContent('<script>alert(1)</script>');
+  });
+
+  it('escapes inline code spans', () => {
+    const { container } = render(<MarkdownRenderer content={'`<b>x</b>`'} />);
+    expect(container.querySelector('b')).not.toBeInTheDocument();
+    expect(container.querySelector('code')).toHaveTextContent('<b>x</b>');
+  });
+});
+
 // ≥20KB of mixed headings / lists / code blocks, streamed as 200 chunks
 // cut at fixed width — deliberately NOT aligned with block boundaries,
 // so chunks routinely land mid-paragraph and mid-fence.
@@ -145,6 +221,7 @@ describe('MarkdownRenderer incremental streaming', () => {
     expect(newChars).toBeLessThanOrEqual(full.length * 3);
 
     // The corpus genuinely exercises the quadratic path…
+    expect(oldCalls).toBe(chunkCount);
     expect(oldChars).toBeGreaterThan(full.length * 50);
     // …and the incremental renderer avoids it by an order of magnitude.
     expect(newChars * 10).toBeLessThan(oldChars);

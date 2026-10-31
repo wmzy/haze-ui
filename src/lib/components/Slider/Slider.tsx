@@ -3,7 +3,7 @@ import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
 
-import SliderCore from './SliderCore';
+import SliderCore, { numberOr } from './SliderCore';
 
 type SliderProps = {
   /** `number` in single mode, `[low, high]` when `range` is set. */
@@ -58,12 +58,6 @@ type SliderProps = {
   ComponentPropsWithoutRef<'input'>,
   'type' | 'value' | 'aria-label' | 'step'
 >;
-
-/** A min/max attribute as a finite number, else the native default. */
-function numberOr(raw: string | number | undefined, fallback: number): number {
-  const parsed = raw === undefined ? Number.NaN : Number(raw);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
 
 export default function Slider({
   value: valueControl,

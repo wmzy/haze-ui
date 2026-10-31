@@ -1,13 +1,13 @@
 /**
  * Shared skip-disabled index walker — the roving-step primitive behind
- * Calendar's grid keyboards (components/Calendar/grid-roving.ts: the
- * day grid and the month/quarter/year selector grids) and TimeGrid's
- * slot group: step `delta` from a possibly virtual origin, keep
- * stepping while the landing cell is disabled, stop at the edges.
- * Consumers pass their own disabled predicate (DOM `button.disabled`,
- * a Set of slot strings, ...). Pure functions, zero imports: no hooks,
- * no DOM access. No RSC-safe registration needed — both importers are
- * hook-driven client modules (see scripts/rsc-safe.mjs).
+ * the shared grid keyboard roving (utils/grid-roving.ts: Calendar's
+ * day/selector grids, TimeGrid's slot group, Schedule's month grid):
+ * step `delta` from a possibly virtual origin, keep stepping while the
+ * landing cell is disabled, stop at the edges. Consumers pass their
+ * own disabled predicate (DOM `button.disabled`, a Set of slot
+ * strings, ...). Pure functions, zero imports: no hooks, no DOM
+ * access. No RSC-safe registration needed — its importer is a
+ * hook-driven client module (see scripts/rsc-safe.mjs).
  */
 
 /**

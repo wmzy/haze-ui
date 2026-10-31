@@ -135,6 +135,7 @@ const itIT: HazeStrings = {
     presetLastMonth: 'Mese scorso',
   },
   datepicker: {
+    placeholder: 'Seleziona la data',
     time: 'Ora',
   },
   dataTable: {

@@ -9,9 +9,8 @@ import {
   formatDateOf,
   formatWeekValue,
   getISOWeek,
-  getISOWeekStartDate,
   parseCivilDate,
-  parseWeekValue,
+  weekStartDate,
 } from '../../utils/date-math';
 import { pickerFieldInputSm } from '../../utils/field-skin';
 import { FloatingPanel, useFloating, useOpenAdaptor } from '../../utils/floating';
@@ -163,7 +162,7 @@ export default function DatepickerCore({
   locale,
   weekStartsOn,
   cellRender,
-  placeholder = 'Select date',
+  placeholder,
   className,
   ref,
   ...rest
@@ -239,13 +238,8 @@ export default function DatepickerCore({
    * value resolves to its Monday before `format` sees it. */
   const serialize = (dayValue: string, time?: string) => {
     if (custom && format) {
-      const week = picker === 'week' ? parseWeekValue(dayValue) : null;
-      const monday = week
-        ? getISOWeekStartDate(week.year, week.week)
-        : null;
       const day =
-        (monday &&
-          new Date(monday.year, monday.month, monday.day)) ||
+        (picker === 'week' && weekStartDate(dayValue)) ||
         parseCivilDate(dayValue);
       if (!day) return time !== undefined ? formatDateTimeValue(dayValue, time) : dayValue;
       return format(
@@ -278,7 +272,7 @@ export default function DatepickerCore({
         controlsId={panelId}
         className={input}
         value={value}
-        placeholder={placeholder}
+        placeholder={placeholder ?? strings.placeholder}
       />
       <FloatingPanel
         ref={panelRef}

@@ -17,6 +17,7 @@ import {
   parseQuarterValue,
   parseWeekValue,
   parseYearValue,
+  weekStartDate,
 } from './date-math';
 
 /* Time-zone control: Node on POSIX/glibc re-reads process.env.TZ before the
@@ -734,6 +735,24 @@ describe('week values and ISO week identity', () => {
       expect(parseWeekValue('2026')).toBeNull();
       expect(parseMonthValue('2026-W05')).toBeNull();
       expect(parseCivilDate('2026-W05')).toBeNull();
+    });
+  });
+
+  describe('weekStartDate', () => {
+    it('resolves a week value to its Monday as a local-midnight Date', () => {
+      // Known anchors: 2026-W01 starts Monday 2025-12-29; 2026-W37
+      // starts Monday 2026-09-07.
+      expect(weekStartDate('2026-W01')).toEqual(new Date(2025, 11, 29));
+      expect(weekStartDate('2026-W37')).toEqual(new Date(2026, 8, 7));
+      expect(weekStartDate('2026-W37')!.getDay()).toBe(1);
+    });
+
+    it('rejects the same values parseWeekValue rejects', () => {
+      expect(weekStartDate('2025-W53')).toBeNull();
+      expect(weekStartDate('2026-W00')).toBeNull();
+      expect(weekStartDate('2026-W1')).toBeNull();
+      expect(weekStartDate('2026-03-15')).toBeNull();
+      expect(weekStartDate('')).toBeNull();
     });
   });
 });

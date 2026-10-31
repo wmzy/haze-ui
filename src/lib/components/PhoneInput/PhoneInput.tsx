@@ -163,8 +163,8 @@ export default function PhoneInput({
     setCountry(code);
     onCountryChange?.(code);
     // Re-prefix the typed digits under the new dial code.
-    const digits = display.replace(/\D/g, '');
-    if (digits) commitValue(`+${getCountryCallingCode(code)}${digits}`);
+    const e164 = toE164(display, code);
+    if (e164) commitValue(e164);
   };
 
   const invalid = value !== '' && !isValidPhone(value, country);

@@ -5,7 +5,7 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
-import { mergeRefs } from '../../utils/refs';
+import { useCallbackRef } from '../../utils/refs';
 import { fieldChrome, fieldFocusRing } from '../../utils/field-skin';
 
 type OTPInputCoreProps = {
@@ -57,10 +57,7 @@ export default function OTPInputCore({
   const strings = useStrings('otpInput');
   // The forwarded ref rides cell 0 — the first cell is the component's
   // focus entry point.
-  const setFirstCellRef = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(ref)(node),
-    [ref]
-  );
+  const setFirstCellRef = useCallbackRef(ref);
 
   const handleChange = useCallback(
     (index: number, char: string) => {

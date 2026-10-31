@@ -1,6 +1,6 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
-import { MenuItemShell, type MenuItemShellOwnProps } from '../../utils/menu-item-parts';
+import { MenuItemImpl, type MenuItemImplOwnProps } from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -42,11 +42,9 @@ export default function MenuItem<T extends ElementType = 'button'>({
 }: MenuItemProps<T>) {
   const classNames = useMenuClassNames();
   return (
-    <MenuItemShell<T>
+    <MenuItemImpl<T>
       as={as}
       skin='menu'
-      itemRole='menuitem'
-      itemSlot='menu-item'
       familyClass={classNames?.item}
       disabled={disabled}
       danger={danger}
@@ -54,10 +52,10 @@ export default function MenuItem<T extends ElementType = 'button'>({
       kbdLabel={kbdLabel}
       className={className}
       onClick={onSelect}
-      {...(rest as Omit<ComponentPropsWithRef<T>, keyof MenuItemShellOwnProps | 'as'>)}
+      {...(rest as Omit<ComponentPropsWithRef<T>, keyof MenuItemImplOwnProps | 'as'>)}
     >
       {children}
-    </MenuItemShell>
+    </MenuItemImpl>
   );
 }
 

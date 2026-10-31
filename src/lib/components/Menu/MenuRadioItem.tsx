@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuRadioItemImpl } from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -20,10 +20,6 @@ type MenuRadioItemProps = {
   children: ReactNode;
 };
 
-// MenuItem's chrome (utils/menu-item-parts with the menuItemStates
-// skin); the leading slot is the fixed-size selection dot (it draws in
-// CanvasText through currentColor under forced-colors).
-
 /**
  * One option of a MenuRadioGroup (`role="menuitemradio"`): activating
  * it (click, Enter, Space) selects its `value` in the group — the
@@ -32,8 +28,8 @@ type MenuRadioItemProps = {
  */
 export default function MenuRadioItem({
   value,
-  disabled = false,
-  danger = false,
+  disabled,
+  danger,
   icon,
   kbdLabel,
   className,
@@ -41,25 +37,20 @@ export default function MenuRadioItem({
 }: MenuRadioItemProps) {
   const classNames = useMenuClassNames();
   const { checked, select } = useMenuRadioItem(value);
-
   return (
-    <MenuItemShell
+    <MenuRadioItemImpl
       skin='menu'
-      itemRole='menuitemradio'
-      itemSlot='menu-radio-item'
       familyClass={classNames?.radioItem}
-      ariaChecked={checked}
-      indicator='dot'
-      indicatorShown={checked}
+      checked={checked}
+      onSelect={select}
       disabled={disabled}
       danger={danger}
       icon={icon}
       kbdLabel={kbdLabel}
       className={className}
-      onClick={select}
     >
       {children}
-    </MenuItemShell>
+    </MenuRadioItemImpl>
   );
 }
 

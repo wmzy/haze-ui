@@ -3,7 +3,7 @@ import type { ReactNode, Ref } from 'react';
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useId, useRef } from 'react';
 
-import { mergeRefs } from '../../utils/refs';
+import { useCallbackRef } from '../../utils/refs';
 
 import { RadioProvider } from './RadioContext';
 
@@ -54,10 +54,7 @@ export default function RadioGroupCore({
   // The consumer's ref resolves to the checked radio (the group's tab
   // stop), falling back to the first — focus() lands where a browser
   // Tab would.
-  const attachRadio = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(ref)(node),
-    [ref]
-  );
+  const attachRadio = useCallbackRef(ref);
   const setFieldsetRef = useCallback(
     (node: HTMLFieldSetElement | null) => {
       fieldsetRef.current = node;

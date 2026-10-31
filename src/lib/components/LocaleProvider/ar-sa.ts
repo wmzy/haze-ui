@@ -142,6 +142,7 @@ const arSA: HazeStrings = {
     presetLastMonth: 'الشهر الماضي',
   },
   datepicker: {
+    placeholder: 'اختر التاريخ',
     time: 'الوقت',
   },
   dataTable: {

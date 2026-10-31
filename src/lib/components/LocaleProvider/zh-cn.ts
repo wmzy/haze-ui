@@ -133,6 +133,7 @@ const zhCN: HazeStrings = {
     presetLastMonth: '上月',
   },
   datepicker: {
+    placeholder: '请选择日期',
     time: '时间',
   },
   dataTable: {

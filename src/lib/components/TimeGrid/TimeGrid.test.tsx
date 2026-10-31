@@ -199,10 +199,35 @@ describe('TimeGrid', () => {
     // One row down from 09:00 (index 0) is the disabled 12:00 (index 3)
     // — the walker keeps its stride, staying in-column onto 15:00
     // (index 6) instead of crawling to the adjacent 13:00, matching
-    // Calendar's grid walker (utils/skip-walker).
+    // Calendar's grid walker (utils/grid-roving).
     await user.keyboard('{ArrowDown}');
     expect(radio('15:00')).toHaveFocus();
     expect(radio('15:00')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('keyboard: dir="rtl" mirrors the horizontal arrows to the painted column order', async () => {
+    const user = userEvent.setup();
+    render(
+      <div dir='rtl'>
+        <TimeGrid aria-label='Pick' from='09:00' to='14:00' step={60} columns={3} />
+      </div>
+    );
+    await user.tab();
+    expect(radio('09:00')).toHaveFocus();
+
+    // Under dir="rtl" the CSS grid paints columns right-to-left, so the
+    // visually-forward arrow is ArrowLeft: it advances to the DOM-order
+    // next slot (commit + focus), ArrowRight retreats.
+    await user.keyboard('{ArrowLeft}');
+    expect(radio('10:00')).toHaveFocus();
+    expect(radio('10:00')).toHaveAttribute('aria-checked', 'true');
+    await user.keyboard('{ArrowRight}');
+    expect(radio('09:00')).toHaveFocus();
+    expect(radio('09:00')).toHaveAttribute('aria-checked', 'true');
+    // The vertical axis is direction-invariant: one row down (columns=3).
+    await user.keyboard('{ArrowDown}');
+    expect(radio('12:00')).toHaveFocus();
+    expect(radio('12:00')).toHaveAttribute('aria-checked', 'true');
   });
 
   it('formats slot text through formatLabel', () => {

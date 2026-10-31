@@ -9,15 +9,22 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
-import { PickerChips, pickerClearBtn } from '../../utils/picker-chips';
+import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
+import {
+  dropLastPickerValue,
+  pickerMaxCountReached,
+  pickerRowDisabled,
+  pickerShowsCreateRow,
+  togglePickerValue,
+} from '../../utils/picker-selection';
 import {
   PickerCaret,
+  PickerPanelEmpty,
+  PickerPanelLoading,
   PickerTrigger,
-  pickerEmptyBlock,
   pickerGroupLabel,
   pickerListbox,
   pickerListboxVirtual,
-  pickerLoadingBlock,
   pickerOptionActive,
   pickerOptionRow,
   pickerOptionSelected,
@@ -34,8 +41,8 @@ import { usePanelQuery } from '../../utils/use-panel-query';
 import { useSearchReport } from '../../utils/use-search-report';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
-import Spinner from '../Spinner/Spinner';
 import { VirtualList } from '../VirtualList';
+import Spinner from '../Spinner/Spinner';
 
 import { filterSelectEntries, flattenSelectEntries, selectOptionText } from './select-options';
 
@@ -408,9 +415,13 @@ export default function SelectFloating<T extends string | number = string>({
   // uncontrolled default in ./Select) — 0 stays a real selection.
   const selectedValue: T = !isMulti && !Array.isArray(value) ? value : ('' as T);
   // maxCount cap: unselected options are locked once the selection
-  // reaches it (selected entries stay removable).
-  const maxCountReached =
-    isMulti && maxCount !== undefined && selected.length >= maxCount;
+  // reaches it (selected entries stay removable) — the shared lock
+  // computation (utils/picker-selection, Combobox parity).
+  const maxCountReached = pickerMaxCountReached(
+    isMulti,
+    maxCount,
+    selected.length
+  );
   // Panel visibility stays internal to the trigger — the pointer-safe
   // open path lives in floating's onTriggerPointerDown/onTriggerClick.
   const [open, setOpen] = useControl(undefined, false);
@@ -476,20 +487,23 @@ export default function SelectFloating<T extends string | number = string>({
       : filterSelectEntries(entries, query);
   const visibleOptions = flattenSelectEntries(visibleEntries);
 
-  // Tags creation row (Combobox's creatable contract): offered when a
-  // non-blank query matches nothing — not while loading, not at the
-  // maxCount cap, not when the trimmed query already exists as an
-  // option value or a selected tag (dedupe: committing it would be a
-  // no-op, so it is not offered at all). It leads the navigable list,
-  // so keyboard and aria-set semantics treat it as a regular option.
+  // Tags creation row (Combobox's creatable contract): the shared
+  // offer formula (utils/picker-selection) plus Select's own dedupe —
+  // a tag's label may differ from its value, so the query can miss
+  // every label filter yet already exist as a selected tag or an
+  // option value; committing it would be a no-op, so it is not offered
+  // at all. It leads the navigable list, so keyboard and aria-set
+  // semantics treat it as a regular option.
   const trimmedQuery = query.trim();
   const createValue = trimmedQuery as T;
   const showCreateItem =
-    tags &&
-    !loading &&
-    trimmedQuery !== '' &&
-    visibleOptions.length === 0 &&
-    !maxCountReached &&
+    pickerShowsCreateRow({
+      creatable: tags,
+      loading,
+      trimmedQuery,
+      matchCount: visibleOptions.length,
+      maxCountReached,
+    }) &&
     !selected.includes(createValue) &&
     !allOptions.some((o) => String(o.value) === trimmedQuery);
   const createOption: SelectOptionData<T> | undefined = showCreateItem
@@ -567,15 +581,11 @@ export default function SelectFloating<T extends string | number = string>({
   useSearchReport(onSearch, query);
 
   const toggleOption = (optionValue: T) => {
-    if (selected.includes(optionValue)) {
-      onChange(selected.filter((v) => v !== optionValue));
-      return;
-    }
-    // maxCount rejection: the click/keyboard paths also carry the
-    // visual disabled state, but the guard here is what enforces it
-    // for controlled and uncontrolled consumers alike.
-    if (maxCountReached) return;
-    onChange([...selected, optionValue]);
+    // Toggle + maxCount rejection (utils/picker-selection): a select
+    // rejected at the cap returns the same array, hence the identity
+    // gate.
+    const next = togglePickerValue(selected, optionValue, maxCountReached);
+    if (next !== selected) onChange(next);
   };
 
   const removeValue = (optionValue: T) => {
@@ -657,12 +667,13 @@ export default function SelectFloating<T extends string | number = string>({
       setOpen(false);
     } else if (e.key === 'Backspace') {
       // Keyboard parity for the pointer-only affordances: multiple
-      // drops the most recently selected chip, single (clearable)
-      // empties the value — see pickerChipRemove/pickerClearBtn
+      // drops the most recently selected chip (utils/
+      // picker-selection's dropLastPickerValue), single (clearable)
+      // empties the value — see PickerChips/PickerClearButton
       // (utils/picker-chips).
       if (isMulti && selected.length > 0) {
         e.preventDefault();
-        onChange(selected.slice(0, -1));
+        onChange(dropLastPickerValue(selected));
       } else if (!isMulti && clearable && selectedValue !== '') {
         e.preventDefault();
         clearValue();
@@ -692,7 +703,7 @@ export default function SelectFloating<T extends string | number = string>({
       setOpen(false);
     } else if (e.key === 'Backspace' && query === '' && selected.length > 0) {
       e.preventDefault();
-      onChange(selected.slice(0, -1));
+      onChange(dropLastPickerValue(selected));
     }
   };
 
@@ -729,11 +740,15 @@ export default function SelectFloating<T extends string | number = string>({
     // at the cap instead) nor checkbox-carrying — it is a commit
     // affordance, not a set member. Option-level disabled (from
     // `<Option disabled>` or the `options` prop) joins the maxCount
-    // lock under the same inert-row contract.
+    // lock under the same inert-row contract (utils/
+    // picker-selection's pickerRowDisabled).
     const isCreateRow = showCreateItem && i === 0;
-    const rowDisabled =
-      option.disabled === true ||
-      (isMulti && maxCountReached && !isSelected && !isCreateRow);
+    const rowDisabled = pickerRowDisabled(
+      option.disabled,
+      maxCountReached,
+      isSelected,
+      isCreateRow
+    );
     return (
       <div
         key={option.value}
@@ -773,23 +788,16 @@ export default function SelectFloating<T extends string | number = string>({
     clearable && (isMulti ? selected.length > 0 : selectedValue !== '');
 
   const clearAffordance = showClear ? (
-    <span
-      aria-hidden='true'
-      data-slot='clear-button'
+    <PickerClearButton
       title={strings.clear}
-      x-class={[pickerClearBtn, classNames?.clearButton]}
-      onClick={(e) => {
-        // Keep the trigger's open toggle out of this click — clearing
-        // must not flip the panel either way (the pointerdown above
-        // already reached the floating handlers for race attribution,
-        // so an open panel stays open and a closed one stays closed).
-        e.stopPropagation();
+      className={classNames?.clearButton}
+      // Focus return rides the closure: back to the inline input in
+      // tags mode, the trigger button everywhere else.
+      onClear={() => {
         clearValue();
         returnFocus();
       }}
-    >
-      ×
-    </span>
+    />
   ) : undefined;
 
   // The chip set of a multiple/tags trigger, shared by both shapes —
@@ -875,12 +883,9 @@ export default function SelectFloating<T extends string | number = string>({
   );
 
   const listboxBody = loading ? (
-    <div data-slot='loading' x-class={pickerLoadingBlock}>
-      <Spinner size='sm' />
-      <span>{strings.loading}</span>
-    </div>
+    <PickerPanelLoading label={strings.loading} spinner={<Spinner size='sm' />} />
   ) : (
-    <div data-slot='empty' x-class={pickerEmptyBlock}>{strings.noMatch}</div>
+    <PickerPanelEmpty label={strings.noMatch} />
   );
 
   // Tags mode: the forwardable `disabled` rides the input (a div has

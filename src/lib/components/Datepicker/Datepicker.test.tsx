@@ -3,6 +3,7 @@ import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 
 import ConfigProvider from '../ConfigProvider/ConfigProvider';
+import LocaleProvider from '../LocaleProvider/LocaleProvider';
 import {
   getLocalizedMonthLabel,
   getLocalizedWeekdays,
@@ -24,6 +25,15 @@ describe('Datepicker', () => {
   it('renders custom placeholder', () => {
     render(<Datepicker placeholder="Pick a date" />);
     expect(screen.getByPlaceholderText('Pick a date')).toBeInTheDocument();
+  });
+
+  it('localizes the default placeholder from the locale pack', () => {
+    render(
+      <LocaleProvider locale="zh-CN">
+        <Datepicker />
+      </LocaleProvider>
+    );
+    expect(screen.getByPlaceholderText('请选择日期')).toBeInTheDocument();
   });
 
   it('opens calendar on input click', async () => {

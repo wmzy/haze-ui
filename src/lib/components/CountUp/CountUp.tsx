@@ -1,9 +1,9 @@
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { useEffect, useRef, useState } from 'react';
-import { css } from '@linaria/core';
 
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { tabularNums } from '../../utils/tabular-nums';
 
 type CountUpProps = {
   /** Animation target — changes animate from the currently shown value. */
@@ -22,16 +22,6 @@ type CountUpProps = {
   autostart?: boolean;
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'span'>, 'children'>;
-
-/* tabular-nums: digits share one advance width so the number does not
- * jitter while counting. Size and color inherit so CountUp slots into
- * Stat-like contexts unchanged. */
-const base = css`
-  font-variant-numeric: tabular-nums;
-  font-family: var(--haze-font-sans);
-  font-size: inherit;
-  color: inherit;
-`;
 
 /* Intl.NumberFormat construction is comparatively expensive; the default
  * formatter caches one instance per decimal count. */
@@ -100,7 +90,7 @@ export default function CountUp({
   }, [to, from, duration, reducedMotion, autostart]);
 
   return (
-    <span data-slot="count-up" x-class={[base, className]} {...rest}>
+    <span data-slot="count-up" x-class={[tabularNums, className]} {...rest}>
       {format ? format(displayed) : defaultFormat(displayed, decimals)}
     </span>
   );

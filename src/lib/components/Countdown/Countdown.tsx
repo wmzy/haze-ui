@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { useEffect, useRef, useState } from 'react';
-import { css } from '@linaria/core';
 
+import { tabularNums } from '../../utils/tabular-nums';
 import { pad2 } from '../../utils/time-math';
 import { useLatest } from '../../hooks/useLatest';
 
@@ -34,16 +34,6 @@ type CountdownProps = {
   render?: (parts: CountdownParts) => ReactNode;
   className?: string;
 } & Omit<ComponentPropsWithoutRef<'span'>, 'children'>;
-
-/* Same rationale as CountUp: tabular-nums keeps the per-second ticks
- * width-stable, and size/color inherit so Countdown slots into Stat-like
- * contexts unchanged. */
-const base = css`
-  font-variant-numeric: tabular-nums;
-  font-family: var(--haze-font-sans);
-  font-size: inherit;
-  color: inherit;
-`;
 
 function defaultFormat({ days, hours, minutes, seconds }: CountdownParts): string {
   const clock = `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
@@ -115,7 +105,7 @@ export default function Countdown({
     <span
       data-slot='countdown'
       aria-label={label}
-      x-class={[base, className]}
+      x-class={[tabularNums, className]}
       {...rest}
     >
       {render ? render(parts) : format ? format(parts) : defaultFormat(parts)}

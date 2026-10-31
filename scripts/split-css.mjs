@@ -431,6 +431,10 @@ const sharedLayers = {
   // outer chrome DiffViewer and LogViewer wore as byte-identical
   // wrapper copies (family chrome stays local deltas).
   'utils/mono-panel-skin': ['diff-viewer', 'log-viewer'],
+  // Shared tabular numeric base (utils/tabular-nums.ts): tabular-nums
+  // + font-sans + inherited size/color that CountUp and Countdown wore
+  // as byte-identical base copies.
+  'utils/tabular-nums': ['count-up', 'countdown'],
   // FloatButton's FAB skin exported for the sibling BackToTop: like
   // segmented-field above, the cross-family consumption rides a
   // registered shared layer instead of relying on the sibling

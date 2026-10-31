@@ -1,6 +1,7 @@
 import type {
   KeyboardEvent as ReactKeyboardEvent,
   ReactNode,
+  RefObject,
 } from 'react';
 
 import type { CalendarProps, HeaderPanelView } from './types';
@@ -17,7 +18,6 @@ import {
   formatQuarterValue,
   formatYearValue,
   getDaysInMonth,
-  getISOWeekStartDate,
   getWeekdayLabels,
   parseCivilDate,
   parseMonthValue,
@@ -25,12 +25,13 @@ import {
   parseWeekValue,
   parseYearValue,
   resolveWeekStart,
+  weekStartDate,
 } from '../../utils/date-math';
 import { focusRingVisible } from '../../utils/focus-ring';
+import { dayButtons, useGridRoving } from '../../utils/grid-roving';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
-import { dayButtons, useGridKeyboard, useSelectorGridKeyboard } from './grid-roving';
 import { renderMonthGrid, renderMonthPane, renderQuarterGrid, renderYearGrid } from './grids';
 import {
   calendarWrapper,
@@ -58,6 +59,52 @@ export type {
  * grids' decade layout and the base of a year's offset within it. */
 function decadeStart(year: number): number {
   return Math.floor(year / 10) * 10;
+}
+
+/**
+ * Date-grid keyboard roving: `useGridRoving` (utils/grid-roving.ts)
+ * over the 7-column day grid. PageUp/PageDown switch the month view
+ * keeping the same day (clamped to the target month's length, the
+ * first day when nothing was focused) — `pendingFocusRef` hands the
+ * target date string to the effect that re-focuses after the view
+ * commits.
+ */
+function useGridKeyboard(
+  gridRef: RefObject<HTMLDivElement | null>,
+  view: { year: number; month: number },
+  setView: (next: { year: number; month: number }) => void,
+  pendingFocusRef: RefObject<string | null>
+) {
+  return useGridRoving(gridRef, 7, (delta, current, buttons) => {
+    const next = addMonths(view.year, view.month, delta);
+    const fromDay = current >= 0 ? Number(buttons[current]!.textContent) : 1;
+    const day = Math.min(
+      Math.max(fromDay, 1),
+      getDaysInMonth(next.year, next.month)
+    );
+    setView(next);
+    pendingFocusRef.current = formatDate(next.year, next.month, day);
+  });
+}
+
+/**
+ * Selector-grid keyboard roving (WAI-ARIA grid pattern over a
+ * `columns`-column cell grid — the quick-select month view and the
+ * month/quarter/year picker modes): `useGridRoving` with the period
+ * (year or decade) step as the PageUp/Down handler — the focused cell
+ * rides `pendingCellIndexRef` to the effect that re-focuses after the
+ * view commits.
+ */
+function useSelectorGridKeyboard(
+  gridRef: RefObject<HTMLDivElement | null>,
+  columns: number,
+  step: (delta: number) => void,
+  pendingCellIndexRef: RefObject<number | null>
+) {
+  return useGridRoving(gridRef, columns, (delta, current) => {
+    pendingCellIndexRef.current = current < 0 ? 0 : current;
+    step(delta);
+  });
 }
 
 export default function Calendar({
@@ -135,13 +182,10 @@ export default function Calendar({
   const [modeYearsAnchor, setModeYearsAnchor] = useState(0);
 
   // Week mode: whole-ISO-week rows. Values are "YYYY-Www", so the
-  // anchor is the week's Monday (see getISOWeekStartDate) — not a
+  // anchor is the week's Monday (see weekStartDate) — not a
   // January 1 normalization like the coarser modes.
   const weekMode = picker === 'week';
   const weekValue = weekMode ? parseWeekValue(value) : null;
-  const weekAnchor = weekValue
-    ? getISOWeekStartDate(weekValue.year, weekValue.week)
-    : null;
 
   // Civil parse: `new Date(value)` would read the value as UTC midnight
   // and land west-of-UTC users on the previous day — showing February
@@ -161,8 +205,8 @@ export default function Calendar({
       ? (value && parseCivilDate(value)) ||
         (rangeStart && parseCivilDate(rangeStart)) ||
         new Date()
-      : weekAnchor
-        ? new Date(weekAnchor.year, weekAnchor.month, weekAnchor.day)
+      : weekMode
+        ? (weekStartDate(value) ?? new Date())
         : modeValue
           ? new Date(modeValue.year, 0, 1)
           : new Date();

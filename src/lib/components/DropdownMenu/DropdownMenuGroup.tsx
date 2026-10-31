@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { css } from '@linaria/core';
-import { useId } from 'react';
-
-import { menuGroupLabel } from '../../utils/menu-skins';
+import { MenuGroupImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -14,10 +11,6 @@ type DropdownMenuGroupProps = {
   /** The group's menu items. */
   children: ReactNode;
 };
-
-const group = css`
-  display: block;
-`;
 
 /**
  * A labeled, non-interactive section of menu items (`role="group"`
@@ -31,14 +24,10 @@ export default function DropdownMenuGroup({
   children,
 }: DropdownMenuGroupProps) {
   const classNames = useDropdownMenuContext().classNames;
-  const labelId = useId();
   return (
-    <div data-slot='group' role="group" aria-labelledby={labelId} x-class={[group, classNames?.group, className]}>
-      <div id={labelId} data-slot='group-label' x-class={menuGroupLabel}>
-        {label}
-      </div>
+    <MenuGroupImpl familyClass={classNames?.group} label={label} className={className}>
       {children}
-    </div>
+    </MenuGroupImpl>
   );
 }
 

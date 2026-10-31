@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { useSubmenuContext } from '../../utils/submenu';
-
-import { menuItemBase, menuChevron, menuPopupItem } from '../../utils/menu-skins';
+import { MenuSubTriggerImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -11,11 +9,6 @@ type DropdownMenuSubTriggerProps = {
   className?: string;
   children: ReactNode;
 };
-
-// DropdownMenuItem's skin (menuItemBase + menuPopupItem,
-// utils/menu-skins) plus the submenu affordances: the menuChevron
-// inline-end arrow and a persistent highlight while the submenu is
-// open (the aria-expanded arm baked into menuPopupItem).
 
 /**
  * The menuitem that opens a DropdownMenuSub submenu: hover opens it after
@@ -29,27 +22,15 @@ export default function DropdownMenuSubTrigger({
   children,
 }: DropdownMenuSubTriggerProps) {
   const classNames = useDropdownMenuContext().classNames;
-  const sub = useSubmenuContext();
   return (
-    <button
-      ref={sub.triggerRef}
-      type='button'
-      role='menuitem'
-      data-slot='menu-sub-trigger'
-      tabIndex={-1}
-      aria-haspopup='menu'
-      aria-expanded={sub.open}
-      aria-owns={sub.open ? sub.contentId : undefined}
+    <MenuSubTriggerImpl
+      skin='popup'
+      familyClass={classNames?.subTrigger}
       disabled={disabled}
-      x-class={[menuItemBase, menuPopupItem, menuChevron, classNames?.subTrigger, className]}
-      style={sub.floating.triggerStyle}
-      onPointerDown={sub.floating.onTriggerPointerDown}
-      onPointerEnter={sub.onTriggerPointerEnter}
-      onClick={sub.floating.onTriggerClick}
-      onKeyDown={sub.handleTriggerKeyDown}
+      className={className}
     >
       {children}
-    </button>
+    </MenuSubTriggerImpl>
   );
 }
 

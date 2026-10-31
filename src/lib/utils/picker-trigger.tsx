@@ -20,8 +20,9 @@ import { pickerFieldInput } from './field-skin';
  * Also hosts the shared panel-surface classes the picker families
  * wear: the listbox chrome (plain and virtualized, Select/Combobox),
  * the virtual row stretch, the searchable-panel search input
- * (Select/Cascader/TreeSelect), the loading/empty state blocks, the
- * group-heading typography, the option-row skeleton (+ density
+ * (Select/Cascader/TreeSelect), the loading/empty state blocks (skin
+ * plus the PickerPanelLoading/PickerPanelEmpty rows Select and
+ * Cascader render), the group-heading typography, the option-row skeleton (+ density
  * variant, highlighted/selected decorations), and the readonly input
  * trigger the date/time families
  * anchor their popup panels on (PickerInputTrigger). The chip-row
@@ -237,9 +238,8 @@ export const pickerSearchInput = css`
 `;
 
 /**
- * Loading state of the options area — the shared half of the Spinner
- * row (the `<Spinner size='sm'/><span>{loading}</span>` JSX Select and
- * Cascader both render): Spinner plus copy, centered.
+ * Loading state of the options area — the skin half of the Spinner
+ * row PickerPanelLoading renders (Spinner plus copy, centered).
  */
 export const pickerLoadingBlock = css`
   display: flex;
@@ -252,7 +252,8 @@ export const pickerLoadingBlock = css`
   font-size: var(--haze-text-sm);
 `;
 
-/** Empty-search state of the options area. */
+/** Empty-search state of the options area — the skin PickerPanelEmpty
+ * renders. */
 export const pickerEmptyBlock = css`
   padding: var(--haze-space-3);
   color: var(--haze-color-text-muted);
@@ -596,4 +597,46 @@ export function PickerInputTrigger({
       x-class={[pickerFieldInput, className]}
     />
   );
+}
+
+type PickerPanelStateProps = {
+  /** Copy of the block — the locale `loading` / `noMatch` string. */
+  label: ReactNode;
+  /** Consumer slot class (`classNames.loading` / `classNames.empty`). */
+  className?: string;
+};
+
+/**
+ * The loading state block of a picker panel's options area
+ * (`data-slot='loading'`): the spinner glyph next to its copy, on the
+ * shared `pickerLoadingBlock` skin. The spinner element itself is a
+ * caller-supplied node (`<Spinner size='sm' />` — Select's floating
+ * paths and Cascader): keeping the component out of this module's
+ * imports keeps every other picker-trigger consumer family's bundle
+ * Spinner-free. An option-less element wearing role="listbox" would
+ * be an axe aria-required-children violation, so the block sits where
+ * the listbox would — the spinner's own role="status" announces the
+ * state.
+ */
+export function PickerPanelLoading({
+  label,
+  className,
+  spinner,
+}: PickerPanelStateProps & { spinner: ReactNode }) {
+  return (
+    <div data-slot='loading' x-class={[pickerLoadingBlock, className]}>
+      {spinner}
+      <span>{label}</span>
+    </div>
+  );
+}
+
+/**
+ * The no-match state block of a picker panel's options area
+ * (`data-slot='empty'`), on the shared `pickerEmptyBlock` skin.
+ * Select's floating paths (a query without matches) and Cascader's
+ * searchable panel (an empty rebuilt tree) render it.
+ */
+export function PickerPanelEmpty({ label, className }: PickerPanelStateProps) {
+  return <div data-slot='empty' x-class={[pickerEmptyBlock, className]}>{label}</div>;
 }

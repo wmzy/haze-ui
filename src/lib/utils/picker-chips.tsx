@@ -15,8 +15,9 @@ import { pickerOverflowBadge } from './picker-trigger';
  * Shared chip-row affordances of the picker triggers (Select's
  * floating multiple/tags paths, TreeSelect's multiple trigger,
  * Combobox's overflow badge): the chip capsule row item with its
- * pointer-only remove ×, the pointer-only clear affordance, and the
- * `maxTagCount` `+N` overflow badge built on `pickerOverflowBadge`
+ * pointer-only remove ×, the pointer-only clear affordance (skin plus
+ * the PickerClearButton glyph), and the `maxTagCount` `+N` overflow
+ * badge built on `pickerOverflowBadge`
  * (utils/picker-trigger). The trigger shapes themselves (gap,
  * flex-wrap, padding, font-size) stay local per family — the drift
  * discipline of utils/picker-trigger's NOT-shared list.
@@ -206,4 +207,49 @@ export function PickerChips<T extends string | number = string>({
   );
 }
 
-export type { PickerChipsProps, PickerOverflowBadgeProps };
+type PickerClearButtonProps = {
+  /** Tooltip copy of the affordance (the locale `clear` string). */
+  title: string;
+  /** The clear action. The component swallows the click itself so
+   * clearing never flips the panel; focus return, where the family
+   * owes it, rides this closure. */
+  onClear: () => void;
+  /** Consumer slot class of the affordance (`classNames.clearButton`). */
+  className?: string;
+};
+
+/**
+ * The pointer-only clear affordance of a picker trigger
+ * (`data-slot='clear-button'`, aria-hidden): the `×` that empties the
+ * value (`[]` / `''`) without toggling the panel. A real button here
+ * would nest interactive elements inside the trigger, so the glyph is
+ * inert chrome — the keyboard parity (Backspace/clear paths) lives in
+ * each family's keydown. Select's floating paths and TreeSelect render
+ * it.
+ */
+export function PickerClearButton({
+  title,
+  onClear,
+  className,
+}: PickerClearButtonProps) {
+  return (
+    <span
+      aria-hidden='true'
+      data-slot='clear-button'
+      title={title}
+      x-class={[pickerClearBtn, className]}
+      onClick={(e) => {
+        // Keep the trigger's open toggle out of this click — clearing
+        // must not flip the panel either way (the pointerdown above
+        // already reached the floating handlers for race attribution,
+        // so an open panel stays open and a closed one stays closed).
+        e.stopPropagation();
+        onClear();
+      }}
+    >
+      ×
+    </span>
+  );
+}
+
+export type { PickerChipsProps, PickerClearButtonProps, PickerOverflowBadgeProps };

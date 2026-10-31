@@ -15,7 +15,7 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { focusListEdge } from '../../utils/menuKeyboard';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
-import { PickerChips, pickerClearBtn } from '../../utils/picker-chips';
+import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
 import {
   PickerTrigger,
   pickerArrowOpen,
@@ -533,19 +533,9 @@ export default function TreeSelect({
   );
 
   const clearAffordance = showClear ? (
-    <span
-      aria-hidden='true'
-      data-slot='clear-button'
-      title={strings.clear}
-      x-class={pickerClearBtn}
-      onClick={(e) => {
-        // Clearing must not flip the panel either way.
-        e.stopPropagation();
-        clearValue();
-      }}
-    >
-      ×
-    </span>
+    // The shared clear affordance (utils/picker-chips); clearValue
+    // itself returns focus to the trigger.
+    <PickerClearButton title={strings.clear} onClear={clearValue} />
   ) : undefined;
 
   return (

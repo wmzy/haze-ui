@@ -135,6 +135,7 @@ const koKR: HazeStrings = {
     presetLastMonth: '지난달',
   },
   datepicker: {
+    placeholder: '날짜 선택',
     time: '시간',
   },
   dataTable: {

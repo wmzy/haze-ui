@@ -135,6 +135,7 @@ const esES: HazeStrings = {
     presetLastMonth: 'Mes pasado',
   },
   datepicker: {
+    placeholder: 'Seleccionar fecha',
     time: 'Hora',
   },
   dataTable: {

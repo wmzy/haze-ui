@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuItemImpl } from '../../utils/menu-item-parts';
 
 import { useContextMenuContext } from './ContextMenuContext';
 
@@ -35,10 +35,8 @@ export default function ContextMenuItem({
   };
 
   return (
-    <MenuItemShell
+    <MenuItemImpl
       skin='popup'
-      itemRole='menuitem'
-      itemSlot='menu-item'
       familyClass={classNames?.item}
       disabled={disabled}
       danger={danger}
@@ -48,7 +46,7 @@ export default function ContextMenuItem({
       onClick={handleClick}
     >
       {children}
-    </MenuItemShell>
+    </MenuItemImpl>
   );
 }
 

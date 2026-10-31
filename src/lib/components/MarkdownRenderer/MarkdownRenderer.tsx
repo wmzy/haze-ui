@@ -71,6 +71,11 @@ export default function MarkdownRenderer({ content, className }: MarkdownRendere
     return parsed.join('\n');
   }, [blocks]);
 
+  // The HTML below is generated entirely by parseMarkdown (markdown-
+  // blocks.ts): the pipeline escapes the whole source at entry and
+  // whitelists link/image URL schemes, so untrusted markdown renders as
+  // inert text. Unlike CodeBlock's pluggable highlighter, no consumer
+  // hook can inject raw HTML into this string.
   return (
     <div
       data-slot='markdown'

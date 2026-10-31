@@ -5,11 +5,11 @@ import type {
 } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback, useRef } from 'react';
+import { useRef } from 'react';
 
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
 import { focusRingVisible } from '../../utils/focus-ring';
-import { mergeRefs } from '../../utils/refs';
+import { useCallbackRef } from '../../utils/refs';
 
 import { sizes } from './segmented-styles';
 
@@ -138,10 +138,7 @@ export default function SegmentedCore({
   // option's button, falling back to the first enabled one when
   // nothing usable is selected; as the selection moves, the ref
   // re-attaches to the new stop.
-  const attachStop = useCallback(
-    (node: HTMLButtonElement | null) => mergeRefs(ref)(node),
-    [ref]
-  );
+  const attachStop = useCallbackRef(ref);
 
   // Roving tab stop: the selected option, unless it is disabled (a
   // disabled button cannot hold the group's single stop) — then the

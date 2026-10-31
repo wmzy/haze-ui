@@ -13,6 +13,7 @@ import { useControl } from 'react-use-control';
 
 import { getDirection, useDirection } from '../../utils/direction';
 import { outlineFocusVisible } from '../../utils/focus-ring';
+import { nextGridRovingAction } from '../../utils/grid-roving';
 import { clamp } from '../../utils/math';
 import { truncate } from '../../utils/truncate';
 import Button from '../Button/Button';
@@ -909,22 +910,22 @@ export default function Schedule({
     if (!cell) return;
     const index = Number(cell.dataset.index);
     if (!Number.isInteger(index)) return;
-    const cellRtl = getDirection(ke.currentTarget) === 'rtl';
-    const deltas: Record<string, number> = {
-      ArrowLeft: cellRtl ? 1 : -1,
-      ArrowRight: cellRtl ? -1 : 1,
-      ArrowUp: -7,
-      ArrowDown: 7,
-    };
-    const delta = deltas[ke.key];
-    if (delta === undefined) return;
+    const action = nextGridRovingAction(
+      ke.key,
+      index,
+      getDirection(ke.currentTarget) === 'rtl',
+      // Month cells are never disabled; the shared walker's
+      // edge-stopping replaces the former raw clamp, so an off-grid
+      // move stays put instead of pinning to the grid's corner.
+      { columns: 7, count: monthCells.length, isDisabled: () => false }
+    );
+    if (action?.type !== 'move') return;
     ke.preventDefault();
-    const nextIndex = clamp(index + delta, 0, monthCells.length - 1);
-    const nextDay = monthCells[nextIndex];
+    const nextDay = monthCells[action.target];
     if (!nextDay) return;
     setRovingDate(nextDay);
     monthGridRef.current
-      ?.querySelector<HTMLElement>(`[data-index="${nextIndex}"]`)
+      ?.querySelector<HTMLElement>(`[data-index="${action.target}"]`)
       ?.focus();
   };
 

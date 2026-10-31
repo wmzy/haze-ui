@@ -475,8 +475,11 @@ function normalizePair(value: number | [number, number]): [number, number] {
   return pair[0] <= pair[1] ? [pair[0], pair[1]] : [pair[1], pair[0]];
 }
 
-/** A min/max attribute as a finite number, else the native default. */
-function numberOr(raw: string | number | undefined, fallback: number): number {
+/** A min/max attribute as a finite number, else the native default.
+ * Also Slider's source for the uncontrolled range default (min/max
+ * parsing must not fork between the two files). */
+// eslint-disable-next-line react-refresh/only-export-components -- numberOr 与 SliderCore 自用的 min/max 解析同源，导出给 Slider 复用（Schedule computeDropTime 同款 suppression）
+export function numberOr(raw: string | number | undefined, fallback: number): number {
   const parsed = raw === undefined ? Number.NaN : Number(raw);
   return Number.isFinite(parsed) ? parsed : fallback;
 }

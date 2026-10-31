@@ -1,5 +1,7 @@
 import type { Ref } from 'react';
 
+import { useCallback } from 'react';
+
 /**
  * Compose several refs (object and/or callback) into one callback ref.
  *
@@ -28,4 +30,19 @@ function mergeRefs<T>(
   };
 }
 
-export { mergeRefs };
+/**
+ * Normalize one forwarded ref into a stable callback ref.
+ *
+ * The single-ref specialization of mergeRefs: a component that attaches
+ * a forwarded ref through an intermediate callback site (cell 0, the
+ * roving tab stop, the checked radio) needs the callback's identity
+ * stable while the ref prop is — a fresh closure per render would make
+ * React detach (old callback, null) and re-attach (new callback, node)
+ * on every render pass. Behavior identical to the inline
+ * useCallback((node) => mergeRefs(ref)(node), [ref]) it replaces.
+ */
+function useCallbackRef<T>(ref: Ref<T> | undefined): (node: T | null) => void {
+  return useCallback((node: T | null) => mergeRefs(ref)(node), [ref]);
+}
+
+export { mergeRefs, useCallbackRef };

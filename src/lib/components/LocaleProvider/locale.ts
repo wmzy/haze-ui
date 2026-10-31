@@ -132,6 +132,7 @@ const defaultStrings = {
     presetLastMonth: 'Last month',
   },
   datepicker: {
+    placeholder: 'Select date',
     time: 'Time',
   },
   dataTable: {

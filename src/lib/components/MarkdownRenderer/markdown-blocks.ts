@@ -16,11 +16,21 @@ export function parseMarkdown(src: string): string {
   parseStats.calls += 1;
   parseStats.chars += src.length;
 
-  let html = src;
+  // Escape the ENTIRE source before any branch runs: every rule below
+  // (headings, emphasis, quotes, lists, link text, link/img URLs) then
+  // consumes already-escaped text, so raw markup in the source can never
+  // reach the output as live HTML — the output only ever contains tags
+  // this pipeline itself generates. escapeHtml touches none of the
+  // structural characters the block/inline regexes key on (backticks,
+  // newlines, fence markers, `*`, `#`, `>`, `-`), so parsing semantics
+  // and splitBlocks' backtick-parity rule are unchanged.
+  let html = escapeHtml(src);
 
-  // code blocks
+  // code blocks — the payload was already escaped above; emitting it
+  // verbatim keeps fence contents inert without double-escaping
+  // (&amp;lt;).
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
-    return `<pre><code class="lang-${lang}" data-slot="code">${escapeHtml((code as string).trim())}</code></pre>`;
+    return `<pre><code class="lang-${lang}" data-slot="code">${(code as string).trim()}</code></pre>`;
   });
 
   // inline code
@@ -39,8 +49,10 @@ export function parseMarkdown(src: string): string {
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-  // blockquote
-  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+  // blockquote — the source's leading '>' was escaped to &gt; at entry, so
+  // the rule matches the escaped form. A literal '&gt;' typed in the
+  // source double-escapes to &amp;gt; and correctly stays a paragraph.
+  html = html.replace(/^&gt;\s+(.+)$/gm, '<blockquote>$1</blockquote>');
 
   // unordered list
   html = html.replace(/^[-*]\s+(.+)$/gm, '<li data-slot="item">$1</li>');
@@ -55,11 +67,24 @@ export function parseMarkdown(src: string): string {
   // horizontal rule
   html = html.replace(/^---$/gm, '<hr />');
 
-  // links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // links — the URL is already escaped (its quotes are &quot;, so it
+  // cannot break out of the attribute), but escaping says nothing about
+  // the scheme: javascript:/data:/vbscript: would pass straight through.
+  // sanitizeUrl enforces the whitelist; an unsafe URL degrades to a dead
+  // '#' anchor — conservative on purpose, so the link text stays readable
+  // and stylable while the navigation goes nowhere.
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text: string, url: string) => {
+    const href = sanitizeUrl(url) ?? '#';
+    return `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+  });
 
-  // images
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" />');
+  // images — same URL whitelist for src. An unsafe image is dropped
+  // entirely, leaving only its (already-escaped) alt text: a placeholder
+  // src would risk a spurious fetch and keep the payload addressable.
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => {
+    const src = sanitizeUrl(url);
+    return src === null ? alt : `<img alt="${alt}" src="${src}" />`;
+  });
 
   // paragraphs (lines not already wrapped in block elements)
   html = html.replace(/^(?!<[a-z])((?!<\/).+)$/gm, (line) => {
@@ -80,6 +105,26 @@ function escapeHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// Scheme whitelist for URLs pulled out of markdown link/image syntax —
+// the last line of defense behind the entry escape. Escaping already
+// neutralizes quotes and angle brackets, but a well-formed
+// javascript:/data:/vbscript: URL is perfectly quotable HTML; only a
+// scheme check can stop it. Allowed: absolute http(s), mailto:, in-page
+// #fragment, and scheme-free relative paths. Refused: every other scheme
+// and protocol-relative //host (it inherits the page protocol).
+//
+// Embedded tab/CR/LF are stripped first because the browser URL parser
+// removes them before matching schemes — without this, "java\tscript:"
+// would smuggle through as a "relative" URL.
+function sanitizeUrl(rawUrl: string): string | null {
+  const url = rawUrl.replace(/[\t\r\n]/g, '').trim();
+  if (/^(?:https?:|mailto:)/i.test(url)) return url;
+  if (url.startsWith('#')) return url;
+  if (url.startsWith('//')) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return null;
+  return url;
 }
 
 // Must mirror parseMarkdown's code-block pass exactly: everything inside a

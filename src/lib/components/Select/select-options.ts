@@ -4,6 +4,8 @@ import type { CompoundOptionNode, CompoundOptionTypes } from '../../utils/compou
 
 import { walkCompoundOptions } from '../../utils/compound-options';
 
+import { labelMatchesQuery } from '../../utils/picker-selection';
+
 import { reactNodeText } from '../../utils/text';
 
 import OptionGroup from './OptionGroup';
@@ -141,22 +143,23 @@ export function selectOptionText(label: ReactNode): string {
  * Case-insensitive substring filter over the entry structure. An empty
  * (or whitespace-only) query returns the entries unchanged; groups
  * whose options all miss the query are dropped entirely, keeping the
- * rendered list free of orphaned headers.
+ * rendered list free of orphaned headers. The needle contract rides
+ * labelMatchesQuery (utils/picker-selection) — the same matcher
+ * Combobox's inline label filter uses.
  */
 export function filterSelectEntries<T extends string | number = string>(
   entries: SelectEntryData<T>[],
   query: string
 ): SelectEntryData<T>[] {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return entries;
+  if (query.trim() === '') return entries;
   return entries.flatMap((entry): SelectEntryData<T>[] => {
     if (entry.kind === 'option') {
-      return selectOptionText(entry.option.label).toLowerCase().includes(needle)
+      return labelMatchesQuery(selectOptionText(entry.option.label), query)
         ? [entry]
         : [];
     }
     const options = entry.options.filter((option) =>
-      selectOptionText(option.label).toLowerCase().includes(needle)
+      labelMatchesQuery(selectOptionText(option.label), query)
     );
     return options.length > 0 ? [{ kind: 'group', label: entry.label, options }] : [];
   });

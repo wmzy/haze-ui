@@ -1,12 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { css } from '@linaria/core';
-import { useId } from 'react';
-
-import { useMenuRadioGroup, MenuRadioGroupProvider } from '../../utils/menuRadio';
-
-import { menuGroupLabel } from '../../utils/menu-skins';
+import { MenuRadioGroupImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -22,10 +17,6 @@ type DropdownMenuRadioGroupProps = {
   children: ReactNode;
 };
 
-const group = css`
-  display: block;
-`;
-
 /**
  * State container for a single-select cluster of
  * `DropdownMenuRadioItem`s (`role="group"`): owns the selected value
@@ -39,25 +30,17 @@ export default function DropdownMenuRadioGroup({
   className,
   children,
 }: DropdownMenuRadioGroupProps) {
-  const state = useMenuRadioGroup(value, onValueChange);
   const classNames = useDropdownMenuContext().classNames;
-  const labelId = useId();
   return (
-    <MenuRadioGroupProvider value={state}>
-      <div
-        data-slot='group'
-        role="group"
-        aria-labelledby={label !== undefined ? labelId : undefined}
-        x-class={[group, classNames?.group, className]}
-      >
-        {label !== undefined && (
-          <div id={labelId} data-slot='group-label' x-class={menuGroupLabel}>
-            {label}
-          </div>
-        )}
-        {children}
-      </div>
-    </MenuRadioGroupProvider>
+    <MenuRadioGroupImpl
+      familyClass={classNames?.group}
+      value={value}
+      onValueChange={onValueChange}
+      label={label}
+      className={className}
+    >
+      {children}
+    </MenuRadioGroupImpl>
   );
 }
 

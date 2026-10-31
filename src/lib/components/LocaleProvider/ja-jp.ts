@@ -133,6 +133,7 @@ const jaJP: HazeStrings = {
     presetLastMonth: '先月',
   },
   datepicker: {
+    placeholder: '日付を選択',
     time: '時刻',
   },
   dataTable: {

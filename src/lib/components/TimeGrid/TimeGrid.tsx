@@ -4,9 +4,10 @@ import type { ControlOrValue } from 'react-use-control';
 import { useRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import { getDirection } from '../../utils/direction';
+import { nextGridRovingAction } from '../../utils/grid-roving';
 import { NativeHiddenFields } from '../../utils/native-form';
 import { mergeRefs } from '../../utils/refs';
-import { nextEnabledIndex } from '../../utils/skip-walker';
 import { formatTimeValue, parseTimeValue } from '../../utils/time-math';
 
 // sibling module (not `styles.ts`) — Linaria derives dev class names from
@@ -28,9 +29,11 @@ import { timeGridBase, timeGridButton, timeGridButtonSelected } from './time-gri
  * native `<button role="radio">` with `aria-checked`. Keyboard follows
  * the roving-tabindex radio/grid hybrid: the selected slot (else the
  * first enabled one) is the group's single tab stop; arrows move by
- * slot (left/right) or by row (`columns`, up/down), Home/End jump the
- * edges, and every move both focuses and selects — the radio pattern's
- * arrow-checks semantics. Disabled slots are skipped and unreachable.
+ * slot (left/right) or by row (`columns`, up/down) — mirrored under
+ * `dir="rtl"` so the keys follow the painted column order — Home/End
+ * jump the edges, and every move both focuses and selects — the radio
+ * pattern's arrow-checks semantics. Disabled slots are skipped and
+ * unreachable.
  *
  * Form participation mirrors Segmented: a `name` renders a hidden
  * input bridge so `new FormData(form)` / server actions receive the
@@ -134,7 +137,6 @@ export default function TimeGrid({
   const safeColumns = Math.max(1, Math.floor(columns));
 
   const firstEnabled = slots.findIndex((slot) => !disabled.has(slot));
-  const lastEnabled = slots.findLastIndex((slot) => !disabled.has(slot));
   const selectedIndex = slots.indexOf(value);
   // The roving tab stop: the selected slot, else the first enabled one.
   const stopIndex =
@@ -151,42 +153,34 @@ export default function TimeGrid({
     onChange?.(next);
   };
 
-  /** Next enabled index stepping by `delta`; null at the grid's edge. */
-  const nextEnabled = (index: number, delta: number): number | null =>
-    nextEnabledIndex(
-      slots.length,
-      (i) => disabled.has(slots[i]!),
-      index,
-      delta
-    );
-
   const handleKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
     index: number
   ) => {
-    const deltas: Record<string, number> = {
-      ArrowRight: 1,
-      ArrowLeft: -1,
-      ArrowDown: safeColumns,
-      ArrowUp: -safeColumns,
-    };
-    let target: number | null;
-    if (event.key in deltas) {
-      target = nextEnabled(index, deltas[event.key]!);
-    } else if (event.key === 'Home') {
-      target = firstEnabled;
-    } else if (event.key === 'End') {
-      target = lastEnabled;
-    } else {
-      return;
-    }
+    const action = nextGridRovingAction(
+      event.key,
+      index,
+      // Read the rendered direction at event time so the arrows follow
+      // the mirrored CSS-grid column order under dir="rtl".
+      getDirection(event.currentTarget) === 'rtl',
+      {
+        columns: safeColumns,
+        count: slots.length,
+        isDisabled: (i) => disabled.has(slots[i]!),
+        // Radiogroup pattern: Home/End jump the group's first/last
+        // enabled slot, not the focused row's edges.
+        homeEnd: 'group',
+      }
+    );
+    // Not a roving key, or a page hop this group does not offer.
+    if (action === null || action.type === 'page') return;
     // Arrows/Home/End are the group's selection keys — swallow the
     // native button behavior (Space scroll, Enter click) alike.
     event.preventDefault();
-    if (target === null || target === index) return;
-    const next = slots[target]!;
+    if (action.type !== 'move' || action.target === index) return;
+    const next = slots[action.target]!;
     commit(next);
-    buttonRefs.current[target]?.focus();
+    buttonRefs.current[action.target]?.focus();
   };
 
   const setNode = (index: number) => (node: HTMLButtonElement | null) => {

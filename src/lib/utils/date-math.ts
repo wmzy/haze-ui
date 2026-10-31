@@ -420,6 +420,21 @@ export function parseWeekValue(value: string): ISOWeek | null {
 }
 
 /**
+ * Monday of the ISO week a `"YYYY-Www"` week-picker value names, as a
+ * local-midnight Date — `parseWeekValue` feeding `getISOWeekStartDate`,
+ * with the returned civil triple constructed as a Date. Returns `null`
+ * for anything that is not a real ISO week string (the same values
+ * `parseWeekValue` rejects), so callers are free to fall back to their
+ * own parsing.
+ */
+export function weekStartDate(value: string): Date | null {
+  const week = parseWeekValue(value);
+  if (!week) return null;
+  const monday = getISOWeekStartDate(week.year, week.week);
+  return new Date(monday.year, monday.month, monday.day);
+}
+
+/**
  * Parse a `"YYYY-MM-DD"` value string into a local-midnight Date — the
  * inverse of {@link formatDate} and the only safe way to turn a value into
  * a Date (`new Date('YYYY-MM-DD')` parses as UTC midnight and shifts a

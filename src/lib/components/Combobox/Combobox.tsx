@@ -14,6 +14,14 @@ import { FloatingPanel, useFloating } from '../../utils/floating';
 import { fieldChrome, fieldSizes, focusWithinRing, nativeFieldChrome } from '../../utils/field-skin';
 import { PickerOverflowBadge } from '../../utils/picker-chips';
 import {
+  dropLastPickerValue,
+  labelMatchesQuery,
+  pickerMaxCountReached,
+  pickerRowDisabled,
+  pickerShowsCreateRow,
+  togglePickerValue,
+} from '../../utils/picker-selection';
+import {
   pickerGroupLabel,
   pickerListbox,
   pickerListboxVirtual,
@@ -395,9 +403,13 @@ export default function Combobox<T extends string | number = string>({
   const selected = Array.isArray(value) ? value : [];
 
   // maxCount cap: unselected options are locked once the selection
-  // reaches it (selected entries stay removable) — Select's contract.
-  const maxCountReached =
-    multiple && maxCount !== undefined && selected.length >= maxCount;
+  // reaches it (selected entries stay removable) — the shared lock
+  // computation (utils/picker-selection, Select's contract).
+  const maxCountReached = pickerMaxCountReached(
+    multiple,
+    maxCount,
+    selected.length
+  );
 
   // The base option set: the data-driven `options` first, then the
   // declarative compound children flattened into the same shape — one
@@ -423,31 +435,30 @@ export default function Combobox<T extends string | number = string>({
 
   // Remote mode (onSearch set) never filters locally — the visible
   // list is exactly the consumer's current options, refetched per
-  // query. Creatable's local layering still applies on top.
-  // Local filtering mirrors Select's filterSelectEntries contract:
-  // the needle trims first, so a blank (whitespace-only) query keeps
-  // the full list instead of matching nothing.
+  // query. Creatable's local layering still applies on top. Local
+  // filtering rides the shared needle contract (utils/
+  // picker-selection's labelMatchesQuery, Select's filterSelectEntries
+  // included): the needle trims first, so a blank (whitespace-only)
+  // query keeps the full list instead of matching nothing.
   const trimmedQuery = query.trim();
   const filtered = onSearch
     ? effectiveOptions
     : trimmedQuery === ''
       ? effectiveOptions
-      : effectiveOptions.filter((o) =>
-          o.label.toLowerCase().includes(trimmedQuery.toLowerCase())
-        );
+      : effectiveOptions.filter((o) => labelMatchesQuery(o.label, query));
 
-  // Creatable row: offered only when nothing matches a non-blank query
-  // (an exact label match is itself an `includes` match, so it suppresses
-  // the row) and only below the maxCount cap (Select's contract: the
-  // create row is suppressed once the selection is full). It leads the
+  // Creatable row: the shared offer formula (utils/picker-selection —
+  // Select's tags path rides it too). An exact label match is itself
+  // an `includes` match, so it suppresses the row. It leads the
   // navigable list, so keyboard and aria-set semantics treat it as a
   // regular option.
-  const showCreateItem =
-    creatable &&
-    !loading &&
-    !maxCountReached &&
-    query.trim() !== '' &&
-    filtered.length === 0;
+  const showCreateItem = pickerShowsCreateRow({
+    creatable,
+    loading,
+    trimmedQuery,
+    matchCount: filtered.length,
+    maxCountReached,
+  });
   const createText = formatString(strings.create, { query: trimmedQuery });
   const listItems: ComboboxOptionData<T>[] = showCreateItem
     ? // The creatable row's value is the raw string query layered on
@@ -541,16 +552,12 @@ export default function Combobox<T extends string | number = string>({
       effectiveOptions.find((o) => o.value === val)?.label ??
       String(val);
     if (multiple) {
-      // maxCount rejection: the row's aria-disabled state already
-      // stops the pointer path; this guard is what enforces the cap
-      // for the keyboard path and controlled values alike (Select's
-      // toggleOption contract).
-      if (maxCountReached && !selected.includes(val)) return;
-      // Toggle in place; the panel stays open for the next pick and the
-      // query clears so the full list is reachable again.
-      const next = selected.includes(val)
-        ? selected.filter((v) => v !== val)
-        : [...selected, val];
+      // Toggle + maxCount rejection (utils/picker-selection): a select
+      // rejected at the cap returns the same array, hence the identity
+      // gate. The panel stays open for the next pick and the query
+      // clears so the full list is reachable again.
+      const next = togglePickerValue(selected, val, maxCountReached);
+      if (next === selected) return;
       setValue(next);
       onValuesChange?.(next);
       setQuery('');
@@ -602,14 +609,15 @@ export default function Combobox<T extends string | number = string>({
       setOpen(false);
     } else if (
       // Keyboard parity for the chips' pointer ×: Backspace on an empty
-      // query drops the most recently selected value.
+      // query drops the most recently selected value (utils/
+      // picker-selection's dropLastPickerValue).
       e.key === 'Backspace' &&
       multiple &&
       query === '' &&
       selected.length > 0
     ) {
       e.preventDefault();
-      const next = selected.slice(0, -1);
+      const next = dropLastPickerValue(selected);
       setValue(next);
       onValuesChange?.(next);
     }
@@ -624,11 +632,11 @@ export default function Combobox<T extends string | number = string>({
       ref={!virtual && i === highlightIndex ? activeRowRef : undefined}
       value={o.value}
       disabled={
-        o.disabled === true ||
         // The maxCount lock joins the option-level disabled under the
-        // same inert-row contract (Select's renderOption); the create
-        // row is never locked — it is suppressed at the cap instead.
-        (multiple && maxCountReached && !isSelected(o.value))
+        // same inert-row contract (utils/picker-selection); the create
+        // row is never locked — it is suppressed at the cap instead
+        // (pickerShowsCreateRow), so it passes no exemption.
+        pickerRowDisabled(o.disabled, maxCountReached, isSelected(o.value))
       }
       id={optionId(i)}
       setSize={listItems.length}

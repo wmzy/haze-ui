@@ -135,6 +135,7 @@ const frFR: HazeStrings = {
     presetLastMonth: 'Mois dernier',
   },
   datepicker: {
+    placeholder: 'Sélectionner la date',
     time: 'Heure',
   },
   dataTable: {

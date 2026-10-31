@@ -135,6 +135,7 @@ const deDE: HazeStrings = {
     presetLastMonth: 'Letzter Monat',
   },
   datepicker: {
+    placeholder: 'Datum auswählen',
     time: 'Uhrzeit',
   },
   dataTable: {

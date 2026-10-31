@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuItemImpl } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -38,10 +38,8 @@ export default function DropdownMenuItem({
   };
 
   return (
-    <MenuItemShell
+    <MenuItemImpl
       skin='popup'
-      itemRole='menuitem'
-      itemSlot='menu-item'
       familyClass={classNames?.item}
       disabled={disabled}
       danger={danger}
@@ -51,7 +49,7 @@ export default function DropdownMenuItem({
       onClick={handleClick}
     >
       {children}
-    </MenuItemShell>
+    </MenuItemImpl>
   );
 }
 

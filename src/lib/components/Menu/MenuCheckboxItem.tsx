@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { useControl } from 'react-use-control';
-
-import { MenuItemShell } from '../../utils/menu-item-parts';
+import { MenuCheckboxItemImpl } from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -23,10 +21,6 @@ type MenuCheckboxItemProps = {
   children: ReactNode;
 };
 
-// MenuItem's chrome (utils/menu-item-parts with the menuItemStates
-// skin); the leading slot is the fixed-size check indicator (its glyph
-// draws in CanvasText through currentColor under forced-colors).
-
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or
  * Space flips `checked`; the state is controllable through the standard
@@ -34,40 +28,30 @@ type MenuCheckboxItemProps = {
  * the menu — several options are typically flipped in one visit.
  */
 export default function MenuCheckboxItem({
-  checked: checkedControl,
+  checked,
   onCheckedChange,
-  disabled = false,
-  danger = false,
+  disabled,
+  danger,
   icon,
   kbdLabel,
   className,
   children,
 }: MenuCheckboxItemProps) {
   const classNames = useMenuClassNames();
-  const [checked, setChecked] = useControl(checkedControl, false);
-
   return (
-    <MenuItemShell
+    <MenuCheckboxItemImpl
       skin='menu'
-      itemRole='menuitemcheckbox'
-      itemSlot='menu-checkbox-item'
       familyClass={classNames?.checkboxItem}
-      ariaChecked={checked}
-      indicator='check'
-      indicatorShown={checked}
+      checked={checked}
+      onCheckedChange={onCheckedChange}
       disabled={disabled}
       danger={danger}
       icon={icon}
       kbdLabel={kbdLabel}
       className={className}
-      onClick={() => {
-        const next = !checked;
-        setChecked(next);
-        onCheckedChange?.(next);
-      }}
     >
       {children}
-    </MenuItemShell>
+    </MenuCheckboxItemImpl>
   );
 }
 
