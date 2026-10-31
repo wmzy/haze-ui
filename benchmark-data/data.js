@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793431634774,
+  "lastUpdate": 1793449670102,
   "repoUrl": "https://github.com/wmzy/haze-ui",
   "entries": {
     "Benchmark": [
@@ -168,6 +168,90 @@ window.BENCHMARK_DATA = {
             "value": 1339.31,
             "unit": "ops/s",
             "extra": "±12.93 ops/s (rme 0.97%, n=1281)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "1256573276@qq.com",
+            "name": "wmzy",
+            "username": "wmzy"
+          },
+          "committer": {
+            "email": "1256573276@qq.com",
+            "name": "wmzy",
+            "username": "wmzy"
+          },
+          "distinct": true,
+          "id": "1c791f2766f6c877bbbaa4b608c0b2afc4dc034c",
+          "message": "refactor: consolidate shared skins, picker metrics, and locale strings",
+          "timestamp": "2026-10-31T20:26:30+08:00",
+          "tree_id": "3dcfb9481669c2efe9753dc6ed987d2c5c428a78",
+          "url": "https://github.com/wmzy/haze-ui/commit/1c791f2766f6c877bbbaa4b608c0b2afc4dc034c"
+        },
+        "date": 1793449669101,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · latency",
+            "value": 246.145373,
+            "unit": "ms",
+            "extra": "±44.555643 ms (rme 18.10%, n=15)"
+          },
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · throughput",
+            "value": 4.37,
+            "unit": "ops/s",
+            "extra": "±0.57 ops/s (rme 13.10%, n=15)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · latency",
+            "value": 154.484115,
+            "unit": "ms",
+            "extra": "±31.25059 ms (rme 20.23%, n=15)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · throughput",
+            "value": 6.97,
+            "unit": "ops/s",
+            "extra": "±0.81 ops/s (rme 11.59%, n=15)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · latency",
+            "value": 0.344761,
+            "unit": "ms",
+            "extra": "±0.008278 ms (rme 2.40%, n=2901)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · throughput",
+            "value": 3263.89,
+            "unit": "ops/s",
+            "extra": "±23.68 ops/s (rme 0.73%, n=2901)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · latency",
+            "value": 1.111403,
+            "unit": "ms",
+            "extra": "±0.075037 ms (rme 6.75%, n=900)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · throughput",
+            "value": 1027.04,
+            "unit": "ops/s",
+            "extra": "±16.88 ops/s (rme 1.64%, n=900)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · latency",
+            "value": 1.316476,
+            "unit": "ms",
+            "extra": "±0.020907 ms (rme 1.59%, n=760)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · throughput",
+            "value": 793.37,
+            "unit": "ops/s",
+            "extra": "±11.16 ops/s (rme 1.41%, n=760)"
           }
         ]
       }
