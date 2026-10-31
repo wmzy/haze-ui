@@ -1,0 +1,1 @@
+import{i as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./react-IDFlRUvQ.js";var n=e(t(),1);function r(...e){return t=>{for(let n of e)n&&(typeof n==`function`?n(t):n.current=t)}}function i(e){return(0,n.useCallback)(t=>r(e)(t),[e])}export{i as n,r as t};

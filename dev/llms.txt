@@ -1,0 +1,515 @@
+# Haze UI
+
+> React 19 UI component library built on the `ControlOrValue<T>` protocol: every stateful
+> component accepts one state prop (`checked?: Control<T> | T`) that works controlled *and*
+> uncontrolled, powered by [react-use-control](https://github.com/wmzy/react-use-control).
+
+- [Full API reference (llms-full.txt)](llms-full.txt): every component's props, types,
+  defaults and descriptions in one generated file.
+
+163 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
+against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
+`'use client'` is pre-injected on interactive modules; 111 static, hook-free modules
+(tokens + presentational components) ship without it and render as React Server
+Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
+semantics and mirrored floating placements under `dir="rtl"`. Peer range
+`react: ^19.0.0` — no React 18 compatibility layer.
+
+## Install
+
+```sh
+npm i haze-ui
+```
+
+Only `react` and `react-dom` are peers. Every engine — `react-f0rm` (forms),
+`@tanstack/react-table` (DataTable), `recharts` (Chart), the `@dnd-kit` trio
+(sortable tags), `qrcode` (QRCode) — is a regular dependency installed with
+haze-ui, and bundlers still tree-shake the ones your imports never reach.
+
+shadcn CLI users can instead `pnpm dlx shadcn@latest add wmzy/haze-ui/<item>`
+— this repo is a GitHub registry (root `registry.json`); each item installs a
+thin wrapper that re-exports from the npm package (see `registry/README.md`).
+
+## CSS: two loading modes
+
+The JS entry imports no stylesheet — pick one mode:
+
+```jsx
+// 1) Full stylesheet (simplest)
+import 'haze-ui/styles.css';
+
+// 2) Per-component CSS: tokens once + each component you use
+import 'haze-ui/css/tokens.css';
+import 'haze-ui/css/button.css';
+```
+
+Per-component files are kebab-case names, but sub-components and cores share their
+directory's family file (`InputCore` → `input.css`). Don't hardcode the mapping:
+`haze-ui/css-manifest.json` is the machine-readable, build-generated export → css-file
+map (with family absorption and a `noCss` list) — tooling should read it instead of
+re-deriving file names.
+
+## Components
+
+### General
+
+- **Avatar** — user avatar with image, size variants and fallback content when the image is missing.
+- **AvatarGroup** — stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).
+- **Badge** — small inline status label with a semantic `color` prop.
+- **Button** — action button with `variant`/`size`/`square` options; native `<button>` under the hood.
+- **ButtonGroup** — attached button bar — corners and seams merge via wrapper CSS while children stay real focusable `Button`s; group-wide `size`/`variant`/`disabled` fill in on children that leave them unset, `ButtonGroupSeparator` divides the bar (1px rule or a glyph/label).
+- **CopyButton** — one-click copy button over Button’s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.
+- **Divider** — content separator line, horizontal or vertical.
+- **Icon** — inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.
+- **Tag** — compact status label with semantic `color` and an optional close button.
+- **TagGroup** — flex-wrap container laying out Tag children with consistent gap; `sortable` + `onReorder(nextOrder)` for dnd-kit drag reordering.
+- **Typography** — text primitives: `Title`, `Text`, `Paragraph` on typography tokens.
+- **Ellipsis** — interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.
+- **CountUp** — animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.
+- **Countdown** — deadline countdown with second-boundary-aligned setTimeout-chain ticks, `onFinish` firing once, and adaptive `d`/`h:mm:ss` formatting.
+- **Mark** — text-level highlight — semantic `<mark>` skinned with status tokens.
+- **Highlight** — search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML).
+- **NumberFormatter** — presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.
+
+### Layout
+
+- **AppShell** — application frame with sticky header, collapsible sidebar (`ControlOrValue`), content and footer slots; CSS-Grid layout, sidebar turns overlay below 768px.
+- **ActivityRail** — VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.
+- **AspectRatio** — boxes children to a fixed width/height ratio.
+- **Container** — centered max-width page container with horizontal padding.
+- **Flex** — flexbox layout primitive mapping props to flex CSS.
+- **Grid** — CSS grid layout primitive.
+- **Masonry** — pinboard layout: JS greedy column distribution balances children across `columns` (order-first, shortest-column-next).
+- **Resizable** — split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence.
+- **ScrollArea** — scrollable region with overlay scrollbar thumbs: `maxHeight` sugar one-liner or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` composition; `type` = `hover`/`always`/`scroll` thumb visibility, keyboard-focusable viewport, draggable/pageable tracks, RTL-mirrored thumbs.
+- **Sidebar** — app sidebar shell with controllable collapsed state (`aside` + rail width tokens).
+- **Splitter** — multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, opt-in per-pane `collapsible` (divider collapse/expand triggers with pre-collapse restore, localized labels), keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.
+- **StatusBar** — VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.
+- **TabBar** — mobile bottom navigation (the ActivityRail viewport peer): 56px strip with safe-area inset, icon+label items, badge, `onSelect`/`onReselect` (tap-active-again) semantics.
+- **Workbench** — IDE-style application frame (`100dvh`): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable, collapsible regions (`ControlOrValue`), maximizable bottom panel; below 768px side regions become overlays and the tabBar takes over.
+
+### Forms
+
+- **Cascader** — multi-level drill-down selector committing a path of option values; `onSearch` filters remotely while `loading` shows the pending state.
+- **Checkbox** — checkbox input with controllable `checked` state.
+- **ColorPicker** — color selector with controllable value and preset swatches.
+- **Combobox** — autocomplete text input with filterable option list; `onSearch` defers filtering to the host.
+- **DateField** — segmented date input (year/month/day spinbuttons) typing `YYYY-MM-DD` directly — no calendar; `DateFieldCore` is the headless core.
+- **Datepicker** — date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.
+- **DateTimePicker** — date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".
+- **DateRangePicker** — picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).
+- **Fieldset** — semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.
+- **FileInput** — trigger element that opens a hidden native file input.
+- **Form (FormItem)** — react-f0rm field wrapper adding label, error and aria wiring to controlled cores.
+- **ImageCrop** — interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.
+- **InlineEdit** — click-to-edit text value in place.
+- **Input** — text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.
+- **InputGroup** — field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.
+- **MaskedInput** — masked text input enforcing a pattern (`9` digit, `a` letter, `A` uppercase letter, `*` alphanumeric, `\` escape); literals render as typed, `unmask()` extracts the raw slot content.
+- **Mentions** — mentions input with trigger-character suggestions picked from an option list.
+- **NumberInput** — numeric input with `min`/`max`/`step`.
+- **OTPInput** — one-time-password input of `length` segmented character boxes.
+- **PasswordInput** — text input with a visibility reveal toggle.
+- **PhoneInput** — international phone input on libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` helper.
+- **Radio / RadioGroup** — radio option and group with controllable selection.
+- **Rating** — star rating with half-step support.
+- **RichTextEditor** — Tiptap-powered rich text editor (a haze-ui dependency) with built-in formatting toolbar and controllable HTML `value`.
+- **Segmented** — segmented control selecting one option from a compact set.
+- **Select** — dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.
+- **Signature** — canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.
+- **Slider** — native range slider with controllable value.
+- **Switch** — toggle switch (`role="switch"`) with controllable `checked`.
+- **TagInput** — enter-to-commit token input over `TagInputCore`; `sortable` enables dnd-kit drag reordering (new order via `onChange`).
+- **TimeGrid** — single-select `'HH:mm'` slot grid generated from `from`/`to` (inclusive) and a minute `step` (default 60): ARIA radiogroup of native buttons with roving tabindex, arrows move-and-select, `value` is ControlOrValue, `name` rides a hidden input bridge for FormData/server actions.
+- **Textarea** — multiline text input.
+- **TimeField** — segmented time-of-day input (hour/minute/second spinbuttons, optional 12-hour AM/PM) typing `HH:mm[:ss]` directly.
+- **TimePicker** — time-of-day input with controllable value.
+- **Toggle** — two-state pressed button (`aria-pressed`) with sizes and `square` icon mode; `ToolbarToggle` variant rides toolbar roving focus.
+- **Transfer** — two-column shuttle moving options between source and target lists.
+- **TreeSelect** — tree selection in a floating panel (AntD TreeSelect counterpart): selectable rows commit one key, cascading checkboxes commit `string[]`, with panel search, lazy `loadData` and chip overflow.
+- **Upload** — file picker with accumulating `File[]` value, `accept`/`multiple`, `directory` picking and `listType` rendering.
+
+### Overlays
+
+- **BottomSheet** — mobile-style sheet sliding from the bottom screen edge.
+- **ConfirmDialog** — ready-made confirm dialog with confirm/cancel actions and a danger variant.
+- **ContextMenu** — floating menu opened on right-click.
+- **Dialog** — modal dialog with focus trapping.
+- **Drawer** — edge-anchored sliding panel (`placement` left/right).
+- **DropdownMenu** — click-triggered floating menu.
+- **HoverCard** — non-modal floating preview (avatar card, link summary) anchored to its trigger.
+- **Menu** — lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).
+- **NotificationCenter** — persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows (`task`/`agent`/`system`), mark-all-read and clear-all — declarative `items`, not an imperative open() API.
+- **Popconfirm** — anchored confirmation bubble with confirm/cancel actions and async busy support.
+- **Popover** — floating popover anchored to a trigger element.
+- **Tooltip** — hover/focus hint bubble.
+
+### Data Display
+
+- **Accordion** — collapsible section list (`AccordionItem` with `title`).
+- **Calendar** — month-grid date surface with `min`/`max`, locale and `weekStartsOn`.
+- **Card** — content card with `elevated`/`outlined`/`filled` variants.
+- **Carousel** — slideshow with controllable active index and autoplay.
+- **Chart** — line/area/bar/pie charts over `recharts` (a haze-ui dependency), colors and axes on haze tokens; series cycle the semantic palette, `renderTooltip` customizes the tooltip.
+- **Chip** — rounded status chip with optional icon and close button.
+- **CodeBlock** — monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.
+- **DataTable** — feature table on `@tanstack/react-table` (sorting, row selection, client or `manual` pagination); `dataTableToCsv` exports the rows.
+- **Descriptions** — definition-list description groups (`dl`/`dt`/`dd` on CSS Grid): `items` pairs, `columns`, `bordered`, `size`.
+- **Image** — image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).
+- **Indicator** — corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.
+- **JsonView** — collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.
+- **Kbd** — keyboard key-cap styling for shortcuts.
+- **List** — styled `ul`/`ol`/plain list variants.
+- **Progress** — progress bar or circle driven by a percentage `value`.
+- **Meter** — read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid color) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.
+- **QRCode** — QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.
+- **Schedule** — calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.
+- **Sparkline** — inline-SVG mini trend chart (line/area variants, semantic stroke colors); stateless, recharts-free and RSC-safe.
+- **Heatmap** — GitHub-style activity calendar: week columns × weekday rows of squares, `data` (array or Record) binned into `levels` intensity steps (default 4) and tinted via `color-mix` of primary↔bg-subtle — light/dark/brand themes follow automatically; `getLabel`/`getMonthLabel`/`getWeekdayLabel`/`summary` carry all i18n, RSC-safe (hook-free).
+- **Spoiler** — collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.
+- **Stat** — metric display with title, value and trend indicator.
+- **Table** — styled semantic table (`striped`, `bordered`).
+- **Timeline** — vertical timeline container for `TimelineItem` children.
+- **Tree** — hierarchical tree with expand, select and check state, async `loadData` and `searchValue` filtering.
+- **VirtualList** — windowed list rendering only visible rows; fixed or measured dynamic heights.
+- **Watermark** — tiled canvas watermark layer over children (or `fullscreen`); theme-aware color, degrades gracefully without canvas 2d support.
+
+### Navigation
+
+- **Affix** — fixes children to a viewport edge once scrolled past an offset.
+- **Anchor** — sticky scroll-spy navigation: `items` list highlighting the active section (IntersectionObserver, controllable `activeId`), click scrolls with `offsetTop`.
+- **BackToTop** — floating scroll-to-top button appearing past a scroll threshold.
+- **Breadcrumb** — breadcrumb trail nav with configurable separator.
+- **Command** — command palette surface: `CommandInput` plus filterable `CommandItem`s.
+- **FloatButton / FloatButtonGroup** — floating action button over the page; `FloatButtonGroup` stacks actions behind an expand trigger, with back-to-top and help glyphs built in.
+- **NavigationBar** — top nav bar with `brand` and `end` slots.
+- **NavigationMenu** — hover mega-menu navigation (WAI-ARIA disclosure navigation pattern): `NavigationMenuTrigger` opens `NavigationMenuContent` panels with a ~100ms intent dwell and ~300ms pointer grace, instantly switching between open panels; `activeValue` is controllable, Escape closes, left/right arrows traverse triggers.
+- **Pagination** — page navigation with controllable `page` and ellipsis windows.
+- **Stepper** — step indicator driven by `activeStep` (`Step` children).
+- **Tabs** — tab panel switcher with controllable active tab; document affordances on `Tab` (`icon`, `status` dot, `closable` ×/Delete) and `TabList` overflow ⋯ menu; `SortableTabList` adds dnd-kit drag reordering.
+- **Toolbar** — button group with toolbar a11y (roving tabindex; `ToolbarButton`, `ToolbarSeparator`).
+- **Tour** — guided walkthrough spotlighting `steps` behind a mask, controllable `current`.
+
+### Feedback
+
+- **Alert** — inline status message box.
+- **AsyncSection** — declarative loading / error / content states for async data.
+- **Banner** — dismissible top banner with semantic status colors.
+- **Empty** — empty-state placeholder with image and description.
+- **ErrorBoundary** — render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.
+- **Result** — result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.
+- **Skeleton** — shimmering loading placeholder (`text`/`circular`/`rectangular`).
+- **Spinner** — loading spinner.
+- **LoadingOverlay** — container-level loading state: dims content, centers a spinner (or custom loader), `aria-busy` mirrors the phase.
+- **Toast** — toast notifications via `useToast` + `ToastContainer` (imperative `toast()` helper included).
+
+### AI & Chat
+
+- **ApprovalCard** — approval gate with approve / deny actions for agent-initiated operations.
+- **ChatContainer** — chat transcript scroll container with stick-to-bottom auto-scroll.
+- **ChatInput** — message composer with a controllable value and onSend callback.
+- **ChatMessage** — chat bubble with role-based layout (user / assistant / system), avatar, name, timestamp and delivery status.
+- **ConversationList** — selectable list of conversations for a chat-history sidebar.
+- **DiffViewer** — renders the line diff between old and new content for agent-proposed edits.
+- **FilePreview** — attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.
+- **FollowUpSuggestions** — AI-chat follow-up suggestions: wrapping row of clickable prompt chips (role=list/listitem) with loading skeletons and disabled states.
+- **InlineCitation** — inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.
+- **InlineCompletion** — ghost-text completion overlay for input/textarea; Tab accepts the suggestion, Escape dismisses it.
+- **LogViewer** — scrollable log stream with severity-level filtering.
+- **MarkdownRenderer** — renders markdown content (including code blocks) for assistant responses.
+- **ModelPicker** — controllable dropdown for selecting the active model.
+- **Plan** — agent plan and progress display: `Plan` + `Plan.Item` step list whose statuses drive an auto progress bar and summary.
+- **PromptInput** — AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.
+- **Queue** — queue of pending agent actions or messages — `Queue` + `Queue.Item` with queued/sending/failed status and optional per-item removal.
+- **Sources** — numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` renders inline `[1] [2]` badges.
+- **StepTimeline** — vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.
+- **StreamingText** — typewriter effect that reveals streaming text character by character, with an optional cursor.
+- **TaskList** — agent task checklist: TaskList/TaskListItem checkbox rows strike through and dim when done; compound children or items data.
+- **ThinkingIndicator** — animated bouncing-dots indicator that the agent is processing.
+- **TokenCounter** — context-window token usage counter with budget progress.
+- **ToolCallCard** — card presenting an agent tool call — name, input, output and running state.
+- **Trace** — line-by-line agent reasoning trace — `Trace` + `TraceItem` steps with `pending`/`running`/`done`/`error` status, custom icons, collapsible `details` and sr-only status-change announcements.
+
+### Utilities
+
+- **Collapsible** — unstyled open/close container with controllable `open` state.
+- **ConfigProvider** — per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.
+- **Disclosure** — summary-header disclosure panel (details/summary semantics).
+- **Fullscreen** — wrap-mode Fullscreen API binding around a single trigger child with controllable `fullscreen` state; `useFullscreen()` hook also exported.
+- **LocaleProvider** — supplies UI string packs (built-in English, zh-CN and ja-JP) to locale-aware components; `direction` (explicit or locale-derived) feeds `useDirection()`; `createStrings(base, overrides)` derives packs without forking the table. RTL locales (ar/he/fa/…) are derived automatically.
+- **SwipeAction** — swipe-to-reveal row actions on left/right edges with a commit threshold.
+- **PullToRefresh** — mobile pull-to-refresh gesture over scrolling children: hand-written pointer/touch state machine (idle → pulling → ready → refreshing) with damped finger-follow, scroll-edge canRefresh gate, promise-gated spinner head and a render-prop indicator.
+- **VisuallyHidden** — screen-reader-only content: clipped off the visual canvas, kept in the a11y tree.
+
+## Design tokens
+
+Colors are generated in **OKLCH** from `src/lib/tokens/palette.ts`: 12-step primitive
+scales (gray/blue/green/amber/red × light/dark) plus semantic aliases. Interaction
+states (hover/active/subtle/focus-ring/border-hover) are **CSS relative-color formulas**
+— `oklch(from var(--haze-color-primary) calc(l - 0.045) c h)` — so overriding
+`--haze-color-primary` on a theme class re-derives the whole interaction family at
+runtime, no rebuild. Themes ship as classes: apply `lightTheme` (or `darkTheme`, or the zero-JS system-following `autoTheme`) plus
+`spacing` and `typography` to a root element. Browser baseline: Chrome/Edge 119+,
+Safari 16.4+, Firefox 128+ (relative-color syntax, no hex fallbacks).
+The registry also ships as [W3C Design Tokens](https://tr.designtokens.org/) JSON —
+`haze-ui/design-tokens/light.json` and `dark.json`, plus five brand archives
+(`violet`/`teal`/`cyan`/`orange`/`rose` × light/dark) — for Tokens Studio /
+Style Dictionary pipelines; the [Tokens in Figma guide](https://wmzy.github.io/haze-ui/guides/figma-tokens)
+walks the import. All tokens are plain CSS custom properties prefixed `--haze-*`.
+
+## Floating overlays: three tiers
+
+Popover, DropdownMenu, Tooltip, ContextMenu, Combobox and Datepicker panels pick an
+engine by feature detection: (1) native `popover` attribute + CSS anchor positioning
+(position-area grid with fallbacks), (2) `popover` alone, (3) a JS-positioned fallback.
+Modern engines take tier 1; positioning and light-dismiss behavior stay consistent
+across tiers. Panel placements are logical: under `dir="rtl"` the horizontal side
+mirrors automatically (tier 1 uses logical `position-area` values where engines
+accept them, tier 2 mirrors in JS).
+
+Dialog, Drawer, BottomSheet, Popover and DropdownMenu accept a `ref` exposing
+`{ open(), close(), focusTrigger() }` — the same state outlet as user interaction,
+controlled-mode aware. Dialog, Drawer and BottomSheet also take a `viewTransition?: boolean`:
+open/close flips wrapped in the View Transitions API (`startViewTransition` + `flushSync`),
+auto-degrading without engine support or under reduced motion.
+
+## Headless primitives
+
+`haze-ui/headless` re-exports the behavior layer the components are built
+on — the floating engine, exit animations, the `Portal` primitive, focus
+scope, pure collision math, menu/submenu keyboard machinery, RTL direction
+resolution, ref composition, View-Transition-wrapped state flips and the
+document-level interaction hooks — for component authors assembling their
+own panels. Same source, same version as the styled library; stable public
+API with the same semver commitment. The full export surface (61 entries):
+
+### Floating behavior
+
+- `supportsNativePopover` — Detects the native Popover API (`popover` attribute, top layer, light-dismiss). The floating primitives use this to choose their rendering tier.
+- `supportsAnchorPositioning` — Detects CSS anchor positioning on top of the native Popover API. The floating primitives use this to choose between the declarative anchored tier and JS-assisted positioning.
+- `useFloating` — The floating-pair behavior hook: pass the open state pair plus trigger and panel refs, receive a `FloatingBehavior` record describing the engine tier and everything to spread on the trigger and panel. This is the same engine Popover, DropdownMenu, Combobox, Datepicker and Tooltip run on.
+- `UseFloatingOptions` (type) — Options accepted by `useFloating`: the open state pair, trigger and panel refs, plus optional animation and collision knobs.
+- `FloatingBehavior` (type) — Behavior record returned by `useFloating`: tier flags, lifecycle phases (`shown`/`dataState`/`exited`), and the props/class entries to spread on the trigger and panel elements.
+- `FloatingPlacement` (type) — Panel placement relative to the trigger (`'bottom' | 'bottom-span' | 'bottom-center' | 'bottom-end' | 'top' | 'left' | 'right'`, or `'point'` to position the panel yourself, e.g. at pointer coordinates). Logical, not physical: under `dir="rtl"` the horizontal placements and the start/end alignments mirror automatically.
+- `floatingPlacementClasses` — x-class entries placing a panel element relative to its trigger, per engine tier — for consumers composing their own panel instead of using `FloatingPanel`.
+- `placeFloatingPanel` — Imperatively place a fixed panel from the trigger's rect (the JS-positioned tier). Re-run on scroll/resize — or use `useFloatingPosition`, which wires that up.
+- `useFloatingPosition` — Hook that keeps a floating panel positioned on the JS-assisted tiers: tier-2 fixed placement and the tier-1 cross-axis nudge, re-run on scroll and resize.
+- `FloatingPanel` — The panel half of a floating pair: applies the popover attribute, the anchor custom property and the tier/placement classes, mirrors the animated lifecycle as `data-state`, and runs the JS-assisted position effect. Your visual skin goes in `visualClass`; everything else passes through to the underlying div.
+- `FloatingPanelProps` (type) — Props accepted by `FloatingPanel` — behavior record, optional placement/collision overrides, `visualClass` skin, plus native div attributes.
+
+### Presence / exit animations
+
+- `Presence` — Keeps a single child mounted while its exit animation runs: the child receives `data-state="open" | "closed"` (render your enter/exit transitions on it) and unmounts only after the exit settles — or, with `keepMounted`, stays mounted dormant behind `hidden` + `inert`. This is the engine behind haze-ui's animated panels, modals and collapsibles.
+- `PresenceProps` (type) — Props accepted by `Presence`: `present`, a single-element `children`, an optional `onExited` callback, and `keepMounted` to keep the child mounted (dormant behind `hidden` + `inert`) after the exit settles.
+- `whenExitSettles` — Wait for an element's exit animation/transition to finish. Resolves immediately when no positive duration is declared, `null` for an element outside the document; repeated calls share the in-flight settle. The imperative companion to `Presence`.
+
+### Portal
+
+- `Portal` — Renders children into a DOM container outside the current React tree position — `document.body` by default, so overlays escape ancestor `overflow`, `transform` and stacking contexts. SSR-safe: nothing renders until the client mounts (no `document` access during render), and `disabled` renders the children in place instead. The primitive behind haze-ui's overlay families, exported for composing your own.
+- `PortalProps` (type) — Props accepted by `Portal`: `children`, an optional `container` (element or lazy getter, default `document.body`), and `disabled` to render in place.
+
+### Focus
+
+- `useFocusScope` — Focus-domain hook for overlays: attach the returned ref callback to a container and flip `enabled` to get initial focus, focus restoration and optional Tab trapping — a simplified Radix-style FocusScope with no CSS dependency.
+- `FocusScopeOptions` (type) — Options accepted by `useFocusScope`: `enabled`, `trapped`, `autoFocus`, `returnFocus`, and the mount/unmount auto-focus event callbacks (preventable via `event.preventDefault()`).
+- `TABBABLE_SELECTOR` — Tab-order candidate selector (structural filter only; runtime state — disabled, hidden, visibility — is filtered by `isTabbable`).
+- `isTabbable` — Whether an element is in the Tab order: matches `TABBABLE_SELECTOR` and is not disabled, hidden or invisible.
+- `getTabbables` — All tabbable elements inside a container, in DOM order (the container itself excluded).
+- `focusFirst` — Focus the first tabbable element in a container, or the container itself when none exists. Returns whether focus actually transferred — guarding against `focus()` silently no-op-ing on disabled or detached elements.
+
+### Collision geometry
+
+- `computeFloatingPosition` — Pure floating-panel collision math over literal rects — no DOM, no React: baseline coordinates, then flip on the primary axis, shift on the cross axis, primary-axis clamp. The deterministic core of the JS-positioned tiers.
+- `ComputeFloatingPositionOptions` (type) — Arguments accepted by `computeFloatingPosition`: trigger rect, panel and viewport sizes, placement, per-direction gap, and the resolved strategy record.
+- `FloatingPosition` (type) — Position resolved by `computeFloatingPosition`: panel `top`/ `left` and the (possibly flipped) placement side.
+- `resolvePadding` — Normalize a `CollisionPadding` into a full per-side record — the padding shape `computeFloatingPosition`'s strategy expects.
+- `CollisionSide` (type) — Viewport edge a collision measurement applies to.
+- `CollisionPadding` (type) — Viewport inset for collision checks: a number applies to all four sides, an object per side.
+- `CollisionStrategy` (type) — Collision knobs: `flip` to the opposite side and `shift` along the cross axis when the panel overflows the padded viewport (both default on), plus `collisionPadding`. Consumers may pass any subset.
+
+### Menu keyboard
+
+- `getEnabledMenuItems` — Enabled menu items inside a container, in DOM order. `role="menu"` containers scope each item to its nearest menu ancestor, so a nested submenu's items belong to their own level — the same query the haze-ui menu families' traversal, typeahead and roving tabindex run on. The item selector is customizable for non-menu containers (listboxes, command palettes).
+- `useMenuKeyboard` — Keyboard behavior for a roving-tabindex item container (WAI-ARIA menu button pattern): the orientation's main-axis arrows move focus wrapping and skipping disabled items (mirrored under `dir="rtl"` for horizontal layouts), Home/End jump to the ends, Escape and Tab close, printable characters run typeahead. Returns the `onKeyDown` handler to spread on the container — the engine DropdownMenu, ContextMenu and Command run on.
+- `UseMenuKeyboardOptions` (type) — Options accepted by `useMenuKeyboard`: the container ref, the close callback, an optional custom item selector, the submenu-level `onCloseToStart` callback and the layout `orientation`.
+- `useRovingTabindex` — Roving tabindex for a menu/listbox container: exactly one item is a tab stop at any time — kept on activation, moved with focus, and re-synced by a MutationObserver when the item set changes (e.g. a filtered list). While `active` is false the effect is inert.
+- `UseRovingTabindexOptions` (type) — Options accepted by `useRovingTabindex`: the container ref, the `active` flag and an optional custom item selector.
+
+### Submenu mechanism
+
+- `useSubmenu` — The nested-submenu mechanism behind `MenuSub*` / `DropdownMenuSub*`: owns the open state (controllable through the `open` option), drives the floating pair, wires hover intent (rest-delayed open, graceful close) and the level-scoped keyboard contract — the inline-end arrow opens focusing the first item, Escape and the inline-start arrow close only this level, Tab closes the whole stack. Returns the behavior record the family components skin.
+- `UseSubmenuOptions` (type) — Options accepted by `useSubmenu`: the `open` state (controlled control or uncontrolled initial value) and `onOpenChange`, fired on every open transition whatever drove it.
+- `SubmenuBehavior` (type) — Behavior record returned by `useSubmenu`: the open state, the trigger/content refs, the panel id, the floating behavior, and the handlers to spread on the trigger (`onPointerEnter`, `onKeyDown`) and the panel (`onKeyDown`).
+- `SubmenuProvider` — Context provider carrying a `SubmenuBehavior` from a Sub container to its trigger/content parts — for authors composing their own submenu skins. Nesting works naturally: each Sub re-provides for its own parts.
+- `useSubmenuContext` — Read the nearest `SubmenuBehavior` provided by an enclosing `SubmenuProvider`. Throws outside one.
+- `SUBMENU_OPEN_DELAY_MS` — Pointer rest time before a submenu opens on hover (intent, not rest), in milliseconds.
+- `SUBMENU_CLOSE_GRACE_MS` — Grace before a hover-opened submenu closes after the pointer settled outside it, in milliseconds.
+
+### Direction / RTL
+
+- `Direction` (type) — Writing direction of a subtree: `'ltr'` or `'rtl'`.
+- `localeDirection` — Direction implied by a BCP 47 tag — RTL primary language subtags (`ar`, `fa`, `he`, `ur`, …) resolve to `'rtl'`, everything else to `'ltr'`; `undefined` when no tag is given.
+- `getDirection` — Rendered direction of an element: the nearest ancestor carrying a `dir` attribute, `'ltr'` when none does. The layout truth that arrow-key mirroring and JS placement math must follow — read it at event/measure time, never from React state.
+- `useDirection` — Declared direction for the current tree: the LocaleProvider chain's explicit `direction` prop or locale-derived direction, falling back to the document's rendered direction when no provider is mounted. Prefer `getDirection` on the concrete element whenever the value must match the painted layout.
+
+### Ref composition
+
+- `mergeRefs` — Compose several refs (object and/or callback) into one callback ref — the pattern for merging a behavior record's `triggerRef`/`panelRef` with your own element handle on the same node.
+
+### View transitions
+
+- `useViewTransitionFlip` — Wrap a boolean open-state flip in a View Transition — the same outlet the Dialog/Drawer/BottomSheet `viewTransition` prop runs on. Every write executes inside `document.startViewTransition(() => flushSync(...))`; the full guard chain (disabled, `prefers-reduced-motion: reduce`, unsupported engine) degrades to a direct write. Pass the flag and the `useControl` setter, and use the returned writer wherever the state flips.
+
+### Document-level interaction hooks
+
+- `useClickOutside` — Call back on `pointerdown` outside an element: attach the returned stable callback ref to the target, optionally ignore refs (e.g. the trigger), and toggle `enabled` with the panel's open state so a closed overlay costs no listener. Shadow-DOM retargeted clicks are attributed correctly via `event.composedPath()`.
+- `UseClickOutsideOptions` (type) — Options accepted by `useClickOutside`: `enabled` (default `true`) and the `ignore` ref list — elements whose hits do not count as outside.
+- `useHotkeys` — Declarative keyboard shortcuts: a map of spec strings (`'mod+k'`, `'ctrl+shift+p'`, `'?'`, named keys, whitespace-joined sequences like `'g h'`) to handlers, listened on the window (or a ref target). `mod` normalizes per platform (⌘ on macOS, Ctrl elsewhere), editable focus suppresses fires unless `allowInInput`, sequences reset on a wrong key or after `sequenceTimeout` (default 1000ms), and the map may be an inline literal — a latest-ref keeps the listener mounted once.
+- `hotkey` — Combine several hotkey specs into one comma-joined alias binding so a single handler catches any of them: `useHotkeys({ [hotkey('mod+k', 'mod+j')]: cycle })`.
+- `HotkeyHandler` (type) — Handler signature `useHotkeys` calls with the raw KeyboardEvent (already `preventDefault`-ed and stopped when it fires).
+- `UseHotkeysOptions` (type) — Options accepted by `useHotkeys`: `enabled`, `target` (element ref or `window`), `eventName`, `allowInInput` and `sequenceTimeout`.
+- `useInView` — Observe whether an element is in the viewport: attach the returned callback ref and read the `inView` flag. `once: true` freezes after the first intersection (lazy-load style); engines without IntersectionObserver (SSR, jsdom) stay `false` without throwing.
+- `UseInViewOptions` (type) — Options accepted by `useInView`: the IntersectionObserver init members plus the `once` freeze flag.
+- `useMediaQuery` — Subscribe to a CSS media query and return whether it currently matches; the query can change per render. SSR and hydration snapshots are `false` (no `window` access), and engines without `matchMedia` get a stable `false` instead of a throw.
+
+### Busy pressable
+
+- `useBusyPressable` — Props bag for a pressable that can enter a busy/loading state — `disabled` forced while busy, `aria-busy` mirrored. The behavior half of `Button`'s/`ButtonLink`'s `loading` prop, for consumers composing their own trigger. Anchors translate `disabled` to `aria-disabled` (see ButtonLink).
+
+### Persistent state hooks
+
+- `useLatest` — A ref always pointing at the value from the latest render — the mirror long-lived closures (timers, async chains, listeners) read to see the current props instead of the ones captured at setup time.
+- `usePrevious` — The value from the previous render; `undefined` on the first. Compared by identity per render — no deep equality.
+- `useLocalStorage` — localStorage-persisted controllable state: initial-value resolution is persisted value > uncontrolled prop > `initial`, uncontrolled writes persist as JSON, cross-tab updates arrive via `storage` events, and a controlled `control` stays the single source of truth (no write-back). Unavailable storage (private mode) degrades silently to in-memory state.
+- `useSessionStorage` — sessionStorage-persisted controllable state — exactly the semantics of `useLocalStorage`, scoped to the tab session.
+
+## Hooks
+
+`haze-ui/hooks` is the standalone hooks entry — 27 value exports
+(plus 16 options/result type clauses) with no component code:
+clipboard, dark mode, debounce, fullscreen, hotkeys, viewport and element
+observation, idle, network, orientation, reduced motion, storage-persisted
+state (`useLocalStorage`/`useSessionStorage` over the shared
+`useStorageState` kernel: JSON persisted, cross-tab `storage` events,
+Control-friendly) and the tab title. The overlay-relevant subset is also
+re-exported from `haze-ui/headless`; a curated selection ships on the main
+barrel.
+
+`useAnchorSpy`, `useAutosizeTextarea`, `useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLatest`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useStreamingAnnouncements`, `useTitle`
+
+## Icons
+
+`haze-ui/icons` re-exports 101 curated [lucide-react](https://lucide.dev)
+glyphs — the common UI vocabulary (navigation chevrons, form feedback, media,
+communication, files, commerce) as individual named exports in alphabetical
+order. `lucide-react` is a regular dependency with `sideEffects: false` and
+stays external in the lib build: an icon never imported costs zero bytes, and
+consumers who import none of them tree-shake the package out entirely. The full
+1800+ lucide catalog stays one direct `lucide-react` import away.
+
+Pair with the `Icon` component — `<Icon icon={Check} size='sm' />` — and use
+the frozen `hazeIconSize` map (`{ sm: 16, md: 20, lg: 24 }`, the `Icon`
+size scale) when a lucide glyph renders outside `<Icon>` so both paths agree
+on the size scale.
+## Locale packs
+
+`haze-ui/locales` re-exports the string packs standalone — `enUS` (the same
+object as `defaultStrings`), `zhCN`, `jaJP`, `deDE`, `frFR`, `esES`, `itIT`,
+`ptBR`, `ruRU`, `koKR`, `arSA`, plus `createStrings(base, overrides)` and the
+`HazeStrings`/`LocaleProviderProps` types — for bundle-splitting a single pack
+or type-checking a custom one. No components travel with the import; the
+`LocaleProvider` itself stays on the main entry.
+
+## Forms: react-f0rm integration
+
+Form state belongs to [react-f0rm](https://github.com/wmzy/react-f0rm) (a haze-ui dependency).
+haze-ui ships controlled cores — `InputCore`, `SelectCore`, `SwitchCore`, `TextareaCore`,
+`TagInputCore`, `TransferCore`, `UploadCore`, `CheckboxCore`, … — that speak the plain
+`{value, onChange}` pair its headless `useField` hook emits, with zero adapters.
+`FormItem` wraps the hook's state in label, error and aria wiring, with declarative
+binding via `as`/`input` props. The sugar components (`Input`, `Select`, …) keep the
+`ControlOrValue<T>` API for standalone use outside forms. The whole form surface is
+re-exported from the haze-ui barrel — `FormItem`, `FormList`, the instance factories
+`Form`/`useForm()`/`createForm()`, `FormProvider`/`useFormContext`, the imperative
+APIs (`useFieldArray`, `useWatch`, `setValue`/`getValue`/`getValues`/`reset`,
+`trigger`, `setFocus`) and the schema resolvers (`zodResolver`,
+`standardSchemaResolver`, …) — so app code never needs react-f0rm as a direct
+dependency: import everything from `haze-ui` and let the regular dependency resolve
+underneath.
+
+## AI-friendly distribution
+
+- `haze-ui/registry.json` (npm artifact; also at <https://unpkg.com/haze-ui/registry.json>)
+  is a shadcn/ui-compatible registry covering every component family (plus a `base`
+  meta item that installs the whole system in one command). Its items are thin wrapper
+  files that re-export the published component and import its stylesheet — haze-ui stays
+  an npm dependency underneath, so wrappers are your customization layer, not vendored
+  source.
+- `haze-ui/css-manifest.json` maps every export to its css file (see "CSS" above).
+
+## For coding agents
+
+A self-contained, machine-executable setup protocol — every step is copy-paste safe.
+
+1. Install the library:
+
+   ```sh
+   npm i haze-ui
+   ```
+
+   `react` and `react-dom` are the only peers; all engine packages (form,
+   table, chart, dnd, qr) arrive as regular dependencies and never enter
+   the bundle for components you don't import.
+
+   Peer range is `react: ^19.0.0`; there is no React 18 compatibility layer.
+
+2. Load CSS — the JS entry imports no stylesheet, so pick one mode:
+
+   ```jsx
+   import 'haze-ui/styles.css'; // mode 1: full stylesheet (simplest)
+   ```
+
+   ```jsx
+   import 'haze-ui/css/tokens.css'; // mode 2: tokens once…
+   import 'haze-ui/css/button.css'; // …plus each component you use
+   ```
+
+3. Derive per-component CSS file names from `haze-ui/css-manifest.json`
+   (build-generated export → css-file map, with family absorption and a
+   `noCss` list) — never hardcode or re-derive file names yourself.
+
+4. Stateful props are `ControlOrValue<T>`: pass a plain value for uncontrolled
+   use, or a `Control<T>` from react-use-control for controlled use — one
+   prop, no `defaultXxx` mirror API.
+
+5. Every component's full props table (name/type/default/description, types
+   verbatim from source) lives in [llms-full.txt](llms-full.txt) — generated,
+   always current.
+
+To install the agent components via the shadcn CLI instead, see
+[registry/README.md](https://github.com/wmzy/haze-ui/blob/main/registry/README.md).
+
+## Accessibility references
+
+Two docs-site references cover the accessibility surface: the per-component
+keyboard & ARIA contract tables (<https://wmzy.github.io/haze-ui/guides/a11y-contracts>
+— roles, `aria-*` attributes and handled keys per component, extracted from each
+component's test suite by `scripts/generate-a11y-contracts.mjs`) and the streaming
+a11y guide (<https://wmzy.github.io/haze-ui/guides/streaming-a11y> — live-region
+patterns for transient UI: aria-busy placement, throttled announcements,
+interruption tiers, async option loading and lazy trees).
+
+## Links
+
+- Docs & demos: <https://wmzy.github.io/haze-ui/>
+- GitHub: <https://github.com/wmzy/haze-ui>
+- npm: <https://www.npmjs.com/package/haze-ui>
+
+The Components section above is generated from the demo sidebar contract
+(`src/views/Layout/component-groups.ts`) plus the blurb table in
+`scripts/generate-llms.mjs`; the Headless / Hooks / Icons sections are
+generated from the subpath barrels (`src/lib/headless/index.ts`,
+`src/lib/hooks/index.ts`, `src/lib/icons/index.ts`) — every export is
+enumerated with the JSDoc blurb written next to it in source. Regenerate with
+`node scripts/generate-llms.mjs` when any of those change. The preamble and
+the remaining closing sections are maintained by hand.

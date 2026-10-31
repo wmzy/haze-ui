@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{a as t}from"./styles-DBn9Gwwz.js";import{n,t as r}from"./guide-content-yQiX3KKI.js";var i=e();function a(){let e=n(`deprecationPolicy`);return(0,i.jsxs)(`div`,{className:t,children:[(0,i.jsx)(`h1`,{children:e.title}),(0,i.jsx)(r,{doc:e})]})}export{a as default};

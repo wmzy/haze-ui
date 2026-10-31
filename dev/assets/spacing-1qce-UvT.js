@@ -1,0 +1,1 @@
+var e={"--haze-space-1":4,"--haze-space-2":8,"--haze-space-3":12,"--haze-space-4":16,"--haze-space-5":20,"--haze-space-6":24,"--haze-space-8":32,"--haze-space-10":40,"--haze-space-12":48,"--haze-space-16":64},t=Object.fromEntries(Object.entries(e).map(([e,t])=>[e,`${t}px`])),n=`haze-spacing__spacing`;export{t as n,n as r,e as t};
