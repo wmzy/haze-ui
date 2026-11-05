@@ -252,7 +252,7 @@ export type PeriodGridView = {
  * `onPick` commits the pick (or navigates, in the drill grids). Same
  * grid/gridcell semantics and roving keyboard as the day grid;
  * `cellRender` fires per cell with the mode it renders in. */
-export function renderPeriodGrid(
+function renderPeriodGrid(
   spec: {
     kind: 'month' | 'year';
     anchor: number;

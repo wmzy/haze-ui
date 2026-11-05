@@ -1,19 +1,16 @@
-import type { ControlOrValue } from 'react-use-control';
-
-import type { FieldBridgeProps } from './TagInputCore';
+import type { TagInputProps } from './TagInput';
 
 import { useControl } from 'react-use-control';
 
+import { NativeHiddenFields } from '../../utils/native-form';
+
 import SortableTagInputCore from './SortableTagInputCore';
 
-type SortableTagInputProps = {
-  value?: ControlOrValue<string[]>;
-  onChange?: (value: string[]) => void;
-  placeholder?: string;
-  maxTags?: number;
-  disabled?: boolean;
-  className?: string;
-} & FieldBridgeProps;
+/** The wrappers differ only in which Core they drive (drag reordering
+ * vs the plain list); the public surface — value/onChange, field props,
+ * the native-form `name` bridge — is identical, so the props type is
+ * shared rather than duplicated. */
+type SortableTagInputProps = TagInputProps;
 
 /**
  * Controllable-state sugar over `SortableTagInputCore`: drag-and-drop tag
@@ -30,6 +27,7 @@ export default function SortableTagInput({
   maxTags,
   disabled,
   className,
+  name,
   id,
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedby,
@@ -38,21 +36,24 @@ export default function SortableTagInput({
   const [tags, setTags] = useControl(valueControl, []);
 
   return (
-    <SortableTagInputCore
-      ref={ref}
-      value={tags}
-      onChange={(next) => {
-        setTags(next);
-        onChange?.(next);
-      }}
-      placeholder={placeholder}
-      maxTags={maxTags}
-      disabled={disabled}
-      className={className}
-      id={id}
-      aria-invalid={ariaInvalid}
-      aria-describedby={ariaDescribedby}
-    />
+    <>
+      <SortableTagInputCore
+        ref={ref}
+        value={tags}
+        onChange={(next) => {
+          setTags(next);
+          onChange?.(next);
+        }}
+        placeholder={placeholder}
+        maxTags={maxTags}
+        disabled={disabled}
+        className={className}
+        id={id}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedby}
+      />
+      <NativeHiddenFields name={name} values={tags} />
+    </>
   );
 }
 

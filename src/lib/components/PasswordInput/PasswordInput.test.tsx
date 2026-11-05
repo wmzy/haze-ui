@@ -21,6 +21,18 @@ describe('PasswordInput', () => {
     expect(container.firstChild).toHaveClass('custom');
   });
 
+  it('forwards native attributes to the inner input', () => {
+    const { container } = render(
+      <PasswordInput aria-label="API key" data-testid="pw" name="secret" inputMode="text" />
+    );
+    const input = container.querySelector('input')!;
+    // an explicit aria-label overrides the default localized label
+    expect(input.getAttribute('aria-label')).toBe('API key');
+    expect(input).toHaveAttribute('data-testid', 'pw');
+    expect(input).toHaveAttribute('name', 'secret');
+    expect(input).toHaveAttribute('inputmode', 'text');
+  });
+
   it('calls onChange on input change', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

@@ -562,6 +562,54 @@ export default function Tree({
     });
   }
 
+  /** Shared TreeItem props for both render paths (the recursive
+   *  renderNodes walk and the virtualized renderRow window): every
+   *  field the two used to duplicate, keyed off node.key — the
+   *  expanded/selected/checkedState/loadStatus lookups, the stop-key
+   *  roving tabIndex, and the four key-addressed callbacks. Path-only
+   *  concerns (the isLast chain, rowWrap) stay at the call sites. */
+  function treeItemProps(node: TreeNodeData, level: number, isLast: boolean[]) {
+    const isChecked = checkedKeys.includes(node.key);
+    const isHalfChecked = halfCheckedKeys.includes(node.key);
+    const checkedState: 'checked' | 'halfChecked' | 'unchecked' = isChecked
+      ? 'checked'
+      : isHalfChecked
+        ? 'halfChecked'
+        : 'unchecked';
+    const status = loadStatuses[node.key];
+    // Roving tab stop: the annotated literal union keeps the property
+    // narrow (a bare ternary widens to number against TreeItemProps).
+    const tabIndex: 0 | -1 = node.key === stopKey ? 0 : -1;
+
+    return {
+      node,
+      level,
+      expanded: effectiveExpandedKeys.includes(node.key),
+      selected: selectedKeys.includes(node.key),
+      checked: checkedState,
+      disabled,
+      checkable,
+      selectable,
+      blockNode,
+      showLine,
+      showIcon,
+      switcherIcon,
+      loadingIcon,
+      loading: status === 'loading',
+      loadable,
+      loadFailed: status === 'error',
+      searchValue,
+      titleRender,
+      iconRender,
+      isLast,
+      tabIndex,
+      onToggle: () => handleToggle(node.key),
+      onSelect: () => handleSelect(node.key),
+      onCheck: () => handleCheck(node.key),
+      onRetry: () => handleRetryLoad(node.key),
+    };
+  }
+
   function renderNodes(
     nodes: TreeNodeData[],
     level: number,
@@ -570,48 +618,11 @@ export default function Tree({
     return nodes.map((node, index) => {
       const hasChildren = !!node.children?.length;
       const isExpanded = effectiveExpandedKeys.includes(node.key);
-      const isSelected = selectedKeys.includes(node.key);
-      const isChecked = checkedKeys.includes(node.key);
-      const isHalfChecked = halfCheckedKeys.includes(node.key);
-      const status = loadStatuses[node.key];
-      const checkedState: 'checked' | 'halfChecked' | 'unchecked' = isChecked
-        ? 'checked'
-        : isHalfChecked
-          ? 'halfChecked'
-          : 'unchecked';
 
       const isLastAtThisLevel = index === nodes.length - 1;
       const currentIsLast = [...parentIsLast, isLastAtThisLevel];
 
-      const row = (
-        <TreeItem
-          node={node}
-          level={level}
-          expanded={isExpanded}
-          selected={isSelected}
-          checked={checkedState}
-          disabled={disabled}
-          checkable={checkable}
-          selectable={selectable}
-          blockNode={blockNode}
-          showLine={showLine}
-          showIcon={showIcon}
-          switcherIcon={switcherIcon}
-          loadingIcon={loadingIcon}
-          loading={status === 'loading'}
-          loadable={loadable}
-          loadFailed={status === 'error'}
-          searchValue={searchValue}
-          titleRender={titleRender}
-          iconRender={iconRender}
-          isLast={currentIsLast}
-          tabIndex={node.key === stopKey ? 0 : -1}
-          onToggle={() => handleToggle(node.key)}
-          onSelect={() => handleSelect(node.key)}
-          onCheck={() => handleCheck(node.key)}
-          onRetry={() => handleRetryLoad(node.key)}
-        />
-      );
+      const row = <TreeItem {...treeItemProps(node, level, currentIsLast)} />;
 
       return (
         <div key={node.key} role='group' data-slot='group' x-class={group}>
@@ -627,46 +638,11 @@ export default function Tree({
   }
 
   /** One flattened row for the virtualized window (same TreeItem props
-   *  as the recursive path; the group nesting becomes aria-level on the
-   *  flat rows). */
+   *  via treeItemProps as the recursive path; the group nesting becomes
+   *  aria-level on the flat rows). */
   function renderRow(row: VisibleTreeRow) {
-    const isChecked = checkedKeys.includes(row.key);
-    const isHalfChecked = halfCheckedKeys.includes(row.key);
-    const status = loadStatuses[row.key];
-    const checkedState: 'checked' | 'halfChecked' | 'unchecked' = isChecked
-      ? 'checked'
-      : isHalfChecked
-        ? 'halfChecked'
-        : 'unchecked';
-
     const item = (
-      <TreeItem
-        node={row.node}
-        level={row.level}
-        expanded={effectiveExpandedKeys.includes(row.key)}
-        selected={selectedKeys.includes(row.key)}
-        checked={checkedState}
-        disabled={disabled}
-        checkable={checkable}
-        selectable={selectable}
-        blockNode={blockNode}
-        showLine={showLine}
-        showIcon={showIcon}
-        switcherIcon={switcherIcon}
-        loadingIcon={loadingIcon}
-        loading={status === 'loading'}
-        loadable={loadable}
-        loadFailed={status === 'error'}
-        searchValue={searchValue}
-        titleRender={titleRender}
-        iconRender={iconRender}
-        isLast={row.isLast}
-        tabIndex={row.key === stopKey ? 0 : -1}
-        onToggle={() => handleToggle(row.key)}
-        onSelect={() => handleSelect(row.key)}
-        onCheck={() => handleCheck(row.key)}
-        onRetry={() => handleRetryLoad(row.key)}
-      />
+      <TreeItem {...treeItemProps(row.node, row.level, row.isLast)} />
     );
     return rowWrap ? rowWrap(item, row.node) : item;
   }

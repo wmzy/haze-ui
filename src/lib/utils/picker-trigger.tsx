@@ -15,7 +15,9 @@ import { pickerFieldInput } from './field-skin';
  * (SelectCore's single modes, ModelPicker): the base trigger skin,
  * the native-select skin, the maxTagCount overflow badge, the
  * tier-aware panel width cascade, the 12x12 stroke chevron glyphs,
- * the caret slot and the popup aria wiring of the trigger button.
+ * the caret slot and the popup aria wiring of the trigger button,
+ * plus the option-row DOM id scheme and its gated
+ * aria-activedescendant surface (pickerOptionAria).
  *
  * Also hosts the shared panel-surface classes the picker families
  * wear: the listbox chrome (plain and virtualized, Select/Combobox),
@@ -415,6 +417,43 @@ export function pickerArrowOpen(
     event.preventDefault();
     setOpen(true);
   }
+}
+
+/**
+ * The option rows' aria wiring of the combobox pattern (Select's
+ * floating paths, Combobox): the stable, SSR-safe DOM id per row —
+ * trigger id plus '-option-' plus the flat index, both parts
+ * deterministic across renders and re-opens (no random values) — and
+ * the trigger's aria-activedescendant gated onto it. The rows never
+ * receive DOM focus, so screen readers announce the keyboard
+ * highlight through the id the trigger points at. The attribute
+ * exists only while the popup is open (a closed listbox must not own
+ * the field's active descendant, even though the highlight itself
+ * may persist while closed for reopen recovery) and only when the
+ * highlight resolves to an existing row (no highlight — a fresh open
+ * — or an out-of-range one after the option list shrank omits the
+ * attribute entirely).
+ */
+export function pickerOptionAria(
+  id: string,
+  open: boolean,
+  items: readonly unknown[],
+  highlightIndex: number
+): {
+  /** Per-row DOM id factory; each row passes its flat index. */
+  optionId: (index: number) => string;
+  /** The trigger's aria-activedescendant — undefined while closed or
+   * without a resolvable highlighted row. */
+  activeDescendant: string | undefined;
+} {
+  const optionId = (index: number) => `${id}-option-${index}`;
+  return {
+    optionId,
+    activeDescendant:
+      open && items[highlightIndex]
+        ? optionId(highlightIndex)
+        : undefined,
+  };
 }
 
 export const ChevronDown = () => (

@@ -8,7 +8,7 @@
 /** Distance from either strip end that arms the auto-scroll, and
  * the steady scroll pace applied per animation frame. */
 export const AUTO_SCROLL_EDGE = 48;
-export const AUTO_SCROLL_STEP = 10;
+const AUTO_SCROLL_STEP = 10;
 
 /** Per-frame auto-scroll delta for a pointer hovering the strip's
  * ends: positive scrolls toward the right end, negative toward the

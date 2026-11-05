@@ -15,16 +15,9 @@
  * results materialize as local-midnight Dates per the date.ts civil
  * semantics.
  */
-import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
+import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
-import {
-  assertCivilDate,
-  DAY_MS,
-  eraOfDate,
-  localMidnightOf,
-  sampleMonthNames,
-  utcCivilMs,
-} from './adapter';
+import { DAY_MS, defineDayNumberAdapter } from './adapter';
 
 /** Mean lunar month in halakim (parts, 1080/hour): 29 days 12h 793p. */
 const LUNAR_MONTH_PARTS = 765433;
@@ -172,87 +165,62 @@ const PROBE_YEAR = 5785;
 
 /** Month-name sampling anchors: day 15 of every month of the probe
  * year (day 15 exists in every 29/30-day month), as UTC-civil
- * milliseconds. */
+ * milliseconds. Twelve names in the common-year shape (Tishri…Elul,
+ * single Adar at index 5). Leap years intercalate Adar I/II at
+ * indices 5/6 — consumers rendering a leap year differentiate them
+ * through Intl the same way ("Adar I" / "Adar II" in en). */
 const MONTH_ANCHORS: readonly number[] = Array.from(
   { length: 12 },
   (_, month) => toDayNumber(PROBE_YEAR, month, 15) * DAY_MS
 );
 
-export const hebrewAdapter: HazeDateAdapter = {
+/** Hebrew's `addMonths`: years hold a variable 12/13 months, so month
+ * arithmetic walks year boundaries by each year's actual month count
+ * instead of the fixed grid the shared shift/clamp helpers use. */
+function shiftMonths(parts: CivilDateParts, delta: number): CivilDateParts {
+  const normalized = normalizeMonth(parts.year, parts.month);
+  let year = normalized.year;
+  let month = normalized.month;
+  let remaining = delta;
+  while (remaining > 0) {
+    const monthsLeft = monthsInYear(year) - month;
+    if (remaining < monthsLeft) {
+      month += remaining;
+      remaining = 0;
+    } else {
+      remaining -= monthsLeft;
+      year += 1;
+      month = 0;
+    }
+  }
+  while (remaining < 0) {
+    if (-remaining <= month) {
+      month += remaining;
+      remaining = 0;
+    } else {
+      remaining += month + 1;
+      year -= 1;
+      month = monthsInYear(year) - 1;
+    }
+  }
+  return {
+    year,
+    month,
+    // Same end-of-month clamp as clampMonthShift (adapter.ts); the
+    // walk above is what a variable 12/13-month year makes local.
+    day: Math.min(parts.day, monthLength(year, month)),
+  };
+}
+
+export const hebrewAdapter: HazeDateAdapter = defineDayNumberAdapter({
   identifier: 'hebrew',
-
-  fromGregorian(date) {
-    // Read the local civil date first (date.ts midnight semantics), then
-    // convert on the UTC civil timeline — zone-independent by
-    // construction.
-    const ms = utcCivilMs(date.getFullYear(), date.getMonth(), date.getDate());
-    return fromDayNumber(Math.floor(ms / DAY_MS));
-  },
-
-  toGregorian(parts) {
-    const normalized = normalizeMonth(parts.year, parts.month);
-    assertCivilDate(parts, normalized, monthLength, 'a hebrew');
-    return localMidnightOf(
-      toDayNumber(normalized.year, normalized.month, parts.day) * DAY_MS
-    );
-  },
-
-  getDaysInMonth(year, month) {
-    const normalized = normalizeMonth(year, month);
-    return monthLength(normalized.year, normalized.month);
-  },
-
-  addMonths(parts, delta) {
-    // Hebrew years hold 12 or 13 months, so month arithmetic walks year
-    // boundaries by each year's actual month count instead of the fixed
-    // 12-month carry the Gregorian helpers use.
-    const normalized = normalizeMonth(parts.year, parts.month);
-    let year = normalized.year;
-    let month = normalized.month;
-    let remaining = delta;
-    while (remaining > 0) {
-      const monthsLeft = monthsInYear(year) - month;
-      if (remaining < monthsLeft) {
-        month += remaining;
-        remaining = 0;
-      } else {
-        remaining -= monthsLeft;
-        year += 1;
-        month = 0;
-      }
-    }
-    while (remaining < 0) {
-      if (-remaining <= month) {
-        month += remaining;
-        remaining = 0;
-      } else {
-        remaining += month + 1;
-        year -= 1;
-        month = monthsInYear(year) - 1;
-      }
-    }
-    return {
-      year,
-      month,
-      // Same end-of-month clamp as clampMonthShift (adapter.ts); the
-      // walk above is what a variable 12/13-month year makes local.
-      day: Math.min(parts.day, monthLength(year, month)),
-    };
-  },
-
-  monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    // Twelve names in the common-year shape (Tishri…Elul, single Adar at
-    // index 5). Leap years intercalate Adar I/II at indices 5/6 —
-    // consumers rendering a leap year differentiate them through Intl
-    // the same way ("Adar I" / "Adar II" in en).
-    return sampleMonthNames('hebrew', locale, style, MONTH_ANCHORS);
-  },
-
-  era(year, locale = 'en') {
-    return eraOfDate(
-      new Date(toDayNumber(year, 0, 1) * DAY_MS),
-      'hebrew',
-      locale
-    );
-  },
-};
+  label: 'a hebrew',
+  normalizeMonth,
+  monthLength,
+  toDayNumber,
+  fromDayNumber,
+  probeAnchors: MONTH_ANCHORS,
+  // The default grid shift assumes a fixed months-per-year; hebrew's
+  // variable years cross boundaries by their own month count.
+  addMonths: shiftMonths,
+});

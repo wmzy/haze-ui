@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback } from 'react';
 
 import { classnames } from '../../utils/classnames';
 import { FloatingPanel } from '../../utils/floating';
-import { useFocusScope } from '../../utils/focus-scope';
-import { useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
+import { useMenuPanelWiring } from '../../utils/menu-panel';
 import { menuPanel } from '../../utils/menu-skins';
 
 import { useContextMenuContext } from './ContextMenuContext';
@@ -34,34 +32,23 @@ export default function ContextMenuContent({
   const { open, setOpen, x, y, contentRef, floating, classNames } =
     useContextMenuContext();
 
-  const handleKeyDown = useMenuKeyboard({
-    menuRef: contentRef,
+  // Roving tabindex + menu keyboard + focus scope ride the shared
+  // panel wiring. The focus gate is 'panel' (not 'root'): this is a
+  // child effect — it runs before the root's showPopover() effect, and
+  // focusing a native popover while it is still display:none is
+  // silently dropped (Chromium). `shown` flips only once the panel is
+  // focusable; on close the scope returns focus to whatever was focused
+  // before the menu opened (the right-click target). The floating
+  // behavior itself comes from the family context — the panel is
+  // point-positioned at the cursor, so this component never calls
+  // useFloating.
+  const { handleKeyDown, setPanelRef } = useMenuPanelWiring({
+    open,
     onClose: () => setOpen(false),
+    panelRef: contentRef,
+    floating,
+    focus: 'panel',
   });
-
-  useRovingTabindex({ menuRef: contentRef, active: open });
-
-  // Declared after useRovingTabindex: its sync effect must have set the
-  // first item as the tab stop before autoFocus looks for a tabbable.
-  // Gated on `shown` (not `open`): this is a child effect — it runs
-  // before the root's showPopover() effect, and focusing a native
-  // popover while it is still display:none is silently dropped
-  // (Chromium). `shown` flips only once the panel is focusable.
-  // On close the scope returns focus to whatever was focused before the
-  // menu opened (the right-click target).
-  const setScope = useFocusScope({
-    enabled: open && floating.shown,
-    autoFocus: true,
-    returnFocus: true,
-  });
-
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      contentRef.current = node;
-      setScope(node);
-    },
-    [contentRef, setScope]
-  );
 
   // Animated exit: the panel stays mounted (fading out via
   // data-state=closed) until the exit settles — `exited` starts true

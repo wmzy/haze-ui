@@ -58,7 +58,7 @@ type ScrollElementLike = {
  */
 export { clamp };
 
-export type AxisGeometryInput = {
+type AxisGeometryInput = {
   viewportSize: number;
   scrollSize: number;
   trackSize: number;
@@ -70,7 +70,7 @@ export type AxisGeometryInput = {
   rtl?: boolean;
 };
 
-export type AxisGeometry = {
+type AxisGeometry = {
   /** Whether the axis has overflow at all. */
   scrollable: boolean;
   /** Fraction [0,1] of the content the viewport shows. */
@@ -137,7 +137,7 @@ function scrollForThumbOffset(
   return logical * geometry.maxScroll;
 }
 
-export type ThumbDragInput = {
+type ThumbDragInput = {
   /** Thumb displacement from the track start at grab time (physical px). */
   thumbStart: number;
   /** Pointer travel since grab (px, positive = toward the track's physical end). */
@@ -164,7 +164,7 @@ export function thumbDragToScroll(input: ThumbDragInput): number {
   return scrollForThumbOffset(target, geometry, input.rtl ?? false);
 }
 
-export type TrackPageInput = {
+type TrackPageInput = {
   /** Pointer displacement from the track's physical start (px). */
   trackPos: number;
   /** Live thumb placement on that track. */
@@ -193,7 +193,7 @@ export function trackPageToScroll(input: TrackPageInput): number {
 }
 
 /** One axis of a scroll element in logical units (RTL horizontal normalized). */
-export type ViewportAxis = {
+type ViewportAxis = {
   viewportSize: number;
   scrollSize: number;
   scrollOffset: number;

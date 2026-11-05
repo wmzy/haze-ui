@@ -40,8 +40,6 @@ export const Z_INDEX_TOKENS = [
   {name: '--haze-z-toast', label: 'Z Toast', value: '9999'},
 ] as const;
 
-export type ZIndexToken = (typeof Z_INDEX_TOKENS)[number];
-
 /**
  * The z-index declarations the spacing css template emits, one per tier.
  * Exported for the token tests — the css template interpolates this exact

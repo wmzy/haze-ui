@@ -83,7 +83,7 @@ export function flattenVisibleTree(
 
 /** Does the node's own title match? Only string titles can match —
  *  ReactNode titles stay searchable through their descendants. */
-export function nodeTitleMatches(
+function nodeTitleMatches(
   node: TreeNodeData,
   query: string
 ): boolean {
@@ -94,7 +94,7 @@ export function nodeTitleMatches(
 }
 
 /** Result of `filterTreeByQuery`. */
-export type FilteredTree = {
+type FilteredTree = {
   /** The pruned tree: matched nodes plus the ancestors leading to them. */
   tree: TreeNodeData[];
   /** Keys whose own title matched the query. */

@@ -11,7 +11,7 @@ import {useViewTransitionFlip} from './view-transition';
  * spreads onto its panel: the exit-animation state marker, the
  * keepMounted dormant attributes, and the native-event close trio.
  */
-export type NativeDialogShellProps = Pick<
+type NativeDialogShellProps = Pick<
   DialogHTMLAttributes<HTMLDialogElement>,
   'hidden' | 'inert' | 'onClose' | 'onCancel' | 'onClick'
 > & {
@@ -24,7 +24,8 @@ export type NativeDialogShellProps = Pick<
  * are state writes going through the same control path as every other
  * open transition, so the animated exit → native `close` event remains
  * the single `onClose` exit — a handle close never double-fires the
- * callback.
+ * callback. Dialog and Drawer re-export this shape as their public
+ * `DialogHandle` / `DrawerHandle` aliases.
  */
 export type NativeDialogHandle = {
   /** Show the overlay (`showModal` + initial focus, as if `open` flipped true). */
@@ -45,7 +46,7 @@ export type NativeDialogHandle = {
  * `focusTrigger`. `NativeDialogHandle` (the native-`<dialog>` shells)
  * and BottomSheet's handle are both this shape.
  */
-export type OverlayHandle = {
+type OverlayHandle = {
   /** Show the overlay, as if `open` flipped true. */
   open: () => void;
   /** Close the overlay through its single exit path. */

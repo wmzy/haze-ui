@@ -1,5 +1,6 @@
 import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { NativeDialogHandle } from '../../utils/native-dialog';
 
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
@@ -10,23 +11,11 @@ import { focusRingVisible } from '../../utils/focus-ring';
 import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
- * Imperative handle exposed through the React 19 `ref` prop (same API
- * choice as VirtualList). `open`/`close` are state writes going through
- * the same control path as every other open transition, so the animated
- * exit → native `close` event remains the single `onClose` exit — a
- * handle close never double-fires the callback.
+ * Imperative handle exposed through the React 19 `ref` prop — the
+ * shared native-`<dialog>` surface (`NativeDialogHandle`,
+ * utils/native-dialog), identical to Dialog's handle.
  */
-type DrawerHandle = {
-  /** Show the drawer (`showModal` + initial focus, as if `open` flipped true). */
-  open: () => void;
-  /**
-   * Close the drawer through the animated exit; `onClose` fires exactly
-   * once, via the native close event — never synchronously here.
-   */
-  close: () => void;
-  /** Focus the element that held focus when the drawer last opened. */
-  focusTrigger: () => void;
-};
+type DrawerHandle = NativeDialogHandle;
 
 /**
  * Semantic slot classes (AntD v6 `classNames` shape): keys land classes

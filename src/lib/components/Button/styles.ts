@@ -123,19 +123,19 @@ export const sizeLg = css`
   font-size: var(--haze-button-font-size-lg, var(--haze-text-base));
 `;
 
-export const squareSm = css`
+const squareSm = css`
   height: var(--haze-button-height-sm, auto);
   padding: var(--haze-space-1);
   font-size: var(--haze-button-font-size-sm, var(--haze-text-sm));
 `;
 
-export const squareMd = css`
+const squareMd = css`
   height: var(--haze-button-height-md, auto);
   padding: var(--haze-space-2);
   font-size: var(--haze-button-font-size-md, var(--haze-text-sm));
 `;
 
-export const squareLg = css`
+const squareLg = css`
   height: var(--haze-button-height-lg, auto);
   padding: var(--haze-space-3);
   font-size: var(--haze-button-font-size-lg, var(--haze-text-base));

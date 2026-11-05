@@ -153,7 +153,13 @@ const nativeClearWrap = css`
 
 /** The × over the native select — same visual contract as the floating
  * trigger's clear, with a solid background chip masking the painted
- * caret it overlays. */
+ * caret it overlays. The reveal/hover interaction arms verbatim-match
+ * utils/picker-chips' pickerClearBtn, and this family's css already
+ * carries that module via sharedLayers, so composing would be possible
+ * — kept a local self-contained copy anyway because the shape differs:
+ * this is an absolutely positioned sibling overlay span pinned over
+ * the native select (not the floating trigger's inline-flow chip), so
+ * only the two interaction arms coincide, never the positioning base. */
 const nativeClear = css`
   position: absolute;
   inset-inline-end: var(--haze-space-3);

@@ -1,5 +1,7 @@
 import type { Column, RowData } from '@tanstack/react-table';
 
+import type { DataTableColumnDef } from './DataTable';
+
 import { css } from '@linaria/core';
 
 import { dataTableFeatures } from './features';
@@ -68,6 +70,48 @@ export function columnLabel<TData extends RowData>(
 ): string {
   const header = column.columnDef.header;
   return typeof header === 'string' ? header : column.id;
+}
+
+/** The column id as TanStack derives it from a raw def: explicit `id`,
+ * else the `accessorKey`. Empty string for accessor-less display columns
+ * (they never export in `csv.ts` and never carry a header filter menu in
+ * `filters.ts`). */
+export function columnIdOf<TData extends RowData>(
+  def: DataTableColumnDef<TData>
+): string {
+  if (def.id !== undefined) return def.id;
+  if ('accessorKey' in def) return def.accessorKey as string;
+  return '';
+}
+
+/** Leaf columns of a (possibly grouped) column list, in display order —
+ * the same flattening the table renders, `filters.ts` filters through
+ * and `csv.ts` exports. */
+export function leafColumnDefs<TData extends RowData>(
+  columns: DataTableColumnDef<TData>[]
+): DataTableColumnDef<TData>[] {
+  return columns.flatMap((column) => {
+    if ('columns' in column && column.columns) {
+      // Group children are typed as the TanStack union upstream; at this
+      // boundary they are the same defs the consumer handed DataTable.
+      return leafColumnDefs(column.columns as DataTableColumnDef<TData>[]);
+    }
+    return [column];
+  });
+}
+
+/** One cell's raw value under a column def: the column's `accessorFn`
+ * (custom formatting lives there), else the `accessorKey` field of the
+ * row. */
+export function cellValue<TData extends RowData>(
+  def: DataTableColumnDef<TData>,
+  row: TData
+): unknown {
+  if ('accessorFn' in def) return def.accessorFn(row, 0);
+  if ('accessorKey' in def) {
+    return (row as Record<string, unknown>)[def.accessorKey as string];
+  }
+  return undefined;
 }
 
 const stickyHead = css`

@@ -14,18 +14,13 @@
  * on integer Julian Day Numbers (whole days, no DST drift) and results
  * materialize as local-midnight Dates per the date-math.ts civil semantics.
  */
-import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
+import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
 import {
-  assertCivilDate,
-  clampMonthShift,
   DAY_MS,
-  eraOfDate,
-  localMidnightOf,
+  defineDayNumberAdapter,
   normalizeParts,
-  sampleMonthNames,
   UNIX_EPOCH_JDN,
-  utcCivilMs,
 } from './adapter';
 
 /** Break years of the Borkowski table (verbatim from jalaali-js): at
@@ -141,6 +136,18 @@ function monthLength(jy: number, month: number): number {
   return jalaliToJdn(jy + 1, 1, 1) - jalaliToJdn(jy, 12, 1);
 }
 
+/** Days-since-epoch of a normalized Persian date: the jalaali JDN
+ * (whose month parameter is 1-based) rebased onto the 1970 epoch the
+ * shared adapter shell's day-number arithmetic rides on. */
+function toDayNumber(year: number, month: number, day: number): number {
+  return jalaliToJdn(year, month + 1, day) - UNIX_EPOCH_JDN;
+}
+
+/** Persian parts of a days-since-epoch number. */
+function fromDayNumber(dayNumber: number): CivilDateParts {
+  return jdnToJalali(dayNumber + UNIX_EPOCH_JDN);
+}
+
 /** Search anchor: 1404 AP = the common year spanning 2025-03-21 →
  * 2026-03-20, sitting mid-range of the table (verified against Intl —
  * Nowruz 1404 = 2025-03-21 is one of persian.test.ts's fixed pairs). */
@@ -151,45 +158,15 @@ const PROBE_YEAR = 1404;
  * milliseconds. */
 const MONTH_ANCHORS: readonly number[] = Array.from(
   { length: 12 },
-  (_, month) => (jalaliToJdn(PROBE_YEAR, month + 1, 15) - UNIX_EPOCH_JDN) * DAY_MS
+  (_, month) => toDayNumber(PROBE_YEAR, month, 15) * DAY_MS
 );
 
-export const persianAdapter: HazeDateAdapter = {
+export const persianAdapter: HazeDateAdapter = defineDayNumberAdapter({
   identifier: 'persian',
-
-  fromGregorian(date) {
-    // Read the local civil date first (date.ts midnight semantics), then
-    // convert on the UTC civil timeline — zone-independent by
-    // construction.
-    const ms = utcCivilMs(date.getFullYear(), date.getMonth(), date.getDate());
-    return jdnToJalali(Math.floor(ms / DAY_MS) + UNIX_EPOCH_JDN);
-  },
-
-  toGregorian(parts) {
-    const shifted = normalizeParts(parts.year, parts.month);
-    assertCivilDate(parts, shifted, monthLength, 'a persian');
-    const g = jdnToGregorian(
-      jalaliToJdn(shifted.year, shifted.month + 1, parts.day)
-    );
-    return localMidnightOf(utcCivilMs(g.year, g.month - 1, g.day));
-  },
-
-  getDaysInMonth(year, month) {
-    const shifted = normalizeParts(year, month);
-    return monthLength(shifted.year, shifted.month);
-  },
-
-  addMonths(parts, delta) {
-    return clampMonthShift(parts, delta, monthLength);
-  },
-
-  monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    return sampleMonthNames('persian', locale, style, MONTH_ANCHORS);
-  },
-
-  era(year, locale = 'en') {
-    const anchorMs =
-      (jalaliToJdn(year, 1, 1) - UNIX_EPOCH_JDN) * DAY_MS;
-    return eraOfDate(new Date(anchorMs), 'persian', locale);
-  },
-};
+  label: 'a persian',
+  normalizeMonth: normalizeParts,
+  monthLength,
+  toDayNumber,
+  fromDayNumber,
+  probeAnchors: MONTH_ANCHORS,
+});

@@ -24,8 +24,8 @@ import { zIndexDeclarations } from './z-index';
 
 const SPACE_STEPS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16] as const;
 
-export type SpaceStep = (typeof SPACE_STEPS)[number];
-export type SpaceTokenName = `--haze-space-${SpaceStep}`;
+type SpaceStep = (typeof SPACE_STEPS)[number];
+type SpaceTokenName = `--haze-space-${SpaceStep}`;
 export type DensitySpaceTokenName = `--haze-density-space-${SpaceStep}`;
 
 /**

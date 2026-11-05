@@ -127,3 +127,21 @@ export function labelMatchesQuery(label: string, query: string): boolean {
   const needle = query.trim().toLowerCase();
   return needle === '' || label.toLowerCase().includes(needle);
 }
+
+/**
+ * The values a `maxTagCount`-capped trigger renders as chips: the whole
+ * selection when uncapped, else the first `maxTagCount` (a zero or
+ * negative cap renders none — the rest folds into the shared overflow
+ * badge). The shared slicing contract of Combobox's multiple trigger
+ * and PickerChips.
+ */
+export function visiblePickerValues<T>(
+  values: readonly T[],
+  maxTagCount: number | undefined
+): T[] {
+  // The uncapped branch hands back the input reference — callers only
+  // map over it, and slicing there would allocate on every render.
+  return maxTagCount === undefined
+    ? (values as T[])
+    : values.slice(0, Math.max(maxTagCount, 0));
+}

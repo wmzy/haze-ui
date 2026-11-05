@@ -6,11 +6,11 @@
  */
 
 /** A matched run: `[start, end)` offsets into the scanned text. */
-export type MatchRange = [number, number];
+type MatchRange = [number, number];
 
 /** One slice of a match-split text: matched runs alternating with the
  *  untouched text between them. */
-export type MatchSegment = {
+type MatchSegment = {
   /** Literal slice of the source text (original casing preserved). */
   text: string;
   /** True when the slice matched the query. */
@@ -18,7 +18,7 @@ export type MatchSegment = {
 };
 
 /** Options of {@link findMatchRanges}. */
-export type FindMatchRangesOptions = {
+type FindMatchRangesOptions = {
   /** Case sensitivity of the match. Default `false` (the search-box
    * convention: queries match regardless of letter case). */
   caseSensitive?: boolean;

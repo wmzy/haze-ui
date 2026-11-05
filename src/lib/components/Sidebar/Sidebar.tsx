@@ -15,6 +15,12 @@ import { useControl } from 'react-use-control';
 import { useStrings } from '../LocaleProvider';
 import { Tooltip } from '../Tooltip';
 import { focusRingVisible } from '../../utils/focus-ring';
+import {
+  handlePlaceholderHrefNavigate,
+  resolveNavAriaCurrent,
+  resolveNavCurrent,
+} from '../../utils/nav-link';
+import { navItemActive, navItemBase, navItemIcon } from '../../utils/nav-item-skin';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 
 type SidebarContextValue = {
@@ -166,26 +172,24 @@ type SidebarItemProps = {
   ref?: Ref<HTMLAnchorElement>;
 } & Omit<ComponentPropsWithoutRef<'a'>, 'children' | 'onClick' | 'className'>;
 
+/* Sizing/typography delta on the shared navItemBase chrome
+ * (utils/nav-item-skin.ts). The sidebar row is a block-level flex row
+ * growing from the inline-start edge, so navItemBase's centered
+ * inline-flex is suppressed through a raised-specificity arm (the
+ * anchor already carries data-slot='item') — never through source
+ * order, which disagrees between dev injection and dist split-css. */
 const item = css`
-  position: relative;
-  display: flex;
-  align-items: center;
   gap: var(--haze-space-3);
   min-width: 0;
   padding: var(--haze-space-2);
   border-radius: var(--haze-radius-md);
-  color: var(--haze-color-text-muted);
   font-size: var(--haze-text-sm);
   text-decoration: none;
   white-space: nowrap;
-  cursor: pointer;
-  transition:
-    color var(--haze-duration-fast) var(--haze-ease),
-    background var(--haze-duration-fast) var(--haze-ease);
 
-  &:hover {
-    color: var(--haze-color-text);
-    background: var(--haze-color-bg-muted);
+  &[data-slot='item'] {
+    display: flex;
+    justify-content: flex-start;
   }
 
   /* The keyboard ring composes utils/focus-ring's focusRingVisible
@@ -200,29 +204,26 @@ const item = css`
   }
 `;
 
+/* Active delta on the shared navItemActive arm (utils/nav-item-skin.ts):
+ * the sidebar marks the current view with the primary family — primary
+ * text pinned through hover over a primary-subtle wash — plus the local
+ * resting chrome (medium weight, subtle wash). The resting background
+ * rides the raised-specificity arm to clear navItemBase's plain
+ * background: transparent without relying on source order. */
 const itemActive = css`
-  color: var(--haze-color-primary);
+  --haze-nav-item-active-color: var(--haze-color-primary);
+  --haze-nav-item-active-hover-bg: var(--haze-color-primary-subtle);
   font-weight: var(--haze-weight-medium);
-  background: var(--haze-color-primary-subtle);
 
-  &:hover {
-    color: var(--haze-color-primary);
+  &[data-slot='item'] {
     background: var(--haze-color-primary-subtle);
   }
 `;
 
-const itemIcon = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--haze-space-5);
-  height: var(--haze-space-5);
+/* Row-flex seat on the shared navItemIcon slot: the sidebar's icon must
+ * not shrink under a long label (flex items default to shrink). */
+const itemIconShrink = css`
   flex-shrink: 0;
-
-  & > svg {
-    width: 100%;
-    height: 100%;
-  }
 `;
 
 const itemLabel = css`
@@ -260,27 +261,27 @@ export function SidebarItem({
   ...rest
 }: SidebarItemProps) {
   const { collapsed } = useSidebarContext();
-  const isActive = active ?? ariaCurrent === 'page';
+  const isActive = resolveNavCurrent(active, ariaCurrent);
 
   const anchor = (
     <a
       ref={ref}
       data-slot="item"
-      x-class={[item, focusRingVisible, isActive && itemActive, className]}
+      x-class={[
+        navItemBase,
+        item,
+        focusRingVisible,
+        isActive && navItemActive,
+        isActive && itemActive,
+        className,
+      ]}
       href={href}
-      aria-current={isActive ? 'page' : ariaCurrent}
-      onClick={(event) => {
-        // A missing or '#' href means button semantics: keep the
-        // default suppressed so the page does not jump to '#'.
-        if (href === '#') {
-          event.preventDefault();
-        }
-        onClick?.(event);
-      }}
+      aria-current={resolveNavAriaCurrent(isActive, ariaCurrent)}
+      onClick={handlePlaceholderHrefNavigate(href, onClick)}
       {...rest}
     >
       {icon && (
-        <span data-slot="icon" x-class={itemIcon} aria-hidden="true">
+        <span data-slot="icon" x-class={[navItemIcon, itemIconShrink]} aria-hidden="true">
           {icon}
         </span>
       )}

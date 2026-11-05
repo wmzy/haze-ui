@@ -3,6 +3,11 @@ import type { ComponentPropsWithRef, ElementType, MouseEvent } from 'react';
 import { css } from '@linaria/core';
 
 import { focusRingVisible } from '../../utils/focus-ring';
+import {
+  handlePlaceholderHrefNavigate,
+  resolveNavAriaCurrent,
+  resolveNavCurrent,
+} from '../../utils/nav-link';
 
 /**
  * Extends the rendered element's native attributes (anchor by default):
@@ -73,27 +78,16 @@ export default function NavLink<T extends ElementType = 'a'>({
   ...rest
 }: NavLinkProps<T>) {
   const Tag = (as ?? 'a');
-  const isActive = active ?? ariaCurrent === 'page';
+  const isActive = resolveNavCurrent(active, ariaCurrent);
 
   return (
     <Tag
       data-slot='nav-link'
       x-class={[link, focusRingVisible, isActive && activeLink, className]}
       href={href}
-      aria-current={isActive ? 'page' : ariaCurrent}
+      aria-current={resolveNavAriaCurrent(isActive, ariaCurrent)}
       {...rest}
-      onClick={(event: MouseEvent<HTMLElement>) => {
-        // A missing or '#' href means button semantics (e.g. a Logout
-        // action): keep suppressing the default so the page does not jump
-        // to '#'. Real hrefs pass through untouched and the caller decides
-        // whether to prevent navigation (SPA router Links do).
-        if (href === '#') {
-          event.preventDefault();
-        }
-        // Element-agnostic event: whatever element `as` rendered, the
-        // consumer's handler sees it, typed element-agnostic above.
-        onClick?.(event);
-      }}
+      onClick={handlePlaceholderHrefNavigate(href, onClick)}
     >
       {children}
     </Tag>

@@ -187,12 +187,23 @@ export const pickerFieldInputSm = css`
 /**
  * The field-flavored focus ring as a standalone leaf: `:focus` (not
  * :focus-visible — text entry IS pointer focus) repaints the border
- * primary and wears the ring. `nativeFieldChrome` and the
- * `pickerFieldInput` pair above carry the same arm inline (each stays
- * a self-contained single class); leaf sites that compose their own
+ * primary and wears the ring. Leaf sites that compose their own
  * surface — OTP cells and future field-shaped leaves — consume this
  * instead of hand-rolling. Border-less leaf surfaces keep their local
  * `border-color` delta arm.
+ *
+ * Self-exception, kept deliberate: the module's own
+ * `nativeFieldChrome` and the `pickerFieldInput` pair above do NOT
+ * compose this leaf — they carry the identical arm inline. A css
+ * template cannot inline another class's declarations (interpolating
+ * a class yields only a selector reference, never its rules), so
+ * reuse would mean shipping the arm as a second class every consumer
+ * must remember to add — and a class whose resolved look depends on
+ * another class's presence is an injection-order hazard (dev
+ * import-order injection and the dist split-css grouping order
+ * disagree; utils/quiet-button-skin documents the trap). Each
+ * ring-bearing class therefore stays self-contained: one class, the
+ * complete focus visual.
  */
 export const fieldFocusRing = css`
   &:focus {

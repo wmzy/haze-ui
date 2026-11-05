@@ -2,6 +2,8 @@ import type { RowData } from '@tanstack/react-table';
 
 import type { DataTableColumnDef } from './DataTable';
 
+import { cellValue, columnIdOf, leafColumnDefs } from './data-table-shared';
+
 /**
  * The header-filter state: selected option `value`s keyed by column id
  * (the id TanStack derives — explicit `id`, else the `accessorKey`). An
@@ -10,46 +12,6 @@ import type { DataTableColumnDef } from './DataTable';
  * filters" value.
  */
 type DataTableFiltersState = Record<string, unknown[]>;
-
-/** The column id as TanStack derives it from a raw def: explicit `id`,
- * else the `accessorKey`; empty string for accessor-less display columns
- * (which never carry a header filter menu — there is no value to filter
- * on). */
-function filterColumnId<TData extends RowData>(
-  def: DataTableColumnDef<TData>
-): string {
-  if (def.id !== undefined) return def.id;
-  if ('accessorKey' in def) return def.accessorKey as string;
-  return '';
-}
-
-/** Leaf columns of a (possibly grouped) column list, in display order —
- * the same flattening the table renders (and `csv.ts` exports). */
-function leafColumnDefs<TData extends RowData>(
-  columns: DataTableColumnDef<TData>[]
-): DataTableColumnDef<TData>[] {
-  return columns.flatMap((column) => {
-    if ('columns' in column && column.columns) {
-      // Group children are typed as the TanStack union upstream; at this
-      // boundary they are the same defs the consumer handed DataTable.
-      return leafColumnDefs(column.columns as DataTableColumnDef<TData>[]);
-    }
-    return [column];
-  });
-}
-
-/** One cell's raw value under a column def: the `accessorFn` (custom
- * formatting lives there), else the `accessorKey` field of the row. */
-function columnValue<TData extends RowData>(
-  def: DataTableColumnDef<TData>,
-  row: TData
-): unknown {
-  if ('accessorFn' in def) return def.accessorFn(row, 0);
-  if ('accessorKey' in def) {
-    return (row as Record<string, unknown>)[def.accessorKey as string];
-  }
-  return undefined;
-}
 
 /**
  * Applies the header filter menus' selections to raw rows — the shared
@@ -74,7 +36,7 @@ function applyColumnFilters<TData extends RowData>(
   if (active.length === 0) return rows;
 
   const byId = new Map(
-    leafColumnDefs(columns).map((def) => [filterColumnId(def), def])
+    leafColumnDefs(columns).map((def) => [columnIdOf(def), def])
   );
   // One predicate per actively filtered column, resolved once.
   const predicates = active
@@ -82,7 +44,7 @@ function applyColumnFilters<TData extends RowData>(
       const def = byId.get(id);
       if (def?.meta?.filters === undefined) return null;
       return (row: TData) => {
-        const rowValue = columnValue(def, row);
+        const rowValue = cellValue(def, row);
         return def.meta?.filterFn
           ? def.meta.filterFn(row, values, rowValue)
           : values.includes(rowValue);

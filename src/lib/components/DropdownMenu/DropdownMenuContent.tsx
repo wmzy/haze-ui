@@ -4,11 +4,8 @@ import { useCallback, useEffect } from 'react';
 
 import { classnames } from '../../utils/classnames';
 import { FloatingPanel, type FloatingPlacement } from '../../utils/floating';
-import {
-  getEnabledMenuItems,
-  useMenuKeyboard,
-  useRovingTabindex,
-} from '../../utils/menuKeyboard';
+import { getEnabledMenuItems } from '../../utils/menuKeyboard';
+import { useMenuPanelWiring } from '../../utils/menu-panel';
 import { menuPanel } from '../../utils/menu-skins';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
@@ -49,12 +46,19 @@ export default function DropdownMenuContent({
     triggerRef.current?.focus();
   }, [setOpen, triggerRef]);
 
-  const handleKeyDown = useMenuKeyboard({
-    menuRef: contentRef,
+  // Roving tabindex + menu keyboard ride the shared panel wiring. The
+  // focus gate is 'none': opening by pointer keeps focus on the
+  // trigger — focus moves into the panel only through the explicit
+  // handoff below (and Escape/Tab close restores the trigger through
+  // closeMenu). The floating behavior comes from the family context
+  // (the root owns the anchored pair).
+  const { handleKeyDown, setPanelRef } = useMenuPanelWiring({
+    open,
     onClose: closeMenu,
+    panelRef: contentRef,
+    floating,
+    focus: 'none',
   });
-
-  useRovingTabindex({ menuRef: contentRef, active: open });
 
   // Focus handoff requested by the trigger when it opens the menu by
   // keyboard — consumed here, after the items have mounted AND the panel
@@ -79,7 +83,7 @@ export default function DropdownMenuContent({
 
   return (
     <FloatingPanel
-      ref={contentRef}
+      ref={setPanelRef}
       behavior={floating}
       placement={alignments[align]}
       id={contentId}

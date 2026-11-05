@@ -1,10 +1,14 @@
+/* eslint-disable react-refresh/only-export-components --
+   internal primitives module (hooks + shell component), not a
+   fast-refresh boundary; consumers re-render through their own files. */
 /**
  * Shared mechanism for nested submenus, consumed by the Menu and
- * DropdownMenu families (`MenuSub*` / `DropdownMenuSub*`). Headless: the
- * hook owns open state (useControl), the floating pair, hover intent,
- * level-scoped keyboard behavior and roving tabindex; the family
- * components are visual skins over the returned behavior record plus the
- * context that carries it from the Sub container to its trigger/content.
+ * DropdownMenu families (`MenuSub*` / `DropdownMenuSub*`). Headless at
+ * the core: the hook owns open state (useControl), the floating pair,
+ * hover intent, level-scoped keyboard behavior and roving tabindex; the
+ * `SubmenuShell` component packages them into the wrapper the family
+ * Sub containers render, and the context carries the behavior record
+ * from the Sub container to its trigger/content parts.
  *
  * Keyboard contract (WAI-ARIA menu button / menu pattern, per level):
  *   - ArrowDown/Up/Home/End/typeahead stay within the current level
@@ -20,9 +24,10 @@
  *   - Tab closes the whole stack (propagation is deliberately NOT
  *     stopped for Tab so every ancestor level also closes).
  */
-import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, RefObject } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
+import { css } from '@linaria/core';
 import { createContext, useCallback, useContext, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
@@ -247,4 +252,53 @@ export function useSubmenuContext(): SubmenuBehavior {
     );
   }
   return ctx;
+}
+
+// ---------------------------------------------------------------------------
+// The shared Sub container shell the family components render: owns the
+// behavior (useSubmenu), provides it to the trigger/content parts through
+// the context above, and wraps them in the positioning box the fallback
+// floating tier places panels against.
+// ---------------------------------------------------------------------------
+
+// position: relative — the fallback floating tier places the panel
+// absolutely against this wrapper; the native tiers anchor to the trigger.
+const submenuWrapper = css`
+  position: relative;
+  display: block;
+`;
+
+type SubmenuShellProps = {
+  /** Whether the submenu is open — controlled control or uncontrolled initial value. */
+  open?: ControlOrValue<boolean>;
+  /** Fires on every open transition, whatever drove it (keyboard, hover, click, light dismiss). */
+  onOpenChange?: (open: boolean) => void;
+  /** The family's `classNames.sub` slot class; lands after the wrapper skin. */
+  familyClass?: string;
+  /** Per-part `className` prop; lands after the slot class. */
+  className?: string;
+  /** `<*SubTrigger>` followed by `<*SubContent>`. */
+  children: ReactNode;
+};
+
+/**
+ * The mechanism+wrapper half of a family Sub container (MenuSub,
+ * DropdownMenuSub): the family component stays a thin skin that reads
+ * its context's slot classes and forwards the open control props here.
+ */
+export function SubmenuShell({
+  open,
+  onOpenChange,
+  familyClass,
+  className,
+  children,
+}: SubmenuShellProps) {
+  const sub = useSubmenu({ open, onOpenChange });
+  return (
+    <SubmenuProvider value={sub}>
+      <div data-slot='menu-sub' x-class={[submenuWrapper, familyClass, className]}>
+        {children}
+      </div>
+    </SubmenuProvider>
+  );
 }

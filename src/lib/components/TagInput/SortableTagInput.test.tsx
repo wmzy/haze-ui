@@ -3,28 +3,28 @@ import userEvent from '@testing-library/user-event';
 
 import SortableTagInput from './SortableTagInput';
 
-describe('SortableTagInput', () => {
-  /** jsdom rects are all 0×0 at (0,0) and dnd-kit's sortable keyboard
-   * coordinate getter snaps onto neighbors by rect geometry — every li
-   * needs a distinct rect before a keyboard drag can walk the list. */
-  const giveItemsDistinctRects = () => {
-    document.querySelectorAll('li').forEach((li, index) => {
-      const left = index * 26;
-      li.getBoundingClientRect = () =>
-        ({
-          x: left,
-          y: 0,
-          top: 0,
-          left,
-          right: left + 20,
-          bottom: 20,
-          width: 20,
-          height: 20,
-          toJSON: () => ({}),
-        });
-    });
-  };
+/** jsdom rects are all 0×0 at (0,0) and dnd-kit's sortable keyboard
+ * coordinate getter snaps onto neighbors by rect geometry — every li
+ * needs a distinct rect before a keyboard drag can walk the list. */
+const giveItemsDistinctRects = () => {
+  document.querySelectorAll('li').forEach((li, index) => {
+    const left = index * 26;
+    li.getBoundingClientRect = () =>
+      ({
+        x: left,
+        y: 0,
+        top: 0,
+        left,
+        right: left + 20,
+        bottom: 20,
+        width: 20,
+        height: 20,
+        toJSON: () => ({}),
+      });
+  });
+};
 
+describe('SortableTagInput', () => {
   it('reorders tags through the full keyboard flow (lift → move → drop)', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -88,5 +88,47 @@ describe('SortableTagInput', () => {
       rules: { region: { enabled: false } },
     });
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('SortableTagInput native form participation', () => {
+  it('repeats the name per tag (native repeated-field semantics)', () => {
+    const { container } = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <SortableTagInput name="tags" value={['react', 'css']} />
+      </form>
+    );
+    expect(new FormData(container.querySelector('form')!).getAll('tags')).toEqual([
+      'react',
+      'css',
+    ]);
+  });
+
+  it('submits the reordered list after a drag', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <SortableTagInput name="tags" value={['a', 'b']} />
+      </form>
+    );
+    const form = container.querySelector('form')!;
+    giveItemsDistinctRects();
+    screen.getByRole('button', { name: 'a' }).focus();
+    await user.keyboard(' {ArrowRight} ');
+    expect(new FormData(form).getAll('tags')).toEqual(['b', 'a']);
+  });
+
+  it('submits nothing for an empty list and no bridge without name', () => {
+    const empty = render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <SortableTagInput name="tags" />
+      </form>
+    );
+    expect(new FormData(empty.container.querySelector('form')!).get('tags')).toBeNull();
+
+    const unnamed = render(<SortableTagInput value={['react']} />);
+    expect(unnamed.container.querySelector("[data-slot='native-input']")).toBeNull();
+    // the inner draft input never carries the field name
+    expect(unnamed.container.querySelector('input')).not.toHaveAttribute('name');
   });
 });

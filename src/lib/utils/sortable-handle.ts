@@ -12,7 +12,7 @@ import { createContext, useContext } from 'react';
  * the dnd runtime. Not part of the public barrel.
  */
 
-export type SortableHandle = {
+type SortableHandle = {
   attributes: DraggableAttributes;
   listeners: DraggableSyntheticListeners;
 };

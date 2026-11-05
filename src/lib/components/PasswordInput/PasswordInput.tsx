@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
 import { useControl } from 'react-use-control';
@@ -14,7 +14,20 @@ type PasswordInputProps = {
   /** Forwarded to the inner password `<input>` (not the wrapper div) —
    * the element form bridges and `ref.current.focus()` reach. */
   ref?: Ref<HTMLInputElement>;
-};
+  /* Native size is omitted for the same reason as Input/MaskedInput/
+   * NumberInput: the character-width attribute would collide with
+   * InputCore's 'sm' | 'md' | 'lg' size variant downstream. */
+} & Omit<
+  ComponentPropsWithoutRef<'input'>,
+  | 'type'
+  | 'value'
+  | 'onChange'
+  | 'placeholder'
+  | 'disabled'
+  | 'className'
+  | 'ref'
+  | 'size'
+>;
 
 export default function PasswordInput({
   value: valueControl,
@@ -23,6 +36,7 @@ export default function PasswordInput({
   disabled,
   className,
   ref,
+  ...rest
 }: PasswordInputProps) {
   const [value, setValue] = useControl(valueControl, '');
 
@@ -37,6 +51,7 @@ export default function PasswordInput({
       placeholder={placeholder}
       disabled={disabled}
       className={className}
+      {...rest}
     />
   );
 }

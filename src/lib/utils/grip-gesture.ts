@@ -12,7 +12,7 @@ import { getDirection } from './direction';
 import { releasePointerCaptureSafe } from './pointer-capture';
 
 /** Direction of the layout axis a grip resizes along. */
-export type GripOrientation = 'horizontal' | 'vertical';
+type GripOrientation = 'horizontal' | 'vertical';
 
 /** Home/End park the leading pane/panel at its clamp — a delta so
  * large the clamp math saturates, without overflowing. */

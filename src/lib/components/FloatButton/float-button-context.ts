@@ -5,7 +5,7 @@ import { createContext, useContext } from 'react';
  * its own fixed anchor (the group owns the anchor) and closes the menu
  * after its action runs (AntD behavior).
  */
-export type FloatButtonGroupContextValue = {
+type FloatButtonGroupContextValue = {
   /** Request the group menu to close. */
   closeMenu: () => void;
 };

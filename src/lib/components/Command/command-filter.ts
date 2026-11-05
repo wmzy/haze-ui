@@ -16,7 +16,7 @@ export type CommandItemLikeProps = {
 };
 
 /** Result of one fuzzy probe: whether the query matched, and how well. */
-export type FuzzyMatch = {
+type FuzzyMatch = {
   matched: boolean;
   score: number;
 };
@@ -127,18 +127,6 @@ export function commandItemScore(
     if (matched && (best === null || score > best)) best = score;
   }
   return best;
-}
-
-/**
- * Whether an item matches the query at all (fuzzy subsequence over the
- * `value`/children text and `keywords`). Boolean view of
- * `commandItemScore` for callers that do not rank.
- */
-export function commandItemMatches(
-  props: CommandItemLikeProps,
-  query: string
-): boolean {
-  return commandItemScore(props, query) !== null;
 }
 
 /**

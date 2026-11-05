@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import { css } from '@linaria/core';
-
-import { SubmenuProvider, useSubmenu } from '../../utils/submenu';
+import { SubmenuShell } from '../../utils/submenu';
 
 import { useMenuClassNames } from './MenuContext';
 
@@ -17,17 +15,12 @@ type MenuSubProps = {
   children: ReactNode;
 };
 
-// position: relative — the fallback floating tier places the panel
-// absolutely against this wrapper; the native tiers anchor to the trigger.
-const wrapper = css`
-  position: relative;
-  display: block;
-`;
-
 /**
  * State container for a nested submenu inside a Menu. Wraps a
  * MenuSubTrigger + MenuSubContent pair; the open state is controllable
- * through the standard `ControlOrValue` prop.
+ * through the standard `ControlOrValue` prop. The mechanism and the
+ * position:relative wrapper live in the shared shell (utils/submenu's
+ * SubmenuShell); this skin only contributes the family's slot classes.
  */
 export default function MenuSub({
   open,
@@ -36,11 +29,15 @@ export default function MenuSub({
   children,
 }: MenuSubProps) {
   const classNames = useMenuClassNames();
-  const sub = useSubmenu({ open, onOpenChange });
   return (
-    <SubmenuProvider value={sub}>
-      <div data-slot='menu-sub' x-class={[wrapper, classNames?.sub, className]}>{children}</div>
-    </SubmenuProvider>
+    <SubmenuShell
+      open={open}
+      onOpenChange={onOpenChange}
+      familyClass={classNames?.sub}
+      className={className}
+    >
+      {children}
+    </SubmenuShell>
   );
 }
 

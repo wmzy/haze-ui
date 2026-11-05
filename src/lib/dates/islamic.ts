@@ -13,21 +13,15 @@
  * ICU falls back to computed months, which this adapter stays
  * self-consistent with (every conversion still passes through Intl).
  */
-import type {
-  CivilDateParts,
-  HazeDateAdapter,
-  MonthNameStyle,
-} from './adapter';
+import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
 import { addMonths as shiftMonth } from '../utils/date-math';
 
 import {
-  clampMonthShift,
   DAY_MS,
-  eraOfDate,
+  defineDayNumberAdapter,
   foldFormatParts,
   normalizeParts,
-  sampleMonthNames,
 } from './adapter';
 
 /** Mean synodic month in days — the linear estimate that seeds the
@@ -118,45 +112,34 @@ function msFromParts(rawParts: CivilDateParts): number {
   return ms;
 }
 
-export const islamicUmalquraAdapter: HazeDateAdapter = {
+/** Length of a month (assumed normalized): the whole-day span between
+ * this month's day-1 anchor and the next's — Hijri months are whole
+ * days, so the UTC-millisecond span is an exact multiple of one day. */
+function monthLength(year: number, month: number): number {
+  const next = shiftMonth(year, month, 1);
+  const start = msFromParts({ year, month, day: 1 });
+  const end = msFromParts({ year: next.year, month: next.month, day: 1 });
+  return (end - start) / DAY_MS;
+}
+
+/** Days-since-epoch of a normalized Hijri date, riding the whole-day
+ * UTC milliseconds every msFromParts anchor already is (DAY_MS divides
+ * them exactly, so the division round-trips losslessly). */
+function toDayNumber(year: number, month: number, day: number): number {
+  return msFromParts({ year, month, day }) / DAY_MS;
+}
+
+/** Hijri parts of a days-since-epoch number. */
+function fromDayNumber(dayNumber: number): CivilDateParts {
+  return partsFromMs(dayNumber * DAY_MS);
+}
+
+export const islamicUmalquraAdapter: HazeDateAdapter = defineDayNumberAdapter({
   identifier: 'islamic-umalqura',
-
-  fromGregorian(date) {
-    // Read the local civil date first (date-math.ts midnight semantics), then
-    // convert on the UTC civil timeline — zone-independent by
-    // construction, even for zones far from UTC.
-    return partsFromMs(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-    );
-  },
-
-  toGregorian(parts) {
-    const utc = new Date(msFromParts(parts));
-    return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
-  },
-
-  getDaysInMonth(year, month) {
-    // Probe: day-1 anchors of this month and the next; Hijri months are
-    // whole days, so the UTC-millisecond span is an exact multiple of
-    // one day.
-    const next = shiftMonth(year, month, 1);
-    const start = msFromParts({ year, month, day: 1 });
-    const end = msFromParts({ year: next.year, month: next.month, day: 1 });
-    return (end - start) / DAY_MS;
-  },
-
-  addMonths(parts, delta) {
-    return clampMonthShift(parts, delta, (year, month) =>
-      islamicUmalquraAdapter.getDaysInMonth(year, month)
-    );
-  },
-
-  monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    return sampleMonthNames('islamic-umalqura', locale, style, MONTH_ANCHORS);
-  },
-
-  era(year, locale = 'en') {
-    const anchor = new Date(msFromParts({ year, month: 0, day: 1 }));
-    return eraOfDate(anchor, 'islamic-umalqura', locale);
-  },
-};
+  label: 'an islamic-umalqura',
+  normalizeMonth: normalizeParts,
+  monthLength,
+  toDayNumber,
+  fromDayNumber,
+  probeAnchors: MONTH_ANCHORS,
+});

@@ -9,9 +9,8 @@ import { css } from '@linaria/core';
 
 import { useControl } from 'react-use-control';
 
+import { DisclosureChevron } from '../../utils/disclosure-chevron';
 import { useOpenWithChange } from '../../utils/floating';
-
-import { ChevronRight } from '../../icons';
 import {
   chevronPair,
   headerButton,
@@ -192,16 +191,7 @@ function StepTimelineItem({
             aria-hidden='true'
             x-class={[chevronPair.closed, open && chevronPair.open]}
           >
-            {/* lucide ChevronRight at 12px with a compensating 3-unit
-                stroke: the 24-unit viewBox renders at half the scale of
-                the old 16-unit inline glyph, so strokeWidth 3 keeps the
-                shipped 1.5px rendered stroke. */}
-            <ChevronRight
-              size={12}
-              strokeWidth={3}
-              aria-hidden='true'
-              focusable='false'
-            />
+            <DisclosureChevron size={12} />
           </span>
         </button>
       ) : (

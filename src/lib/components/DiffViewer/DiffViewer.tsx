@@ -18,7 +18,7 @@ type DiffViewerProps = {
 };
 
 // Outer chrome shared with LogViewer (utils/mono-panel-skin); the
-// header/body/line classes below are family deltas.
+// header/body/diffLine classes below are family deltas.
 const header = css`
   display: flex;
   padding: var(--haze-space-2) var(--haze-space-3);
@@ -32,7 +32,7 @@ const body = css`
   overflow-x: auto;
 `;
 
-const line = css`
+const diffLine = css`
   display: flex;
   min-height: 1.25rem;
 `;
@@ -151,7 +151,7 @@ export default function DiffViewer({ oldValue, newValue, className }: DiffViewer
       <div data-slot="header" x-class={[header]}>{strings.header}</div>
       <div data-slot="body" x-class={[body]}>
         {lines.map((line, i) => (
-          <div key={i} data-slot="line" x-class={[lineStyle, line.type === 'added' && added, line.type === 'removed' && removed]}>
+          <div key={i} data-slot="line" x-class={[diffLine, line.type === 'added' && added, line.type === 'removed' && removed]}>
             <span data-slot="gutter" x-class={[lineNum]}>{line.oldLine ?? ''}</span>
             <span data-slot="gutter" x-class={[lineNum]}>{line.newLine ?? ''}</span>
             <span data-slot="content" x-class={[lineContent]}>
@@ -165,8 +165,5 @@ export default function DiffViewer({ oldValue, newValue, className }: DiffViewer
     </div>
   );
 }
-
-// alias to avoid Linaria collision with the prop name
-const lineStyle = line;
 
 export type { DiffViewerProps, DiffLine };

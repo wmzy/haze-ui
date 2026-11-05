@@ -180,6 +180,17 @@ export default function TimePickerPanel({
     onOpenChange(false);
   }, [onChange, onOpenChange, format]);
 
+  // The hour-step commit both keyboard surfaces share: the trigger's
+  // arrow keys and the panel's hour column step the hour by ±hourStep
+  // over the enabled ring and commit the resulting parts.
+  const commitHourStep = useCallback(
+    (down: boolean) => {
+      const next = stepHour(down ? hourStep : -hourStep);
+      if (next !== null) commitParts({ ...parts, hour: next });
+    },
+    [stepHour, hourStep, commitParts, parts]
+  );
+
   const handleTriggerKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (!e.currentTarget.disabled) {
@@ -187,8 +198,7 @@ export default function TimePickerPanel({
           // Trigger arrows adjust the hour by ±hourStep (the hour
           // column's step), wrapping the 24-hour ring.
           e.preventDefault();
-          const next = stepHour(e.key === 'ArrowDown' ? hourStep : -hourStep);
-          if (next !== null) commitParts({ ...parts, hour: next });
+          commitHourStep(e.key === 'ArrowDown');
         } else if (e.key === 'Enter' || e.key === ' ') {
           // A readonly input has no native activation — complete the
           // textbox contract here (Space also must not scroll).
@@ -198,14 +208,7 @@ export default function TimePickerPanel({
       }
       consumerKeyDown?.(e);
     },
-    [
-      stepHour,
-      hourStep,
-      commitParts,
-      parts,
-      floating.onTriggerClick,
-      consumerKeyDown,
-    ]
+    [commitHourStep, floating.onTriggerClick, consumerKeyDown]
   );
 
   const handleColumnKeyDown = useCallback(
@@ -214,8 +217,7 @@ export default function TimePickerPanel({
       e.preventDefault();
       const down = e.key === 'ArrowDown';
       if (kind === 'hour') {
-        const next = stepHour(down ? hourStep : -hourStep);
-        if (next !== null) commitParts({ ...parts, hour: next });
+        commitHourStep(down);
       } else if (kind === 'minute') {
         const next = stepMinute(down ? minuteStep : -minuteStep);
         if (next !== null) commitParts({ ...parts, minute: next });
@@ -231,10 +233,9 @@ export default function TimePickerPanel({
       }
     },
     [
-      stepHour,
+      commitHourStep,
       stepMinute,
       stepSecond,
-      hourStep,
       minuteStep,
       secondStep,
       commitParts,

@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
+import { checkMarkGlyph } from '../../utils/check-glyph';
 import { fieldSizes } from '../../utils/field-skin';
 import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
 import {
@@ -27,6 +28,7 @@ import {
   pickerListbox,
   pickerListboxVirtual,
   pickerOptionActive,
+  pickerOptionAria,
   pickerOptionRow,
   pickerOptionSelected,
   pickerPanelWidth,
@@ -337,6 +339,9 @@ const checkboxVisual = css`
     border-color: var(--haze-color-border-hover);
   }
 
+  /* The drawn checkmark: gating (content/position/display) + anchor
+   * only. The geometry (5x9 border notch + rotate 45deg) is the shared
+   * checkMarkGlyph (utils/check-glyph.ts), composed at the element. */
   &::after {
     content: '';
     position: absolute;
@@ -346,15 +351,6 @@ const checkboxVisual = css`
        rotate(45) and stays unmirrored under RTL by industry convention
        (same primitive as CheckboxCore). */
     left: 5px;
-    width: 5px;
-    height: 9px;
-    border: solid var(--haze-color-text-inverse);
-    /* physical: drawing primitive of the same unmirrored checkmark.
-       The twin of this primitive lives in CheckboxCore.tsx — keep the
-       drawing geometry (5x9, 0 2px 2px 0, rotate 45deg) in sync when
-       tuning. */
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
   }
 `;
 
@@ -533,16 +529,15 @@ export default function SelectFloating<T extends string | number = string>({
     { offsets: [], flat: 0 }
   ).offsets;
 
-  // Stable, SSR-safe DOM id per option row (Combobox's scheme): the
-  // trigger's aria-activedescendant points here so screen readers
-  // announce the keyboard highlight on rows that never receive focus.
-  const optionId = (index: number) => `${id}-option-${index}`;
-
-  // Only while the popup is open — a closed listbox must not own the
-  // trigger's active descendant. No (or out-of-range) highlight omits
-  // the attribute entirely.
-  const activeDescendant =
-    open && navigableOptions[activeIndex] ? optionId(activeIndex) : undefined;
+  // Row DOM ids and the trigger's gated aria-activedescendant,
+  // shared with Combobox (utils/picker-trigger's pickerOptionAria —
+  // the id scheme and the open/existing-row gates live there).
+  const { optionId, activeDescendant } = pickerOptionAria(
+    id,
+    open,
+    navigableOptions,
+    activeIndex
+  );
 
   // The searchable panel hosts the listbox one level down (the search
   // input must not sit inside a listbox), so the trigger's
@@ -631,6 +626,63 @@ export default function SelectFloating<T extends string | number = string>({
     returnFocus();
   };
 
+  type CommitHighlightedOptions = {
+    /**
+     * The trigger button's contract: Space joins Enter as a commit key
+     * (' ' arrives from real browsers; user-event's {Space} reports
+     * the legacy 'Space' key name — accept both), the commit stays
+     * gated on an open panel with a highlighted row so an ungated
+     * Enter/Space falls through to the native click (with no
+     * highlight, a fresh open, the panel keeps toggling like any
+     * button), the gate's preventDefault is what suppresses that
+     * activation (the follow-up click would run onTriggerClick and
+     * close the panel mid-selection), and Escape drops its
+     * suppression (a button keydown has no default worth
+     * suppressing).
+     */
+    button?: boolean;
+    /**
+     * Refocus the trigger after the Escape close — the panel search
+     * input, whose focus does not live in the field and must be
+     * handed back.
+     */
+    returnFocus?: boolean;
+  };
+
+  /** The Enter/Escape arms the three keydown sites share after the
+   * `handleNavigationKey` skeleton: Enter commits the highlighted row
+   * (option or create row — both are plain rows in
+   * `navigableOptions`), Escape closes the panel. Returns whether the
+   * event was consumed, so site keys (Backspace everywhere, the
+   * button's ungated fall-through) compose after it. The input sites
+   * always suppress Enter — an unhandled Enter in an input would
+   * submit an enclosing form. */
+  const commitHighlighted = (
+    e: { readonly key: string; preventDefault: () => void },
+    {
+      button: asButton = false,
+      returnFocus: refocus = false,
+    }: CommitHighlightedOptions = {}
+  ): boolean => {
+    const commit =
+      e.key === 'Enter' ||
+      (asButton && (e.key === ' ' || e.key === 'Space'));
+    if (commit && (!asButton || (open && navigableOptions[activeIndex]))) {
+      e.preventDefault();
+      if (navigableOptions[activeIndex]) {
+        choose(navigableOptions[activeIndex].value);
+      }
+      return true;
+    }
+    if (e.key === 'Escape') {
+      if (!asButton) e.preventDefault();
+      setOpen(false);
+      if (refocus) returnFocus();
+      return true;
+    }
+    return false;
+  };
+
   const handleKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
     // The shared Arrow/Home/End skeleton (clamped highlight + open from
     // the closed state) consumes the navigation keys; the site keys
@@ -640,22 +692,8 @@ export default function SelectFloating<T extends string | number = string>({
     // scrolling the open panel, and searchable mode types into the
     // panel's search input — the single-mode native select keeps its
     // own typeahead.
-    if (
-      // Space arrives as ' ' from real browsers; user-event's {Space}
-      // reports the legacy 'Space' key name — accept both.
-      (e.key === 'Enter' || e.key === ' ' || e.key === 'Space') &&
-      open &&
-      navigableOptions[activeIndex]
-    ) {
-      // Suppress the button's native activation, or the follow-up click
-      // would run onTriggerClick and close the panel mid-selection.
-      // With no highlight (fresh open), fall through to the click path
-      // so Enter/Space keep toggling the panel like any button.
-      e.preventDefault();
-      choose(navigableOptions[activeIndex].value);
-    } else if (e.key === 'Escape') {
-      setOpen(false);
-    } else if (e.key === 'Backspace') {
+    if (commitHighlighted(e, { button: true })) return;
+    if (e.key === 'Backspace') {
       // Keyboard parity for the pointer-only affordances: multiple
       // drops the most recently selected chip (utils/
       // picker-selection's dropLastPickerValue), single (clearable)
@@ -681,17 +719,8 @@ export default function SelectFloating<T extends string | number = string>({
   // keyboard twin).
   const handleTagsKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (handleNavigationKey(e)) return;
-    if (e.key === 'Enter') {
-      // Always suppressed — an unhandled Enter in the input would
-      // submit an enclosing form.
-      e.preventDefault();
-      if (navigableOptions[activeIndex]) {
-        choose(navigableOptions[activeIndex].value);
-      }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setOpen(false);
-    } else if (e.key === 'Backspace' && query === '' && selected.length > 0) {
+    if (commitHighlighted(e)) return;
+    if (e.key === 'Backspace' && query === '' && selected.length > 0) {
       e.preventDefault();
       onChange(dropLastPickerValue(selected));
     }
@@ -704,18 +733,7 @@ export default function SelectFloating<T extends string | number = string>({
   // typing filters through onChange.
   const handleSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (handleNavigationKey(e)) return;
-    if (e.key === 'Enter') {
-      // Always suppressed while the popup is open — an unhandled Enter
-      // in the input would submit an enclosing form.
-      e.preventDefault();
-      if (navigableOptions[activeIndex]) {
-        choose(navigableOptions[activeIndex].value);
-      }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setOpen(false);
-      returnFocus();
-    }
+    commitHighlighted(e, { returnFocus: true });
   };
 
   // One option row, shared by the plain list and the virtualized
@@ -766,7 +784,7 @@ export default function SelectFloating<T extends string | number = string>({
           <span
             aria-hidden='true'
             data-slot='indicator'
-            x-class={[checkboxVisual, isSelected && checkboxChecked]}
+            x-class={[checkboxVisual, checkMarkGlyph, isSelected && checkboxChecked]}
           />
         )}
         {option.label}

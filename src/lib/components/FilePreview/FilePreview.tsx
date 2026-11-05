@@ -7,6 +7,7 @@ import { useStrings } from '../LocaleProvider';
 import { Progress } from '../Progress';
 
 import { formatFileSize, getFileExtension } from '../../utils/file-size';
+import { quietIconButton } from '../../utils/quiet-button-skin';
 import { srOnly } from '../../utils/sr-only';
 import { truncate } from '../../utils/truncate';
 
@@ -134,27 +135,26 @@ const actions = css`
   margin-inline-start: auto;
 `;
 
-const actionBtn = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Action seats: the shared quietIconButton chrome
+   (utils/quiet-button-skin) plus the compact square geometry.
+   Deliberate convergence: the skin's bg-muted hover wash and 3px
+   keyboard ring replace what was a color-only hover with no focus
+   indicator at all; the transition timing converges on the skin's
+   plain ease (was var(--haze-ease)). */
+const actionSeat = css`
   width: var(--haze-space-6);
   height: var(--haze-space-6);
   padding: 0;
-  border: none;
   border-radius: var(--haze-radius-sm);
-  background: none;
-  color: var(--haze-color-text-muted);
-  cursor: pointer;
-  transition: color var(--haze-duration-fast) var(--haze-ease);
-
-  &:hover {
-    color: var(--haze-color-text);
-  }
 `;
 
+/* Retry keeps its primary hover ink over the skin's muted→text shift.
+   The skin's hover arm sits at class + :hover + :not(:disabled), so
+   this companion arms specificity through the retry seat's data-slot
+   attribute instead of trusting source order (the drift discipline in
+   utils/quiet-button-skin, Banner's closeBtnSize precedent). */
 const actionBtnRetry = css`
-  &:hover {
+  &[data-slot='retry-button']:hover:not(:disabled) {
     color: var(--haze-color-primary);
   }
 `;
@@ -313,7 +313,7 @@ export default function FilePreview({
               data-slot='retry-button'
               aria-label={resolvedRetryLabel}
               onClick={onRetry}
-              x-class={[actionBtn, actionBtnRetry]}
+              x-class={[quietIconButton, actionSeat, actionBtnRetry]}
             >
               <RetryGlyph />
             </button>
@@ -324,7 +324,7 @@ export default function FilePreview({
               data-slot='remove-button'
               aria-label={resolvedRemoveLabel}
               onClick={onRemove}
-              x-class={[actionBtn]}
+              x-class={[quietIconButton, actionSeat]}
             >
               <RemoveGlyph />
             </button>

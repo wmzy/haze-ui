@@ -46,7 +46,7 @@ export function dayButtons(grid: HTMLElement | null): HTMLButtonElement[] {
 /** Home/End geometry: 'row' lands on the focused row's first/last cell
  * (WAI-ARIA grid pattern); 'group' on the whole grid's first/last
  * enabled cell (radiogroup pattern). */
-export type GridHomeEnd = 'row' | 'group';
+type GridHomeEnd = 'row' | 'group';
 
 export type GridRovingOptions = {
   /** Cells per row — the ArrowUp/ArrowDown stride and the 'row'
@@ -62,7 +62,7 @@ export type GridRovingOptions = {
 };
 
 /** One resolved roving key press. */
-export type GridRovingAction =
+type GridRovingAction =
   /** The walk landed on `target`. */
   | { type: 'move'; target: number }
   /** PageUp/PageDown — the caller's view hop (delta ±1). */

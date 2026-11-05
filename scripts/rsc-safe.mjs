@@ -63,6 +63,11 @@ export const RSC_SAFE_MODULES = new Set([
   // Shared navigation-item chrome (utils/nav-item-skin.ts): pure
   // Linaria class constants — imported by RSC-safe TabBar.
   'utils/nav-item-skin.ts',
+  // Shared nav-link semantics (utils/nav-link.ts): pure TS helpers for
+  // the active/aria-current resolution and placeholder-href guard —
+  // type-only react imports. Required for the RSC-safe closure: the
+  // safe-listed NavLink.tsx imports it.
+  'utils/nav-link.ts',
   // Shared tag skin (tag list/chip/remove button): the same purity
   // class as menu-skins above.
   'utils/tag-skin.ts',

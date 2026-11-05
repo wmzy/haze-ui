@@ -20,12 +20,14 @@ import {
   pickerRowDisabled,
   pickerShowsCreateRow,
   togglePickerValue,
+  visiblePickerValues,
 } from '../../utils/picker-selection';
 import {
   PICKER_ROW_HEIGHT,
   pickerGroupLabel,
   pickerListbox,
   pickerListboxVirtual,
+  pickerOptionAria,
   pickerPanelWidth,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
@@ -490,18 +492,17 @@ export default function Combobox<T extends string | number = string>({
   const rowHeight = virtualConfig?.itemHeight ?? OPTION_ROW_HEIGHT;
   const overscan = virtualConfig?.overscan;
 
-  // Stable, SSR-safe DOM id per option row: listbox id + index, both
-  // deterministic across renders and re-opens (no random values). The
-  // input's aria-activedescendant points here so screen readers announce
-  // the keyboard highlight on options that never receive DOM focus.
-  const optionId = (index: number) => `${id}-option-${index}`;
-
-  // Only while the popup is open — a closed listbox must not own the
-  // input's active descendant, even though the highlight itself persists
-  // for reopen recovery. No highlight (or an out-of-range one after the
-  // option list shrank) omits the attribute entirely.
-  const activeDescendant =
-    open && listItems[highlightIndex] ? optionId(highlightIndex) : undefined;
+  // Row DOM ids and the input's gated aria-activedescendant, shared
+  // with Select (utils/picker-trigger's pickerOptionAria — the id
+  // scheme and the open/existing-row gates live there; the highlight
+  // persists while closed for reopen recovery, the attribute must
+  // not).
+  const { optionId, activeDescendant } = pickerOptionAria(
+    id,
+    open,
+    listItems,
+    highlightIndex
+  );
 
   // Cluster the flat item list into sections: consecutive items sharing
   // a `group` label fall under one heading; groupless items stay direct
@@ -707,10 +708,7 @@ export default function Combobox<T extends string | number = string>({
             inputRef.current?.focus();
           }}
         >
-          {(maxTagCount === undefined
-            ? selected
-            : selected.slice(0, Math.max(maxTagCount, 0))
-          ).map((v) => (
+          {visiblePickerValues(selected, maxTagCount).map((v) => (
             <span
               key={v}
               data-slot='item'

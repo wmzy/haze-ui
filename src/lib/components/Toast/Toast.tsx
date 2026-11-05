@@ -4,7 +4,8 @@ import type { ToastAction } from './ToastContext';
 import { css } from '@linaria/core';
 import { useCallback, useEffect, useRef } from 'react';
 
-import { dismissBtn } from '../../utils/status-skin';
+import { calloutBorders } from '../../utils/callout-skin';
+import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
 import { SpinnerGlyph, spinAnimation } from '../../utils/spinner-glyph';
 import { usePausableTimeout } from '../../utils/use-pausable-timeout';
 
@@ -105,7 +106,6 @@ const variants = {
   info: css`
     background: var(--haze-color-bg);
     color: var(--haze-color-text);
-    border: 1px solid var(--haze-color-border);
   `,
   // Variant text uses the standard text token: the accent tokens
   // (--haze-color-success / --haze-color-warning …) sit under the
@@ -115,20 +115,14 @@ const variants = {
   success: css`
     background: var(--haze-color-success-subtle);
     color: var(--haze-color-text);
-    border: 1px solid
-      color-mix(in srgb, var(--haze-color-success) 25%, transparent);
   `,
   warning: css`
     background: var(--haze-color-warning-subtle);
     color: var(--haze-color-text);
-    border: 1px solid
-      color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
   `,
   danger: css`
     background: var(--haze-color-danger-subtle);
     color: var(--haze-color-text);
-    border: 1px solid
-      color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
   `,
   // The loading surface stays neutral (same shape as info): the spinner
   // glyph carries the state, and the settle patch swaps the whole item to
@@ -136,8 +130,21 @@ const variants = {
   loading: css`
     background: var(--haze-color-bg);
     color: var(--haze-color-text);
-    border: 1px solid var(--haze-color-border);
   `,
+} as const;
+
+/* The edge every variant wears — the shared callout border layer
+ * (utils/callout-skin), byte-identical to the border each variant used
+ * to declare inline: info/loading take the neutral default edge, the
+ * status variants their 25% color-mix accent. A local mapping over the
+ * imported classes (indexed use, not a bare re-export) so the css rides
+ * into the toast family group via split-css sharedLayers. */
+const toastBorders = {
+  info: calloutBorders.default,
+  success: calloutBorders.success,
+  warning: calloutBorders.warning,
+  danger: calloutBorders.danger,
+  loading: calloutBorders.default,
 } as const;
 
 /* Live-region semantics per variant (Radix / React-Aria convention):
@@ -148,10 +155,7 @@ const variants = {
  * toast is its own live region; ToastContainer's viewport must not add
  * aria-live/role of its own or the same toast would be announced twice. */
 const liveRoles = {
-  info: 'status',
-  success: 'status',
-  warning: 'status',
-  danger: 'alert',
+  ...statusLiveRoles,
   loading: 'status',
 } as const;
 
@@ -272,7 +276,7 @@ export default function Toast({
     <div
       role={liveRoles[variant]}
       data-slot='toast'
-      x-class={[base, variants[variant], className, classNames?.item]}
+      x-class={[base, variants[variant], toastBorders[variant], className, classNames?.item]}
       onPointerEnter={() => {
         hoveredRef.current = true;
         syncPaused();

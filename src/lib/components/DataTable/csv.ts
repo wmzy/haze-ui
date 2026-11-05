@@ -6,6 +6,11 @@ import type {
 import type { DataTableColumnDef } from './DataTable';
 import type { DataTableFiltersState } from './filters';
 
+import {
+  cellValue,
+  columnIdOf,
+  leafColumnDefs,
+} from './data-table-shared';
 import { applyColumnFilters } from './filters';
 
 /** Options for `dataTableToCsv`. */
@@ -33,33 +38,6 @@ type DataTableCsvOptions = {
   filters?: DataTableFiltersState;
 };
 
-/** The column id as TanStack derives it from a raw def: explicit `id`,
- * else the `accessorKey`. Empty string for accessor-less display columns
- * (they never export — see `exportableColumns`). */
-function csvColumnId<TData extends RowData>(
-  def: DataTableColumnDef<TData>
-): string {
-  if (def.id !== undefined) return def.id;
-  if ('accessorKey' in def) return def.accessorKey as string;
-  return '';
-}
-
-/** Leaf columns of a (possibly grouped) column list, in display order. */
-function csvLeafColumns<TData extends RowData>(
-  columns: DataTableColumnDef<TData>[]
-): DataTableColumnDef<TData>[] {
-  return columns.flatMap((column) => {
-    if ('columns' in column && column.columns) {
-      // Group children are typed as the TanStack union upstream; at this
-      // boundary they are the same defs the consumer handed DataTable.
-      return csvLeafColumns(
-        column.columns as DataTableColumnDef<TData>[]
-      );
-    }
-    return [column];
-  });
-}
-
 /** A column exports when it carries data (an `accessorKey`/`accessorFn` —
  * display-only columns like action buttons have nothing to serialize),
  * is not marked `meta.excludeFromExport`, and is not hidden in the
@@ -72,20 +50,7 @@ function exportableColumn<TData extends RowData>(
   // Display-only columns (group headers, action buttons) carry neither
   // accessor — there is nothing to serialize.
   if (!('accessorKey' in def) && !('accessorFn' in def)) return false;
-  return visibility?.[csvColumnId(def)] !== false;
-}
-
-/** One cell's raw value: the column's `accessorFn` (custom formatting
- * lives there), else the `accessorKey` field of the row. */
-function csvCellValue<TData extends RowData>(
-  def: DataTableColumnDef<TData>,
-  row: TData
-): unknown {
-  if ('accessorFn' in def) return def.accessorFn(row, 0);
-  if ('accessorKey' in def) {
-    return (row as Record<string, unknown>)[def.accessorKey as string];
-  }
-  return undefined;
+  return visibility?.[columnIdOf(def)] !== false;
 }
 
 /** Cell text: `null`/`undefined` export as empty, `Date`s as ISO strings,
@@ -133,7 +98,7 @@ function dataTableToCsv<TData extends RowData>(
   columns: DataTableColumnDef<TData>[],
   options?: DataTableCsvOptions
 ): string {
-  const leaves = csvLeafColumns(columns).filter((column) =>
+  const leaves = leafColumnDefs(columns).filter((column) =>
     exportableColumn(column, options?.columnVisibility)
   );
   if (leaves.length === 0) return '';
@@ -144,7 +109,7 @@ function dataTableToCsv<TData extends RowData>(
         csvCellText(
           typeof column.header === 'string'
             ? column.header
-            : csvColumnId(column)
+            : columnIdOf(column)
         )
       )
     )
@@ -153,7 +118,7 @@ function dataTableToCsv<TData extends RowData>(
   const lines = applyColumnFilters(rows, columns, options?.filters).map(
     (row) =>
       leaves
-        .map((column) => csvEscape(csvCellText(csvCellValue(column, row))))
+        .map((column) => csvEscape(csvCellText(cellValue(column, row))))
         .join(',')
   );
 

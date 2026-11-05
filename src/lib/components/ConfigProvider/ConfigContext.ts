@@ -1,3 +1,4 @@
+import type { DialogClassNames } from '../Dialog/Dialog';
 import type { DrawerClassNames } from '../Drawer/Drawer';
 import type { SelectClassNames } from '../Select/Select';
 import type { ComboboxClassNames } from '../Combobox/Combobox';
@@ -65,6 +66,8 @@ type ComponentDefaultsSections = {
      */
     closeDelay?: number;
   };
+  /** `Dialog` slot classes — merged under an explicit `classNames` prop. */
+  Dialog: { classNames?: DialogClassNames };
   /** `Drawer` slot classes — merged under an explicit `classNames` prop. */
   Drawer: { classNames?: DrawerClassNames };
   /** `Select` slot classes — merged under an explicit `classNames` prop. */

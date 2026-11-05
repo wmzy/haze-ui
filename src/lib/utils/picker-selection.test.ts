@@ -5,6 +5,7 @@ import {
   pickerRowDisabled,
   pickerShowsCreateRow,
   togglePickerValue,
+  visiblePickerValues,
 } from './picker-selection';
 
 describe('pickerMaxCountReached', () => {
@@ -103,5 +104,28 @@ describe('labelMatchesQuery', () => {
     expect(labelMatchesQuery('apple', '  app ')).toBe(true);
     expect(labelMatchesQuery('apple', '   ')).toBe(true);
     expect(labelMatchesQuery('apple', '')).toBe(true);
+  });
+});
+
+describe('visiblePickerValues', () => {
+  it('returns the same reference when maxTagCount is undefined', () => {
+    const values = ['a', 'b', 'c'];
+    expect(visiblePickerValues(values, undefined)).toBe(values);
+  });
+
+  it('keeps the first maxTagCount values', () => {
+    expect(visiblePickerValues(['a', 'b', 'c'], 2)).toEqual(['a', 'b']);
+  });
+
+  it('renders none at a zero cap', () => {
+    expect(visiblePickerValues(['a', 'b'], 0)).toEqual([]);
+  });
+
+  it('floors a negative cap to none (the Math.max clamp)', () => {
+    expect(visiblePickerValues(['a', 'b'], -3)).toEqual([]);
+  });
+
+  it('keeps every value when the cap exceeds the length', () => {
+    expect(visiblePickerValues(['a', 'b'], 5)).toEqual(['a', 'b']);
   });
 });

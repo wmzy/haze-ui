@@ -44,7 +44,7 @@ export type ColumnReorderKit = typeof import('./column-reorder');
  * plain render function, not a component: the `<tr>`/`<th>` sequence it
  * returns keeps reconciling in the parent's tree exactly as before the
  * extraction). */
-export type DataTableHeaderView<TData extends RowData> = {
+type DataTableHeaderView<TData extends RowData> = {
   table: ReactTable<typeof dataTableFeatures, TData>;
   headerGroups: HeaderGroup<typeof dataTableFeatures, TData>[];
   selectable: boolean;

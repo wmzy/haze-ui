@@ -12,6 +12,7 @@ export type {MenuRadioItemProps} from './MenuRadioItem';
 export {default as MenuGroup} from './MenuGroup';
 export type {MenuGroupProps} from './MenuGroup';
 export {default as MenuDivider} from './MenuDivider';
+export type {MenuDividerProps} from './MenuDivider';
 export {default as MenuSub} from './MenuSub';
 export type {MenuSubProps} from './MenuSub';
 export {default as MenuSubTrigger} from './MenuSubTrigger';

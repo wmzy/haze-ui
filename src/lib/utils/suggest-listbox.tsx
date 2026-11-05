@@ -12,6 +12,7 @@ import {
   suggestOptionHighlighted,
 } from './suggest-list-skin';
 import { spliceToken, suggestOptionId } from './suggest-marker';
+import { useHighlightScroll } from './use-highlight-scroll';
 
 /**
  * Shared suggestion listbox — the anchored panel PromptInput and
@@ -25,6 +26,8 @@ import { spliceToken, suggestOptionId } from './suggest-marker';
  *    aria-disabled hint rows).
  *  - `useSuggestField`: the insert-commit sequence and the change/
  *    select event pair (below).
+ *  - `useSuggestWiring`: the derived wiring — the highlight-follow
+ *    scroll plus the textarea's aria-activedescendant (below).
  *
  * The css classes come from utils/suggest-list-skin.ts and
  * utils/picker-trigger.tsx (both already registered for the two
@@ -34,7 +37,7 @@ import { spliceToken, suggestOptionId } from './suggest-marker';
  */
 
 /** One suggestion row: what clicking inserts and what the row shows. */
-export type SuggestRow = {
+type SuggestRow = {
   /** Text inserted after the trigger character when picked. */
   value: string;
   /** Display text; falls back to `value` when omitted. */
@@ -203,4 +206,62 @@ export function useSuggestField({
   };
 
   return { commit, handleChange, handleSelect };
+}
+
+type UseSuggestWiringOptions = {
+  /** Whether the popup is open — a closed listbox owns no descendant. */
+  open: boolean;
+  /**
+   * Whether the panel is physically on screen — the scroll effect's
+   * gate (scrollTop set on a still-hidden popover is clamped away and
+   * lost); `useFloating`'s `shown`, not `open`.
+   */
+  shown: boolean;
+  /**
+   * The row the keyboard highlight points at — `undefined` (no
+   * highlight, or an out-of-range one after the option list shrank)
+   * omits the attribute entirely. Definedness is the whole test: a
+   * defined-but-empty string row is still a rendered, addressable row.
+   */
+  current: unknown;
+  /** Flat index of the keyboard-highlighted row. */
+  highlightIndex: number;
+  /** Listbox DOM id — the highlighted row's id derives from it. */
+  id: string;
+  /** Ref onto the highlighted row element — the plain-path scroll target. */
+  rowRef: RefObject<HTMLDivElement | null>;
+};
+
+/**
+ * The derived half of the textarea-suggest wiring. The keyboard
+ * highlight must follow into view — its rows are
+ * aria-activedescendant targets that never receive DOM focus, so the
+ * browser does not scroll to them on its own. And the textarea's
+ * aria-activedescendant exists only while the popup is open — a
+ * closed listbox must not own the textarea's active descendant. Row
+ * ids come from suggestOptionId (utils/suggest-marker.ts), the same
+ * scheme SuggestListbox stamps its rows with. The rows here are
+ * always SuggestListbox's plain (non-virtualized) rows, hence the
+ * hardcoded plain-path scroll mode.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- 同 useSuggestField：hook 与渲染半边同文件的定向 suppression。
+export function useSuggestWiring({
+  open,
+  shown,
+  current,
+  highlightIndex,
+  id,
+  rowRef,
+}: UseSuggestWiringOptions) {
+  useHighlightScroll({
+    shown,
+    highlightIndex,
+    virtualized: false,
+    rowRef,
+  });
+
+  const activeDescendant =
+    open && current !== undefined ? suggestOptionId(id, highlightIndex) : undefined;
+
+  return { activeDescendant };
 }

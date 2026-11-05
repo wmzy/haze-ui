@@ -26,7 +26,7 @@
  * names the deprecated surface — `'ButtonLink.alias'`, `'Tag.variant'` —
  * it never reaches the console, it only buckets the warning.
  */
-export type DeprecationKey = string;
+type DeprecationKey = string;
 
 /** Keys that already warned — module-scoped, so one page load sees each deprecation exactly once. */
 const warned = new Set<DeprecationKey>();

@@ -160,12 +160,9 @@ const item = css`
   height: calc(var(--haze-space-10) + var(--haze-space-1));
   border-radius: var(--haze-radius-md);
 
-  /* Keyboard ring: utils/focus-ring's focusRingVisible, composed on
-     the item below — a deliberate convergence: the local copy wore a
-     var(--haze-space-1) (4px) ring, the last width variant across the
-     library, now unified on the shared 3px ring (and it gains the
-     forced-colors Highlight arm the local copy never had). The only
-     intentional visual change of the nav-item-skin extraction. */
+  /* Keyboard ring: focusRingVisible composed on the item below —
+     convergence rationale lives in the utils/nav-item-skin.ts
+     header. */
 `;
 
 /* The active-token pair consumed by the shared navItemActive arm: the

@@ -18,7 +18,7 @@ export type Mode = 'light' | 'dark';
 export type Family = 'gray' | 'blue' | 'green' | 'amber' | 'red';
 
 /** Brand families available as preset themes — see BRAND_SEEDS / brands.ts. */
-export type BrandFamily = 'violet' | 'teal' | 'cyan' | 'orange' | 'rose';
+type BrandFamily = 'violet' | 'teal' | 'cyan' | 'orange' | 'rose';
 
 export type PrimitiveScales = Record<Mode, Record<Family, readonly string[]>>;
 
@@ -395,7 +395,7 @@ const SEMANTIC_COLOR_TOKENS: readonly SemanticColorToken[] = buildSemanticTokens
 /** Brand families shipped as preset theme classes (see tokens/brands.ts). */
 const BRAND_FAMILIES: readonly BrandFamily[] = ['violet', 'teal', 'cyan', 'orange', 'rose'];
 
-export type BrandThemeDef = {
+type BrandThemeDef = {
   /** The brand family taking blue's slot (primary/info/focus-ring route here). */
   family: BrandFamily;
   /** The theme's primitive scales: gray/{family}/green/amber/red per mode. */

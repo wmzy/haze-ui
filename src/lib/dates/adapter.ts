@@ -353,3 +353,112 @@ export function makeGregorianLikeAdapter(
     },
   };
 }
+
+/**
+ * Spec for `defineDayNumberAdapter` — the day-number conversion core
+ * one algorithmic calendar supplies to the shared adapter shell below.
+ * `normalizeMonth` carries an out-of-range month index across year
+ * boundaries (the shared `normalizeParts` for fixed 12/13-month grids,
+ * hebrew's variable-year walk for itself); `monthLength` and
+ * `toDayNumber` receive already-normalized parts; `fromDayNumber` is
+ * the exact inverse of `toDayNumber`; `probeAnchors` are the
+ * month-name sampling instants (UTC-civil milliseconds); `label` is
+ * the article + calendar name exactly as assertCivilDate's message
+ * renders it ('a hebrew', 'an ethiopic'). `monthsPerYear` sizes the
+ * default addMonths grid (12 unless stated otherwise); `addMonths`
+ * overrides that default wholesale — hebrew's variable 12/13-month
+ * years keep their own walk. Internal helper; the adapter modules
+ * themselves are the public surface.
+ */
+export type DayNumberAdapterSpec = {
+  identifier: HazeCalendarIdentifier;
+  label: string;
+  // Function-valued properties, not method signatures: the spec is a
+  // bag of closures with no `this`, so detached references (passing
+  // `monthLength` straight into helpers) stay lint-clean and hazard-free.
+  normalizeMonth: (year: number, month: number) => {
+    year: number;
+    month: number;
+  };
+  monthLength: (year: number, month: number) => number;
+  toDayNumber: (year: number, month: number, day: number) => number;
+  fromDayNumber: (dayNumber: number) => CivilDateParts;
+  probeAnchors: readonly number[];
+  monthsPerYear?: number;
+  addMonths?: (parts: CivilDateParts, delta: number) => CivilDateParts;
+};
+
+/**
+ * Factory for day-number adapters — the algorithmic calendars whose
+ * conversions reduce to an integer day number on the UTC civil
+ * timeline (days since the epoch; the Intl-routed umalqura tabulation
+ * rides the same timeline in whole-day milliseconds). Every member of
+ * the adapter shell is shared verbatim across such calendars: the
+ * local-civil read, the strict-day guard, normalized month lengths,
+ * month-name sampling and era anchoring; the spec supplies the
+ * calendar's own arithmetic. Internal helper; the adapter modules
+ * themselves are the public surface.
+ */
+export function defineDayNumberAdapter(
+  spec: DayNumberAdapterSpec
+): HazeDateAdapter {
+  return {
+    identifier: spec.identifier,
+
+    fromGregorian(date) {
+      // Read the local civil date first (date.ts midnight semantics), then
+      // convert on the UTC civil timeline — zone-independent by
+      // construction.
+      const ms = utcCivilMs(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
+      return spec.fromDayNumber(Math.floor(ms / DAY_MS));
+    },
+
+    toGregorian(parts) {
+      const normalized = spec.normalizeMonth(parts.year, parts.month);
+      assertCivilDate(parts, normalized, spec.monthLength, spec.label);
+      // The day-number arithmetic sidesteps the constructor's
+      // two-digit-year remap for pre-100 CE years — ethiopic year 1
+      // maps to 8 CE.
+      return localMidnightOf(
+        spec.toDayNumber(normalized.year, normalized.month, parts.day) *
+          DAY_MS
+      );
+    },
+
+    getDaysInMonth(year, month) {
+      const normalized = spec.normalizeMonth(year, month);
+      return spec.monthLength(normalized.year, normalized.month);
+    },
+
+    addMonths:
+      spec.addMonths ??
+      ((parts, delta) =>
+        clampMonthShift(
+          parts,
+          delta,
+          spec.monthLength,
+          spec.monthsPerYear
+        )),
+
+    monthNames(locale = 'en', style: MonthNameStyle = 'long') {
+      return sampleMonthNames(
+        spec.identifier,
+        locale,
+        style,
+        spec.probeAnchors
+      );
+    },
+
+    era(year, locale = 'en') {
+      return eraOfDate(
+        new Date(spec.toDayNumber(year, 0, 1) * DAY_MS),
+        spec.identifier,
+        locale
+      );
+    },
+  };
+}

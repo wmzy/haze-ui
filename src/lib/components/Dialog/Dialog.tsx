@@ -1,5 +1,6 @@
 import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
+import type { NativeDialogHandle } from '../../utils/native-dialog';
 
 import { css } from '@linaria/core';
 import { useId } from 'react';
@@ -8,25 +9,14 @@ import { useControl } from 'react-use-control';
 import { useNativeDialogShell } from '../../utils/native-dialog';
 import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
 import { panelSurfaceLifted } from '../../utils/panel-skin';
+import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 /**
- * Imperative handle exposed through the React 19 `ref` prop (same API
- * choice as VirtualList). `open`/`close` are state writes going through
- * the same control path as every other open transition, so the animated
- * exit → native `close` event remains the single `onClose` exit — a
- * handle close never double-fires the callback.
+ * Imperative handle exposed through the React 19 `ref` prop — the
+ * shared native-`<dialog>` surface (`NativeDialogHandle`,
+ * utils/native-dialog), identical to Drawer's handle.
  */
-type DialogHandle = {
-  /** Show the dialog (`showModal` + initial focus, as if `open` flipped true). */
-  open: () => void;
-  /**
-   * Close the dialog through the animated exit; `onClose` fires exactly
-   * once, via the native close event — never synchronously here.
-   */
-  close: () => void;
-  /** Focus the element that held focus when the dialog last opened. */
-  focusTrigger: () => void;
-};
+type DialogHandle = NativeDialogHandle;
 
 /**
  * Semantic slot classes (AntD v6 `classNames` 形态)：键名对应 Dialog 的
@@ -36,6 +26,9 @@ type DialogHandle = {
  *
  * - `root` — `<dialog>` 面板元素
  * - `header` — `title` prop 渲染出的 `<h2>` 标题（不传 title 时不存在）
+ *
+ * ConfigProvider 的 `defaults={{ Dialog: { classNames } }}` 落同一组
+ * 槽位，与 prop 逐键合并、prop 键优先（Drawer 的同款通道）。
  */
 type DialogClassNames = {
   /** `<dialog>` 面板元素（含内边距/圆角/阴影的盒子）。 */
@@ -132,6 +125,9 @@ export default function Dialog({
   ref,
 }: DialogProps) {
   const [open, setOpen] = useControl(openControl, false);
+  const config = useConfigDefaults('Dialog');
+  // Per-key merge of the config section under the prop.
+  const resolvedClassNames = mergeClassNames(config, classNames);
   // 面板生命周期（showModal/退场动画→close、keepMounted 休眠、命令式
   // handle、Esc/背景点击关闭三件套）与 Drawer 共用同一原语。
   const {setDialogRef, dialogProps} = useNativeDialogShell({
@@ -151,10 +147,10 @@ export default function Dialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[panelSurfaceLifted, panelDeltas, dialogPanelMotion, dialogBackdrop, className, classNames?.root]}
+      x-class={[panelSurfaceLifted, panelDeltas, dialogPanelMotion, dialogBackdrop, className, resolvedClassNames?.root]}
     >
       {title !== undefined && (
-        <h2 id={titleId} data-slot='title' x-class={[titleText, classNames?.header]}>
+        <h2 id={titleId} data-slot='title' x-class={[titleText, resolvedClassNames?.header]}>
           {title}
         </h2>
       )}

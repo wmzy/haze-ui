@@ -188,7 +188,7 @@
           },
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -560,7 +560,7 @@
         "BadgeProps": [
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -613,7 +613,7 @@
           },
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -1522,7 +1522,7 @@
           },
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -2341,6 +2341,21 @@
             "required": false
           },
           {
+            "name": "danger",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "icon",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "kbdLabel",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
             "name": "className",
             "type": "string",
             "required": false
@@ -3031,53 +3046,6 @@
             "type": "Ref<HTMLSpanElement>",
             "required": false
           }
-        ],
-        "SegmentedFieldProps": [
-          {
-            "name": "segments",
-            "type": "SegmentSpec[]",
-            "required": true
-          },
-          {
-            "name": "separators",
-            "type": "string[]",
-            "required": true
-          },
-          {
-            "name": "values",
-            "type": "(number | null)[]",
-            "required": true
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "serialize",
-            "type": "(values: (number | null)[]) => string | null",
-            "required": true
-          },
-          {
-            "name": "onChange",
-            "type": "(value: string) => void",
-            "required": true
-          },
-          {
-            "name": "disabled",
-            "type": "boolean",
-            "required": false
-          },
-          {
-            "name": "className",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "ref",
-            "type": "Ref<HTMLSpanElement>",
-            "required": false
-          }
         ]
       },
       "otherTypes": {}
@@ -3536,7 +3504,7 @@
           },
           {
             "name": "ref",
-            "type": "Ref<DialogHandle>",
+            "type": "Ref<NativeDialogHandle>",
             "required": false
           }
         ]
@@ -3679,7 +3647,7 @@
           },
           {
             "name": "ref",
-            "type": "Ref<DrawerHandle>",
+            "type": "Ref<NativeDialogHandle>",
             "required": false
           }
         ]
@@ -4150,6 +4118,11 @@
           {
             "name": "children",
             "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
             "required": false
           }
         ]
@@ -5777,6 +5750,13 @@
             "required": true
           }
         ],
+        "MenuDividerProps": [
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          }
+        ],
         "MenuGroupProps": [
           {
             "name": "label",
@@ -7018,7 +6998,7 @@
           },
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -7675,6 +7655,11 @@
             "required": false
           },
           {
+            "name": "hourHeight",
+            "type": "number",
+            "required": false
+          },
+          {
             "name": "todayLabel",
             "type": "string",
             "required": false
@@ -8271,6 +8256,11 @@
           {
             "name": "className",
             "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLAnchorElement>",
             "required": false
           }
         ],
@@ -9555,7 +9545,7 @@
         "TagOwnProps": [
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -9587,7 +9577,7 @@
         "TagProps": [
           {
             "name": "color",
-            "type": "'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'",
+            "type": "StatusColor",
             "required": false
           },
           {
@@ -9702,6 +9692,28 @@
         "SortableTagInputCore"
       ],
       "propsTypes": {
+        "FieldBridgeProps": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "aria-invalid",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "aria-describedby",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ],
         "SortableTagInputCoreProps": [
           {
             "name": "ref",
@@ -9782,6 +9794,11 @@
           },
           {
             "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "name",
             "type": "string",
             "required": false
           },
@@ -9922,6 +9939,23 @@
           {
             "name": "ref",
             "type": "Ref<HTMLInputElement>",
+            "required": false
+          }
+        ],
+        "TagRemoveButtonProps": [
+          {
+            "name": "removeLabel",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "onRemove",
+            "type": "() => void",
+            "required": true
+          },
+          {
+            "name": "disabled",
+            "type": "boolean",
             "required": false
           }
         ]
@@ -10655,7 +10689,7 @@
           },
           {
             "name": "status",
-            "type": "ToolCallStatus",
+            "type": "AgenticStatus",
             "required": false
           },
           {
@@ -10935,7 +10969,7 @@
           },
           {
             "name": "status",
-            "type": "TraceStatus",
+            "type": "AgenticStatus",
             "required": false
           },
           {
@@ -11787,7 +11821,67 @@
             "required": false
           },
           {
+            "name": "onChange",
+            "type": "(files: File[]) => void",
+            "required": false
+          },
+          {
+            "name": "data",
+            "type": "Record<string, string | Blob>",
+            "required": false
+          },
+          {
+            "name": "ref",
+            "type": "Ref<UploadHandle>",
+            "required": false
+          },
+          {
+            "name": "className",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "classNames",
+            "type": "UploadClassNames",
+            "required": false
+          },
+          {
+            "name": "method",
+            "type": "string",
+            "required": false
+          },
+          {
             "name": "accept",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "multiple",
+            "type": "boolean",
+            "required": false
+          },
+          {
+            "name": "maxSize",
+            "type": "number",
+            "required": false
+          },
+          {
+            "name": "headers",
+            "type": "Record<string, string>",
+            "required": false
+          },
+          {
+            "name": "removeLabel",
             "type": "string",
             "required": false
           },
@@ -11812,16 +11906,6 @@
             "required": false
           },
           {
-            "name": "maxSize",
-            "type": "number",
-            "required": false
-          },
-          {
-            "name": "multiple",
-            "type": "boolean",
-            "required": false
-          },
-          {
             "name": "request",
             "type": "UploadRequest",
             "required": false
@@ -11829,26 +11913,6 @@
           {
             "name": "action",
             "type": "string",
-            "required": false
-          },
-          {
-            "name": "method",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "headers",
-            "type": "Record<string, string>",
-            "required": false
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "data",
-            "type": "Record<string, string | Blob>",
             "required": false
           },
           {
@@ -11877,11 +11941,6 @@
             "required": false
           },
           {
-            "name": "removeLabel",
-            "type": "string",
-            "required": false
-          },
-          {
             "name": "directory",
             "type": "boolean",
             "required": false
@@ -11889,31 +11948,6 @@
           {
             "name": "onStatusChange",
             "type": "(files: UploadFileStatus[]) => void",
-            "required": false
-          },
-          {
-            "name": "onChange",
-            "type": "(files: File[]) => void",
-            "required": false
-          },
-          {
-            "name": "classNames",
-            "type": "UploadClassNames",
-            "required": false
-          },
-          {
-            "name": "className",
-            "type": "string",
-            "required": false
-          },
-          {
-            "name": "children",
-            "type": "ReactNode",
-            "required": false
-          },
-          {
-            "name": "ref",
-            "type": "Ref<UploadHandle>",
             "required": false
           }
         ]

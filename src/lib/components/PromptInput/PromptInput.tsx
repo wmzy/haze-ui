@@ -14,10 +14,8 @@ import { useControl } from 'react-use-control';
 import { useFloating } from '../../utils/floating';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
-import { suggestOptionId } from '../../utils/suggest-marker';
-import { SuggestListbox, useSuggestField } from '../../utils/suggest-listbox';
+import { SuggestListbox, useSuggestField, useSuggestWiring } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
-import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
@@ -210,13 +208,14 @@ export default function PromptInput({
     animated: true,
   });
 
-  // The keyboard highlight must follow into view — its rows are
-  // aria-activedescendant targets that never receive DOM focus, so the
-  // browser does not scroll to them on its own.
-  useHighlightScroll({
+  // Shared derived wiring (utils/suggest-listbox.tsx): the
+  // highlight-follow scroll plus the textarea's aria-activedescendant.
+  const { activeDescendant } = useSuggestWiring({
+    open,
     shown: floating.shown,
+    current: suggestions[highlightIndex],
     highlightIndex,
-    virtualized: false,
+    id,
     rowRef: activeRowRef,
   });
 
@@ -236,14 +235,6 @@ export default function PromptInput({
   }, [value, maxRows, disabled, resize]);
 
   const label = ariaLabel ?? placeholder ?? strings.label;
-
-  const current = suggestions[highlightIndex];
-  // Only while the popup is open — a closed listbox must not own the
-  // textarea's active descendant. Row ids come from suggestOptionId
-  // (utils/suggest-marker.ts), the same scheme SuggestListbox stamps
-  // its rows with.
-  const activeDescendant =
-    open && current !== undefined ? suggestOptionId(id, highlightIndex) : undefined;
 
   /** Fetches suggestions for the token at the caret, guarding races. */
   const fetchSuggestions = (atMarker: SuggestMarker | null) => {

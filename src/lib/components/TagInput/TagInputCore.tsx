@@ -198,25 +198,26 @@ export default function TagInputCore({
 
   const tagList = (
     <ul data-slot="list" x-class={[listWrap]}>
-      {tags.map((t, i) =>
-        renderTag ? (
+      {tags.map((t, i) => {
+        const removeLabel = formatString(strings.removeTag, { tag: t });
+        return renderTag ? (
           renderTag({
             tag: t,
             index: i,
-            removeLabel: formatString(strings.removeTag, { tag: t }),
+            removeLabel,
             onRemove: () => removeTag(i),
           })
         ) : (
           <li key={i} data-slot="item" x-class={[tag]}>
             {t}
             <TagRemoveButton
-              removeLabel={formatString(strings.removeTag, { tag: t })}
+              removeLabel={removeLabel}
               onRemove={() => removeTag(i)}
               disabled={disabled}
             />
           </li>
-        )
-      )}
+        );
+      })}
     </ul>
   );
 

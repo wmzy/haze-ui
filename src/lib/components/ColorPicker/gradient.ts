@@ -17,7 +17,7 @@ import { clamp, quantize } from '../../utils/math';
 import { formatColor, parseColor, rgbHexKey } from './color-math';
 
 /** One gradient stop: a canonical CSS color string and its position on the 0..100% scale. */
-export type GradientStop = { color: string; position: number };
+type GradientStop = { color: string; position: number };
 
 /** A parsed linear gradient: angle in degrees (0..360) and 2+ stops sorted by position. */
 export type Gradient = { angle: number; stops: GradientStop[] };

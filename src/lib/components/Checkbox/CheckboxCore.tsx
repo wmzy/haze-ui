@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef, Ref, ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { checkMarkGlyph } from '../../utils/check-glyph';
 import { choiceBase, choiceLabel } from '../../utils/choice-skin';
 
 type CheckboxCoreProps = {
@@ -28,22 +29,18 @@ const checkboxSkin = css`
     border-color: var(--haze-color-primary);
   }
 
+  /* The drawn checkmark: content + anchor only. The geometry (5x9
+   * border notch + rotate 45deg) is the shared checkMarkGlyph
+   * (utils/check-glyph.ts), applied to the input unconditionally —
+   * without content the ::after generates no box, so the unchecked
+   * state is unaffected. */
   &:checked::after {
     content: '';
     position: absolute;
-    top: 5px;
     /* physical: the checkmark is drawn from physical borders + rotate(45)
        and stays unmirrored under RTL by industry convention. */
+    top: 5px;
     left: 8px;
-    width: 5px;
-    height: 9px;
-    border: solid var(--haze-color-text-inverse);
-    /* physical: drawing primitive of the same unmirrored checkmark.
-       The twin of this primitive lives in SelectFloating.tsx
-       (checkboxVisual) — keep the drawing geometry (5x9, 0 2px 2px 0,
-       rotate 45deg) in sync when tuning. */
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
   }
 
   /* Forced-colors: the UA flattens the checked fill onto Canvas, so
@@ -86,7 +83,7 @@ export default function CheckboxCore({
       ref={ref}
       type='checkbox'
       data-slot='checkbox'
-      x-class={[choiceBase, checkboxSkin, className]}
+      x-class={[choiceBase, checkboxSkin, checkMarkGlyph, className]}
       checked={checked}
       onChange={(e) => {
         onChange(e.target.checked);

@@ -13,7 +13,7 @@ import { Children, Fragment, cloneElement, isValidElement } from 'react';
  * pass through untouched, so wrappers, text and gaps keep their place.
  */
 
-export type WalkChildrenOptions = {
+type WalkChildrenOptions = {
   /**
    * Recurse into Fragments: their children are walked in DOM order and
    * rewrapped — a Fragment itself never reaches `visit`. Off (the

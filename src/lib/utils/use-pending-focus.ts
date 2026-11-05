@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** Controller surface of `usePendingFocus`. */
-export type PendingFocusController<T> = {
+type PendingFocusController<T> = {
   /** Queue a request. The request's own commit starts the retry loop,
    *  which re-attempts after every commit until `attempt` applies it.
    *  A later request replaces an earlier queued one (last wins). */

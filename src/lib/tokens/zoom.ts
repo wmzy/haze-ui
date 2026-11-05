@@ -72,8 +72,6 @@ export const REM_TEXT_SIZES = Object.fromEntries(
   Object.entries(TEXT_SIZE_PX).map(([token, px]) => [token, toRem(px)] as const)
 ) as Record<keyof typeof TEXT_SIZE_PX, string>;
 
-export type TextSizeTokenName = keyof typeof REM_TEXT_SIZES;
-
 /**
  * The radius scale at a 16px = 1rem base (9999px = 624.9375rem exactly).
  * Kept literal on purpose: the radius values are template-only data in
@@ -89,8 +87,6 @@ export const REM_RADII = {
   '--haze-radius-2xl': '1rem',
   '--haze-radius-full': '624.9375rem',
 } as const;
-
-export type RadiusTokenName = keyof typeof REM_RADII;
 
 /**
  * The declarations the remScale class emits, one per re-declared token.

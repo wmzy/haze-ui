@@ -20,7 +20,14 @@ import { css } from '@linaria/core';
  * anchor on the icon slot (its badge overlays the icon corner;
  * ActivityRail anchors the badge on the item itself). The keyboard
  * ring is not part of this skin: both families compose
- * utils/focus-ring's focusRingVisible.
+ * utils/focus-ring's focusRingVisible on the item. That convergence
+ * is deliberate and is the authoritative account (the two family
+ * files keep only a one-line pointer back): each pre-extraction
+ * local ring copy wore a var(--haze-space-1) (4px) ring — the one
+ * width variant left in the library — now unified on the shared 3px
+ * ring, and both families gain the forced-colors Highlight arm the
+ * local copies never had. The only intentional visual change of the
+ * nav-item-skin extraction.
  *
  * Merge-order contract (same as utils/menu-skins.ts): navItemBase is
  * authored before navItemActive so the active hover arm wins the

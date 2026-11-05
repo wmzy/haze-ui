@@ -11,10 +11,8 @@ import {
   fieldSizes,
   nativeFieldChrome,
 } from '../../utils/field-skin';
-import { suggestOptionId } from '../../utils/suggest-marker';
-import { SuggestListbox, useSuggestField } from '../../utils/suggest-listbox';
+import { SuggestListbox, useSuggestField, useSuggestWiring } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
-import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
@@ -110,16 +108,6 @@ export default function MentionsCore({
     animated: true,
   });
 
-  // The keyboard highlight must follow into view — its rows are
-  // aria-activedescendant targets that never receive DOM focus, so the
-  // browser does not scroll to them on its own.
-  useHighlightScroll({
-    shown: floating.shown,
-    highlightIndex,
-    virtualized: false,
-    rowRef: activeRowRef,
-  });
-
   // Case-insensitive prefix match against both the insertion value and
   // the display label, per the typing that followed the trigger.
   const filtered = marker
@@ -132,13 +120,16 @@ export default function MentionsCore({
       })
     : [];
 
-  // Only while the popup is open — a closed listbox must not own the
-  // textarea's active descendant. No highlight (or an out-of-range one
-  // after the option list shrank) omits the attribute entirely. Row
-  // ids come from suggestOptionId (utils/suggest-marker.ts), the same
-  // scheme SuggestListbox stamps its rows with.
-  const activeDescendant =
-    open && filtered[highlightIndex] ? suggestOptionId(id, highlightIndex) : undefined;
+  // Shared derived wiring (utils/suggest-listbox.tsx): the
+  // highlight-follow scroll plus the textarea's aria-activedescendant.
+  const { activeDescendant } = useSuggestWiring({
+    open,
+    shown: floating.shown,
+    current: filtered[highlightIndex],
+    highlightIndex,
+    id,
+    rowRef: activeRowRef,
+  });
 
   // Shared event pair (utils/suggest-listbox.tsx): the change/select
   // handlers that keep the token in step with the caret; the panel

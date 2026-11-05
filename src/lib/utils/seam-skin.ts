@@ -83,7 +83,7 @@ export const attachedRow = css`
  * instead: its bar adds the vertical flex-direction arm, a genuine
  * geometry difference rather than spelling drift.
  */
-export const stretchedRow = css`
+const stretchedRow = css`
   display: inline-flex;
   align-items: stretch;
   inline-size: 100%;

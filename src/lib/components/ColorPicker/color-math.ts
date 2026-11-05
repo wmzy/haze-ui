@@ -21,9 +21,9 @@ export type Rgb = {r: number; g: number; b: number; a?: number};
 export type Hsv = {h: number; s: number; v: number; a?: number};
 
 /** Hue in degrees (0..360), saturation and lightness as 0..1 fractions. */
-export type Hsl = {h: number; s: number; l: number; a?: number};
+type Hsl = {h: number; s: number; l: number; a?: number};
 
-export type ParsedColor = {format: ColorFormat; rgb: Rgb};
+type ParsedColor = {format: ColorFormat; rgb: Rgb};
 
 /**
  * Constrain into the normalized `[0, 1]` range — shared by the math

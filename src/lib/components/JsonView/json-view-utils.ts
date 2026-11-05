@@ -4,7 +4,7 @@
  * text — robustness for hand-built `data`, since JSON.parse output only
  * ever produces the first seven kinds.
  */
-export type JsonValueKind =
+type JsonValueKind =
   | 'string'
   | 'number'
   | 'boolean'
@@ -44,7 +44,7 @@ export function jsonEntries(value: unknown): [string, unknown][] {
  * "+N more" hint, keeping huge API payloads cheap to render. */
 export const JSON_VIEW_MAX_ENTRIES = 100;
 
-export type SlicedEntries = {
+type SlicedEntries = {
   visible: [string, unknown][];
   hiddenCount: number;
 };

@@ -277,7 +277,7 @@ let logicalPositionArea: boolean | undefined;
  * syntax trap above), gated on anchor positioning itself for the same
  * reason `supportsAnchorPositioning` gates on the popover API.
  */
-export function supportsLogicalPositionArea(): boolean {
+function supportsLogicalPositionArea(): boolean {
   if (logicalPositionArea === undefined) {
     logicalPositionArea =
       supportsAnchorPositioning() &&
@@ -557,7 +557,7 @@ export function useOpenWithChange<T>(
  * DropdownMenu's and Popconfirm's `*Handle` types are this shape with
  * family-specific docs.
  */
-export type FloatingHandle = {
+type FloatingHandle = {
   /** Show the panel, as if the trigger toggled it open. */
   open: () => void;
   /** Close the panel through the animated exit path. */

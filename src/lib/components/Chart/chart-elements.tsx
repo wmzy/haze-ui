@@ -66,7 +66,7 @@ export type ChartSeries = {
  * recharts. `color` is only present when the consumer set it; the plot
  * elements apply the semantic cycle themselves (cartesian: per series
  * index, pie: per datum index). */
-export type ResolvedChartSeries = {
+type ResolvedChartSeries = {
   key: string;
   label: string;
   color?: string;
@@ -79,11 +79,11 @@ export type ResolvedChartSeries = {
 
 /** Cartesian chart shapes; each maps onto a recharts chart container and
  * its matching series element (see `chartElement` / `seriesElement`). */
-export type CartesianChartType = 'line' | 'area' | 'bar';
+type CartesianChartType = 'line' | 'area' | 'bar';
 
 /** Series-bearing chart shapes: every `ChartSeries` maps onto one recharts
  * graphical element via `seriesElement`. */
-export type SeriesChartType = CartesianChartType | 'radar' | 'scatter';
+type SeriesChartType = CartesianChartType | 'radar' | 'scatter';
 
 /** Supported chart shapes — the cartesian families plus `pie` (each datum
  * is one sector named by the chart's `xKey`), `radar` (each datum is one
@@ -101,7 +101,7 @@ export type ChartType =
 /** Chart shapes dispatched through `chartElement`/`chartTree` — everything
  * except `gauge` (which builds its own RadialBarChart tree via
  * `gaugeTree`) and `waffle` (pure CSS via `waffleTree`). */
-export type RechartsChartType = Exclude<ChartType, 'gauge' | 'waffle'>;
+type RechartsChartType = Exclude<ChartType, 'gauge' | 'waffle'>;
 
 /** One colored band on a gauge arc: the band spans from the previous
  * threshold (or 0) up to `value`, painted in `color`. */
@@ -155,16 +155,16 @@ const SERIES_COLOR_CYCLE = [
 
 /* Token-only chrome shared by every chart: hairline border-colored axes and
  * grid, text-size tokens for tick, tooltip and legend copy. */
-export const AXIS_STROKE = 'var(--haze-color-border)';
-export const AXIS_TICK = {
+const AXIS_STROKE = 'var(--haze-color-border)';
+const AXIS_TICK = {
   fontSize: 'var(--haze-text-sm)',
   fill: 'var(--haze-color-text-secondary)',
 } as const;
-export const TOOLTIP_STYLE = {
+const TOOLTIP_STYLE = {
   fontSize: 'var(--haze-text-sm)',
   color: 'var(--haze-color-text)',
 } as const;
-export const LEGEND_STYLE = { fontSize: 'var(--haze-text-sm)' } as const;
+const LEGEND_STYLE = { fontSize: 'var(--haze-text-sm)' } as const;
 
 /** The palette entry for `index`, cycling once sectors/series outnumber
  * the five semantic tokens. */
@@ -273,7 +273,7 @@ export function pieRingRadii(
  * named by `nameKey` and valued by the series `key`. Sector fills cycle
  * the semantic tokens per datum unless the series pins an explicit
  * `color`, which monochromes the whole ring. */
-export function pieElement(options: {
+function pieElement(options: {
   entry: ResolvedChartSeries;
   data: readonly unknown[];
   nameKey: string;
@@ -662,7 +662,7 @@ const gaugeCaptionStyle = css`
 /** The muted surface shared by the gauge's track arc and the waffle's
  * remainder squares — the same muted background Progress uses for its
  * track. */
-export const CHART_MUTED_COLOR = 'var(--haze-color-bg-muted)';
+const CHART_MUTED_COLOR = 'var(--haze-color-bg-muted)';
 
 /** Splits the gauge's [0, max] domain into one arc segment per threshold
  * (each spanning from the previous threshold up to its own bound),

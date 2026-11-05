@@ -1,7 +1,4 @@
-/* eslint-disable react-refresh/only-export-components --
-   internal primitives module (skin classes + chip components), not a
-   fast-refresh boundary; consumers re-render through their own
-   files. */
+ 
 import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
@@ -10,6 +7,7 @@ import Chip from '../components/Chip/Chip';
 import { formatString } from '../components/LocaleProvider/locale';
 
 import { pickerOverflowBadge } from './picker-trigger';
+import { visiblePickerValues } from './picker-selection';
 
 /**
  * Shared chip-row affordances of the picker triggers (Select's
@@ -24,7 +22,7 @@ import { pickerOverflowBadge } from './picker-trigger';
  */
 
 /** One selected value: the Chip capsule plus its pointer-only remove ×. */
-export const pickerChipItem = css`
+const pickerChipItem = css`
   display: inline-flex;
   align-items: center;
 `;
@@ -38,7 +36,7 @@ export const pickerChipItem = css`
  * checkboxes) or Backspace on the trigger where available — the same
  * trade-off Ant Design's multiple select makes.
  */
-export const pickerChipRemove = css`
+const pickerChipRemove = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +68,7 @@ export const pickerChipRemove = css`
  * slot it occupies (SelectCore's native-select overlay keeps its own
  * positioned copy, `nativeClear`, for the same reason).
  */
-export const pickerClearBtn = css`
+const pickerClearBtn = css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -173,10 +171,7 @@ export function PickerChips<T extends string | number = string>({
   moreTags,
   itemClassName,
 }: PickerChipsProps<T>) {
-  const visible =
-    maxTagCount === undefined
-      ? values
-      : values.slice(0, Math.max(maxTagCount, 0));
+  const visible = visiblePickerValues(values, maxTagCount);
   return (
     <>
       {visible.map((v) => (

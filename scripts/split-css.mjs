@@ -143,13 +143,17 @@ const sharedLayers = {
   // skins, slot skins, panel surfaces and divider shared by the three
   // menu families ride with each family's css.
   'utils/menu-skins': ['menu', 'dropdown-menu', 'context-menu', 'cascader', 'command'],
+  // Submenu wrapper box (utils/submenu.tsx): the position:relative
+  // wrapper div SubmenuShell renders inside every family Sub container;
+  // rides with the two families that have Sub parts.
+  'utils/submenu': ['menu', 'dropdown-menu'],
   // Shared navigation-item chrome (utils/nav-item-skin.ts): the muted
   // item base with its hover wash, the fixed-size icon slot, the corner
   // badge anchor and the token-parameterized active arm that TabBar's
   // icon-over-label items and ActivityRail's square rail items compose
   // (sizing/typography, indicator geometry and the active token pair
   // stay family-local deltas).
-  'utils/nav-item-skin': ['tab-bar', 'activity-rail'],
+  'utils/nav-item-skin': ['tab-bar', 'activity-rail', 'sidebar'],
   // Shared field skin (utils/field-skin.ts): the surface chrome, the
   // :focus-within focus ring, the native input/textarea chrome and the
   // field size map the field families wear. masked-input and any other
@@ -171,6 +175,9 @@ const sharedLayers = {
     'inline-edit',
     'input',
     'mentions',
+    // ModelPicker's native trigger wears fieldSizes.md (formerly a local
+    // byte-identical copy).
+    'model-picker',
     'number-input',
     'otp-input',
     'prompt-input',
@@ -210,6 +217,7 @@ const sharedLayers = {
     'chat-message',
     'ellipsis',
     'error-boundary',
+    'file-preview',
     'image',
     'notification-center',
     'pagination',
@@ -248,7 +256,7 @@ const sharedLayers = {
   // Shared disclosure chevron glyph (utils/disclosure-chevron.tsx): the
   // stroke-compensated lucide ChevronRight and its rotate transition
   // rendered by the expandable data families ride with each family's css.
-  'utils/disclosure-chevron': ['json-view', 'sources', 'trace'],
+  'utils/disclosure-chevron': ['json-view', 'sources', 'step-timeline', 'trace'],
   // Shared preset shortcut rows (utils/preset-list-skin.ts) heading
   // the Datepicker and DateRangePicker panels ride with both css.
   'utils/preset-list-skin': ['datepicker', 'date-range-picker'],
@@ -287,6 +295,12 @@ const sharedLayers = {
   // checkbox (a role=checkbox span) wears the box chrome too; the
   // :checked decorations (checkmark vs dot) stay local per component.
   'utils/choice-skin': ['checkbox', 'radio', 'tree'],
+  // Shared checkmark drawing primitive (utils/check-glyph.ts): the
+  // unmirrored 5x9 physical-border checkmark (::after geometry only —
+  // content/position/display gating stays per consumer) CheckboxCore's
+  // checked box and SelectFloating's option-row visual checkbox render;
+  // their per-box top/left offsets ride as local deltas.
+  'utils/check-glyph': ['checkbox', 'select'],
   // Shared resize-grip skin (utils/grip-skin.ts): the 24/44px hit strip
   // + 2px hairline chrome (hover/focus wash, focus ring, forced-colors
   // baseline, per-orientation geometry) that Splitter's dividers and
@@ -321,7 +335,7 @@ const sharedLayers = {
   // local (genuine geometry differences, not spelling drift). The
   // status tint classes and dismiss chrome ride via utils/status-skin;
   // no rsc-safe entry: nothing RSC-listed imports this module.
-  'utils/callout-skin': ['alert', 'banner', 'async-section'],
+  'utils/callout-skin': ['alert', 'banner', 'async-section', 'toast'],
   // Solid/stroke status axes (progress bar fill, circle stroke,
   // indicator tone dots) — separate modules from status-skin because
   // same-keyed css maps in one file collide under Linaria's member-key

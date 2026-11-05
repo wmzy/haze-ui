@@ -106,7 +106,7 @@ type MenuItemShellProps<T extends ElementType = 'button'> = MenuItemShellOwnProp
 
 export type { MenuItemShellOwnProps, MenuItemShellProps };
 
-export function MenuItemShell<T extends ElementType = 'button'>({
+function MenuItemShell<T extends ElementType = 'button'>({
   skin,
   itemRole,
   itemSlot,

@@ -6,6 +6,8 @@ import { render, screen, act, fireEvent, waitFor } from '@testing-library/react'
 import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import ConfigProvider from '../ConfigProvider/ConfigProvider';
+
 import Dialog from './Dialog';
 
 beforeEach(() => {
@@ -645,6 +647,25 @@ describe('Dialog classNames slots', () => {
     const dialog = screen.getByRole('dialog', { hidden: true });
     expect(dialog).toHaveClass('custom-root');
     expect(dialog.querySelector('h2')).toHaveClass('custom-header');
+  });
+
+  it('merges ConfigProvider Dialog.classNames under the prop, per key', () => {
+    render(
+      <ConfigProvider
+        defaults={{
+          Dialog: { classNames: { root: 'from-config', header: 'cfg-header' } },
+        }}
+      >
+        <Dialog title="Slot title" open classNames={{ root: 'from-prop' }}>
+          Body
+        </Dialog>
+      </ConfigProvider>
+    );
+    const dialog = screen.getByRole('dialog');
+    // prop key beats the provider's same key; unset prop keys keep config
+    expect(dialog).toHaveClass('from-prop');
+    expect(dialog).not.toHaveClass('from-config');
+    expect(dialog.querySelector('h2')).toHaveClass('cfg-header');
   });
 
   it('keeps the class lists untouched when classNames is omitted', () => {

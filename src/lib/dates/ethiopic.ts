@@ -11,18 +11,9 @@
  * this arithmetic — ethiopic.test.ts's Intl oracle grid is the standing
  * proof.
  */
-import type { CivilDateParts, HazeDateAdapter, MonthNameStyle } from './adapter';
+import type { CivilDateParts, HazeDateAdapter } from './adapter';
 
-import {
-  assertCivilDate,
-  clampMonthShift,
-  DAY_MS,
-  eraOfDate,
-  localMidnightOf,
-  sampleMonthNames,
-  UNIX_EPOCH_JDN,
-  utcCivilMs,
-} from './adapter';
+import { DAY_MS, defineDayNumberAdapter, UNIX_EPOCH_JDN } from './adapter';
 
 /** Days-since-epoch of 1 Maskaram 1 AME (Amete Mihret epoch). */
 const EPOCH_DAY = 1724221 - UNIX_EPOCH_JDN;
@@ -101,49 +92,16 @@ const MONTH_ANCHORS: readonly number[] = Array.from(
     toDayNumber(PROBE_YEAR, month, month === PAGUME ? 3 : 15) * DAY_MS
 );
 
-export const ethiopicAdapter: HazeDateAdapter = {
+export const ethiopicAdapter: HazeDateAdapter = defineDayNumberAdapter({
   identifier: 'ethiopic',
-
-  fromGregorian(date) {
-    // Read the local civil date first (date.ts midnight semantics), then
-    // convert on the UTC civil timeline — zone-independent by
-    // construction.
-    const ms = utcCivilMs(date.getFullYear(), date.getMonth(), date.getDate());
-    return fromDayNumber(Math.floor(ms / DAY_MS));
-  },
-
-  toGregorian(parts) {
-    const normalized = normalizeMonth(parts.year, parts.month);
-    assertCivilDate(parts, normalized, monthLength, 'an ethiopic');
-    // utcCivilMs (inside localMidnightOf's argument) sidesteps the
-    // constructor's two-digit-year remap for pre-100 CE years —
-    // ethiopic year 1 maps to 8 CE.
-    return localMidnightOf(
-      toDayNumber(normalized.year, normalized.month, parts.day) * DAY_MS
-    );
-  },
-
-  getDaysInMonth(year, month) {
-    const normalized = normalizeMonth(year, month);
-    return monthLength(normalized.year, normalized.month);
-  },
-
-  addMonths(parts, delta) {
-    // Every Ethiopic year holds the same thirteen months, so the shared
-    // shift/clamp rides the thirteen-wide grid — day 30 into Pagume
-    // clamps to 5/6.
-    return clampMonthShift(parts, delta, monthLength, MONTHS);
-  },
-
-  monthNames(locale = 'en', style: MonthNameStyle = 'long') {
-    return sampleMonthNames('ethiopic', locale, style, MONTH_ANCHORS);
-  },
-
-  era(year, locale = 'en') {
-    return eraOfDate(
-      new Date(toDayNumber(year, 0, 1) * DAY_MS),
-      'ethiopic',
-      locale
-    );
-  },
-};
+  label: 'an ethiopic',
+  normalizeMonth,
+  monthLength,
+  toDayNumber,
+  fromDayNumber,
+  probeAnchors: MONTH_ANCHORS,
+  // Every Ethiopic year holds the same thirteen months, so the shared
+  // shift/clamp rides the thirteen-wide grid — day 30 into Pagume
+  // clamps to 5/6.
+  monthsPerYear: MONTHS,
+});
