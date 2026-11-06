@@ -3,19 +3,11 @@ import type { ControlOrValue } from 'react-use-control';
 
 import type { AgenticStatus } from '../../utils/agentic-status';
 
-import { useId } from 'react';
-
 import { css } from '@linaria/core';
 
-import { useControl } from 'react-use-control';
-
-import { DisclosureChevron } from '../../utils/disclosure-chevron';
-import { useOpenWithChange } from '../../utils/floating';
+import { TimelineDisclosure } from '../../utils/timeline-disclosure';
 import {
-  chevronPair,
-  headerButton,
   itemStacked,
-  panelBase,
   statusDot,
   statusDotActive,
   statusDotDone,
@@ -135,15 +127,11 @@ function StepTimelineItem({
   children,
   className,
 }: StepTimelineItemProps) {
-  const [open, setOpen] = useControl(openControl, false);
-  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
-  const panelId = useId();
   const hasPanel = content != null || children != null;
-  // A toggle with nothing to reveal would be a dead button — only the
-  // header of an item carrying content/child steps becomes one.
+  // Mirrors the shared disclosure's dead-button guard (collapsible &&
+  // hasPanel in utils/timeline-disclosure) for the local layout arm:
+  // only an expandable row stacks the header above the panel.
   const expandable = collapsible && hasPanel;
-
-  const toggleOpen = () => handleSetOpen(!open);
 
   const glyph =
     icon ??
@@ -175,46 +163,21 @@ function StepTimelineItem({
       data-status={status}
       x-class={[timelineRow, connectorRow, expandable && itemStacked, className]}
     >
-      {expandable ? (
-        <button
-          type='button'
-          data-slot='header'
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={toggleOpen}
-          x-class={[headerButton]}
-        >
-          {indicator}
-          {headerBody}
-          <span
-            data-slot='icon'
-            aria-hidden='true'
-            x-class={[chevronPair.closed, open && chevronPair.open]}
-          >
-            <DisclosureChevron size={12} />
-          </span>
-        </button>
-      ) : (
-        <>
-          {indicator}
-          {headerBody}
-        </>
-      )}
-      {hasPanel && (
-        <div
-          data-slot='panel'
-          id={expandable ? panelId : undefined}
-          hidden={expandable && !open}
-          x-class={[panelBase]}
-        >
-          {content}
-          {children != null && (
-            <div data-slot='sub-steps' x-class={[subSteps]}>
-              <StepTimeline>{children}</StepTimeline>
-            </div>
-          )}
-        </div>
-      )}
+      <TimelineDisclosure
+        hasPanel={hasPanel}
+        collapsible={collapsible}
+        open={openControl}
+        onOpenChange={onOpenChange}
+        indicator={indicator}
+        body={headerBody}
+      >
+        {content}
+        {children != null && (
+          <div data-slot='sub-steps' x-class={[subSteps]}>
+            <StepTimeline>{children}</StepTimeline>
+          </div>
+        )}
+      </TimelineDisclosure>
     </div>
   );
 }

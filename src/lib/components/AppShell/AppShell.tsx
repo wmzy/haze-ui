@@ -18,8 +18,14 @@ type AppShellProps = {
   children: ReactNode;
 } & Omit<ComponentPropsWithoutRef<'div'>, 'children'>;
 
+/* Sidebar width shared by the prop default and both css fallbacks
+ * below; consumers theme it by overriding
+ * --haze-appshell-sidebar-width instead of hardcoding. */
+const SIDEBAR_WIDTH = 'calc(var(--haze-space-16) * 4)';
+
 /* Breakpoint matches the docs site's MOBILE_QUERY; the media queries
  * below handle the sidebar overlay in pure CSS, no JS involved. */
+const MOBILE_BREAKPOINT = 768;
 
 const shell = css`
   position: relative;
@@ -47,7 +53,7 @@ const withSidebar = css`
     'sidebar content'
     'footer footer';
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MOBILE_BREAKPOINT}px) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       'header'
@@ -72,7 +78,7 @@ const header = css`
 const sidebar = css`
   grid-area: sidebar;
   box-sizing: border-box;
-  width: var(--haze-appshell-sidebar-width, calc(var(--haze-space-16) * 4));
+  width: var(--haze-appshell-sidebar-width, ${SIDEBAR_WIDTH});
   min-height: 0;
   overflow: hidden;
   background: var(--haze-color-bg-subtle);
@@ -87,7 +93,7 @@ const sidebar = css`
     width var(--haze-duration-normal) var(--haze-ease),
     transform var(--haze-duration-normal) var(--haze-ease);
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MOBILE_BREAKPOINT}px) {
     /* Small screens: the sidebar leaves the grid and overlays the content.
      * Collapsing keeps the overlay width and slides off-canvas, so the
      * transition is a pure transform. */
@@ -98,7 +104,7 @@ const sidebar = css`
     box-shadow: var(--haze-shadow-lg);
 
     &[data-state='collapsed'] {
-      width: var(--haze-appshell-sidebar-width, calc(var(--haze-space-16) * 4));
+      width: var(--haze-appshell-sidebar-width, ${SIDEBAR_WIDTH});
       transform: translateX(-100%);
     }
   }
@@ -123,7 +129,7 @@ export default function AppShell({
   sidebar: sidebarSlot,
   footer: footerSlot,
   sidebarCollapsed: collapsedControl,
-  sidebarWidth = 'calc(var(--haze-space-16) * 4)',
+  sidebarWidth = SIDEBAR_WIDTH,
   className,
   style,
   children,

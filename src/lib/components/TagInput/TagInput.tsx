@@ -2,11 +2,8 @@ import type { ControlOrValue } from 'react-use-control';
 
 import type { FieldBridgeProps } from './TagInputCore';
 
-import { useControl } from 'react-use-control';
-
-import { NativeHiddenFields } from '../../utils/native-form';
-
 import TagInputCore from './TagInputCore';
+import TagInputShell from './tag-input-shell';
 
 type TagInputProps = {
   value?: ControlOrValue<string[]>;
@@ -26,41 +23,8 @@ type TagInputProps = {
   name?: string;
 } & FieldBridgeProps;
 
-export default function TagInput({
-  value: valueControl,
-  onChange,
-  placeholder,
-  maxTags,
-  disabled,
-  className,
-  name,
-  id,
-  'aria-invalid': ariaInvalid,
-  'aria-describedby': ariaDescribedby,
-  ref,
-}: TagInputProps) {
-  const [tags, setTags] = useControl(valueControl, []);
-
-  return (
-    <>
-      <TagInputCore
-        ref={ref}
-        value={tags}
-        onChange={(next) => {
-          setTags(next);
-          onChange?.(next);
-        }}
-        placeholder={placeholder}
-        maxTags={maxTags}
-        disabled={disabled}
-        className={className}
-        id={id}
-        aria-invalid={ariaInvalid}
-        aria-describedby={ariaDescribedby}
-      />
-      <NativeHiddenFields name={name} values={tags} />
-    </>
-  );
+export default function TagInput(props: TagInputProps) {
+  return <TagInputShell {...props} core={TagInputCore} />;
 }
 
 export type { TagInputProps };

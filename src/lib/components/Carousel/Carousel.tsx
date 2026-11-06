@@ -150,6 +150,12 @@ const navBtn = css`
     box-shadow:
       var(--haze-shadow-md),
       0 0 0 3px var(--haze-color-focus-ring);
+
+    /* Forced-colors 镜像 utils/focus-ring 的回退：UA 会丢弃
+       box-shadow 焦点环，改用 Highlight outline 保住指示器。 */
+    @media (forced-colors: active) {
+      outline: 2px solid Highlight;
+    }
   }
 `;
 

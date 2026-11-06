@@ -6,7 +6,7 @@ import { Button } from '../Button';
 import VisuallyHidden from '../VisuallyHidden/VisuallyHidden';
 import { useStrings } from '../LocaleProvider';
 import { useClipboard } from '../../hooks/useClipboard';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
+import { useResolvedButtonSize } from '../../utils/button-size';
 import { Check } from '../../icons';
 import { CopyGlyph } from '../../utils/copy-glyph';
 
@@ -101,11 +101,9 @@ export default function CopyButton<T extends ElementType = 'button'>({
   const strings = useStrings('copyButton');
   const copyText = copyLabel ?? strings.copy;
   const copiedText = copiedLabel ?? strings.copied;
-  // Same resolution tiers as Button (explicit prop → Button's
-  // ConfigProvider section → built-in 'md') so the icon step always
-  // matches the chrome it sits in.
-  const config = useConfigDefaults('Button');
-  const resolvedSize = size ?? config.size ?? 'md';
+  // Same resolution tiers as Button (utils/button-size) so the icon
+  // step always matches the chrome it sits in.
+  const resolvedSize = useResolvedButtonSize(size);
   const iconClass = iconSizes[resolvedSize];
 
   function handleClick(event: MouseEvent<HTMLElement>) {

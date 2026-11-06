@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 
-import type { ImagePreviewConfig } from './Image';
+import type { ImagePreviewConfig } from './image-preview-config';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
@@ -11,6 +11,7 @@ import {
   ImageGalleryProvider,
   type GalleryImage,
 } from './ImageGalleryContext';
+import { resolveImagePreviewConfig } from './image-preview-config';
 
 /**
  * AntD `Image.PreviewGroup` counterpart: wrap `Image` children in a
@@ -50,10 +51,8 @@ export default function ImagePreviewGroup({
   preview = true,
   showThumbnails = true,
 }: ImagePreviewGroupProps) {
-  const previewEnabled = preview !== false;
-  const previewOptions = typeof preview === 'object' ? preview : {};
-  const zoomEnabled = previewEnabled && previewOptions.zoom !== false;
-  const rotateEnabled = previewEnabled && previewOptions.rotate !== false;
+  const { enabled: previewEnabled, zoom: zoomEnabled, rotate: rotateEnabled } =
+    resolveImagePreviewConfig(preview);
 
   // Entries state drives the overlay render; entriesRef gives the
   // register/unregister/activate callbacks a synchronous view of the

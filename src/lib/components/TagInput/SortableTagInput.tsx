@@ -1,10 +1,7 @@
 import type { TagInputProps } from './TagInput';
 
-import { useControl } from 'react-use-control';
-
-import { NativeHiddenFields } from '../../utils/native-form';
-
 import SortableTagInputCore from './SortableTagInputCore';
+import TagInputShell from './tag-input-shell';
 
 /** The wrappers differ only in which Core they drive (drag reordering
  * vs the plain list); the public surface — value/onChange, field props,
@@ -20,41 +17,8 @@ type SortableTagInputProps = TagInputProps;
  * Keyboard: focus a tag's label, Space lifts, arrows move, Space drops,
  * Escape cancels.
  */
-export default function SortableTagInput({
-  value: valueControl,
-  onChange,
-  placeholder,
-  maxTags,
-  disabled,
-  className,
-  name,
-  id,
-  'aria-invalid': ariaInvalid,
-  'aria-describedby': ariaDescribedby,
-  ref,
-}: SortableTagInputProps) {
-  const [tags, setTags] = useControl(valueControl, []);
-
-  return (
-    <>
-      <SortableTagInputCore
-        ref={ref}
-        value={tags}
-        onChange={(next) => {
-          setTags(next);
-          onChange?.(next);
-        }}
-        placeholder={placeholder}
-        maxTags={maxTags}
-        disabled={disabled}
-        className={className}
-        id={id}
-        aria-invalid={ariaInvalid}
-        aria-describedby={ariaDescribedby}
-      />
-      <NativeHiddenFields name={name} values={tags} />
-    </>
-  );
+export default function SortableTagInput(props: SortableTagInputProps) {
+  return <TagInputShell {...props} core={SortableTagInputCore} />;
 }
 
 export type { SortableTagInputProps };

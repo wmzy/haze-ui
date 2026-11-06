@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { cachedFormatter } from '../../utils/intl-cache';
 import { tabularNums } from '../../utils/tabular-nums';
 
 type CountUpProps = {
@@ -24,18 +25,18 @@ type CountUpProps = {
 } & Omit<ComponentPropsWithoutRef<'span'>, 'children'>;
 
 /* Intl.NumberFormat construction is comparatively expensive; the default
- * formatter caches one instance per decimal count. */
-const groupFormatters = new Map<number, Intl.NumberFormat>();
+ * formatter caches one instance per decimal count (utils/intl-cache
+ * owns the Map — DateFieldCore's per-locale cache is the sibling). */
+const getGroupFormatter = cachedFormatter(
+  (decimals: number) =>
+    new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    })
+);
 
 function defaultFormat(value: number, decimals: number): string {
-  const cached = groupFormatters.get(decimals);
-  if (cached) return cached.format(value);
-  const formatter = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-  groupFormatters.set(decimals, formatter);
-  return formatter.format(value);
+  return getGroupFormatter(decimals).format(value);
 }
 
 export default function CountUp({

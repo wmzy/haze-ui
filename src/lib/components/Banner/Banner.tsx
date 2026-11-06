@@ -2,10 +2,10 @@ import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { StatusColor } from '../../utils/status-skin';
 
-import { useControl } from 'react-use-control';
-
 import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
 import { calloutContent, calloutSurface } from '../../utils/callout-skin';
+
+import CalloutShell from '../../utils/callout-shell';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -30,36 +30,23 @@ export default function Banner({
   className,
   ref,
 }: BannerProps) {
-  const [visible, setVisible] = useControl(visibleControl, true);
   const strings = useStrings('banner');
 
-  if (!visible) return null;
-
-  const handleClose = () => {
-    setVisible(false);
-    onClose?.();
-  };
-
   return (
-    <div
-      ref={ref}
-      data-slot='banner'
-      x-class={[calloutSurface, banner, colors[color], className]}
+    <CalloutShell
+      visible={visibleControl}
+      onClose={onClose}
+      dismissible={onClose !== undefined}
       role={statusLiveRoles[color]}
+      slotName='banner'
+      surfaceClassName={[calloutSurface, banner, colors[color], className]}
+      contentClassName={calloutContent}
+      closeClassName={[dismissBtn, closeBtnSize]}
+      closeLabel={strings.close}
+      ref={ref}
     >
-      <div data-slot='content' x-class={[calloutContent]}>{children}</div>
-      {onClose && (
-        <button
-          data-slot='close'
-          x-class={[dismissBtn, closeBtnSize]}
-          type="button"
-          onClick={handleClose}
-          aria-label={strings.close}
-        >
-          ×
-        </button>
-      )}
-    </div>
+      {children}
+    </CalloutShell>
   );
 }
 

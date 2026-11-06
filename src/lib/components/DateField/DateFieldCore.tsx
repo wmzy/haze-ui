@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { SegmentSpec } from '../../utils/segmented-field';
 
 import { formatDate, getDaysInMonth, parseCivilDate } from '../../utils/date-math';
+import { cachedFormatter } from '../../utils/intl-cache';
 
 import SegmentedField from '../../utils/segmented-field';
 
@@ -39,19 +40,15 @@ const serializeDate = (values: (number | null)[]): string | null => {
 };
 
 /* Intl.DateTimeFormat construction is comparatively expensive; the
- * month-name formatter caches one instance per locale (undefined
- * normalizes to the 'default' key — CountUp's per-decimals cache is
- * the precedent). */
-const monthFormatters = new Map<string, Intl.DateTimeFormat>();
-
-function getMonthFormatter(locale: string | undefined): Intl.DateTimeFormat {
-  const key = locale ?? 'default';
-  const cached = monthFormatters.get(key);
-  if (cached) return cached;
-  const formatter = new Intl.DateTimeFormat(locale, { month: 'long' });
-  monthFormatters.set(key, formatter);
-  return formatter;
-}
+ * month-name formatter caches one instance per locale (the undefined
+ * locale normalizes to the 'default' cache key at the call site —
+ * CountUp's per-decimals cache is the sibling; both Maps live in
+ * utils/intl-cache). */
+const getMonthFormatter = cachedFormatter((key: string) =>
+  new Intl.DateTimeFormat(key === 'default' ? undefined : key, {
+    month: 'long',
+  })
+);
 
 export default function DateFieldCore({
   value,
@@ -69,7 +66,7 @@ export default function DateFieldCore({
     ? [parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate()]
     : [null, null, null];
 
-  const monthFormatter = getMonthFormatter(locale);
+  const monthFormatter = getMonthFormatter(locale ?? 'default');
   const segments: SegmentSpec[] = [
     {
       kind: 'numeric',

@@ -3,8 +3,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { css } from '@linaria/core';
 import { useCallback, useId, useState } from 'react';
 
-import { useClipboard } from '../../hooks/useClipboard';
-import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
+import { CopyIconButton } from '../../utils/copy-icon-button';
 import { DisclosureChevron } from '../../utils/disclosure-chevron';
 import { chevronPair } from '../../utils/timeline-skin';
 
@@ -347,32 +346,25 @@ export default function JsonView({
     });
   }, []);
 
-  const { copied, copy } = useClipboard(COPIED_FEEDBACK_MS);
-
-  const handleCopy = () => {
+  const copyValue = () => {
     // Circular or non-JSON values make stringify throw — degrade to
     // String(data) so the button never explodes on exotic input.
-    let text: string;
     try {
-      text = JSON.stringify(data, null, 2);
+      return JSON.stringify(data, null, 2);
     } catch {
-      text = String(data);
+      return String(data);
     }
-    void copy(text);
   };
 
   return (
     <div data-slot="json-view" x-class={[wrapper, className]} {...rest}>
       {copyable && (
-        <button
-          type='button'
-          data-slot="copy-button"
-          x-class={[copyBtn, copied && copyBtnCopied]}
-          aria-label={copyLabel ?? strings.copy}
-          onClick={handleCopy}
-        >
-          <CopyFeedbackGlyph copied={copied} />
-        </button>
+        <CopyIconButton
+          label={copyLabel ?? strings.copy}
+          getValue={copyValue}
+          className={copyBtn}
+          copiedClassName={copyBtnCopied}
+        />
       )}
       <JsonNode
         name={null}

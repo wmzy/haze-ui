@@ -5,7 +5,7 @@ import type { VirtualListHandle } from '../VirtualList';
 import type { MenuClassNames } from './MenuContext';
 
 import { css } from '@linaria/core';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel } from '../../utils/floating';
@@ -15,6 +15,7 @@ import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
 import { PICKER_ROW_HEIGHT } from '../../utils/picker-trigger';
 import { reactNodeText } from '../../utils/text';
+import { usePendingFocus } from '../../utils/use-pending-focus';
 import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 import { VirtualList } from '../VirtualList';
 
@@ -221,41 +222,30 @@ export default function Menu({
   }, [virtualized, items, hasGroups]);
 
   const listRef = useRef<VirtualListHandle>(null);
-  // Row the next commit must focus. Keyboard focus moves resolve here:
-  // the target row may live outside the mounted window, so scrollToIndex
-  // shifts the window first and this effect focuses the row once it is
-  // mounted — the window shift and this request land in the same commit
-  // (VirtualList syncs its internal offset synchronously inside
-  // scrollToIndex). `attempt` bumps on every request so a repeated
-  // index still re-runs the effect (Tree's pendingFocusKey pattern).
-  const focusAttemptRef = useRef(0);
-  const [pendingFocus, setPendingFocus] = useState<{
-    index: number;
-    attempt: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (pendingFocus === null) return;
+  // Row the next commits must focus, resolved through the shared
+  // pending-focus loop: the target row may live outside the mounted
+  // window, so scrollToIndex shifts the window first and the retry
+  // effect focuses the row once it mounts — VirtualList syncs its
+  // internal offset synchronously inside scrollToIndex, so the window
+  // shift and the focus attempt land in the same commit, and a row
+  // that is still not mounted stays queued, retried after every
+  // commit until the item exists (Tree's keyboard focus contract).
+  const pendingFocus = usePendingFocus((index: number) => {
     const panel = panelRef.current;
-    if (!panel) return;
-    const row = panel.querySelector<HTMLElement>(
-      `[data-index="${pendingFocus.index}"]`
-    );
+    if (!panel) return false;
+    const row = panel.querySelector<HTMLElement>(`[data-index="${index}"]`);
     const item = row?.querySelector<HTMLElement>(
       '[role^="menuitem"]:not([disabled])'
     );
-    // Not mounted (the scroll could not move yet): retried on the next
-    // focus request — each request carries a fresh `attempt`.
-    if (!item) return;
+    if (!item) return false; // not mounted — retried on the next commit
     item.focus();
-    setPendingFocus(null);
-  }, [pendingFocus]);
+    return true;
+  });
 
   /** Scroll the row into the window and focus it after the commit. */
   function focusVirtualRow(index: number) {
     listRef.current?.scrollToIndex(index, 'auto');
-    focusAttemptRef.current += 1;
-    setPendingFocus({ index, attempt: focusAttemptRef.current });
+    pendingFocus.request(index);
   }
 
   // Typeahead buffer of the virtualized level — the mechanism shared

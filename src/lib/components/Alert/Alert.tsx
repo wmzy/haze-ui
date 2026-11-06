@@ -2,10 +2,10 @@ import type { ReactNode, Ref } from 'react';
 import type { ControlOrValue } from 'react-use-control';
 import type { StatusColor } from '../../utils/status-skin';
 
-import { useControl } from 'react-use-control';
-
 import { dismissBtn, statusLiveRoles } from '../../utils/status-skin';
 import { calloutContent, calloutSurface } from '../../utils/callout-skin';
+
+import CalloutShell from '../../utils/callout-shell';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -32,36 +32,23 @@ export default function Alert({
   children,
   ref,
 }: AlertProps) {
-  const [visible, setVisible] = useControl(visibleControl, true);
   const strings = useStrings('alert');
 
-  if (!visible) return null;
-
-  const handleClose = () => {
-    setVisible(false);
-    onClose?.();
-  };
-
   return (
-    <div
-      ref={ref}
+    <CalloutShell
+      visible={visibleControl}
+      onClose={onClose}
+      dismissible={closable}
       role={statusLiveRoles[color]}
-      data-slot='alert'
-      x-class={[calloutSurface, base, colors[color], borders[color], className]}
+      slotName='alert'
+      surfaceClassName={[calloutSurface, base, colors[color], borders[color], className]}
+      contentClassName={calloutContent}
+      closeClassName={[dismissBtn]}
+      closeLabel={strings.close}
+      ref={ref}
     >
-      <div data-slot='content' x-class={[calloutContent]}>{children}</div>
-      {closable && (
-        <button
-          type='button'
-          data-slot='close'
-          x-class={[dismissBtn]}
-          aria-label={strings.close}
-          onClick={handleClose}
-        >
-          ×
-        </button>
-      )}
-    </div>
+      {children}
+    </CalloutShell>
   );
 }
 

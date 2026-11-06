@@ -4,10 +4,9 @@ import { useRef } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
-import { useClipboard } from '../../hooks/useClipboard';
 import { useStreamingAnnouncements } from '../../hooks/useStreamingAnnouncements';
 import { srOnly } from '../../utils/sr-only';
-import { COPIED_FEEDBACK_MS, CopyFeedbackGlyph } from '../../utils/copy-glyph';
+import { CopyIconButton } from '../../utils/copy-icon-button';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 
 type ChatMessageRole = 'user' | 'assistant' | 'system';
@@ -219,7 +218,6 @@ export default function ChatMessage({
   const strings = useStrings('chatMessage');
   const chatStrings = useStrings('chat');
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const { copied, copy } = useClipboard(COPIED_FEEDBACK_MS);
   const showActions = copyable || actions !== undefined;
 
   // Screen-reader mirror for `streaming` assistant messages (see the
@@ -233,10 +231,6 @@ export default function ChatMessage({
     active: streaming,
     getText: () => visibleText(bubbleRef.current),
   });
-
-  const handleCopy = () => {
-    void copy(visibleText(bubbleRef.current));
-  };
 
   return (
     <div
@@ -276,15 +270,12 @@ export default function ChatMessage({
         {showActions && (
           <div data-slot='actions' x-class={[actionsRow]}>
             {copyable && (
-              <button
-                type='button'
-                data-slot='copy-button'
-                x-class={[quietIconButton, actionBtn, copied && actionBtnCopied]}
-                onClick={handleCopy}
-                aria-label={chatStrings.copy}
-              >
-                <CopyFeedbackGlyph copied={copied} />
-              </button>
+              <CopyIconButton
+                label={chatStrings.copy}
+                getValue={() => visibleText(bubbleRef.current)}
+                className={[quietIconButton, actionBtn]}
+                copiedClassName={actionBtnCopied}
+              />
             )}
             {actions}
           </div>

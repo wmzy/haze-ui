@@ -4,22 +4,17 @@ import type { ControlOrValue } from 'react-use-control';
 import type { AgenticStatus } from '../../utils/agentic-status';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useRef, useState } from 'react';
-import { useControl } from 'react-use-control';
+import { useEffect, useRef, useState } from 'react';
 
 import { usePrevious } from '../../hooks/usePrevious';
-import { useOpenWithChange } from '../../utils/floating';
 
 import { useStrings } from '../LocaleProvider';
 import { srOnly } from '../../utils/sr-only';
 import { agenticStatusLabel } from '../../utils/agentic-status';
-import { DisclosureChevron } from '../../utils/disclosure-chevron';
+import { TimelineDisclosure } from '../../utils/timeline-disclosure';
 import {
-  chevronPair,
   disclosureMonoBody,
-  headerButton,
   itemStacked,
-  panelBase,
   statusDot,
   statusDotDone,
   statusDotError,
@@ -114,20 +109,17 @@ export function TraceItem({
   className,
   ...rest
 }: TraceItemProps) {
-  const [open, setOpen] = useControl(openControl, false);
-  const handleSetOpen = useOpenWithChange(open, setOpen, onOpenChange);
   // Screen-reader status words come from the toolCallCard locale section
   // — the same localized copy ToolCallCard's status label ships, so a
   // localized app announces localized words. Trace itself carries no
   // section of its own: consumers word step titles (e.g. "Searching…")
   // for visible status copy, the shadcn Trace guidance.
   const strings = useStrings('toolCallCard');
-  const panelId = useId();
-  // A toggle with nothing to reveal would be a dead button — only a
-  // line carrying details becomes one.
+  // A line carrying no details renders as a plain row; one carrying
+  // details stacks the shared disclosure header above the panel
+  // (itemStacked in utils/timeline-skin). The dead-button guard itself
+  // lives in the shared TimelineDisclosure.
   const expandable = details != null;
-
-  const toggleOpen = () => handleSetOpen(!open);
 
   // Screen-reader mirror of the status (StreamingText/ChatMessage
   // pattern): a transition rewrites the hidden role='status' region
@@ -181,41 +173,15 @@ export function TraceItem({
       <span data-slot='live-region' role='status' x-class={[srOnly]}>
         {announced}
       </span>
-      {expandable ? (
-        <button
-          type='button'
-          data-slot='header'
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={toggleOpen}
-          x-class={[headerButton]}
-        >
-          {indicator}
-          {titleNode}
-          <span
-            data-slot='icon'
-            aria-hidden='true'
-            x-class={[chevronPair.closed, open && chevronPair.open]}
-          >
-            <DisclosureChevron size={12} />
-          </span>
-        </button>
-      ) : (
-        <>
-          {indicator}
-          {titleNode}
-        </>
-      )}
-      {expandable && (
-        <div
-          data-slot='panel'
-          id={panelId}
-          hidden={!open}
-          x-class={[panelBase]}
-        >
-          {details}
-        </div>
-      )}
+      <TimelineDisclosure
+        hasPanel={expandable}
+        open={openControl}
+        onOpenChange={onOpenChange}
+        indicator={indicator}
+        body={titleNode}
+      >
+        {details}
+      </TimelineDisclosure>
     </div>
   );
 }

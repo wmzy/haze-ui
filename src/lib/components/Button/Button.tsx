@@ -1,9 +1,9 @@
 import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 
 import { useBusyPressable } from '../../hooks/useBusyPressable';
+import { useResolvedButtonSize } from '../../utils/button-size';
 import { focusRingVisible } from '../../utils/focus-ring';
 import Spinner from '../Spinner/Spinner';
-import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import {
   base,
@@ -82,11 +82,9 @@ export default function Button<T extends ElementType = 'button'>({
   disabled: disabledProp,
   ...rest
 }: ButtonProps<T>) {
-  // Three tiers: explicit prop → ConfigProvider default → built-in 'md'.
-  // The built-in stays last so a missing provider renders exactly what
-  // Button rendered before the wiring (byte-identical).
-  const config = useConfigDefaults('Button');
-  const size = sizeProp ?? config.size ?? 'md';
+  // Three-tier size resolution (prop → ConfigProvider default → 'md')
+  // lives in utils/button-size, shared with CopyButton.
+  const size = useResolvedButtonSize(sizeProp);
   const sizeClass = square ? squareSizes[size] : sizes[size];
 
   const busy = Boolean(loadingProp);

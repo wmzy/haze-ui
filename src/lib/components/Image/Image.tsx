@@ -6,22 +6,15 @@ import type {
   SyntheticEvent,
 } from 'react';
 
+import type { ImagePreviewConfig } from './image-preview-config';
+
 import { css } from '@linaria/core';
 import { useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import ImagePreview from './ImagePreview';
 import { useImageGallery } from './ImageGalleryContext';
-
-/**
- * Preview overlay configuration: absent/false disables the preview; each
- * flag opts out of one control (default enabled), mirroring antd's
- * PreviewOperations config.
- */
-type ImagePreviewConfig = {
-  zoom?: boolean;
-  rotate?: boolean;
-};
+import { resolveImagePreviewConfig } from './image-preview-config';
 
 type ImageProps = {
   src: string;
@@ -84,10 +77,8 @@ export default function Image({
   ...rest
 }: ImageProps) {
   const [error, setError] = useState(false);
-  const previewEnabled = preview !== false;
-  const previewOptions = typeof preview === 'object' ? preview : {};
-  const zoomEnabled = previewEnabled && previewOptions.zoom !== false;
-  const rotateEnabled = previewEnabled && previewOptions.rotate !== false;
+  const { enabled: previewEnabled, zoom: zoomEnabled, rotate: rotateEnabled } =
+    resolveImagePreviewConfig(preview);
   const [, setPreviewOpen, previewOpenCtrl] = useControl(undefined, false);
 
   // Gallery delegation (ImagePreviewGroup): inside a group the child

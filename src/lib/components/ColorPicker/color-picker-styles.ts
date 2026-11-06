@@ -46,13 +46,15 @@ export const svArea = css`
 `;
 
 /**
- * Thumb ring over the SV surface. The white border + dark halo is a
- * functional exception to the token rule — the thumb must read over
- * EVERY color, bright or dark, in both themes (same class of exception
- * as the hue spectrum below).
+ * The thumb-ring recipe shared by svThumb and trackThumb. The white
+ * border + dark halo is a functional exception to the token rule — the
+ * thumb must read over EVERY color, bright or dark, in both themes
+ * (same class of exception as the hue spectrum below). Kept as a plain
+ * const declarations string: a const inlines verbatim into both css
+ * templates below, whereas interpolating a css-tagged class into
+ * another css template silently drops its declarations.
  */
-export const svThumb = css`
-  position: absolute;
+const thumbRing = `
   width: var(--haze-space-3);
   height: var(--haze-space-3);
   border: 2px solid #fff;
@@ -61,6 +63,14 @@ export const svThumb = css`
   transform: translate(-50%, -50%);
   pointer-events: none;
 `;
+
+/**
+ * Thumb ring over the SV surface (the shared thumbRing recipe; see its
+ * comment for the functional color exception).
+ */
+export const svThumb = css`
+  position: absolute;
+${thumbRing}`;
 
 /** Shared shape of the hue/alpha rails. The keyboard focus ring
  * (utils/focus-ring) composes at the call site; the base outline reset
@@ -108,18 +118,12 @@ export const trackFill = css`
   border-radius: inherit;
 `;
 
-/** Thumb on the hue/alpha rails (svThumb's ring recipe, rail-sized). */
+/** Thumb on the hue/alpha rails (svThumb's ring recipe, rail-sized,
+ * pinned to the rail's vertical center). */
 export const trackThumb = css`
   position: absolute;
   top: 50%;
-  width: var(--haze-space-3);
-  height: var(--haze-space-3);
-  border: 2px solid #fff;
-  border-radius: var(--haze-radius-full);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-`;
+${thumbRing}`;
 
 /** Format-aware color code input (Core's text input recipe). */
 export const valueInput = css`

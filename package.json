@@ -236,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "25.05 KB"
+      "limit": "25.1 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",

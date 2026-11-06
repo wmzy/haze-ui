@@ -26,6 +26,7 @@ import {
   PARK_DELTA,
 } from '../../utils/grip-gesture';
 import { gripBase, gripHorizontal, gripVertical } from '../../utils/grip-skin';
+import { clamp } from '../../utils/math';
 import { capturePointer } from '../../utils/pointer-capture';
 
 /**
@@ -91,15 +92,6 @@ const KEYBOARD_STEP = 16;
 const noop = (): void => undefined;
 
 const EMPTY_GESTURE_IDS: ReadonlySet<string> = new Set<string>();
-
-function clampRange(
-  value: number,
-  min: number,
-  max: number | undefined
-): number {
-  const capped = Math.max(value, min);
-  return max === undefined ? capped : Math.min(capped, max);
-}
 
 /* Adjacent-panel resolution happens on the DOM: panels and handles are
    siblings inside the group container, so `previousElementSibling` /
@@ -496,17 +488,17 @@ function resizePatch(
       lead.max ?? Number.POSITIVE_INFINITY,
       pairSum - trail.min
     );
-    const nextLead = clampRange(lead.start + delta, lo, hi);
+    const nextLead = clamp(lead.start + delta, lo, hi);
     patch[lead.id] = nextLead;
     patch[trail.id] = pairSum - nextLead;
     return patch;
   }
   if (lead !== null) {
-    patch[lead.id] = clampRange(lead.start + delta, lead.min, lead.max);
+    patch[lead.id] = clamp(lead.start + delta, lead.min, lead.max ?? Infinity);
     return patch;
   }
   if (trail !== null) {
-    patch[trail.id] = clampRange(trail.start - delta, trail.min, trail.max);
+    patch[trail.id] = clamp(trail.start - delta, trail.min, trail.max ?? Infinity);
     return patch;
   }
   return patch;
