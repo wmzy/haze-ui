@@ -1,0 +1,1 @@
+function e(e){if(e==null||!Number.isFinite(e)||e<0)return``;if(e<1024)return`${e} B`;let t=[`KB`,`MB`,`GB`,`TB`],n=e,r=-1;do n/=1024,r+=1;while(n>=1024&&r<t.length-1);let i=n>=100?0:n>=10?1:2;return`${n.toFixed(i)} ${t[r]}`}function t(e){let t=e.lastIndexOf(`.`);return t<=0||t===e.length-1?``:e.slice(t+1).toUpperCase()}export{t as n,e as t};

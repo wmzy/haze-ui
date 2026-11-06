@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./classnames-Dqeo2v11.js";var n=`haze-state-option-skin__stateOptionRow`,r=e(),i=`haze-Kbd__base`,a={sm:`haze-Kbd__sm`,md:`haze-Kbd__md`};function o({size:e=`md`,className:n,ref:o,...s}){return(0,r.jsx)(`kbd`,{ref:o,"data-slot":`kbd`,...s,className:t([i,a[e],n])})}export{n,o as t};

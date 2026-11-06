@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{L as t,y as n}from"./index-DC-rFkCq.js";var r=e();function i({size:e,ref:i,...a}){let o=t(`ButtonLink`),s=e??o.size;return(0,r.jsx)(n,{as:`a`,ref:i,size:s,...a})}export{i as t};

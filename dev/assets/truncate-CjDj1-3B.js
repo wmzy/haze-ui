@@ -1,0 +1,1 @@
+var e=`haze-truncate__truncate`;export{e as t};

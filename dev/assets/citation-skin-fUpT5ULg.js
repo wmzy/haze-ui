@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./classnames-Dqeo2v11.js";import{t as n}from"./sr-only-DfJzEaRa.js";var r=e();function i({className:e,...i}){return(0,r.jsx)(`span`,{"data-slot":`visually-hidden`,...i,className:t([n,e])})}var a=`haze-citation-skin__citationIndexBadge`,o=`haze-citation-skin__citationLink`;export{o as n,i as r,a as t};
