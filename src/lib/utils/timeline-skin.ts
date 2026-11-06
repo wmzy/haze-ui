@@ -61,6 +61,14 @@ export const timelineDescription = css`
   margin-top: var(--haze-space-1);
 `;
 
+/** Struck-through muted label — the completion pair completed tasks
+ * (TaskList's checked title) and skipped steps (Plan's skipped label)
+ * wore as byte-identical local copies. */
+export const labelStruck = css`
+  color: var(--haze-color-text-muted);
+  text-decoration: line-through;
+`;
+
 /**
  * Status-marker geometry shared by the agentic line families (Trace,
  * StepTimeline, Plan): the round 20px ring cell that centers its

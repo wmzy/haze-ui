@@ -9,7 +9,7 @@ import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
 
 import { dangerRemapTokens } from '../../utils/danger-remap';
-import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
+import { dialogBackdrop, dialogPanelDeltas, dialogPanelMotion } from '../../utils/dialog-skin';
 import { panelSurface } from '../../utils/panel-skin';
 import { useNativeDialogShell } from '../../utils/native-dialog';
 
@@ -28,25 +28,6 @@ type ConfirmDialogProps = {
   ComponentPropsWithoutRef<'dialog'>,
   'children' | 'title' | 'open' | 'onClose' | 'onCancel'
 >;
-
-/**
- * Sheet deltas on the shared panel surface (utils/panel-skin): the modal
- * lane behind Dialog's component tokens — declaration-for-declaration
- * Dialog's `panelDeltas` (`--haze-dialog-padding`/`--haze-dialog-width`),
- * so theming Dialog themes ConfirmDialog's sheet identically. Border,
- * radius, elevation, typography and the forced-colors arm come from the
- * surface — the hand-rolled sheet this replaces carried no
- * forced-colors border at all. The enter/exit animations and the
- * `::backdrop` scrim are the shared dialog-skin companions
- * (`dialogPanelMotion`/`dialogBackdrop`), driven by the native-dialog
- * shell's data-state on the panel itself; the showModal top layer
- * replaces the old self-drawn mask div's z-index tier.
- */
-const sheet = css`
-  padding: var(--haze-dialog-padding, var(--haze-space-6));
-  max-width: var(--haze-dialog-width, 480px);
-  width: 100%;
-`;
 
 const header = css`
   margin-bottom: var(--haze-space-4);
@@ -123,7 +104,7 @@ export default function ConfirmDialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[panelSurface, sheet, dialogPanelMotion, dialogBackdrop, className]}
+      x-class={[panelSurface, dialogPanelDeltas, dialogPanelMotion, dialogBackdrop, className]}
       {...rest}
     >
       {title && (

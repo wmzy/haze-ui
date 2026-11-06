@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { createRef } from 'react';
+import { createRef, type ChangeEvent, type ChangeEventHandler } from 'react';
 import userEvent from '@testing-library/user-event';
 
 import PasswordInput from './PasswordInput';
@@ -16,9 +16,9 @@ describe('PasswordInput', () => {
     expect(container.querySelector('input')).toHaveValue('secret');
   });
 
-  it('applies className', () => {
+  it('applies className to the input (Input-family contract)', () => {
     const { container } = render(<PasswordInput className="custom" />);
-    expect(container.firstChild).toHaveClass('custom');
+    expect(container.querySelector('input')).toHaveClass('custom');
   });
 
   it('forwards native attributes to the inner input', () => {
@@ -33,12 +33,26 @@ describe('PasswordInput', () => {
     expect(input).toHaveAttribute('inputmode', 'text');
   });
 
-  it('calls onChange on input change', async () => {
+  it('calls onChange with the native change event', async () => {
     const user = userEvent.setup();
-    const onChange = vi.fn();
+    const onChange = vi.fn<ChangeEventHandler<HTMLInputElement>>();
     const { container } = render(<PasswordInput onChange={onChange} />);
-    await user.type(container.querySelector('input')!, 'a');
-    expect(onChange).toHaveBeenCalled();
+    const input = container.querySelector('input')!;
+    await user.type(input, 'a');
+    // Input-family contract: the public onChange is the native handler —
+    // the payload is the DOM event, the value rides e.target.value.
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const event = onChange.mock.calls[0]![0];
+    expect(event.target).toBe(input);
+    expect(event.target.value).toBe('a');
+  });
+
+  it('keeps the displayed value in sync when onChange is provided', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<PasswordInput onChange={() => undefined} />);
+    const input = container.querySelector('input')!;
+    await user.type(input, 'ab');
+    expect(input).toHaveValue('ab');
   });
 
   it('toggles password visibility', async () => {
@@ -97,6 +111,29 @@ describe('PasswordInputCore', () => {
     const { container } = render(<PasswordInputCore value="" onChange={onChange} />);
     await user.type(container.querySelector('input')!, 'a');
     expect(onChange).toHaveBeenCalledWith('a');
+  });
+
+  it('passes the native change event through onNativeChange after onChange', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    // capture e.target.value at dispatch time — the controlled value=""
+    // resets the DOM before post-await assertions could read it live
+    const onNativeChange = vi.fn(
+      (event: ChangeEvent<HTMLInputElement>) => event.target.value,
+    );
+    const { container } = render(
+      <PasswordInputCore value="" onChange={onChange} onNativeChange={onNativeChange} />
+    );
+    const input = container.querySelector('input')!;
+    await user.type(input, 'a');
+    expect(onChange).toHaveBeenCalledWith('a');
+    expect(onNativeChange).toHaveBeenCalledTimes(1);
+    expect(onNativeChange).toHaveReturnedWith('a');
+    expect(onNativeChange.mock.calls[0]![0].target).toBe(input);
+    // the value channel fires first, then the native passthrough
+    expect(onChange.mock.invocationCallOrder[0]!).toBeLessThan(
+      onNativeChange.mock.invocationCallOrder[0]!,
+    );
   });
 
   it('toggles visibility without touching onChange', async () => {

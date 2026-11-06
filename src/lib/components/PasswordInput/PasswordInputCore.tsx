@@ -10,18 +10,16 @@ import { Eye, EyeOff } from '../../icons';
 type PasswordInputCoreProps = {
   value: string;
   onChange: (value: string) => void;
+  /** Native change event passthrough — invoked with the DOM event after
+   * `onChange`. Kept out of `rest` on purpose so the controlled `onChange`
+   * callback above can never be overridden by a spread. */
+  onNativeChange?: ComponentPropsWithoutRef<'input'>['onChange'];
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  /** Forwarded to the inner password `<input>` (not the wrapper div). */
+  /** Forwarded to the inner password `<input>`. */
   ref?: Ref<HTMLInputElement>;
 } & Omit<ComponentPropsWithoutRef<'input'>, 'type' | 'value' | 'onChange' | 'size'>;
-
-const wrapper = css`
-  display: block;
-  width: 100%;
-  font-family: var(--haze-font-sans);
-`;
 
 const toggle = css`
   /* InputCore sections are pointer-events: none by default; this is an
@@ -50,6 +48,7 @@ const toggle = css`
 export default function PasswordInputCore({
   value,
   onChange,
+  onNativeChange,
   placeholder,
   disabled,
   className,
@@ -59,40 +58,46 @@ export default function PasswordInputCore({
   const [visible, setVisible] = useState(false);
   const strings = useStrings('passwordInput');
 
+  /* No wrapper element of its own: the toggle is an InputCore
+   * rightSection, so InputCore's span[data-slot='field'] is the root —
+   * the same DOM shape as Input with a rightSection. Its field shell
+   * already carries the block/width/font-family chrome the old wrapper
+   * duplicated, and `className` lands on the `<input>` like every other
+   * field Core. */
   return (
-    <div data-slot="password-input" x-class={[wrapper, className]}>
-      <InputCore
-        ref={ref}
-        value={value}
-        onChange={onChange}
-        type={visible ? 'text' : 'password'}
-        aria-label={strings.label}
-        placeholder={placeholder}
-        disabled={disabled}
-        {...rest}
-        rightSection={
-          <button
-            data-slot="toggle-visibility"
-            data-section-pointer="auto"
-            x-class={[toggle]}
-            type="button"
-            onClick={() => setVisible(!visible)}
-            tabIndex={-1}
-            aria-label={visible ? strings.hide : strings.show}
-          >
-            {/* 16px lucide glyph at the default stroke-2 — the in-field
-               affordance convention (CopyGlyph's Check is the 14px
-               compact-button tier); tinted through currentColor so the
-               text-muted/hover-text pair above stays the single source. */}
-            {visible ? (
-              <EyeOff size={16} aria-hidden='true' focusable='false' />
-            ) : (
-              <Eye size={16} aria-hidden='true' focusable='false' />
-            )}
-          </button>
-        }
-      />
-    </div>
+    <InputCore
+      ref={ref}
+      value={value}
+      onChange={onChange}
+      onNativeChange={onNativeChange}
+      type={visible ? 'text' : 'password'}
+      aria-label={strings.label}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={className}
+      {...rest}
+      rightSection={
+        <button
+          data-slot="toggle-visibility"
+          data-section-pointer="auto"
+          x-class={[toggle]}
+          type="button"
+          onClick={() => setVisible(!visible)}
+          tabIndex={-1}
+          aria-label={visible ? strings.hide : strings.show}
+        >
+          {/* 16px lucide glyph at the default stroke-2 — the in-field
+             affordance convention (CopyGlyph's Check is the 14px
+             compact-button tier); tinted through currentColor so the
+             text-muted/hover-text pair above stays the single source. */}
+          {visible ? (
+            <EyeOff size={16} aria-hidden='true' focusable='false' />
+          ) : (
+            <Eye size={16} aria-hidden='true' focusable='false' />
+          )}
+        </button>
+      }
+    />
   );
 }
 

@@ -14,6 +14,7 @@ import { fieldSizes } from '../../utils/field-skin';
 import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
 import {
   dropLastPickerValue,
+  pickerCommitKey,
   pickerMaxCountReached,
   pickerRowDisabled,
   pickerShowsCreateRow,
@@ -626,62 +627,9 @@ export default function SelectFloating<T extends string | number = string>({
     returnFocus();
   };
 
-  type CommitHighlightedOptions = {
-    /**
-     * The trigger button's contract: Space joins Enter as a commit key
-     * (' ' arrives from real browsers; user-event's {Space} reports
-     * the legacy 'Space' key name — accept both), the commit stays
-     * gated on an open panel with a highlighted row so an ungated
-     * Enter/Space falls through to the native click (with no
-     * highlight, a fresh open, the panel keeps toggling like any
-     * button), the gate's preventDefault is what suppresses that
-     * activation (the follow-up click would run onTriggerClick and
-     * close the panel mid-selection), and Escape drops its
-     * suppression (a button keydown has no default worth
-     * suppressing).
-     */
-    button?: boolean;
-    /**
-     * Refocus the trigger after the Escape close — the panel search
-     * input, whose focus does not live in the field and must be
-     * handed back.
-     */
-    returnFocus?: boolean;
-  };
-
-  /** The Enter/Escape arms the three keydown sites share after the
-   * `handleNavigationKey` skeleton: Enter commits the highlighted row
-   * (option or create row — both are plain rows in
-   * `navigableOptions`), Escape closes the panel. Returns whether the
-   * event was consumed, so site keys (Backspace everywhere, the
-   * button's ungated fall-through) compose after it. The input sites
-   * always suppress Enter — an unhandled Enter in an input would
-   * submit an enclosing form. */
-  const commitHighlighted = (
-    e: { readonly key: string; preventDefault: () => void },
-    {
-      button: asButton = false,
-      returnFocus: refocus = false,
-    }: CommitHighlightedOptions = {}
-  ): boolean => {
-    const commit =
-      e.key === 'Enter' ||
-      (asButton && (e.key === ' ' || e.key === 'Space'));
-    if (commit && (!asButton || (open && navigableOptions[activeIndex]))) {
-      e.preventDefault();
-      if (navigableOptions[activeIndex]) {
-        choose(navigableOptions[activeIndex].value);
-      }
-      return true;
-    }
-    if (e.key === 'Escape') {
-      if (!asButton) e.preventDefault();
-      setOpen(false);
-      if (refocus) returnFocus();
-      return true;
-    }
-    return false;
-  };
+  /** The close path of the keydown sites' shared Enter/Escape arms
+   * (utils/picker-selection's pickerCommitKey). */
+  const closePanel = () => setOpen(false);
 
   const handleKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
     // The shared Arrow/Home/End skeleton (clamped highlight + open from
@@ -692,7 +640,17 @@ export default function SelectFloating<T extends string | number = string>({
     // scrolling the open panel, and searchable mode types into the
     // panel's search input — the single-mode native select keeps its
     // own typeahead.
-    if (commitHighlighted(e, { button: true })) return;
+    if (
+      pickerCommitKey(e, {
+        items: navigableOptions,
+        activeIndex,
+        onCommit: choose,
+        onClose: closePanel,
+        button: true,
+        open,
+      })
+    )
+      return;
     if (e.key === 'Backspace') {
       // Keyboard parity for the pointer-only affordances: multiple
       // drops the most recently selected chip (utils/
@@ -719,7 +677,16 @@ export default function SelectFloating<T extends string | number = string>({
   // keyboard twin).
   const handleTagsKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (handleNavigationKey(e)) return;
-    if (commitHighlighted(e)) return;
+    if (
+      pickerCommitKey(e, {
+        items: navigableOptions,
+        activeIndex,
+        onCommit: choose,
+        onClose: closePanel,
+        suppressDefaults: true,
+      })
+    )
+      return;
     if (e.key === 'Backspace' && query === '' && selected.length > 0) {
       e.preventDefault();
       onChange(dropLastPickerValue(selected));
@@ -733,7 +700,14 @@ export default function SelectFloating<T extends string | number = string>({
   // typing filters through onChange.
   const handleSearchKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (handleNavigationKey(e)) return;
-    commitHighlighted(e, { returnFocus: true });
+    pickerCommitKey(e, {
+      items: navigableOptions,
+      activeIndex,
+      onCommit: choose,
+      onClose: closePanel,
+      suppressDefaults: true,
+      refocus: returnFocus,
+    });
   };
 
   // One option row, shared by the plain list and the virtualized

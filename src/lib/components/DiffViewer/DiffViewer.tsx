@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
-import { monoPanelBase } from '../../utils/mono-panel-skin';
+import { monoPanelBase, monoPanelHeader } from '../../utils/mono-panel-skin';
 
 type DiffLine = {
   type: 'added' | 'removed' | 'unchanged';
@@ -17,15 +17,12 @@ type DiffViewerProps = {
   className?: string;
 };
 
-// Outer chrome shared with LogViewer (utils/mono-panel-skin); the
-// header/body/diffLine classes below are family deltas.
-const header = css`
-  display: flex;
-  padding: var(--haze-space-2) var(--haze-space-3);
-  background: var(--haze-color-bg-muted);
-  font-size: var(--haze-text-xs);
+// Outer chrome and header band shared with LogViewer
+// (utils/mono-panel-skin); the classes below are family deltas. The
+// header keeps only its muted text color — text-xs inherits from the
+// monoPanelBase wrapper.
+const headerMeta = css`
   color: var(--haze-color-text-muted);
-  border-bottom: 1px solid var(--haze-color-border);
 `;
 
 const body = css`
@@ -148,7 +145,7 @@ export default function DiffViewer({ oldValue, newValue, className }: DiffViewer
 
   return (
     <div data-slot="diff-viewer" x-class={[monoPanelBase, className]}>
-      <div data-slot="header" x-class={[header]}>{strings.header}</div>
+      <div data-slot="header" x-class={[monoPanelHeader, headerMeta]}>{strings.header}</div>
       <div data-slot="body" x-class={[body]}>
         {lines.map((line, i) => (
           <div key={i} data-slot="line" x-class={[diffLine, line.type === 'added' && added, line.type === 'removed' && removed]}>

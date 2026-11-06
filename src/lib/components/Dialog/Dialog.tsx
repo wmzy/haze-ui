@@ -7,7 +7,7 @@ import { useId } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useNativeDialogShell } from '../../utils/native-dialog';
-import { dialogBackdrop, dialogPanelMotion } from '../../utils/dialog-skin';
+import { dialogBackdrop, dialogPanelDeltas, dialogPanelMotion } from '../../utils/dialog-skin';
 import { panelSurfaceLifted } from '../../utils/panel-skin';
 import { mergeClassNames, useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
@@ -93,20 +93,6 @@ type DialogProps = {
   ref?: Ref<DialogHandle>;
 };
 
-/**
- * Panel deltas on the lifted modal surface (`panelSurfaceLifted`,
- * utils/panel-skin): the modal lane's padding and width bounds, both
- * behind Dialog's component tokens. Border/radius/shadow chrome,
- * typography, the focus ring and both forced-colors arms come from
- * the shared surface — declaration-for-declaration the recipe the
- * hand-rolled overlay class carried before it converged.
- */
-const panelDeltas = css`
-  padding: var(--haze-dialog-padding, var(--haze-space-6));
-  max-width: var(--haze-dialog-width, 480px);
-  width: 100%;
-`;
-
 const titleText = css`
   margin: 0 0 var(--haze-dialog-title-gap, var(--haze-space-4));
   font-size: var(--haze-dialog-title-font-size, var(--haze-text-lg));
@@ -147,7 +133,7 @@ export default function Dialog({
       data-slot='content'
       {...dialogProps}
       aria-labelledby={title !== undefined ? titleId : undefined}
-      x-class={[panelSurfaceLifted, panelDeltas, dialogPanelMotion, dialogBackdrop, className, resolvedClassNames?.root]}
+      x-class={[panelSurfaceLifted, dialogPanelDeltas, dialogPanelMotion, dialogBackdrop, className, resolvedClassNames?.root]}
     >
       {title !== undefined && (
         <h2 id={titleId} data-slot='title' x-class={[titleText, resolvedClassNames?.header]}>

@@ -3,6 +3,9 @@ import type { MockInstance } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import { navItemActive, navItemBase } from '../../utils/nav-item-skin';
+
 import ConversationList from './ConversationList';
 import ConversationItem from './ConversationItem';
 
@@ -40,6 +43,19 @@ describe('ConversationList', () => {
   it('renders active state', () => {
     render(<ConversationItem title="Chat" active />);
     expect(screen.getByText('Chat').closest('[aria-current]')).toBeTruthy();
+  });
+
+  it('composes the shared nav-item skin with the keyboard focus ring', () => {
+    render(<ConversationItem title="Chat" />);
+    const item = screen.getByRole('button');
+    expect(item).toHaveClass(navItemBase);
+    // The keyboard ring the hand-rolled skin lacked (a11y fix).
+    expect(item).toHaveClass(focusRingVisible);
+  });
+
+  it('active item wears the shared active arm', () => {
+    render(<ConversationItem title="Chat" active />);
+    expect(screen.getByRole('button')).toHaveClass(navItemActive);
   });
 
   it('calls onClick', async () => {

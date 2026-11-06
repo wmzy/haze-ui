@@ -20,6 +20,7 @@ import { AvatarGroup } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/avatar-group.css';
+import 'haze-ui/css/avatar.css';
 
 export { AvatarGroup };
 export type { AvatarGroupProps } from 'haze-ui';

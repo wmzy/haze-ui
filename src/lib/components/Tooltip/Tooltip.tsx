@@ -3,12 +3,11 @@ import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useId, useMemo, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
-import { toCollisionStrategy } from '../../utils/collision';
 import {
   floatingPlacementClasses,
   useFloating,
@@ -16,6 +15,7 @@ import {
   type FloatingPlacement,
 } from '../../utils/floating';
 import { floatingPairHost } from '../../utils/panel-skin';
+import { useCollisionStrategy } from '../../utils/use-collision-strategy';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
@@ -104,12 +104,7 @@ export default function Tooltip({
   const panelRef = useRef<HTMLSpanElement>(null);
   const placement = placements[position];
 
-  // Stable identity: useFloatingPosition re-runs its effect on every
-  // change of this object.
-  const collision = useMemo(
-    () => toCollisionStrategy(collisionPadding),
-    [collisionPadding]
-  );
+  const collision = useCollisionStrategy(collisionPadding);
   // Manual wiring (span panel, not FloatingPanel): the behavior still
   // owns the animated lifecycle — dataState, the exit-delayed hidden
   // class inside panelClasses — and this hook owns placement/nudge.

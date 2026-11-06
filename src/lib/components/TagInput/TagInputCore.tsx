@@ -6,8 +6,8 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
 import { mergeRefs } from '../../utils/refs';
-import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
-import { listWrap, tag } from '../../utils/tag-skin';
+import { fieldBareInner, fieldChrome, focusWithinRing } from '../../utils/field-skin';
+import { listWrap, tag, tagFieldContainer } from '../../utils/tag-skin';
 
 import TagRemoveButton from './TagRemoveButton';
 
@@ -70,30 +70,16 @@ type TagInputCoreProps = {
   className?: string;
 } & FieldBridgeProps;
 
-/* The field surface (border/radius/fill) and the :focus-within ring
- * come from utils/field-skin.ts; the container keeps only its flex
- * layout, padding and the always-2.25rem floor on the space scale
- * (space-6 + space-3 = 36px). */
-const container = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--haze-space-1);
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
-  min-height: calc(var(--haze-space-6) + var(--haze-space-3));
-  align-items: center;
-  transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
-`;
-
+/* The field surface (border/radius/fill), the :focus-within ring, the
+ * container's flex flow and the inner input's de-chromed base all come
+ * from the shared skins (utils/field-skin.ts, utils/tag-skin.ts); the
+ * input below keeps only its flex share, min-width, transparent fill
+ * and sm type. */
 const inputEl = css`
   flex: 1;
   min-width: var(--haze-space-16);
-  border: none;
-  outline: none;
   background: none;
   font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
   padding: 0;
 `;
 
@@ -222,7 +208,7 @@ export default function TagInputCore({
   );
 
   return (
-    <div ref={containerRef} data-slot="tag-input" x-class={[fieldChrome, focusWithinRing, container, className]}>
+    <div ref={containerRef} data-slot="tag-input" x-class={[fieldChrome, focusWithinRing, tagFieldContainer, className]}>
       {/* Tags form the list; the input is a sibling so the list's
           children are only listitems (axe aria-required-children) and
           screen readers hear one listitem per tag. */}
@@ -232,7 +218,7 @@ export default function TagInputCore({
       <input
         ref={setInputRef}
         data-slot="input"
-        x-class={[inputEl]}
+        x-class={[fieldBareInner, inputEl]}
         id={id}
         aria-invalid={ariaInvalid}
         aria-describedby={ariaDescribedby}

@@ -15,9 +15,9 @@ describe('ModelPicker', () => {
     expect(screen.getByText('GPT-3.5 (16k)')).toBeInTheDocument();
   });
 
-  it('applies className', () => {
-    const { container } = render(<ModelPicker options={options} className="custom" />);
-    expect(container.firstChild).toHaveClass('custom');
+  it('applies className to the native select', () => {
+    render(<ModelPicker options={options} className="custom" />);
+    expect(screen.getByRole('combobox')).toHaveClass('custom');
   });
 
   it('calls onChange on selection', async () => {

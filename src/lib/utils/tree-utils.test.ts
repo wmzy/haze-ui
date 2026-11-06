@@ -8,6 +8,8 @@ import {
   getParentKey,
   getAllLeafKeys,
   mergeLoadedChildren,
+  parentKeysOf,
+  descendantKeysOf,
 } from './tree-utils';
 
 const tree: TreeNodeData[] = [
@@ -59,6 +61,32 @@ describe('tree-utils pure walkers', () => {
 
   it('getChildKeys returns empty for missing parent', () => {
     expect(getChildKeys(tree, 'zzz')).toEqual([]);
+  });
+
+  it('parentKeysOf lists every non-leaf key depth-first', () => {
+    expect(parentKeysOf(tree)).toEqual(['a', 'a-1']);
+  });
+
+  it('parentKeysOf returns empty for a flat tree', () => {
+    expect(parentKeysOf([{ key: 'x', title: 'X' }, { key: 'b', title: 'B' }])).toEqual([]);
+  });
+
+  it('parentKeysOf returns empty for empty data', () => {
+    expect(parentKeysOf([])).toEqual([]);
+  });
+
+  it('descendantKeysOf returns the strict subtree, node itself excluded', () => {
+    const root = findNodeByKey(tree, 'a')!;
+    expect(descendantKeysOf(root)).toEqual(['a-1', 'a-1-x', 'a-2']);
+  });
+
+  it('descendantKeysOf returns empty for a leaf node', () => {
+    expect(descendantKeysOf(findNodeByKey(tree, 'a-1-x')!)).toEqual([]);
+    expect(descendantKeysOf(findNodeByKey(tree, 'b')!)).toEqual([]);
+  });
+
+  it('descendantKeysOf returns empty for a childless non-leaf node', () => {
+    expect(descendantKeysOf({ key: 'empty', title: 'E', children: [] })).toEqual([]);
   });
 
   it('getParentKey returns direct parent key', () => {

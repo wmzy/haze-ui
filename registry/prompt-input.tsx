@@ -20,6 +20,7 @@ import { PromptInput } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/prompt-input.css';
+import 'haze-ui/css/tag-input.css';
 
 export { PromptInput };
 export type { PromptInputProps } from 'haze-ui';

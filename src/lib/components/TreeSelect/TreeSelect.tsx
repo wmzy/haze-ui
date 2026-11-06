@@ -25,7 +25,12 @@ import {
 import { mergeRefs } from '../../utils/refs';
 import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
-import { findNodeByKey, mergeLoadedChildren } from '../../utils/tree-utils';
+import {
+  descendantKeysOf,
+  findNodeByKey,
+  mergeLoadedChildren,
+  parentKeysOf,
+} from '../../utils/tree-utils';
 import { useStrings } from '../LocaleProvider';
 import Tree from '../Tree/Tree';
 
@@ -199,34 +204,6 @@ const treeHost = css`
   min-width: 180px;
   max-height: 280px;
 `;
-
-/** Every parent (non-leaf) key of the tree, for treeDefaultExpandAll. */
-function parentKeysOf(data: TreeNodeData[]): string[] {
-  const keys: string[] = [];
-  const walk = (nodes: TreeNodeData[]) => {
-    for (const node of nodes) {
-      if (node.children?.length) {
-        keys.push(node.key);
-        walk(node.children);
-      }
-    }
-  };
-  walk(data);
-  return keys;
-}
-
-/** All keys strictly below `node` (its whole subtree). */
-function descendantKeysOf(node: TreeNodeData): string[] {
-  const keys: string[] = [];
-  const walk = (nodes: TreeNodeData[]) => {
-    for (const child of nodes) {
-      keys.push(child.key);
-      walk(child.children ?? []);
-    }
-  };
-  walk(node.children ?? []);
-  return keys;
-}
 
 /**
  * Consumer value → Tree's string[] key set. In cascading multiple mode

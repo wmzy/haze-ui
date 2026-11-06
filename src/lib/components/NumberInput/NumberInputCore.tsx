@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
-import { fieldSizes, focusWithinRing } from '../../utils/field-skin';
+import { fieldBareInner, fieldSizes, focusWithinRing } from '../../utils/field-skin';
 import { clamp as clampToRange, quantize } from '../../utils/math';
 
 import { btnSizes } from './number-input-styles';
@@ -37,12 +37,12 @@ const wrapper = css`
     box-shadow var(--haze-duration-fast);
 `;
 
+/* The inner input's bare base (no border/outline, ink, sans) is the
+ * shared fieldBareInner (utils/field-skin.ts); padding/font-size ride
+ * the shared fieldSizes map composed at the element. Local: the input's
+ * own surface fill, centered figures and the spinner-chrome strip. */
 const input = css`
-  border: none;
-  outline: none;
   background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-family: var(--haze-font-sans);
   text-align: center;
   width: 100%;
   min-width: 0;
@@ -118,7 +118,7 @@ export default function NumberInputCore({
         ref={ref}
         type='number'
         data-slot='input'
-        x-class={[input, fieldSizes[size]]}
+        x-class={[fieldBareInner, input, fieldSizes[size]]}
         value={value}
         min={min}
         max={max}

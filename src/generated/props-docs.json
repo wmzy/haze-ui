@@ -2056,8 +2056,8 @@
     },
     {
       "name": "onChange",
-      "type": "(value: string) => void",
-      "description": "Called when value changes"
+      "type": "ChangeEventHandler<HTMLInputElement>",
+      "description": "Native change event handler — fires with the DOM event, same contract as Input"
     },
     {
       "name": "placeholder",

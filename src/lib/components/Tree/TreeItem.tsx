@@ -11,6 +11,7 @@ import { spinAnimation } from '../../utils/spinner-glyph';
 import { findMatchRanges, splitMatchSegments } from '../../utils/text-match';
 import { truncate } from '../../utils/truncate';
 import { useStrings } from '../LocaleProvider';
+import Mark from '../Mark/Mark';
 
 type TreeItemProps = {
   node: TreeNodeData;
@@ -213,15 +214,6 @@ const loadingIcon = css`
   display: inline-flex;
 `;
 
-/* Search-hit highlight: warning-subtle on warning mirrors the Badge
-   warning variant's token pairing. */
-const mark = css`
-  background: var(--haze-color-warning-subtle);
-  color: var(--haze-color-warning);
-  border-radius: var(--haze-radius-sm);
-  padding: 0 var(--haze-space-1);
-`;
-
 /* Inline lazy-load failure note: retry affordance on the node row. */
 const loadFailedNote = css`
   display: inline-flex;
@@ -331,16 +323,15 @@ const RetryIcon = () => (
 );
 
 /** Wraps every case-insensitive occurrence of `query` inside `text`
- *  with a token-styled `<mark>`; returns `text` when nothing matches. */
+ *  with the shared Mark element (the warning-subtle highlight chassis
+ *  incl. its forced-colors arm); returns `text` when nothing matches. */
 function highlightTitle(text: string, query: string): ReactNode {
   const ranges = findMatchRanges(text, query);
   if (ranges.length === 0) return text;
 
   return splitMatchSegments(text, ranges).map((segment, index) =>
     segment.match ? (
-      <mark key={index} className={mark}>
-        {segment.text}
-      </mark>
+      <Mark key={index}>{segment.text}</Mark>
     ) : (
       segment.text
     )
@@ -476,7 +467,7 @@ export default function TreeItem({
         )}
 
         {(showIcon || iconContent) && (
-          <span data-slot='icon' className={nodeIcon}>
+          <span data-slot='icon' x-class={[nodeIcon]}>
             {iconContent ??
               (isLeaf ? (
                 <FileIcon />

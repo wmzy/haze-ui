@@ -51,9 +51,15 @@ describe('Text', () => {
   });
 
   it('renders marked text', () => {
-    render(<Text mark>highlight</Text>);
+    const { container: plainWrap } = render(<Text>plain</Text>);
+    const { container } = render(<Text mark>highlight</Text>);
+    const plain = plainWrap.firstElementChild as HTMLElement;
+    const marked = container.firstElementChild as HTMLElement;
     expect(screen.getByText('highlight').tagName).toBe('SPAN');
     expect(screen.getByText('highlight')).toBeInTheDocument();
+    // mark adds exactly the highlight class over the plain text base
+    // (the token pairing now rides the Mark status pairing)
+    expect(marked.classList.length).toBe(plain.classList.length + 1);
   });
 });
 

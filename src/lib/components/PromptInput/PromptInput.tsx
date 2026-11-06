@@ -12,14 +12,15 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useFloating } from '../../utils/floating';
-import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
-import { listWrap, tag as tagStyle, removeBtn } from '../../utils/tag-skin';
+import { fieldBareInner, fieldChrome, focusWithinRing } from '../../utils/field-skin';
+import { listWrap, tag as tagStyle, tagFieldContainer } from '../../utils/tag-skin';
 import { SuggestListbox, useSuggestField, useSuggestWiring } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
 import { mergeRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
+import TagRemoveButton from '../TagInput/TagRemoveButton';
 
 type PromptInputProps = {
   /** Free-form draft text. */
@@ -70,29 +71,19 @@ type PromptInputProps = {
   'value' | 'onChange' | 'placeholder' | 'className' | 'style' | 'rows'
 >;
 
-/* The field chrome (border/radius/fill, the :focus-within ring) and the
- * tag list/chip/remove-button skin are shared with TagInput — see
- * utils/field-skin.ts and utils/tag-skin.ts. The container below keeps
- * only what is PromptInput's own: the panel-anchoring wrapper, its flex
- * flow, typography and the disabled state. position:relative anchors
- * the fallback-tier suggestion panel; the always-2.25rem floor rides
- * the space scale (space-6 + space-3 = 36px). */
+/* The field chrome (border/radius/fill, the :focus-within ring), the
+ * container's flex flow and the tag list/chip skin are shared with
+ * TagInput (utils/field-skin.ts, utils/tag-skin.ts); the tag chips
+ * render TagInput's TagRemoveButton (the × glyph plus its Backspace
+ * removal arm). The container below keeps only what is PromptInput's
+ * own: position:relative anchors the fallback-tier suggestion panel,
+ * the block sizing, sm type, ink and the hover/disabled states. */
 const container = css`
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--haze-space-1);
   width: 100%;
   box-sizing: border-box;
-  min-height: calc(var(--haze-space-6) + var(--haze-space-3));
-  padding: var(--haze-space-2) var(--haze-space-3);
-  font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   color: var(--haze-color-text);
-  transition:
-    border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
 
   &:hover {
     border-color: var(--haze-color-border-hover);
@@ -108,18 +99,17 @@ const containerDisabled = css`
   }
 `;
 
+/* The bare textarea base (no border/outline, ink, sans) is the shared
+ * fieldBareInner (utils/field-skin.ts); local: the flex share, the
+ * transparent fill, autosize box and the muted placeholder. */
 const textareaClass = css`
   flex: 1;
   min-width: 8rem;
-  border: none;
-  outline: none;
   background: none;
   resize: none;
   overflow-y: auto;
-  font-family: var(--haze-font-sans);
   font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-relaxed);
-  color: var(--haze-color-text);
   padding: 0;
 
   &::placeholder {
@@ -345,23 +335,18 @@ export default function PromptInput({
       aria-haspopup={completionEnabled ? 'listbox' : undefined}
       aria-controls={completionEnabled ? id : undefined}
       aria-label={label}
-      x-class={[fieldChrome, focusWithinRing, container, disabled && containerDisabled, className]}
+      x-class={[fieldChrome, focusWithinRing, tagFieldContainer, container, disabled && containerDisabled, className]}
     >
       {tags.length > 0 && (
         <ul data-slot='list' x-class={[listWrap]}>
           {tags.map((tag, i) => (
             <li key={`${tag}:${i}`} data-slot='tag' x-class={[tagStyle]}>
               {tag}
-              <button
-                type="button"
-                data-slot='remove-button'
-                x-class={[removeBtn]}
-                aria-label={formatString(strings.removeTag, { tag })}
+              <TagRemoveButton
+                removeLabel={formatString(strings.removeTag, { tag })}
+                onRemove={() => updateTags(tags.filter((_, j) => j !== i))}
                 disabled={disabled}
-                onClick={() => updateTags(tags.filter((_, j) => j !== i))}
-              >
-                ×
-              </button>
+              />
             </li>
           ))}
         </ul>
@@ -371,7 +356,7 @@ export default function PromptInput({
         data-slot='input'
         rows={1}
         style={completionEnabled ? floating.triggerStyle : undefined}
-        x-class={[textareaClass]}
+        x-class={[fieldBareInner, textareaClass]}
         value={value}
         placeholder={placeholder}
         aria-label={label}

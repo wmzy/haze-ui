@@ -7,7 +7,7 @@ import { css } from '@linaria/core';
 import { useStrings } from '../LocaleProvider';
 import { Button } from '../Button';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
-import { focusWithinRing } from '../../utils/field-skin';
+import { fieldBareInner, focusWithinRing } from '../../utils/field-skin';
 
 type ChatInputProps = {
   value?: ControlOrValue<string>;
@@ -45,15 +45,14 @@ const wrapper = css`
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
 `;
 
+/* The textarea's bare base (no border/outline, ink, sans) is the
+ * shared fieldBareInner (utils/field-skin.ts); local: the flex share,
+ * transparent fill, sm/relaxed type and the autosize box. */
 const textarea = css`
   flex: 1;
   resize: none;
-  border: none;
-  outline: none;
   background: none;
   font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
   line-height: var(--haze-leading-relaxed);
   min-height: 1.5rem;
   max-height: 10rem;
@@ -133,7 +132,7 @@ export default function ChatInput({
       <textarea
         ref={textareaRef}
         data-slot='input'
-        x-class={[textarea]}
+        x-class={[fieldBareInner, textarea]}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

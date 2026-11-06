@@ -6,7 +6,7 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { useEndReached } from '../../utils/use-end-reached';
-import { monoPanelBase } from '../../utils/mono-panel-skin';
+import { monoPanelBase, monoPanelHeader } from '../../utils/mono-panel-skin';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -31,14 +31,12 @@ type LogViewerProps = {
   className?: string;
 };
 
-// Outer chrome shared with DiffViewer (utils/mono-panel-skin); the
-// toolbar/body/entry classes below are family deltas.
-const toolbar = css`
-  display: flex;
+// Outer chrome and header band shared with DiffViewer
+// (utils/mono-panel-skin); the toolbar keeps only its filter-row gap —
+// text-xs inherits from the monoPanelBase wrapper. The classes below
+// are family deltas.
+const toolbarGap = css`
   gap: var(--haze-space-1);
-  padding: var(--haze-space-2) var(--haze-space-3);
-  background: var(--haze-color-bg-muted);
-  border-bottom: 1px solid var(--haze-color-border);
 `;
 
 const filterBtn = css`
@@ -136,7 +134,7 @@ export default function LogViewer({ logs, filter: filterControl, onLoadMore, cla
 
   return (
     <div data-slot="log-viewer" x-class={[monoPanelBase, className]}>
-      <div data-slot="toolbar" x-class={[toolbar]}>
+      <div data-slot="toolbar" x-class={[monoPanelHeader, toolbarGap]}>
         <button
           data-slot="filter-button"
           x-class={[filterBtn, !filter && filterActive]}

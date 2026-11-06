@@ -20,6 +20,7 @@ import { Tree, SortableTree, useTree } from 'haze-ui';
 
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tree.css';
+import 'haze-ui/css/mark.css';
 import 'haze-ui/css/virtual-list.css';
 
 export { Tree, SortableTree, useTree };

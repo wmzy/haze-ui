@@ -4,16 +4,16 @@ import type { CollisionPadding } from '../../utils/collision';
 import type { FloatingPlacement } from '../../utils/floating';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import { classnames } from '../../utils/classnames';
-import { toCollisionStrategy } from '../../utils/collision';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { getTabbables } from '../../utils/focus';
 import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
+import { useCollisionStrategy } from '../../utils/use-collision-strategy';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
 /**
@@ -121,12 +121,7 @@ export default function HoverCard({
 
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  // Stable identity: useFloatingPosition re-runs its effect on every
-  // change of this object.
-  const collision = useMemo(
-    () => toCollisionStrategy(collisionPadding),
-    [collisionPadding]
-  );
+  const collision = useCollisionStrategy(collisionPadding);
   const floating = useFloating({
     open,
     setOpen,

@@ -21,8 +21,8 @@ import {
 } from 'react';
 import { useControl } from 'react-use-control';
 
-import { capturePointer } from '../../utils/pointer-capture';
 import { usePausableTimeout } from '../../utils/use-pausable-timeout';
+import { usePointerDrag } from '../../utils/use-pointer-drag';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
@@ -70,11 +70,12 @@ const DRAG_SLOP = 4;
 /** 释放翻页阈值：轨道可见宽度的 25%。 */
 const DRAG_PAGE_RATIO = 0.25;
 
-type DragState = {
+/** 按压会话快照（pointerId 门控与捕获在共享 usePointerDrag，这里只存会话语义要读的起点）。 */
+type PressState = {
   pointerId: number;
   startX: number;
   startScrollLeft: number;
-  /** 已越过容差、手势被拖拽接管。 */
+  /** 已越过容差、手势被拖拽接管（onGestureStart 标记）。 */
   moved: boolean;
 };
 
@@ -304,13 +305,15 @@ export default function Carousel({
   // ── 指针拖拽翻页 ────────────────────────────────────────────
   // slide 形态：触摸已有原生 scroll-snap，不接管、不 preventDefault；
   // 仅鼠标拖拽。fade 形态无原生滚动语义，触摸也可按阈值翻页。
-  const dragRef = useRef<DragState | null>(null);
+  // 手势管线（pointerId 门控 + 守护式捕获 + DRAG_SLOP 延迟接管）走
+  // 共享 usePointerDrag 的 slop 选项；留在本地的是会话语义——autoPlay
+  // 暂停记账、scrollLeft 跟手驱动、释放阈值翻页/回弹与 click 抑制
+  // （共享层对这些没有意见）。
+  const pressRef = useRef<PressState | null>(null);
   const suppressClickRef = useRef(false);
 
-  const takeDragGesture = (el: HTMLDivElement, pointerId: number) => {
-    // 安全捕获（utils/pointer-capture）：jsdom/无指针捕获的引擎静默
-    // 穿透，事件继续以冒泡形式送达轨道
-    capturePointer(el, pointerId);
+  /** 接管时的本地 chrome：共享层已武装捕获，这里只切行内样式。 */
+  const takeDragGesture = (el: HTMLDivElement) => {
     el.style.userSelect = 'none'; // 拖拽期间不选中文本
     if (!fade) {
       el.style.scrollBehavior = 'auto'; // 跟手位移，禁用平滑滚动
@@ -333,10 +336,55 @@ export default function Carousel({
     scrollSlideTo(current);
   };
 
+  const trackDrag = usePointerDrag<HTMLDivElement>(
+    (event) => event.clientX,
+    (x) => {
+      // 内容跟随指针（slide 形态）。位移→滚动位置的换算在 LTR 与
+      // RTL 一致：内容右移（dx>0）都是 scrollLeft 减小。fade 无跟手
+      // 位移，释放时按阈值翻页。
+      const press = pressRef.current;
+      if (fade || !press) return;
+      const el = trackRef.current;
+      if (el) el.scrollLeft = press.startScrollLeft - (x - press.startX);
+    },
+    (x) => {
+      // 接管后的释放：阈值翻页或回弹（本地语义，共享层只负责把
+      // commit 限定在真正接管过的手势上）。
+      suppressClickRef.current = true; // 拖拽后的 click 不落到幻灯片内容上
+      const press = pressRef.current;
+      if (!press) return;
+      const width = trackRef.current?.getBoundingClientRect().width ?? 0;
+      const threshold = Math.max(1, width * DRAG_PAGE_RATIO);
+      const dx = x - press.startX;
+      if (Math.abs(dx) < threshold) {
+        snapBack();
+        return;
+      }
+      // 拖拽方向语义随行进侧镜像：内容右移（dx>0）在 LTR 是上一页，
+      // RTL 是下一页——与按钮/方向键的镜像一致。
+      const rtl = getDirection(wrapperRef.current) === 'rtl';
+      if (dx > 0) {
+        if (rtl) goNext();
+        else goPrev();
+      } else {
+        if (rtl) goPrev();
+        else goNext();
+      }
+    },
+    {
+      slop: DRAG_SLOP,
+      onGestureStart: (event) => {
+        const press = pressRef.current;
+        if (press) press.moved = true;
+        takeDragGesture(event.currentTarget);
+      },
+    }
+  );
+
   const handleTrackPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (count <= 1 || e.button !== 0) return;
     if (!fade && e.pointerType !== 'mouse') return;
-    dragRef.current = {
+    pressRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
       startScrollLeft: trackRef.current?.scrollLeft ?? 0,
@@ -344,31 +392,17 @@ export default function Carousel({
     };
     draggingRef.current = true; // 整个按压会话暂停 autoPlay
     syncPlay();
-  };
-
-  const handleTrackPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    const el = trackRef.current;
-    if (!drag || !el || drag.pointerId !== e.pointerId) return;
-    const dx = e.clientX - drag.startX;
-    if (!drag.moved) {
-      if (Math.abs(dx) < DRAG_SLOP) return;
-      drag.moved = true;
-      takeDragGesture(el, e.pointerId);
-    }
-    if (fade) return; // fade 无跟手位移，释放时按阈值翻页
-    // 内容跟随指针。位移→滚动位置的换算在 LTR 与 RTL 一致：
-    // 内容右移（dx>0）都是 scrollLeft 减小。
-    el.scrollLeft = drag.startScrollLeft - dx;
+    trackDrag.onPointerDown(e);
   };
 
   const handleTrackPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag) return;
-    if (drag.pointerId !== e.pointerId) return;
-    const el = trackRef.current;
-    dragRef.current = null;
-    releaseDragGesture(el);
+    // 共享层先结算：接管过的手势在此 commit（click 抑制 + 阈值
+    // 翻页/回弹，仍能读到按压起点），未接管的普通点击零副作用。
+    trackDrag.onPointerUp(e);
+    const press = pressRef.current;
+    if (press?.pointerId !== e.pointerId) return;
+    pressRef.current = null;
+    releaseDragGesture(trackRef.current);
     draggingRef.current = false;
     // 指针捕获会吞掉 wrapper 的 pointerleave：释放点已在轮播外时
     // 同步清掉悬停态，否则 pauseOnHover 会被永久卡在暂停。对任何
@@ -384,36 +418,18 @@ export default function Carousel({
       if (outside) hoveredRef.current = false;
     }
     syncPlay();
-    if (!drag.moved) return; // 普通点击：从未接管，零副作用
-    suppressClickRef.current = true; // 拖拽后的 click 不落到幻灯片内容上
-    const width = el?.getBoundingClientRect().width ?? 0;
-    const threshold = Math.max(1, width * DRAG_PAGE_RATIO);
-    const dx = e.clientX - drag.startX;
-    if (Math.abs(dx) < threshold) {
-      snapBack();
-      return;
-    }
-    // 拖拽方向语义随行进侧镜像：内容右移（dx>0）在 LTR 是上一页，
-    // RTL 是下一页——与按钮/方向键的镜像一致。
-    const rtl = getDirection(wrapperRef.current) === 'rtl';
-    if (dx > 0) {
-      if (rtl) goNext();
-      else goPrev();
-    } else {
-      if (rtl) goPrev();
-      else goNext();
-    }
   };
 
   const handleTrackPointerCancel = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag) return;
-    if (drag.pointerId !== e.pointerId) return;
-    dragRef.current = null;
+    trackDrag.onPointerCancel(e);
+    const press = pressRef.current;
+    if (press?.pointerId !== e.pointerId) return;
+    pressRef.current = null;
     releaseDragGesture(trackRef.current);
     draggingRef.current = false;
     syncPlay();
-    if (!drag.moved) return; // 取消即回弹：不翻页
+    if (!press.moved) return; // 未接管：取消也是零副作用
+    // 取消即回弹：不翻页，但拖拽后的 click 仍要吞掉。
     suppressClickRef.current = true;
     snapBack();
   };
@@ -427,7 +443,7 @@ export default function Carousel({
 
   const handleTrackDragStart = (e: ReactDragEvent<HTMLDivElement>) => {
     // 拖拽会话中吞掉原生 HTML5 拖拽（幻灯片内的图片/链接）
-    if (dragRef.current) e.preventDefault();
+    if (pressRef.current) e.preventDefault();
   };
 
   /**
@@ -517,7 +533,7 @@ export default function Carousel({
         data-slot='track'
         x-class={[fade ? fadeTrack : track]}
         onPointerDown={handleTrackPointerDown}
-        onPointerMove={handleTrackPointerMove}
+        onPointerMove={trackDrag.onPointerMove}
         onPointerUp={handleTrackPointerUp}
         onPointerCancel={handleTrackPointerCancel}
         onClickCapture={handleTrackClickCapture}

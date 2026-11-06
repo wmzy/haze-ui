@@ -42,7 +42,7 @@ export default function ModelPicker({
   };
 
   return (
-    <div data-slot='model-picker' x-class={[wrapper, className]}>
+    <div data-slot='model-picker' x-class={wrapper}>
       <select data-slot='trigger' x-class={[pickerNativeSelect, fieldSizes.md, className]} aria-label={strings.label} value={value} onChange={handleChange} disabled={disabled}>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value} data-slot='option'>

@@ -1,6 +1,9 @@
+import { expect } from 'vitest';
+
 import {
   dropLastPickerValue,
   labelMatchesQuery,
+  pickerCommitKey,
   pickerMaxCountReached,
   pickerRowDisabled,
   pickerShowsCreateRow,
@@ -127,5 +130,120 @@ describe('visiblePickerValues', () => {
 
   it('keeps every value when the cap exceeds the length', () => {
     expect(visiblePickerValues(['a', 'b'], 5)).toEqual(['a', 'b']);
+  });
+});
+
+describe('pickerCommitKey', () => {
+  const items = [{ value: 'a' }, { value: 'b' }];
+
+  const keyEvent = (key: string) => ({ key, preventDefault: vi.fn() });
+
+  const makeSite = (
+    overrides: {
+      activeIndex?: number;
+      button?: boolean;
+      open?: boolean;
+      suppressDefaults?: boolean;
+      refocus?: () => void;
+    } = {}
+  ) => ({
+    items,
+    activeIndex: 0,
+    onCommit: vi.fn(),
+    onClose: vi.fn(),
+    ...overrides,
+  });
+
+  it('commits the highlighted row on Enter and consumes the event', () => {
+    const e = keyEvent('Enter');
+    const site = makeSite();
+    expect(pickerCommitKey(e, site)).toBe(true);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(site.onCommit).toHaveBeenCalledWith('a');
+    expect(site.onClose).not.toHaveBeenCalled();
+  });
+
+  it('joins Space — real and legacy key names — as commit keys on the button site', () => {
+    for (const key of [' ', 'Space']) {
+      const e = keyEvent(key);
+      const site = makeSite({ button: true, open: true });
+      expect(pickerCommitKey(e, site)).toBe(true);
+      expect(e.preventDefault).toHaveBeenCalled();
+      expect(site.onCommit).toHaveBeenCalledWith('a');
+    }
+  });
+
+  it('gates the button site on an open panel — closed falls through to the native click', () => {
+    const e = keyEvent('Enter');
+    const site = makeSite({ button: true, open: false });
+    expect(pickerCommitKey(e, site)).toBe(false);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('gates the button site on a highlighted row — open without one falls through', () => {
+    const e = keyEvent('Enter');
+    const site = makeSite({ button: true, open: true, activeIndex: -1 });
+    expect(pickerCommitKey(e, site)).toBe(false);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('closes without suppressing the default on the button Escape', () => {
+    const e = keyEvent('Escape');
+    const site = makeSite({ button: true, open: true });
+    expect(pickerCommitKey(e, site)).toBe(true);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onClose).toHaveBeenCalledOnce();
+    expect(site.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('still consumes an unhighlighted Enter on the suppressDefaults site (form-submit suppression)', () => {
+    const e = keyEvent('Enter');
+    const site = makeSite({ suppressDefaults: true, activeIndex: -1 });
+    expect(pickerCommitKey(e, site)).toBe(true);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(site.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('suppresses the default and refocuses after the suppressDefaults Escape close', () => {
+    const e = keyEvent('Escape');
+    const calls: string[] = [];
+    const site = {
+      items,
+      activeIndex: 0,
+      onCommit: vi.fn(),
+      onClose: () => calls.push('close'),
+      suppressDefaults: true,
+      refocus: () => calls.push('refocus'),
+    };
+    expect(pickerCommitKey(e, site)).toBe(true);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(calls).toEqual(['close', 'refocus']);
+  });
+
+  it('lets an unhighlighted Enter fall through untouched on the plain site (Combobox contract)', () => {
+    const e = keyEvent('Enter');
+    const site = makeSite({ activeIndex: -1 });
+    expect(pickerCommitKey(e, site)).toBe(false);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onCommit).not.toHaveBeenCalled();
+  });
+
+  it('closes without suppressing the default on the plain Escape (Combobox contract)', () => {
+    const e = keyEvent('Escape');
+    const site = makeSite();
+    expect(pickerCommitKey(e, site)).toBe(true);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onClose).toHaveBeenCalledOnce();
+  });
+
+  it('leaves non-commit keys to the site (Backspace composes after it)', () => {
+    const e = keyEvent('Backspace');
+    const site = makeSite();
+    expect(pickerCommitKey(e, site)).toBe(false);
+    expect(e.preventDefault).not.toHaveBeenCalled();
+    expect(site.onCommit).not.toHaveBeenCalled();
+    expect(site.onClose).not.toHaveBeenCalled();
   });
 });

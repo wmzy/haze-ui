@@ -3,7 +3,9 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 
+import { useMutationObserver } from '../../hooks/useMutationObserver';
 import { focusRingVisible } from '../../utils/focus-ring';
+import { mergeRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -60,8 +62,8 @@ const jumpPill = css`
   font-size: var(--haze-text-sm);
   font-weight: var(--haze-weight-medium);
   cursor: pointer;
-  transition: border-color var(--haze-duration-fast),
-    box-shadow var(--haze-duration-fast);
+  transition: border-color var(--haze-duration-fast) var(--haze-ease),
+    box-shadow var(--haze-duration-fast) var(--haze-ease);
 
   &:hover {
     border-color: var(--haze-color-primary);
@@ -93,6 +95,25 @@ export default function ChatContainer({
     setShowJump(false);
   }, []);
 
+  // Content observation rides the shared useMutationObserver hook
+  // (latest-callback + ref-reattach guard) on the same scroll element
+  // the effect below owns: fresh content follows when the reader is
+  // parked at the bottom, otherwise surfaces the jump pill.
+  const [observeRef] = useMutationObserver(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (atBottomRef.current) el.scrollTop = el.scrollHeight;
+    else setShowJump(true);
+  }, { childList: true, subtree: true, enabled: autoScroll });
+
+  // mergeRefs behind a useCallback: the observer ref is identity-stable
+  // (hook deps guard re-attaches), so a fresh closure per render would
+  // tear the observer down needlessly (Calendar's setRootRef precedent).
+  const setContainerRef = useCallback(
+    (node: HTMLDivElement | null) => mergeRefs(ref, observeRef)(node),
+    [ref, observeRef]
+  );
+
   useEffect(() => {
     const el = ref.current;
     if (!el || !autoScroll) return;
@@ -107,19 +128,13 @@ export default function ChatContainer({
     // the follow only ever pauses after the reader scrolls up.
     atBottomRef.current = true;
     el.scrollTop = el.scrollHeight;
-    const observer = new MutationObserver(() => {
-      if (atBottomRef.current) el.scrollTop = el.scrollHeight;
-      else setShowJump(true);
-    });
-    observer.observe(el, { childList: true, subtree: true });
     return () => {
       el.removeEventListener('scroll', onScroll);
-      observer.disconnect();
     };
   }, [autoScroll]);
 
   return (
-    <div ref={ref} data-slot='chat-container' x-class={[container, className]} {...rest}>
+    <div ref={setContainerRef} data-slot='chat-container' x-class={[container, className]} {...rest}>
       {children}
       {autoScroll && showJump && (
         <button type='button' data-slot='jump-button' x-class={[jumpPill, focusRingVisible]} onClick={jumpToBottom}>

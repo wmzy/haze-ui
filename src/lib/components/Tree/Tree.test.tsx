@@ -848,11 +848,14 @@ describe('Tree search filtering', () => {
     expect(screen.queryByText('Other file')).not.toBeInTheDocument();
   });
 
-  it('highlights matched text with token-styled mark elements', () => {
+  it('highlights matched text with the shared Mark element', () => {
     render(<Tree treeData={searchData} searchValue='target' />);
     const marks = document.querySelectorAll('mark');
     expect(marks).toHaveLength(1);
     expect(marks[0]!.textContent).toBe('Target'); // original casing kept
+    // The shared Mark slot: the same warning-subtle highlight chassis
+    // Highlight renders (incl. its forced-colors arm).
+    expect(marks[0]).toHaveAttribute('data-slot', 'mark');
     // The hit's title keeps its full text around the mark.
     expect(marks[0]!.parentElement).toHaveTextContent('Target file');
   });

@@ -10,7 +10,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { Fragment, useEffect, useImperativeHandle, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import { focusWithinRing } from '../../utils/field-skin';
+import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 import { NativeHiddenFields } from '../../utils/native-form';
 import { proseContent } from '../../utils/prose-skin';
 import { useStrings } from '../LocaleProvider';
@@ -72,12 +72,13 @@ type RichTextEditorProps = {
   'value' | 'placeholder' | 'contentEditable' | 'suppressContentEditableWarning' | 'children'
 >;
 
+/* The surface chrome (border/radius/fill) and the :focus-within ring
+ * are the shared fieldChrome + focusWithinRing pair (utils/field-skin)
+ * composed below. Local: the column flex shell, the field ink/sans,
+ * the overflow clip, the hover arm and the forced-colors focus arm. */
 const root = css`
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
   color: var(--haze-color-text);
   font-family: var(--haze-font-sans);
   overflow: hidden;
@@ -92,14 +93,17 @@ const root = css`
   /* Focus: the ProseMirror contenteditable carries the keyboard focus;
      the chrome wears the shared ring (utils/field-skin's focusWithinRing
      composed below — an outline on the content div itself would fight
-     the caret). Forced-colors: CanvasText border stays visible, the
-     box-shadow ring is dropped by the UA so focus moves to a Highlight
-     outline; no box-shadow: none restatement — the UA drop makes it
+     the caret). Forced-colors: the UA keeps the author border visible
+     by forcing its color to CanvasText, and the box-shadow ring is
+     dropped, so focus moves to a Highlight outline. No CanvasText
+     restatement: it would tie the shared border shorthand's
+     specificity, and dev-server injection order and the dist split-css
+     order disagree on that tie (utils/quiet-button-skin documents the
+     trap) — the UA force already delivers the same used value. No
+     box-shadow: none restatement either — the UA drop makes it
      redundant, and re-declaring it would race the composed ring arm on
      injection order. */
   @media (forced-colors: active) {
-    border-color: CanvasText;
-
     &:focus-within {
       outline: 2px solid Highlight;
     }
@@ -436,7 +440,7 @@ export default function RichTextEditor({
   const toolbarGroups = buildToolbarItems(editor, toolbarState, editable, strings);
 
   return (
-    <div data-slot='rich-text-editor' x-class={[root, focusWithinRing, className]} {...rest}>
+    <div data-slot='rich-text-editor' x-class={[fieldChrome, focusWithinRing, root, className]} {...rest}>
       {toolbar !== false &&
         (toolbar === undefined ? (
           <Toolbar

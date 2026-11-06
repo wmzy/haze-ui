@@ -34,21 +34,42 @@ export function findNodeByKey(
   return null;
 }
 
+/** Every parent (non-leaf) key of the tree, depth-first — the
+ * default-expanded key set TreeSelect's `treeDefaultExpandAll` wants. */
+export function parentKeysOf(data: TreeNodeData[]): string[] {
+  const keys: string[] = [];
+  const walk = (nodes: TreeNodeData[]) => {
+    for (const node of nodes) {
+      if (node.children?.length) {
+        keys.push(node.key);
+        walk(node.children);
+      }
+    }
+  };
+  walk(data);
+  return keys;
+}
+
+/** All keys strictly below `node` (its whole subtree, the node itself
+ * excluded) in depth-first order. */
+export function descendantKeysOf(node: TreeNodeData): string[] {
+  const keys: string[] = [];
+  const walk = (nodes: TreeNodeData[]) => {
+    for (const child of nodes) {
+      keys.push(child.key);
+      walk(child.children ?? []);
+    }
+  };
+  walk(node.children ?? []);
+  return keys;
+}
+
 export function getChildKeys(
   data: TreeNodeData[],
   parentKey: string
 ): string[] {
   const parent = findNodeByKey(data, parentKey);
-  if (!parent?.children?.length) return [];
-  const childKeys: string[] = [];
-  const walk = (nodes: TreeNodeData[]) => {
-    for (const node of nodes) {
-      childKeys.push(node.key);
-      if (node.children?.length) walk(node.children);
-    }
-  };
-  walk(parent.children);
-  return childKeys;
+  return parent ? descendantKeysOf(parent) : [];
 }
 
 /**

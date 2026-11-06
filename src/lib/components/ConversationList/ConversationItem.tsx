@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { focusRingVisible } from '../../utils/focus-ring';
+import { navItemActive, navItemBase } from '../../utils/nav-item-skin';
 import { truncate } from '../../utils/truncate';
 
 type ConversationItemProps = {
@@ -13,28 +15,40 @@ type ConversationItemProps = {
   className?: string;
 };
 
+/* Sizing/typography delta on the shared navItemBase chrome
+ * (utils/nav-item-skin.ts): the conversation row is a full-width
+ * block-level flex row, so navItemBase's centered inline-flex is
+ * suppressed through a raised-specificity arm (the button already
+ * carries data-slot='conversation-item') — never through source
+ * order, which disagrees between dev injection and dist split-css
+ * (Sidebar precedent). */
 const item = css`
-  display: flex;
-  align-items: center;
   gap: var(--haze-space-3);
-  padding: var(--haze-space-3) var(--haze-space-4);
-  cursor: pointer;
-  border-radius: var(--haze-radius-md);
-  transition: background var(--haze-duration-fast);
-  text-align: start;
   width: 100%;
-  border: none;
-  background: none;
+  padding: var(--haze-space-3) var(--haze-space-4);
+  border-radius: var(--haze-radius-md);
   font-family: var(--haze-font-sans);
-  color: var(--haze-color-text);
+  text-align: start;
 
-  &:hover {
-    background: var(--haze-color-bg-muted);
+  &[data-slot='conversation-item'] {
+    display: flex;
+    justify-content: flex-start;
   }
 `;
 
-const activeItem = css`
-  background: var(--haze-color-bg-muted);
+/* Active delta on the shared navItemActive arm (utils/nav-item-skin.ts):
+ * the conversation row keeps the plain text pair — currency is carried
+ * by the resting wash — pinned through hover over the same bg-muted
+ * wash (ActivityRail precedent). The resting background rides the
+ * raised-specificity arm to clear navItemBase's plain background:
+ * transparent without relying on source order (Sidebar precedent). */
+const itemActive = css`
+  --haze-nav-item-active-color: var(--haze-color-text);
+  --haze-nav-item-active-hover-bg: var(--haze-color-bg-muted);
+
+  &[data-slot='conversation-item'] {
+    background: var(--haze-color-bg-muted);
+  }
 `;
 
 const body = css`
@@ -71,7 +85,14 @@ export default function ConversationItem({
   return (
     <button
       data-slot='conversation-item'
-      x-class={[item, active && activeItem, className]}
+      x-class={[
+        navItemBase,
+        item,
+        focusRingVisible,
+        active && navItemActive,
+        active && itemActive,
+        className,
+      ]}
       type="button"
       onClick={onClick}
       aria-current={active ? 'true' : undefined}

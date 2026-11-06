@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { css } from '@linaria/core';
 
+import { statusSolidColors } from '../../utils/status-solid-skin';
 import {
   timelineDescription,
   timelineDot,
@@ -56,13 +57,15 @@ const dotStyle = css`
   background: var(--haze-color-border);
 `;
 
-/* Colored variants swap the fill; `default` maps to no entry so the
-   base background above shows through. */
+/* Colored variants swap the fill from the shared solid status axis
+   (utils/status-solid-skin) — byte-identical to the local copies they
+   replace; `default` maps to no entry so the base background above
+   shows through. */
 const dotColors: Partial<Record<TimelineColor, string>> = {
-  primary: css`background: var(--haze-color-primary);`,
-  success: css`background: var(--haze-color-success);`,
-  warning: css`background: var(--haze-color-warning);`,
-  danger: css`background: var(--haze-color-danger);`,
+  primary: statusSolidColors.primary,
+  success: statusSolidColors.success,
+  warning: statusSolidColors.warning,
+  danger: statusSolidColors.danger,
 };
 
 /* The connector as an in-flow flex child of the dot column (unlike

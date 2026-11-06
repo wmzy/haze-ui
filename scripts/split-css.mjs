@@ -153,7 +153,7 @@ const sharedLayers = {
   // icon-over-label items and ActivityRail's square rail items compose
   // (sizing/typography, indicator geometry and the active token pair
   // stay family-local deltas).
-  'utils/nav-item-skin': ['tab-bar', 'activity-rail', 'sidebar'],
+  'utils/nav-item-skin': ['tab-bar', 'activity-rail', 'sidebar', 'conversation-list'],
   // Shared field skin (utils/field-skin.ts): the surface chrome, the
   // :focus-within focus ring, the native input/textarea chrome and the
   // field size map the field families wear. masked-input and any other
@@ -162,7 +162,8 @@ const sharedLayers = {
   // that closure only maps component-dir imports (utils modules carry
   // no css group of their own), so a family that imports the layer
   // directly while shipping its own css file must be listed explicitly
-  // (ChatInput and RichTextEditor compose just focusWithinRing).
+  // (ChatInput composes focusWithinRing + fieldBareInner, RichTextEditor
+  // fieldChrome + focusWithinRing).
   'utils/field-skin': [
     'chat-input',
     'color-picker',
@@ -249,6 +250,7 @@ const sharedLayers = {
     'plan',
     'sources',
     'step-timeline',
+    'task-list',
     'timeline',
     'tool-call-card',
     'trace',
@@ -344,6 +346,7 @@ const sharedLayers = {
   'utils/status-solid-skin': [
     'indicator',
     'progress',
+    'timeline',
     'token-counter',
     'tool-call-card',
   ],
@@ -412,6 +415,7 @@ const sharedLayers = {
     'calendar',
     'chat-container',
     'color-picker',
+    'conversation-list',
     'data-table',
     'drawer',
     'float-button',
@@ -470,6 +474,11 @@ const sharedLayers = {
   // registered shared layer instead of relying on the sibling
   // component directory's group (BackToTop.css stays self-contained).
   'components/FloatButton/float-button-styles': ['back-to-top'],
+  // Avatar's identity chassis (avatarBase + avatarSizes) exported for
+  // the sibling AvatarGroup's overflow chip — same registered-shared-
+  // layer form as float-button-styles above, so avatar-group.css stays
+  // self-contained instead of leaning on the avatar directory's group.
+  'components/Avatar/avatar-styles': ['avatar-group'],
 };
 
 /**

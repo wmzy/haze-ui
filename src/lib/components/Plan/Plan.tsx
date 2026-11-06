@@ -6,6 +6,7 @@ import { css } from '@linaria/core';
 
 import { meterFill, meterTrack } from '../../utils/meter-skin';
 import {
+  labelStruck,
   statusDot,
   statusDotActive,
   statusDotDone,
@@ -121,10 +122,9 @@ const labelDone = css`
   color: var(--haze-color-text-secondary);
 `;
 
-const labelSkipped = css`
-  color: var(--haze-color-text-muted);
-  text-decoration: line-through;
-`;
+/* The skipped label rides the shared labelStruck completion arm
+   (utils/timeline-skin) — byte-identical to the local copy, now
+   shared with TaskList's checked title. */
 
 const indicatorMap: Record<PlanStatus, string> = {
   pending: statusDotPending,
@@ -139,7 +139,7 @@ const labelStatusMap: Record<PlanStatus, string | undefined> = {
   active: undefined,
   done: labelDone,
   error: undefined,
-  skipped: labelSkipped,
+  skipped: labelStruck,
 };
 
 function PlanItem({

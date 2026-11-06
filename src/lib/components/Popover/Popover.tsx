@@ -3,11 +3,10 @@ import type { ControlOrValue } from 'react-use-control';
 import type { CollisionPadding } from '../../utils/collision';
 
 import { css } from '@linaria/core';
-import { useId, useMemo, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
-import { toCollisionStrategy } from '../../utils/collision';
 import {
   FloatingPanel,
   FloatingTriggerSpan,
@@ -15,6 +14,7 @@ import {
   useFloatingHandle,
 } from '../../utils/floating';
 import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
+import { useCollisionStrategy } from '../../utils/use-collision-strategy';
 // Manual merge (not x-class): FloatingPanel appends its `className` prop
 // last in its own x-class array, so both consumer classes arrive there
 // in order — plain `className` first, the `content` slot after it.
@@ -94,12 +94,7 @@ export default function Popover({
 
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  // Stable identity: useFloatingPosition re-runs its effect on every
-  // change of this object.
-  const collision = useMemo(
-    () => toCollisionStrategy(collisionPadding),
-    [collisionPadding]
-  );
+  const collision = useCollisionStrategy(collisionPadding);
   const floating = useFloating({
     open,
     setOpen,

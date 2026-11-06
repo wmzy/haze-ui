@@ -10,8 +10,10 @@ import { css } from '@linaria/core';
  *
  * What stays local: Drawer's panel slide (the placement-driven
  * translate vars) and BottomSheet's sheet slide keep their families'
- * keyframes in place; the modal's static chrome (padding, radius,
- * focus ring, forced-colors arms) never lived here.
+ * keyframes in place; the surface chrome (border, radius, focus ring,
+ * forced-colors arms) lives on the panel-skin surfaces — this module
+ * carries the modal lane's motion plus its padding/width token
+ * deltas (dialogPanelDeltas).
  *
  * Selector shapes follow the owning element: the `dialogBackdrop`
  * pair arms the native `<dialog>` family (the `[open]` attribute guard
@@ -54,6 +56,22 @@ export const dialogPanelMotion = css`
       transform: scale(0.97);
     }
   }
+`;
+
+/**
+ * Panel deltas for the centered modal pair (Dialog, ConfirmDialog):
+ * the modal lane's padding and width bounds, both behind the
+ * `--haze-dialog-*` component tokens — declaration-for-declaration
+ * what both families shipped locally. Border/radius/shadow chrome,
+ * typography, the focus ring and the forced-colors arms come from the
+ * shared panel surfaces (`panelSurfaceLifted` on Dialog,
+ * `panelSurface` on ConfirmDialog); no cascade tie exists because the
+ * surfaces declare neither padding nor width bounds.
+ */
+export const dialogPanelDeltas = css`
+  padding: var(--haze-dialog-padding, var(--haze-space-6));
+  max-width: var(--haze-dialog-width, 480px);
+  width: 100%;
 `;
 
 /**

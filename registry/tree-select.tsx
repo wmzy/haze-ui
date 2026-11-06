@@ -21,6 +21,7 @@ import { TreeSelect } from 'haze-ui';
 import 'haze-ui/css/tokens.css';
 import 'haze-ui/css/tree-select.css';
 import 'haze-ui/css/chip.css';
+import 'haze-ui/css/mark.css';
 import 'haze-ui/css/tree.css';
 import 'haze-ui/css/virtual-list.css';
 

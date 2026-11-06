@@ -3,6 +3,8 @@ import type { ReactNode, Ref } from 'react';
 import { css } from '@linaria/core';
 import { useState } from 'react';
 
+import { avatarBase, avatarSizes } from './avatar-styles';
+
 type AvatarProps = {
   src?: string;
   alt?: string;
@@ -13,39 +15,17 @@ type AvatarProps = {
   ref?: Ref<HTMLSpanElement>;
 };
 
-const base = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--haze-radius-full);
+/*
+ * Avatar-only chrome over the shared frame (avatar-styles): crop the
+ * img to the circle, keep the glyph unselectable and the frame from
+ * squishing inside flex rows. The AvatarGroup overflow chip shares the
+ * frame but wants none of these.
+ */
+const avatarChrome = css`
   overflow: hidden;
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-weight: var(--haze-weight-medium);
   user-select: none;
   flex-shrink: 0;
 `;
-
-const sizes = {
-  sm: css`
-    width: var(--haze-space-8);
-    height: var(--haze-space-8);
-    font-size: var(--haze-text-xs);
-  `,
-  md: css`
-    width: var(--haze-space-10);
-    height: var(--haze-space-10);
-    font-size: var(--haze-text-sm);
-  `,
-  /* 56px has no single step on the space scale (jumps 12→16): the
-     space-12 + space-2 composition, TabBar's 56px track precedent. */
-  lg: css`
-    width: calc(var(--haze-space-12) + var(--haze-space-2));
-    height: calc(var(--haze-space-12) + var(--haze-space-2));
-    font-size: var(--haze-text-lg);
-  `,
-} as const;
 
 const imgStyle = css`
   width: 100%;
@@ -69,7 +49,11 @@ export default function Avatar({
   const error = failedSrc !== null && failedSrc === src;
 
   return (
-    <span ref={ref} data-slot="avatar" x-class={[base, sizes[size], className]}>
+    <span
+      ref={ref}
+      data-slot="avatar"
+      x-class={[avatarBase, avatarChrome, avatarSizes[size], className]}
+    >
       {src && !error ? (
         <img
           data-slot="img"

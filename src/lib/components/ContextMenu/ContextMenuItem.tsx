@@ -1,21 +1,14 @@
-import type { ReactNode } from 'react';
-
-import { MenuItemImpl } from '../../utils/menu-item-parts';
+import { MenuItemImpl, type MenuItemImplOwnProps } from '../../utils/menu-item-parts';
 
 import { useContextMenuContext } from './ContextMenuContext';
 
-type ContextMenuItemProps = {
-  children: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  /** Danger skin for destructive actions: danger-colored text and interaction states. */
-  danger?: boolean;
-  /** Inline-start icon slot; bare `svg` children are sized to 1em by the slot. */
-  icon?: ReactNode;
-  /** Inline-end shortcut hint (e.g. '⌘C'), muted and pushed to the item's end. */
-  kbdLabel?: ReactNode;
-  className?: string;
-};
+/**
+ * Plain activation item — `MenuItemImplOwnProps` (activation handler,
+ * disabled/danger/icon/kbdLabel chrome, JSDoc on the shared type) minus
+ * the family seam (`skin`/`familyClass`) this wrapper resolves from its
+ * context. Activation fires `onClick` first, then closes the menu.
+ */
+type ContextMenuItemProps = Omit<MenuItemImplOwnProps, 'skin' | 'familyClass'>;
 
 export default function ContextMenuItem({
   children,

@@ -5,17 +5,19 @@ import { css } from '@linaria/core';
  * monospace viewers (DiffViewer's wrapper, LogViewer's wrapper) wore
  * as byte-identical local copies: mono font + text-xs on relaxed
  * leading, hairline border, radius-md and overflow:hidden so the
- * header/toolbar seam clips to the rounded frame. Extracted verbatim.
+ * header/toolbar seam clips to the rounded frame. The header band
+ * below is the same deal: the muted strip above the scroll body both
+ * viewers wear. Extracted verbatim.
  *
  * Drift discipline (field-skin precedent): a declaration only lives
  * here when every consumer ships it identically. Per-family deltas —
- * DiffViewer's line gutters/tones and LogViewer's toolbar, scroll-cap
- * body and level colors — stay local as companion classes composed
- * additively behind this base; the property sets are disjoint, so the
- * compositions never depend on stylesheet order (dev-server injection
- * and the dist css split disagree).
+ * DiffViewer's line gutters/tones and LogViewer's toolbar gap,
+ * scroll-cap body and level colors — stay local as companion classes
+ * composed additively behind these bases; the property sets are
+ * disjoint, so the compositions never depend on stylesheet order
+ * (dev-server injection and the dist css split disagree).
  *
- * Single class constant, no variant map — a second axis (e.g. a tone
+ * Plain class constants, no variant map — a second axis (e.g. a tone
  * map) would go to a sibling module per the one-css-map-per-module
  * rule Linaria's member-key display naming forces (status-skin
  * family precedent).
@@ -36,4 +38,18 @@ export const monoPanelBase = css`
   border: 1px solid var(--haze-color-border);
   border-radius: var(--haze-radius-md);
   overflow: hidden;
+`;
+
+/**
+ * Header band: the muted strip above the scroll body — flex row on
+ * the space-2 block / space-3 inline padding over bg-muted, closed
+ * by the hairline bottom seam. text-xs inherits from the
+ * monoPanelBase wrapper; per-family extras (LogViewer's filter gap,
+ * DiffViewer's muted header text) stay local as additive deltas.
+ */
+export const monoPanelHeader = css`
+  display: flex;
+  padding: var(--haze-space-2) var(--haze-space-3);
+  background: var(--haze-color-bg-muted);
+  border-bottom: 1px solid var(--haze-color-border);
 `;

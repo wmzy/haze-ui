@@ -236,7 +236,7 @@
       "name": "Dashboard profile: Button + Input + Select + Dialog + Toast + Pagination",
       "path": "dist/index.js",
       "import": "{Button, Input, Select, Dialog, Toast, Pagination}",
-      "limit": "25.1 KB"
+      "limit": "25.2 KB"
     },
     {
       "name": "CSS aggregate (dist/haze-ui.css, brotli)",
@@ -395,7 +395,7 @@
     {
       "name": "CSS family ratchet: json-view",
       "path": "dist/css/json-view.css",
-      "limit": "1.41 KB",
+      "limit": "1.46 KB",
       "gzip": true
     },
     {
@@ -437,7 +437,7 @@
     {
       "name": "CSS family ratchet: task-list",
       "path": "dist/css/task-list.css",
-      "limit": "500 B",
+      "limit": "1.2 KB",
       "gzip": true
     },
     {

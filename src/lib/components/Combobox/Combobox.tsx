@@ -16,6 +16,7 @@ import { PickerOverflowBadge } from '../../utils/picker-chips';
 import {
   dropLastPickerValue,
   labelMatchesQuery,
+  pickerCommitKey,
   pickerMaxCountReached,
   pickerRowDisabled,
   pickerShowsCreateRow,
@@ -598,16 +599,21 @@ export default function Combobox<T extends string | number = string>({
     // the closed state) consumes the navigation keys; the site keys
     // below compose after it.
     if (handleNavigationKey(e)) return;
+    // Enter commits the highlighted row (the create row included — it
+    // leads `listItems`) and Escape closes through the shared commit
+    // dispatch (utils/picker-selection's pickerCommitKey). This site
+    // keeps its long-standing laxer defaults: an unhighlighted Enter
+    // falls through untouched and Escape keeps its native default.
     if (
-      e.key === 'Enter' &&
-      highlightIndex >= 0 &&
-      listItems[highlightIndex]
-    ) {
-      e.preventDefault();
-      handleSelect(listItems[highlightIndex].value);
-    } else if (e.key === 'Escape') {
-      setOpen(false);
-    } else if (
+      pickerCommitKey(e, {
+        items: listItems,
+        activeIndex: highlightIndex,
+        onCommit: handleSelect,
+        onClose: () => setOpen(false),
+      })
+    )
+      return;
+    if (
       // Keyboard parity for the chips' pointer ×: Backspace on an empty
       // query drops the most recently selected value (utils/
       // picker-selection's dropLastPickerValue).

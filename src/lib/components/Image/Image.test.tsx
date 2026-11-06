@@ -61,6 +61,29 @@ describe('Image', () => {
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 
+  it('recovers when src changes after an error, then falls back again if the new src fails', () => {
+    const { rerender } = render(
+      <Image src="broken.jpg" alt="test" fallback={<span data-testid="fb">Error</span>} />
+    );
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.getByTestId('fb')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+    // New src (upload finished / user switched) must render as an image
+    // again — the failure must not be sticky across src changes.
+    rerender(
+      <Image src="fixed.jpg" alt="test" fallback={<span data-testid="fb">Error</span>} />
+    );
+    const img = screen.getByRole('img');
+    expect(img).toHaveAttribute('src', 'fixed.jpg');
+    expect(screen.queryByTestId('fb')).not.toBeInTheDocument();
+
+    // And only the newly failed src falls back again.
+    fireEvent.error(img);
+    expect(screen.getByTestId('fb')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('forwards native img props', () => {
     render(
       <Image

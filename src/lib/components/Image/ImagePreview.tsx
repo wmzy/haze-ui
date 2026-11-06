@@ -22,7 +22,7 @@ import {
 } from '../../icons';
 import { focusRingVisible } from '../../utils/focus-ring';
 import { useNativeDialogShell } from '../../utils/native-dialog';
-import { capturePointer } from '../../utils/pointer-capture';
+import { usePointerDrag } from '../../utils/use-pointer-drag';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 
 /**
@@ -298,8 +298,9 @@ const thumbnailImg = css`
   object-fit: cover;
 `;
 
+/* Pan origin math only: the active pointer's identity is gated by the
+   shared usePointerDrag wiring, so the frozen geometry lives here. */
 type DragState = {
-  pointerId: number;
   startX: number;
   startY: number;
   originX: number;
@@ -388,32 +389,46 @@ export default function ImagePreview({
     return () => el.removeEventListener('wheel', onWheel);
   }, [open, zoom]);
 
-  const handlePointerDown = (event: ReactPointerEvent<HTMLImageElement>) => {
-    if (!zoom || event.button !== 0) return;
-    // Guarded capture — jsdom and capture-less engines keep delivering
-    // moves bubbling through the image so drag tests run there.
-    capturePointer(event.currentTarget, event.pointerId);
-    dragRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: offset.x,
-      originY: offset.y,
-    };
-    setDragging(true);
-  };
+  // Pan rides the shared usePointerDrag hook (pointerId gate + guarded
+  // capture — the Signature/ImageCrop precedent): extract streams the
+  // raw pointer position, apply freezes the gesture origin on down and
+  // commits pan frames against it, release drops the frozen geometry.
+  // The zoom guard is start-only — an already-open gesture keeps
+  // resolving so its release can end it cleanly.
+  const panDrag = usePointerDrag<HTMLImageElement, { x: number; y: number }>(
+    (event) => {
+      if (dragRef.current === null && !zoom) return null;
+      return { x: event.clientX, y: event.clientY };
+    },
+    (pointer) => {
+      const drag = dragRef.current;
+      if (drag === null) {
+        dragRef.current = {
+          startX: pointer.x,
+          startY: pointer.y,
+          originX: offset.x,
+          originY: offset.y,
+        };
+        setDragging(true);
+        return;
+      }
+      setOffset({
+        x: drag.originX + pointer.x - drag.startX,
+        y: drag.originY + pointer.y - drag.startY,
+      });
+    },
+    () => {
+      // Every pan frame applied live; ending the gesture only drops the
+      // frozen origin and the grabbing cursor.
+      dragRef.current = null;
+      setDragging(false);
+    }
+  );
 
-  const handlePointerMove = (event: ReactPointerEvent<HTMLImageElement>) => {
-    const drag = dragRef.current;
-    if (drag?.pointerId !== event.pointerId) return;
-    setOffset({
-      x: drag.originX + event.clientX - drag.startX,
-      y: drag.originY + event.clientY - drag.startY,
-    });
-  };
-
-  const endDrag = (event: ReactPointerEvent<HTMLImageElement>) => {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
+  // The hook's pointercancel arm aborts without a commit — the frozen
+  // gesture and the grabbing cursor need dropping on this side.
+  const cancelPan = (event: ReactPointerEvent<HTMLImageElement>) => {
+    panDrag.onPointerCancel(event);
     dragRef.current = null;
     setDragging(false);
   };
@@ -466,10 +481,10 @@ export default function ImagePreview({
         style={{
           transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale}) rotate(${rotation}deg)`,
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerDown={panDrag.onPointerDown}
+        onPointerMove={panDrag.onPointerMove}
+        onPointerUp={panDrag.onPointerUp}
+        onPointerCancel={cancelPan}
       />
       {galleryMode && (
         <button

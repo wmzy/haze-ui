@@ -16,8 +16,11 @@
  * - create rows are never rendered locked — they are suppressed at the
  *   cap (and while loading, and when the query matches anything).
  * - keyboard chip parity: Backspace drops the most recently selected
- *   value (the pointer-only chip × has no keyboard twin). The Enter/
- *   Escape arms stay local per family — their focus semantics differ.
+ *   value (the pointer-only chip × has no keyboard twin). The Enter
+ *   commit / Escape close dispatch is shared too (pickerCommitKey) —
+ *   the per-site axes (the trigger button's Space key and open gate,
+ *   the input default suppression, the post-close refocus) are
+ *   options on it.
  * - query matching: the needle trims first (a whitespace-only query
  *   keeps the full list instead of matching nothing), then compares as
  *   a case-insensitive substring.
@@ -63,6 +66,90 @@ export function togglePickerValue<T>(
  */
 export function dropLastPickerValue<T>(selected: readonly T[]): T[] {
   return selected.slice(0, -1);
+}
+
+/**
+ * The Enter/Escape arms every picker keydown site shares after the
+ * navigation skeleton (utils/use-listbox-navigation's
+ * handleNavigationKey): Enter commits the highlighted row through the
+ * family's commit path (create-row routing and disabled-row inertia
+ * live there — Select's `choose`, Combobox's `handleSelect`), Escape
+ * closes the panel. Returns whether the event was consumed, so site
+ * keys (Backspace everywhere, the trigger button's ungated
+ * fall-through to the native click) compose after it.
+ */
+export function pickerCommitKey<T>(
+  e: { readonly key: string; preventDefault: () => void },
+  site: {
+    /** The flat row list in keyboard order (Select's
+     * `navigableOptions`, Combobox's `listItems` — the create row is
+     * a plain leading row in both). */
+    items: readonly { readonly value: T }[];
+    /** The highlighted row index, straight from useListboxNavigation
+     * (-1 = none). */
+    activeIndex: number;
+    /** The family commit path for the highlighted row's value. */
+    onCommit: (value: T) => void;
+    /** The family close path (the setOpen(false) call). */
+    onClose: () => void;
+    /**
+     * The trigger button's contract: Space joins Enter as a commit key
+     * (' ' arrives from real browsers; user-event's {Space} reports
+     * the legacy 'Space' key name — accept both), the commit stays
+     * gated on an open panel (`open`) with a highlighted row so an
+     * ungated Enter/Space falls through to the native click (with no
+     * highlight, a fresh open, the panel keeps toggling like any
+     * button), the gate's preventDefault is what suppresses that
+     * activation (the follow-up click would run the trigger's toggle
+     * and close the panel mid-selection), and Escape drops its
+     * suppression (a button keydown has no default worth
+     * suppressing).
+     */
+    button?: boolean;
+    /** The button gate's open state — only consulted with `button`. */
+    open?: boolean;
+    /**
+     * The input-site contract of Select's tags and panel-search
+     * inputs: an Enter with no highlighted row is still consumed — an
+     * unhandled Enter in an input would submit an enclosing form —
+     * and the Escape close also suppresses the native default.
+     * Combobox's input keeps its long-standing laxer contract (an
+     * unhighlighted Enter falls through untouched, Escape keeps its
+     * native default).
+     */
+    suppressDefaults?: boolean;
+    /**
+     * Invoked after the Escape close — the panel search input, whose
+     * focus does not live in the field, hands focus back to the
+     * trigger.
+     */
+    refocus?: () => void;
+  }
+): boolean {
+  const highlighted = site.items[site.activeIndex];
+  const commit =
+    e.key === 'Enter' ||
+    (site.button === true && (e.key === ' ' || e.key === 'Space'));
+  // The commit gate: the trigger button stays gated on an open panel
+  // with a highlighted row (ungated keys fall through to the native
+  // click); every other site either demands a highlighted row
+  // (Combobox) or suppresses instead of gating (Select's inputs).
+  const gate =
+    site.button === true
+      ? site.open === true && highlighted
+      : site.suppressDefaults === true || highlighted;
+  if (commit && gate) {
+    e.preventDefault();
+    if (highlighted) site.onCommit(highlighted.value);
+    return true;
+  }
+  if (e.key === 'Escape') {
+    if (site.suppressDefaults === true) e.preventDefault();
+    site.onClose();
+    site.refocus?.();
+    return true;
+  }
+  return false;
 }
 
 /**

@@ -4,17 +4,17 @@ import type { CollisionPadding } from '../../utils/collision';
 import type { MenuDataItem } from '../../utils/menuItems';
 import type { DropdownMenuClassNames } from './DropdownMenuContext';
 
-import { useId, useMemo, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
-import { toCollisionStrategy } from '../../utils/collision';
 import {
   useFloating,
   useFloatingHandle,
   useOpenWithChange,
 } from '../../utils/floating';
 import { renderMenuDataItems } from '../../utils/menuItems';
+import { useCollisionStrategy } from '../../utils/use-collision-strategy';
 
 import DropdownMenuCheckboxItem from './DropdownMenuCheckboxItem';
 import DropdownMenuContent from './DropdownMenuContent';
@@ -124,12 +124,7 @@ export default function DropdownMenu({
   // toggles, same as the trigger and items.
   useFloatingHandle({ ref, setOpen: handleSetOpen, triggerRef });
 
-  // Stable identity: useFloatingPosition re-runs its effect on every
-  // change of this object.
-  const collision = useMemo(
-    () => toCollisionStrategy(collisionPadding),
-    [collisionPadding]
-  );
+  const collision = useCollisionStrategy(collisionPadding);
 
   const floating = useFloating({
     open,

@@ -39,6 +39,30 @@ export const focusWithinRing = css`
 `;
 
 /**
+ * The de-chromed inner control a multi-child field paints inside its
+ * chrome container (TagInput's input, PromptInput's and ChatInput's
+ * textareas, NumberInput's inner number input): no border, no
+ * outline, the field ink and the sans face — the surface lives on the
+ * wrapper composing `fieldChrome`/`focusWithinRing` above.
+ *
+ * Drift discipline, applied strictly: only the quartet's literally
+ * shared declarations ride here. The fill stays local (three sites
+ * paint `background: none` over the wrapper's chrome; NumberInput's
+ * inner input paints its own bg), and so do font-size/padding —
+ * NumberInput pairs this class with `fieldSizes` for them, and a
+ * shared declaration would tie that size map's specificity (dev
+ * import-order injection and the dist split-css order disagree — see
+ * utils/quiet-button-skin.ts). Companion classes are additive by
+ * property, never contending with the size map.
+ */
+export const fieldBareInner = css`
+  border: none;
+  outline: none;
+  color: var(--haze-color-text);
+  font-family: var(--haze-font-sans);
+`;
+
+/**
  * The native `<input>`/`<textarea>` chrome Input and Textarea wore as
  * two byte-identical base blocks (Textarea added only `resize`).
  * Everything except the surface trio above: block sizing, typography,

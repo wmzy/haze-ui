@@ -114,6 +114,19 @@ describe('PromptInput', () => {
     expect(screen.queryByRole('button', { name: 'Remove vue' })).not.toBeInTheDocument();
   });
 
+  it('removes a tag on Backspace focused on its remove button', async () => {
+    const user = userEvent.setup();
+    const onTagsChange = vi.fn();
+    render(<PromptInput tags={['react', 'vue']} onTagsChange={onTagsChange} />);
+    screen.getByRole('button', { name: 'Remove vue' }).focus();
+    await user.keyboard('{Backspace}');
+    expect(onTagsChange).toHaveBeenCalledWith(['react']);
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(
+      screen.queryByRole('button', { name: 'Remove vue' })
+    ).not.toBeInTheDocument();
+  });
+
   it('removes the last tag on Backspace with empty text', async () => {
     const user = userEvent.setup();
     const onTagsChange = vi.fn();

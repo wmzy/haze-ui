@@ -6,6 +6,12 @@ import { useControl } from 'react-use-control';
 
 import { warnItemsChildrenConflict } from '../../utils/warn-items-children';
 
+import {
+  labelStruck,
+  timelineDescription,
+  timelineLabel,
+} from '../../utils/timeline-skin';
+
 import { CheckboxCore } from '../Checkbox';
 
 type TaskListProps = {
@@ -114,22 +120,10 @@ const body = css`
   min-width: 0;
 `;
 
-const titleStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
-const titleDone = css`
-  color: var(--haze-color-text-muted);
-  text-decoration: line-through;
-`;
-
-const descriptionStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-block-start: var(--haze-space-1);
-`;
+/* Title/description ride the shared timeline text skins
+   (utils/timeline-skin): timelineLabel / timelineDescription and the
+   labelStruck completion arm are byte-identical to the local copies
+   they replace. */
 
 const actionsStyle = css`
   flex-shrink: 0;
@@ -157,11 +151,11 @@ function TaskListItem({
 
   const bodyNode = (
     <div data-slot='task-body' x-class={[body]}>
-      <div data-slot='task-title' x-class={[titleStyle, checked && titleDone]}>
+      <div data-slot='task-title' x-class={[timelineLabel, checked && labelStruck]}>
         {title}
       </div>
       {description && (
-        <div data-slot='task-description' x-class={[descriptionStyle]}>
+        <div data-slot='task-description' x-class={[timelineDescription]}>
           {description}
         </div>
       )}

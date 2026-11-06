@@ -73,8 +73,21 @@ const textCode = css`
 `;
 
 const textMark = css`
-  background: color-mix(in srgb, var(--haze-color-warning) 25%, transparent);
+  /* Subtle background + tone color — the Mark status pairing
+     (warning-subtle over warning), replacing a hand-mixed
+     color-mix. The forced-colors arm mirrors Mark.tsx locally:
+     Typography is RSC-safe and stays free of component-dir css
+     imports. */
+  background: var(--haze-color-warning-subtle);
+  color: var(--haze-color-warning);
   padding: 0 var(--haze-space-1);
+
+  @media (forced-colors: active) {
+    /* UA flattens backgrounds — the highlight stays visible via the
+       system Highlight pair */
+    background: Mark;
+    color: MarkText;
+  }
 `;
 
 /*

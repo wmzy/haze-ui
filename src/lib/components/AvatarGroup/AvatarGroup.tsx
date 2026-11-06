@@ -3,6 +3,8 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { css } from '@linaria/core';
 import { Children, isValidElement } from 'react';
 
+import { avatarBase, avatarSizes } from '../Avatar/avatar-styles';
+
 type AvatarGroupProps = {
   /** Maximum number of avatars rendered before the overflow chip. */
   max?: number;
@@ -33,21 +35,13 @@ const itemStacked = css`
   margin-inline-start: calc(-1 * var(--haze-space-3));
 `;
 
-/* Matches Avatar's sm frame (space-8) so the chip reads as one more
-   avatar in the stack rather than a foreign badge. */
-const overflowChip = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Overflow-count semantics layered over the shared Avatar sm frame
+   (Avatar/avatar-styles): the "+N" glyph sits tight in the space-8
+   circle and never wraps, so the chip reads as one more avatar in the
+   stack rather than a foreign badge. Everything else is the shared
+   chassis; these three declarations are the chip's own. */
+const overflowDelta = css`
   box-sizing: border-box;
-  width: var(--haze-space-8);
-  height: var(--haze-space-8);
-  border-radius: var(--haze-radius-full);
-  background: var(--haze-color-bg-muted);
-  color: var(--haze-color-text-secondary);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  font-weight: var(--haze-weight-medium);
   line-height: var(--haze-leading-tight);
   white-space: nowrap;
 `;
@@ -83,7 +77,7 @@ export default function AvatarGroup({
       {truncating && (
         <span
           data-slot="overflow-badge"
-          x-class={[item, overflowChip, visible.length > 0 && itemStacked]}
+          x-class={[item, avatarBase, avatarSizes.sm, overflowDelta, visible.length > 0 && itemStacked]}
         >
           {overflowLabel(overflowCount)}
         </span>

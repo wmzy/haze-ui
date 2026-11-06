@@ -7,12 +7,11 @@ import PasswordInputCore from './PasswordInputCore';
 
 type PasswordInputProps = {
   value?: ControlOrValue<string>;
-  onChange?: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  /** Forwarded to the inner password `<input>` (not the wrapper div) —
-   * the element form bridges and `ref.current.focus()` reach. */
+  /** Forwarded to the inner password `<input>` — the element form
+   * bridges and `ref.current.focus()` reach. */
   ref?: Ref<HTMLInputElement>;
   /* Native size is omitted for the same reason as Input/MaskedInput/
    * NumberInput: the character-width attribute would collide with
@@ -21,7 +20,6 @@ type PasswordInputProps = {
   ComponentPropsWithoutRef<'input'>,
   | 'type'
   | 'value'
-  | 'onChange'
   | 'placeholder'
   | 'disabled'
   | 'className'
@@ -44,10 +42,8 @@ export default function PasswordInput({
     <PasswordInputCore
       ref={ref}
       value={value}
-      onChange={(next) => {
-        setValue(next);
-        onChange?.(next);
-      }}
+      onChange={setValue}
+      onNativeChange={onChange}
       placeholder={placeholder}
       disabled={disabled}
       className={className}

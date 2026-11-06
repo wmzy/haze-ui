@@ -76,7 +76,12 @@ export default function Image({
   onError,
   ...rest
 }: ImageProps) {
-  const [error, setError] = useState(false);
+  // Track the src that failed, not a sticky boolean: when src changes
+  // (upload finished, user switched) the new image must render again.
+  // Only that exact src stays failed — prop-change resync precedent:
+  // Avatar/Avatar.tsx.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const error = failedSrc !== null && failedSrc === src;
   const { enabled: previewEnabled, zoom: zoomEnabled, rotate: rotateEnabled } =
     resolveImagePreviewConfig(preview);
   const [, setPreviewOpen, previewOpenCtrl] = useControl(undefined, false);
@@ -111,7 +116,7 @@ export default function Image({
   // onError (forwarded via the native props arm) still fires.
   const handleError = (event: SyntheticEvent<HTMLImageElement>) => {
     onError?.(event);
-    setError(true);
+    setFailedSrc(src);
   };
 
   // Same composition as onError: the preview logic owns the click, a
