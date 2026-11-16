@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.1](https://github.com/wmzy/haze-ui/compare/v1.35.0...v1.35.1) (2026-11-16)
+
+
+### Bug Fixes
+
+* **ci:** migrate to jsdom 31 / Playwright 1.65 and hold TypeScript at 6 ([8b2cc60](https://github.com/wmzy/haze-ui/commit/8b2cc6047dc86b825e0cef4cc1f989453298a5c2))
+
 # [1.35.0](https://github.com/wmzy/haze-ui/compare/v1.34.1...v1.35.0) (2026-10-26)
 
 
