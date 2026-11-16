@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794228312611,
+  "lastUpdate": 1794801512190,
   "repoUrl": "https://github.com/wmzy/haze-ui",
   "entries": {
     "Benchmark": [
@@ -500,6 +500,90 @@ window.BENCHMARK_DATA = {
             "value": 545.02,
             "unit": "ops/s",
             "extra": "±5.94 ops/s (rme 1.09%, n=533)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "1256573276@qq.com",
+            "name": "wmzy",
+            "username": "wmzy"
+          },
+          "committer": {
+            "email": "1256573276@qq.com",
+            "name": "wmzy",
+            "username": "wmzy"
+          },
+          "distinct": true,
+          "id": "8b2cc6047dc86b825e0cef4cc1f989453298a5c2",
+          "message": "fix(ci): migrate to jsdom 31 / Playwright 1.65 and hold TypeScript at 6",
+          "timestamp": "2026-11-16T11:41:58+08:00",
+          "tree_id": "2f75954ca5e16e95d56a4f14729dcd2252f36e07",
+          "url": "https://github.com/wmzy/haze-ui/commit/8b2cc6047dc86b825e0cef4cc1f989453298a5c2"
+        },
+        "date": 1794801511427,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · latency",
+            "value": 173.605946,
+            "unit": "ms",
+            "extra": "±8.688083 ms (rme 5.00%, n=15)"
+          },
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · throughput",
+            "value": 5.8,
+            "unit": "ops/s",
+            "extra": "±0.29 ops/s (rme 5.01%, n=15)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · latency",
+            "value": 104.941767,
+            "unit": "ms",
+            "extra": "±6.002392 ms (rme 5.72%, n=20)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · throughput",
+            "value": 9.65,
+            "unit": "ops/s",
+            "extra": "±0.47 ops/s (rme 4.91%, n=20)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · latency",
+            "value": 0.325553,
+            "unit": "ms",
+            "extra": "±0.00643 ms (rme 1.98%, n=3072)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · throughput",
+            "value": 3291.77,
+            "unit": "ops/s",
+            "extra": "±19.98 ops/s (rme 0.61%, n=3072)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · latency",
+            "value": 0.979645,
+            "unit": "ms",
+            "extra": "±0.059398 ms (rme 6.06%, n=1021)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · throughput",
+            "value": 1184.54,
+            "unit": "ops/s",
+            "extra": "±18.03 ops/s (rme 1.52%, n=1021)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · latency",
+            "value": 1.143011,
+            "unit": "ms",
+            "extra": "±0.024148 ms (rme 2.11%, n=875)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · throughput",
+            "value": 905.87,
+            "unit": "ops/s",
+            "extra": "±8.12 ops/s (rme 0.90%, n=875)"
           }
         ]
       }
