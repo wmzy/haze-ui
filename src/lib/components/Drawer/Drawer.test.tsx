@@ -13,6 +13,12 @@ beforeEach(() => {
     this: HTMLDialogElement
   ) {
     this.setAttribute('open', '');
+    // jsdom 31 refuses focus inside display:none subtrees (browsers always
+    // did); mirror the native showModal focusing steps so opening the
+    // drawer observably moves focus, as in a browser.
+    this.querySelector<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )?.focus();
   });
   HTMLDialogElement.prototype.close = vi.fn(function (
     this: HTMLDialogElement

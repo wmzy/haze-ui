@@ -77,7 +77,9 @@ describe('Text ellipsis', () => {
   it('multi-line applies the line-clamp box style', () => {
     render(<Text ellipsis={{ lines: 2 }}>hello world</Text>);
     const el = screen.getByText('hello world');
-    expect(el.getAttribute('style')).toContain('-webkit-line-clamp: 2');
+    // jsdom 31 serializes the legacy prefixed declaration as
+    // `line-clamp: 2 -webkit-legacy`; match the count on either spelling.
+    expect(el.getAttribute('style')).toMatch(/line-clamp:\s*2\b/);
     expect(el.getAttribute('style')).toContain('-webkit-box');
     expect(el.getAttribute('style')).toContain('overflow: hidden');
     expect(el).toHaveAttribute('title', 'hello world');
@@ -134,7 +136,7 @@ describe('Paragraph', () => {
   it('multi-line ellipsis applies the line-clamp style', () => {
     render(<Paragraph ellipsis={{ lines: 3 }}>body copy</Paragraph>);
     const el = screen.getByText('body copy');
-    expect(el.getAttribute('style')).toContain('-webkit-line-clamp: 3');
+    expect(el.getAttribute('style')).toMatch(/line-clamp:\s*3\b/);
     expect(el).toHaveAttribute('title', 'body copy');
   });
 

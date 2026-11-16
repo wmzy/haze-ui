@@ -42,13 +42,21 @@ function installGeometry(scrollHeight: number, clientHeight: number) {
   };
 }
 
+/**
+ * jsdom 31's CSS engine rewrites an inline `-webkit-line-clamp: N` to
+ * `line-clamp: N -webkit-legacy` when serializing; jsdom 30 kept the
+ * prefixed spelling. Match the clamp count on either name.
+ */
+const lineClamp = (lines: number) => new RegExp(`line-clamp:\\s*${lines}\\b`);
+const anyLineClamp = /line-clamp/;
+
 describe('Ellipsis', () => {
   it('clamps to one line by default', () => {
     const restore = installGeometry(120, 40);
     try {
       renderEllipsis(<Ellipsis>{LONG}</Ellipsis>);
-      expect(screen.getByText(LONG).getAttribute('style')).toContain(
-        '-webkit-line-clamp: 1',
+      expect(screen.getByText(LONG).getAttribute('style')).toMatch(
+        lineClamp(1),
       );
     } finally {
       restore();
@@ -59,8 +67,8 @@ describe('Ellipsis', () => {
     const restore = installGeometry(120, 40);
     try {
       renderEllipsis(<Ellipsis lines={3}>{LONG}</Ellipsis>);
-      expect(screen.getByText(LONG).getAttribute('style')).toContain(
-        '-webkit-line-clamp: 3',
+      expect(screen.getByText(LONG).getAttribute('style')).toMatch(
+        lineClamp(3),
       );
     } finally {
       restore();
@@ -116,15 +124,15 @@ describe('Ellipsis', () => {
       );
 
       const text = screen.getByText(LONG);
-      expect(text.getAttribute('style')).toContain('-webkit-line-clamp: 2');
+      expect(text.getAttribute('style')).toMatch(lineClamp(2));
 
       await user.click(screen.getByRole('button', { name: 'Expand' }));
-      expect(screen.getByText(LONG).getAttribute('style')).not.toContain('-webkit-line-clamp');
+      expect(screen.getByText(LONG).getAttribute('style')).not.toMatch(anyLineClamp);
       expect(onExpandChange).toHaveBeenLastCalledWith(true);
 
       await user.click(screen.getByRole('button', { name: 'Collapse' }));
-      expect(screen.getByText(LONG).getAttribute('style')).toContain(
-        '-webkit-line-clamp: 2',
+      expect(screen.getByText(LONG).getAttribute('style')).toMatch(
+        lineClamp(2),
       );
       expect(onExpandChange).toHaveBeenLastCalledWith(false);
     } finally {
@@ -143,7 +151,7 @@ describe('Ellipsis', () => {
       expect(button).toHaveFocus();
       await user.keyboard('{Enter}');
       expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument();
-      expect(screen.getByText(LONG).getAttribute('style')).not.toContain('-webkit-line-clamp');
+      expect(screen.getByText(LONG).getAttribute('style')).not.toMatch(anyLineClamp);
     } finally {
       restore();
     }
@@ -167,13 +175,13 @@ describe('Ellipsis', () => {
       const user = userEvent.setup();
       renderEllipsis(<Controlled />);
       expect(screen.getByTestId('state')).toHaveTextContent('false');
-      expect(screen.getByText(LONG).getAttribute('style')).toContain(
-        '-webkit-line-clamp: 2',
+      expect(screen.getByText(LONG).getAttribute('style')).toMatch(
+        lineClamp(2),
       );
 
       await user.click(screen.getByRole('button', { name: 'Expand' }));
       expect(screen.getByTestId('state')).toHaveTextContent('true');
-      expect(screen.getByText(LONG).getAttribute('style')).not.toContain('-webkit-line-clamp');
+      expect(screen.getByText(LONG).getAttribute('style')).not.toMatch(anyLineClamp);
     } finally {
       restore();
     }

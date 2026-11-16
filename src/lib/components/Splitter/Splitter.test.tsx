@@ -581,7 +581,9 @@ describe('Splitter controlled sizes (ControlOrValue)', () => {
     // their sizes; a pane without an entry falls back to an equal share.
     expect(growOf(0)).toBe('50');
     expect(growOf(1)).toBe('50');
-    expect(growOf(2)).toBe(String(100 / 3));
+    // jsdom 31 serializes numbers with limited precision (33.3333), so
+    // compare the magnitude rather than the full float string.
+    expect(Number.parseFloat(growOf(2))).toBeCloseTo(100 / 3, 3);
   });
 });
 

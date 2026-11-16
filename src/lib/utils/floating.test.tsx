@@ -524,6 +524,17 @@ describe('tier-2 positioning: visibility-gated placement', () => {
 // Tier 1 (anchored): cross-axis nudge via translate
 // ---------------------------------------------------------------------------
 
+/**
+ * Cross-axis nudge, component-wise: jsdom 31 canonicalizes
+ * `translate: -50px 0px` to `-50px` (zero component dropped) while jsdom 30
+ * kept both. Assert the x offset and treat a missing y as the implicit 0px,
+ * so the expectation encodes the nudge rather than the serializer.
+ */
+const translateOf = (el: HTMLElement): [string, string] => {
+  const [x = '', y = '0px'] = el.style.translate.split(/\s+/);
+  return [x, y];
+};
+
 describe('tier-1 anchored nudge', () => {
   const TRIGGER = {top: 300, left: 462, bottom: 330, right: 542, width: 80, height: 30};
   // Overflows the right viewport edge by 50px.
@@ -546,7 +557,7 @@ describe('tier-1 anchored nudge', () => {
     try {
       render(<FloatingHarness placement="bottom-span" />);
       fireEvent.click(screen.getByText('Trigger'));
-      expect(screen.getByTestId('panel').style.translate).toBe('-50px 0px');
+      expect(translateOf(screen.getByTestId('panel'))).toEqual(['-50px', '0px']);
     } finally {
       rectSpy.mockRestore();
     }
@@ -560,7 +571,7 @@ describe('tier-1 anchored nudge', () => {
       );
       fireEvent.click(screen.getByText('Trigger'));
       // 1024 − 24 − 150 − 924 = −74.
-      expect(screen.getByTestId('panel').style.translate).toBe('-74px 0px');
+      expect(translateOf(screen.getByTestId('panel'))).toEqual(['-74px', '0px']);
     } finally {
       rectSpy.mockRestore();
     }
@@ -600,7 +611,7 @@ describe('tier-1 anchored nudge', () => {
       box.left = 924;
       box.right = 1074;
       fireEvent.scroll(window);
-      expect(screen.getByTestId('panel').style.translate).toBe('-50px 0px');
+      expect(translateOf(screen.getByTestId('panel'))).toEqual(['-50px', '0px']);
     } finally {
       rectSpy.mockRestore();
     }
@@ -611,7 +622,7 @@ describe('tier-1 anchored nudge', () => {
     try {
       render(<FloatingHarness placement="bottom-span" />);
       fireEvent.click(screen.getByText('Trigger'));
-      expect(screen.getByTestId('panel').style.translate).toBe('-50px 0px');
+      expect(translateOf(screen.getByTestId('panel'))).toEqual(['-50px', '0px']);
       fireEvent.click(screen.getByText('Trigger'));
       // Animated close: the nudge is cleared once hidePopover settled.
       await waitFor(() => expect(hidePopoverMock).toHaveBeenCalledTimes(1));

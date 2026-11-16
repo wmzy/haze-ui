@@ -5,8 +5,6 @@ import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 import { useControl } from 'react-use-control';
 
-import { SUBMENU_CLOSE_GRACE_MS, SUBMENU_OPEN_DELAY_MS } from '../../utils/submenu';
-
 import { menuItemDanger } from '../../utils/menu-skins';
 import {
   installNativePopover,
@@ -664,53 +662,33 @@ describe('DropdownMenu submenu', () => {
     expect(screen.getByText('Alpha')).toBeInTheDocument();
   });
 
-  it('opens on hover after the intent delay, without stealing focus', () => {
-    vi.useFakeTimers();
-    try {
-      const trigger = renderSubmenu();
-      trigger.focus();
-      fireEvent.click(trigger);
-      const more = screen.getByRole('menuitem', { name: 'More' });
-      fireEvent.pointerOver(more);
-      expect(more).toHaveAttribute('aria-expanded', 'false');
-      act(() => {
-        vi.advanceTimersByTime(SUBMENU_OPEN_DELAY_MS - 1);
-      });
-      expect(more).toHaveAttribute('aria-expanded', 'false');
-      act(() => {
-        vi.advanceTimersByTime(1);
-      });
-      expect(more).toHaveAttribute('aria-expanded', 'true');
-      // hover never moves keyboard focus (still on the root trigger)
-      expect(trigger).toHaveFocus();
-    } finally {
-      vi.useRealTimers();
-    }
+  // NOTE: real timers on purpose. Vitest fake timers replace the
+  // setInterval jsdom 31's animation-frame driver schedules with (focus
+  // fixups arm it); restoring real timers discards that fake interval and
+  // the window's rAF loop stays dead for every later test in the file.
+  it('opens on hover after the intent delay, without stealing focus', async () => {
+    const trigger = renderSubmenu();
+    trigger.focus();
+    fireEvent.click(trigger);
+    const more = screen.getByRole('menuitem', { name: 'More' });
+    fireEvent.pointerOver(more);
+    // the intent delay has not elapsed synchronously
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(more).toHaveAttribute('aria-expanded', 'true'));
+    // hover never moves keyboard focus (still on the root trigger)
+    expect(trigger).toHaveFocus();
   });
 
-  it('closes a hover-opened submenu after a grace period once the pointer settles elsewhere', () => {
-    vi.useFakeTimers();
-    try {
-      const trigger = renderSubmenu();
-      fireEvent.click(trigger);
-      const more = screen.getByRole('menuitem', { name: 'More' });
-      fireEvent.pointerOver(more);
-      act(() => {
-        vi.advanceTimersByTime(SUBMENU_OPEN_DELAY_MS);
-      });
-      expect(more).toHaveAttribute('aria-expanded', 'true');
-      fireEvent.pointerOver(screen.getByText('Alpha'));
-      act(() => {
-        vi.advanceTimersByTime(SUBMENU_CLOSE_GRACE_MS - 1);
-      });
-      expect(more).toHaveAttribute('aria-expanded', 'true');
-      act(() => {
-        vi.advanceTimersByTime(1);
-      });
-      expect(more).toHaveAttribute('aria-expanded', 'false');
-    } finally {
-      vi.useRealTimers();
-    }
+  it('closes a hover-opened submenu after a grace period once the pointer settles elsewhere', async () => {
+    const trigger = renderSubmenu();
+    fireEvent.click(trigger);
+    const more = screen.getByRole('menuitem', { name: 'More' });
+    fireEvent.pointerOver(more);
+    await waitFor(() => expect(more).toHaveAttribute('aria-expanded', 'true'));
+    fireEvent.pointerOver(screen.getByText('Alpha'));
+    // the grace window keeps the submenu open synchronously
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(more).toHaveAttribute('aria-expanded', 'false'));
   });
 
   it('supports two nesting levels with per-level Escape', async () => {

@@ -47,6 +47,14 @@ import {
 
 type SalesDatum = { month: string; sales: number; costs: number };
 
+/**
+ * jsdom 31's computed style cannot resolve a var() reference without a
+ * registered property (it reports transparent), so authored waffle colors
+ * are asserted on the inline declaration instead of via toHaveStyle.
+ */
+const backgroundOf = (el: Element | null | undefined) =>
+  el ? (el as HTMLElement).style.background : undefined;
+
 const DATA: SalesDatum[] = [
   { month: 'Jan', sales: 12, costs: 8 },
   { month: 'Feb', sales: 18, costs: 10 },
@@ -1382,10 +1390,8 @@ describe('Chart', () => {
     // 7 + 3 = 10 units = one full row of the default 10 columns
     const cells = container.querySelectorAll("[data-slot='waffle-cell']");
     expect(cells).toHaveLength(10);
-    expect(cells[0]).toHaveStyle({
-      background: 'var(--haze-color-success)',
-    });
-    expect(cells[7]).toHaveStyle({ background: 'var(--haze-color-warning)' });
+    expect(backgroundOf(cells[0])).toBe('var(--haze-color-success)');
+    expect(backgroundOf(cells[7])).toBe('var(--haze-color-warning)');
     // built-in legend: one item per series with its swatch color
     const legendItems = container.querySelectorAll(
       "[data-slot='waffle-legend-item']"
@@ -1394,8 +1400,10 @@ describe('Chart', () => {
     expect(legendItems[0]).toHaveTextContent('Shipped');
     expect(legendItems[1]).toHaveTextContent('Pending');
     expect(
-      container.querySelector("[data-slot='waffle-legend-swatch']")
-    ).toHaveStyle({ background: 'var(--haze-color-success)' });
+      backgroundOf(
+        container.querySelector("[data-slot='waffle-legend-swatch']")
+      )
+    ).toBe('var(--haze-color-success)');
     // no recharts involved in the waffle branch
     expect(ResponsiveContainer).not.toHaveBeenCalled();
   });
@@ -1414,17 +1422,15 @@ describe('Chart', () => {
     // 15 units round up to two rows: 15 colored + 5 muted cells
     const cells = container.querySelectorAll("[data-slot='waffle-cell']");
     expect(cells).toHaveLength(20);
-    expect(cells[14]).toHaveStyle({ background: 'var(--haze-color-info)' });
-    expect(cells[15]).toHaveStyle({
-      background: 'var(--haze-color-bg-muted)',
-    });
-    expect(cells[19]).toHaveStyle({
-      background: 'var(--haze-color-bg-muted)',
-    });
+    expect(backgroundOf(cells[14])).toBe('var(--haze-color-info)');
+    expect(backgroundOf(cells[15])).toBe('var(--haze-color-bg-muted)');
+    expect(backgroundOf(cells[19])).toBe('var(--haze-color-bg-muted)');
     // the grid carries its column count for the CSS grid template
     expect(
-      container.querySelector("[data-slot='waffle-grid']")
-    ).toHaveStyle({ '--waffle-columns': '10' });
+      container
+        .querySelector<HTMLElement>("[data-slot='waffle-grid']")
+        ?.style.getPropertyValue('--waffle-columns')
+    ).toBe('10');
   });
 
   it('labels the waffle graphic and tabulates the series for screen readers', () => {

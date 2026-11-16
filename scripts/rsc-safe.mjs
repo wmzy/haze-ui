@@ -207,6 +207,12 @@ export const RSC_SAFE_MODULES = new Set([
   'components/Progress/index.ts',
   'components/AvatarGroup/AvatarGroup.tsx',
   'components/AvatarGroup/index.ts',
+  // Shared Avatar chassis (avatar-styles.ts): pure Linaria class constants
+  // (base frame + size ladder) — no hooks, no DOM access, only the
+  // externalized @linaria/core import. Required for the RSC-safe closure:
+  // AvatarGroup (safe-listed) imports it for the overflow chip. Avatar
+  // itself stays excluded (useState for the img error fallback).
+  'components/Avatar/avatar-styles.ts',
   // Still excluded, with reasons:
   // - Empty: useStrings drives the visible default description text and
   //   the `empty` section is the flagship of the LocaleProvider strings

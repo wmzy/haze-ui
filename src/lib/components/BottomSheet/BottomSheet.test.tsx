@@ -641,10 +641,11 @@ describe('BottomSheet virtual keyboard', () => {
     const sheet = screen.getByRole('dialog');
 
     // 键盘未弹出：inset 0，仅 dvh 基线（无 transform 写入）。
-    // jsdom 的 cssstyle 会把 calc(100dvh - 0px) 归一化去掉 calc 壳，
-    // 断言取语义片段而非整个序列化串
+    // jsdom 的 CSS 引擎会把 calc(100dvh - 0px) 归一化去掉 calc 壳
+    // （31.x 起把 - 0px 进一步改写为 + 0px），断言取语义片段而非
+    // 整个序列化串
     expect(sheet.style.maxHeight).toContain('80dvh');
-    expect(sheet.style.maxHeight).toContain('100dvh - 0px');
+    expect(sheet.style.maxHeight).toMatch(/100dvh [+-] 0px/);
     expect(sheet.style.transform).toBe('');
 
     // 聚焦 input + 键盘弹出（视口收缩 400 → inset = innerHeight - 400）
@@ -690,7 +691,7 @@ describe('BottomSheet virtual keyboard', () => {
     );
     const sheet = screen.getByRole('dialog');
     expect(sheet.style.maxHeight).toContain('80dvh');
-    expect(sheet.style.maxHeight).toContain('100dvh - 0px');
+    expect(sheet.style.maxHeight).toMatch(/100dvh [+-] 0px/);
     expect(sheet.style.transform).toBe('');
     expect(screen.getByText('Sheet content')).toBeInTheDocument();
   });

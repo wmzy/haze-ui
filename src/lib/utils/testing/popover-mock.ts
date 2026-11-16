@@ -21,12 +21,18 @@ export class ToggleEventPolyfill extends Event {
 
 export const showPopoverMock = vi.fn(function (this: HTMLElement) {
   this.setAttribute('data-popover-open', '');
+  // jsdom 31's UA sheet keeps [popover]:not(:popover-open) display:none and
+  // its focus() now refuses display:none subtrees (browsers always did).
+  // The polyfill has no :popover-open state, so flip inline display like a
+  // really-shown popover would render (block is the UA default for div).
+  this.style.display = 'block';
   this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'open' }));
 });
 
 export const hidePopoverMock = vi.fn(function (this: HTMLElement) {
   if (!this.hasAttribute('data-popover-open')) return;
   this.removeAttribute('data-popover-open');
+  this.style.removeProperty('display');
   this.dispatchEvent(new ToggleEventPolyfill('toggle', { newState: 'closed' }));
 });
 

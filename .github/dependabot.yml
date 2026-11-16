@@ -20,6 +20,14 @@ updates:
     # Runtime deps are size/ABI-sensitive (size-limit budgets, externalized
     # peers); one PR per runtime bump keeps each gate run attributable.
     open-pull-requests-limit: 10
+    # TypeScript 7 (Go port) ships no JS compiler API; typescript-eslint
+    # hard-fails on it ("does not support TS 7.0") and the docs docgen
+    # (scripts/generate-props.mjs) needs ts.sys/ts.createProgram. Keep the
+    # major pinned until both support TS 7.
+    ignore:
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: github-actions
     directory: "/"

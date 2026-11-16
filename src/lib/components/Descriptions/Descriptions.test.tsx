@@ -53,15 +53,16 @@ describe('Descriptions', () => {
   it('defaults to three description columns', () => {
     const { container } = render(<Descriptions items={items} />);
     const dl = container.querySelector('dl')!;
-    expect(dl.style.gridTemplateColumns).toBe(
-      'repeat(3, auto minmax(0, 1fr))'
+    // jsdom 31 canonicalizes the zero track size to 0px; accept either.
+    expect(dl.style.gridTemplateColumns).toMatch(
+      /^repeat\(3, auto minmax\(0(?:px)?, 1fr\)\)$/
     );
   });
 
   it('honours a custom column count', () => {
     const { container } = render(<Descriptions items={items} columns={4} />);
-    expect(container.querySelector('dl')!.style.gridTemplateColumns).toBe(
-      'repeat(4, auto minmax(0, 1fr))'
+    expect(container.querySelector('dl')!.style.gridTemplateColumns).toMatch(
+      /^repeat\(4, auto minmax\(0(?:px)?, 1fr\)\)$/
     );
   });
 

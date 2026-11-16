@@ -7,11 +7,16 @@ import ConfirmDialog from './ConfirmDialog';
 beforeEach(() => {
   // jsdom does not implement showModal/close for HTMLDialogElement (same
   // stub shape as Dialog.test.tsx: showModal sets the open attribute,
-  // close removes it and dispatches the native close event).
+  // close removes it and dispatches the native close event). jsdom 31 also
+  // refuses focus inside display:none subtrees, so the stub mirrors the
+  // native focusing steps — first focusable descendant — once open.
   HTMLDialogElement.prototype.showModal = vi.fn(function (
     this: HTMLDialogElement
   ) {
     this.setAttribute('open', '');
+    this.querySelector<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )?.focus();
   });
   HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
     this.removeAttribute('open');

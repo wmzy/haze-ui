@@ -208,8 +208,12 @@ test.describe('Popover tap', () => {
     expect(panelBox.x).toBeLessThan(triggerBox!.x + triggerBox!.width);
     expect(panelBox.x + panelBox.width).toBeGreaterThan(triggerBox!.x);
 
-    // Tap far outside: light dismiss.
-    await page.touchscreen.tap(8, 880);
+    // Tap far outside: light dismiss. Keep the point inside the 412×839
+    // phone viewport — the Playwright 1.65 Chromium drops a touch
+    // synthesized past the visual viewport instead of delivering it, so
+    // the old fixed y=880 point no longer reached the page.
+    const viewport = page.viewportSize()!;
+    await page.touchscreen.tap(8, viewport.height - 8);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(panel).toBeHidden();
   });

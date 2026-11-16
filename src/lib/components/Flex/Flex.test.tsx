@@ -44,7 +44,10 @@ describe('Flex', () => {
 
   it('applies string gap as-is', () => {
     const { container } = render(<Flex gap="1rem">Content</Flex>);
-    expect(container.firstChild).toHaveStyle({ gap: '1rem' });
+    // jsdom 31 resolves rem in getComputedStyle (as browsers do), so
+    // toHaveStyle would compare 16px against 1rem; the contract here is
+    // the declaration passthrough, not the resolved pixel value.
+    expect((container.firstChild as HTMLElement).style.gap).toBe('1rem');
   });
 
   it('applies wrap style', () => {

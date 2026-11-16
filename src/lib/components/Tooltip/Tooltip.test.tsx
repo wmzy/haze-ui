@@ -282,8 +282,11 @@ describe('Tooltip (anchored-tier collision)', () => {
       // display:none, so the role query must opt into hidden results.
       const bubble = screen.getByRole('tooltip', { hidden: true });
       // 1024 − 24 − 150 − 924 = −74 on the cross axis; 'top' placement
-      // keeps the primary axis to position-try-fallbacks.
-      expect(bubble.style.translate).toBe('-74px 0px');
+      // keeps the primary axis to position-try-fallbacks. jsdom 31 drops
+      // the zero y component from the serialized shorthand, so compare the
+      // components with the implicit 0px default.
+      const [x, y = '0px'] = bubble.style.translate.split(/\s+/);
+      expect([x, y]).toEqual(['-74px', '0px']);
     } finally {
       rectSpy.mockRestore();
       removeNativePopover();
