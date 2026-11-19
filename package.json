@@ -197,7 +197,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-icons": "^5.7.0",
-    "semantic-release": "^25.0.9",
+    "semantic-release": "^26.0.0",
     "size-limit": "^14.3.0",
     "terser": "^5.51.2",
     "tools-config": "^0.5.0",
