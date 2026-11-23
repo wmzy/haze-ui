@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794832693794,
+  "lastUpdate": 1795443876923,
   "repoUrl": "https://github.com/wmzy/haze-ui",
   "entries": {
     "Benchmark": [
@@ -666,6 +666,88 @@ window.BENCHMARK_DATA = {
             "value": 686.97,
             "unit": "ops/s",
             "extra": "±7.19 ops/s (rme 1.05%, n=667)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "wmzy",
+            "username": "wmzy",
+            "email": "1256573276@qq.com"
+          },
+          "committer": {
+            "name": "wmzy",
+            "username": "wmzy",
+            "email": "1256573276@qq.com"
+          },
+          "id": "db7c0e6110394743d7b25d3a2929fc1af5c3facb",
+          "message": "fix(examples): repair copilotkit-recipe type errors in weekly CI\n\n- import useControl from the haze-ui barrel (it re-exports react-use-control) and drop the example's direct react-use-control dep: the standalone lockfile resolved 1.6.0 while the linked library resolved 1.6.1, and Control<T>'s unique-symbol brand made the two copies' types mutually incompatible (Control<boolean> not assignable to ControlOrValue<boolean>)\n- Badge migrated variant -> color; update the call site",
+          "timestamp": "2026-11-23T04:13:30Z",
+          "url": "https://github.com/wmzy/haze-ui/commit/db7c0e6110394743d7b25d3a2929fc1af5c3facb"
+        },
+        "date": 1795443876377,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · latency",
+            "value": 243.157776,
+            "unit": "ms",
+            "extra": "±10.367779 ms (rme 4.26%, n=15)"
+          },
+          {
+            "name": "DataTable · renders 1000 rows · mount + unmount 1000 rows · throughput",
+            "value": 4.13,
+            "unit": "ops/s",
+            "extra": "±0.17 ops/s (rme 4.14%, n=15)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · latency",
+            "value": 131.379483,
+            "unit": "ms",
+            "extra": "±8.899384 ms (rme 6.77%, n=16)"
+          },
+          {
+            "name": "DataTable · rerenders 1000 rows on sorting flips · sorting flip rerender (asc ⇄ desc) · throughput",
+            "value": 7.71,
+            "unit": "ops/s",
+            "extra": "±0.45 ops/s (rme 5.86%, n=16)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · latency",
+            "value": 0.463639,
+            "unit": "ms",
+            "extra": "±0.007914 ms (rme 1.71%, n=2157)"
+          },
+          {
+            "name": "Select · toggles the floating panel open and closed · open + close cycle (50 options) · throughput",
+            "value": 2283.92,
+            "unit": "ops/s",
+            "extra": "±16.72 ops/s (rme 0.73%, n=2157)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · latency",
+            "value": 1.539362,
+            "unit": "ms",
+            "extra": "±0.063565 ms (rme 4.13%, n=650)"
+          },
+          {
+            "name": "VirtualList · renders 5000 items · mount + unmount 5000 items (windowed) · throughput",
+            "value": 723.55,
+            "unit": "ops/s",
+            "extra": "±13.86 ops/s (rme 1.92%, n=650)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · latency",
+            "value": 1.9071,
+            "unit": "ms",
+            "extra": "±0.038536 ms (rme 2.02%, n=525)"
+          },
+          {
+            "name": "VirtualList · moves the window on scroll · scroll event → window rerender · throughput",
+            "value": 542.29,
+            "unit": "ops/s",
+            "extra": "±6.96 ops/s (rme 1.28%, n=525)"
           }
         ]
       }
