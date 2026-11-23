@@ -7,8 +7,6 @@ import {
   useAgentContext,
   useFrontendTool,
 } from '@copilotkit/react-core/v2';
-import { useControl } from 'react-use-control';
-
 import {
   Badge,
   Button,
@@ -20,6 +18,7 @@ import {
   lightTheme,
   spacing,
   typography,
+  useControl,
 } from 'haze-ui';
 
 /** The environments the console can target. */
@@ -170,7 +169,7 @@ function ConsolePage() {
               ))}
             </Select>
           </div>
-          <Badge variant={environmentBadge[environment]}>{environment}</Badge>
+          <Badge color={environmentBadge[environment]}>{environment}</Badge>
         </div>
 
         <div className='console-row'>
