@@ -1,0 +1,1 @@
+var e={default:`haze-status-solid-skin__default`,primary:`haze-status-solid-skin__primary`,success:`haze-status-solid-skin__success`,warning:`haze-status-solid-skin__warning`,danger:`haze-status-solid-skin__danger`,info:`haze-status-solid-skin__info`};export{e as t};

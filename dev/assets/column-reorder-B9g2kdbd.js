@@ -1,0 +1,1 @@
+import{n as e,s as t,t as n}from"./sortable-Dxi-jRAZ.js";import{t as r}from"./jsx-runtime-LKYXHABd.js";var i=r();function a({ids:n,onMove:r,children:a}){return(0,i.jsx)(e,{ids:n,strategy:t,onMove:r,children:a})}export{n as ColumnReorderItem,a as ColumnReorderRegion};

@@ -1,0 +1,1 @@
+import{a as e}from"./styles-DBn9Gwwz.js";import{n as t,t as n}from"./guide-content-BHbgpr3G.js";import{t as r}from"./jsx-runtime-LKYXHABd.js";var i=r();function a(){let r=t(`a11y`);return(0,i.jsxs)(`div`,{className:e,children:[(0,i.jsx)(`h1`,{children:r.title}),(0,i.jsx)(n,{doc:r})]})}export{a as default};

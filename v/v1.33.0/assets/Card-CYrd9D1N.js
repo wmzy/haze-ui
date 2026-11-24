@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./classnames-DwgxuFP5.js";var n=e(),r=`haze-Card__base`,i={elevated:`haze-Card__elevated`,outlined:`haze-Card__outlined`,filled:`haze-Card__filled`};function a({variant:e=`elevated`,className:a,children:o}){return(0,n.jsx)(`div`,{"data-slot":`card`,className:t([r,i[e],a]),children:o})}export{a as t};
