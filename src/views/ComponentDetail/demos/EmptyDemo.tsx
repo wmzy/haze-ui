@@ -1,58 +1,49 @@
 import { Button, Empty } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Empty ─────────────────────────────────────────────────────
 export default function EmptyDemo() {
   return (
-    <>
-      <h1>Empty</h1>
-      <p className={intro}>Placeholder state when no data is available.</p>
-
-      <div className={section}>
-        <h2>Default</h2>
+    <DemoPage
+      title='Empty'
+      description='Placeholder state when no data is available.'
+    >
+      <DemoSection title='Default'>
         <Empty />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom Description</h2>
+      <DemoSection title='Custom Description'>
         <Empty description='No search results found' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Action</h2>
+      <DemoSection title='With Action'>
         <Empty description='No items yet'>
           <Button size='sm'>Create Item</Button>
         </Empty>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='EmptyProps' />
-      </div>
+      <PropsSection of='EmptyProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Purely presentational — wrap with a container that has{' '}
-              <strong>aria-label</strong> if needed
-            </li>
-            <li>
-              Default image is decorative SVG
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Purely presentational — wrap with a container that has{' '}
+            <strong>aria-label</strong> if needed
+          </li>
+          <li>
+            Default image is decorative SVG
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='empty' />
-    </>
+    </DemoPage>
   );
 }

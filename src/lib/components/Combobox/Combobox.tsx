@@ -6,7 +6,7 @@ import type { VirtualListHandle } from '../VirtualList';
 import type { ComboboxOptionData } from './combobox-options';
 
 import { css } from '@linaria/core';
-import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 
@@ -32,7 +32,7 @@ import {
   pickerPanelWidth,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { stateOptionRow } from '../../utils/state-option-skin';
 import { findMatchRanges } from '../../utils/text-match';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
@@ -381,10 +381,7 @@ export default function Combobox<T extends string | number = string>({
   const inputRef = useRef<HTMLInputElement>(null);
   // The consumer's ref rides the same combobox input the floating
   // behavior anchors on (the focusable field in both modes).
-  const setInputRef = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(inputRef, ref)(node),
-    [inputRef, ref]
-  );
+  const setInputRef = useMergedRefs(inputRef, ref);
   const boxRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VirtualListHandle>(null);

@@ -1,12 +1,12 @@
 import { MarkdownRenderer } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── MarkdownRenderer ─────────────────────────────────────────
 export default function MarkdownRendererDemo() {
@@ -25,15 +25,16 @@ console.log("Hello from code block");
 > This is a blockquote.`;
 
   return (
-    <>
-      <h1>MarkdownRenderer</h1>
-      <p className={intro}>
-        Renders markdown content to styled HTML with headings, lists, code
-        blocks, and more.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='MarkdownRenderer'
+      description={
+        <>
+          Renders markdown content to styled HTML with headings, lists, code
+          blocks, and more.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div
           style={{
             maxWidth: 480,
@@ -44,30 +45,24 @@ console.log("Hello from code block");
         >
           <MarkdownRenderer content={md} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='MarkdownRendererProps' />
-      </div>
+      <PropsSection of='MarkdownRendererProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders semantic HTML: <strong>&lt;h1&gt;</strong>-<strong>&lt;h6&gt;</strong>,{' '}
-              <strong>&lt;ul&gt;</strong>, <strong>&lt;ol&gt;</strong>,{' '}
-              <strong>&lt;blockquote&gt;</strong>
-            </li>
-            <li>
-              Links open in new tab with <strong>rel=&quot;noopener&quot;</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders semantic HTML: <strong>&lt;h1&gt;</strong>-<strong>&lt;h6&gt;</strong>,{' '}
+            <strong>&lt;ul&gt;</strong>, <strong>&lt;ol&gt;</strong>,{' '}
+            <strong>&lt;blockquote&gt;</strong>
+          </li>
+          <li>
+            Links open in new tab with <strong>rel=&quot;noopener&quot;</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='markdownrenderer' />
-    </>
+    </DemoPage>
   );
 }

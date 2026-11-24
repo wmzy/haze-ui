@@ -1,11 +1,18 @@
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations } from './focus-ring-delta';
+
 /**
  * Shared keyboard focus ring — the `outline: none` + box-shadow ring
  * pair (and its forced-colors Highlight fallback) that 40+ component
  * files wore as byte-identical copies; drift had already begun
  * (TabBar's `--haze-space-1` width variant). Compose on interactive
  * elements: `x-class={[btn, focusRingVisible]}`.
+ *
+ * The arm's body is utils/focus-ring-delta's declarations string — the
+ * same source the skins that own a ring arm of their own interpolate
+ * (quiet-button-skin, preset-list-skin, timeline-skin, picker-trigger),
+ * so the pair and its fallback cannot drift apart again.
  *
  * Scope: the pure `:focus-visible` shape. Field-flavored sites whose
  * focus arm also repaints the border (`:focus { border-color: primary;
@@ -21,14 +28,7 @@ import { css } from '@linaria/core';
  */
 export const focusRingVisible = css`
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
-
-    /* Forced-colors: the box-shadow ring is dropped by the UA — a
-       Highlight outline replaces it. */
-    @media (forced-colors: active) {
-      outline: 2px solid Highlight;
-    }
+${focusRingDeclarations}
   }
 `;
 

@@ -5,10 +5,10 @@ import { rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { SortableRegion } from '../../utils/sortable';
 import { sortableItemStyle } from '../../utils/sortable-shared';
 
-import { tag } from '../../utils/tag-skin';
+import { removeBtn, tag } from '../../utils/tag-skin';
+import TagRemoveButton from '../../utils/tag-remove-button';
 
 import TagInputCore from './TagInputCore';
-import TagRemoveButton from './TagRemoveButton';
 import { tagHandle, tagDragging } from './tag-input-styles';
 
 /**
@@ -46,7 +46,7 @@ function SortableTag({ id, label, removeLabel, onRemove }: SortableTagProps) {
       <span data-slot="handle" x-class={[tagHandle]} {...attributes} {...listeners}>
         {label}
       </span>
-      <TagRemoveButton removeLabel={removeLabel} onRemove={onRemove} />
+      <TagRemoveButton className={removeBtn} removeLabel={removeLabel} onRemove={onRemove} />
     </li>
   );
 }

@@ -2,23 +2,21 @@ import { Table, TableHead, TableBody, TableRow, TableCell } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── Table ─────────────────────────────────────────────────────
 export default function TableDemo() {
   return (
-    <>
-      <h1>Table</h1>
-      <p className={intro}>
-        Semantic table components with striped and bordered variants.
-      </p>
-
-      <div className={section}>
-        <h2>Default</h2>
+    <DemoPage
+      title='Table'
+      description='Semantic table components with striped and bordered variants.'
+    >
+      <DemoSection title='Default'>
         <Table>
           <TableHead>
             <TableRow>
@@ -45,10 +43,9 @@ export default function TableDemo() {
             </TableRow>
           </TableBody>
         </Table>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Striped + Bordered</h2>
+      <DemoSection title='Striped + Bordered'>
         <Table striped bordered>
           <TableHead>
             <TableRow>
@@ -75,28 +72,24 @@ export default function TableDemo() {
             </TableRow>
           </TableBody>
         </Table>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Table Props</h2>
+      <DemoSection title='Table Props'>
         <PropsTable of='TableProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses semantic <strong>&lt;table&gt;</strong>,{' '}
-              <strong>&lt;thead&gt;</strong>, <strong>&lt;tbody&gt;</strong>,{' '}
-              <strong>&lt;th&gt;</strong>, <strong>&lt;td&gt;</strong>
-            </li>
-            <li>Screen readers announce row/column context automatically</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses semantic <strong>&lt;table&gt;</strong>,{' '}
+            <strong>&lt;thead&gt;</strong>, <strong>&lt;tbody&gt;</strong>,{' '}
+            <strong>&lt;th&gt;</strong>, <strong>&lt;td&gt;</strong>
+          </li>
+          <li>Screen readers announce row/column context automatically</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='table' />
-    </>
+    </DemoPage>
   );
 }

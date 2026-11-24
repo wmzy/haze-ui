@@ -12,6 +12,7 @@
 import { useControl } from 'react-use-control';
 
 import { Alert } from '../../src/lib/components/Alert';
+import { AsyncSection } from '../../src/lib/components/AsyncSection';
 import { Banner } from '../../src/lib/components/Banner';
 import { Button } from '../../src/lib/components/Button';
 import { Checkbox } from '../../src/lib/components/Checkbox';
@@ -29,9 +30,13 @@ import { Spinner } from '../../src/lib/components/Spinner';
 import { Step, Stepper } from '../../src/lib/components/Stepper';
 import { Switch } from '../../src/lib/components/Switch';
 import { Tab, TabList, Tabs } from '../../src/lib/components/Tabs';
+import { Tag } from '../../src/lib/components/Tag';
 import { Tooltip } from '../../src/lib/components/Tooltip';
 
 import { mountPage } from './components/mount';
+
+/** The error AsyncSection's retry surface is rendered for. */
+const FC_ERROR = new Error('FC async failure');
 
 /** Interactive checkbox: unchecked initially so the spec checks it. */
 function CheckboxDemo() {
@@ -155,5 +160,16 @@ mountPage(
     </section>
     <DialogDemo />
     <InputDemo />
+    {/* Last in Tab order: the shared quiet-button skin (AsyncSection's
+        retry button) and Tag's × (the shared tag remove button in the
+        dismiss chrome) — both must keep a focus outline here. */}
+    <section id="fc-async-section">
+      <AsyncSection error={FC_ERROR} onRetry={() => undefined} />
+    </section>
+    <section id="fc-tag">
+      <Tag closable onClose={() => undefined}>
+        FC tag
+      </Tag>
+    </section>
   </>
 );

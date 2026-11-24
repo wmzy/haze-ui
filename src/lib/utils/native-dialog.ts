@@ -4,6 +4,7 @@ import {useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, us
 
 import {useFocusScope} from './focus-scope';
 import {whenExitSettles} from './presence';
+import {useMergedRefs} from './refs';
 import {useViewTransitionFlip} from './view-transition';
 
 /**
@@ -180,13 +181,7 @@ export function useNativeDialogShell({
   // 原生 modal 已锁定 Tab，无需 trapped。
   const setScope = useFocusScope({enabled: open, trapped: false});
 
-  const setDialogRef = useCallback(
-    (node: HTMLDialogElement | null) => {
-      internalRef.current = node;
-      setScope(node);
-    },
-    [setScope]
-  );
+  const setDialogRef = useMergedRefs(internalRef, setScope);
 
   // onShown 经 ref 转发（focus-scope 的 optionsRef 先例）：showModal effect
   // 的依赖保持 [open]，调用方每次渲染换新闭包不会重跑该 effect（退场窗口

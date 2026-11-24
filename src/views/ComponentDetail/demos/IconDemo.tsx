@@ -1,14 +1,24 @@
+import type { CSSProperties } from 'react';
+
 import { Check, X, ChevronRight } from 'lucide-react';
 
 import { Icon, Flex } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { section, row, codeBlock } from '../styles';
 
-import A11yNote from '../A11yNote';
+import {
+  AccessibilitySection,
+  captionStyle,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+  StrokeSvg,
+} from './shared';
 
-import { intro, section, row, codeBlock } from '../styles';
-
-import { CssVarsSection, StrokeSvg } from './shared';
+/** Vertically centres an icon and its caption inside a `Flex` row. */
+const centeredStyle: CSSProperties = { alignItems: 'center' };
 
 function FillSvg() {
   return (
@@ -21,17 +31,18 @@ function FillSvg() {
 // ─── Icon ──────────────────────────────────────────────────────
 export default function IconDemo() {
   return (
-    <>
-      <h1>Icon</h1>
-      <p className={intro}>
-        Wrapper for SVG icons with consistent sizing and color inheritance.
-        Works with both fill-based and stroke-based SVGs, and integrates
-        seamlessly with community icon libraries like Lucide, React Icons, and
-        Phosphor.
-      </p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Icon'
+      description={
+        <>
+          Wrapper for SVG icons with consistent sizing and color inheritance.
+          Works with both fill-based and stroke-based SVGs, and integrates
+          seamlessly with community icon libraries like Lucide, React Icons, and
+          Phosphor.
+        </>
+      }
+    >
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Icon size='sm'>
             <StrokeSvg />
@@ -43,65 +54,42 @@ export default function IconDemo() {
             <StrokeSvg />
           </Icon>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Fill vs Stroke</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Fill vs Stroke'>
+        <p style={noteStyle}>
           Icon auto-detects stroke-based SVGs (those with{' '}
           <code>fill=&quot;none&quot;</code> or <code>stroke</code> attributes)
           and adjusts rendering accordingly. Fill-based SVGs work out of the
           box.
         </p>
         <div className={row}>
-          <Flex gap='var(--haze-space-4)' style={{ alignItems: 'center' }}>
-            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+          <Flex gap='var(--haze-space-4)' style={centeredStyle}>
+            <Flex gap='var(--haze-space-2)' style={centeredStyle}>
               <Icon size='lg'>
                 <StrokeSvg />
               </Icon>
-              <span
-                style={{
-                  fontSize: 'var(--haze-text-xs)',
-                  color: 'var(--haze-color-text-muted)',
-                }}
-              >
+              <span style={captionStyle}>
                 Stroke
               </span>
             </Flex>
-            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+            <Flex gap='var(--haze-space-2)' style={centeredStyle}>
               <Icon size='lg'>
                 <FillSvg />
               </Icon>
-              <span
-                style={{
-                  fontSize: 'var(--haze-text-xs)',
-                  color: 'var(--haze-color-text-muted)',
-                }}
-              >
+              <span style={captionStyle}>
                 Fill
               </span>
             </Flex>
           </Flex>
         </div>
-      </div>
+      </DemoSection>
 
       <div className={section}>
         <h2>
           Using the <code>icon</code> Prop
         </h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+        <p style={noteStyle}>
           Pass a component directly via the <code>icon</code> prop instead of
           wrapping it in children. When using <code>icon</code>, stroke mode is
           enabled by default to work with most community icon libraries.
@@ -113,15 +101,8 @@ export default function IconDemo() {
         </div>
       </div>
 
-      <div className={section}>
-        <h2>Community Icon Libraries</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Community Icon Libraries'>
+        <p style={noteStyle}>
           Haze UI Icon is designed as a thin wrapper — it does not bundle any
           icons. Instead, pair it with your preferred icon library:
         </p>
@@ -194,29 +175,16 @@ import { Icon } from 'haze-ui';
     <path d="M12 2L2 7l10 5 10-5-10-5z" />
   </svg>
 </Icon>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Using an Icon Library</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Using an Icon Library'>
+        <p style={noteStyle}>
           For production apps, pair <code>Icon</code> with a maintained icon
           library — <code>lucide-react</code> (MIT) is a good default, with
           tree-shakable stroke icons:
         </p>
         <pre className={codeBlock}>{`pnpm add lucide-react`}</pre>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+        <p style={noteStyle}>
           Every Lucide icon is a React component, so it plugs straight into
           the <code>icon</code> prop — no wrappers needed. <code>Icon</code>{' '}
           handles the rest automatically: stroke icons render with{' '}
@@ -225,37 +193,22 @@ import { Icon } from 'haze-ui';
           <code>lg</code> size tokens.
         </p>
         <div className={row}>
-          <Flex gap='var(--haze-space-4)' style={{ alignItems: 'center' }}>
-            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+          <Flex gap='var(--haze-space-4)' style={centeredStyle}>
+            <Flex gap='var(--haze-space-2)' style={centeredStyle}>
               <Icon icon={Check} size='lg' />
-              <span
-                style={{
-                  fontSize: 'var(--haze-text-xs)',
-                  color: 'var(--haze-color-text-muted)',
-                }}
-              >
+              <span style={captionStyle}>
                 Check
               </span>
             </Flex>
-            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+            <Flex gap='var(--haze-space-2)' style={centeredStyle}>
               <Icon icon={X} size='lg' />
-              <span
-                style={{
-                  fontSize: 'var(--haze-text-xs)',
-                  color: 'var(--haze-color-text-muted)',
-                }}
-              >
+              <span style={captionStyle}>
                 X
               </span>
             </Flex>
-            <Flex gap='var(--haze-space-2)' style={{ alignItems: 'center' }}>
+            <Flex gap='var(--haze-space-2)' style={centeredStyle}>
               <Icon icon={ChevronRight} size='lg' />
-              <span
-                style={{
-                  fontSize: 'var(--haze-text-xs)',
-                  color: 'var(--haze-color-text-muted)',
-                }}
-              >
+              <span style={captionStyle}>
                 ChevronRight
               </span>
             </Flex>
@@ -267,30 +220,24 @@ import { Icon } from 'haze-ui';
 <Icon icon={Check} size="md" />
 <Icon icon={X} size="md" />
 <Icon icon={ChevronRight} size="md" />`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='IconProps' />
-      </div>
+      <PropsSection of='IconProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Has <strong>aria-hidden=&quot;true&quot;</strong> by default —
-              decorative only
-            </li>
-            <li>
-              For meaningful icons, add <strong>aria-label</strong> to the
-              parent element
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Has <strong>aria-hidden=&quot;true&quot;</strong> by default —
+            decorative only
+          </li>
+          <li>
+            For meaningful icons, add <strong>aria-label</strong> to the
+            parent element
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='icon' />
-    </>
+    </DemoPage>
   );
 }

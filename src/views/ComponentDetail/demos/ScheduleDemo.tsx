@@ -6,11 +6,12 @@ import { Schedule } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 function at(dayOffset: number, hour: number, minute = 0): Date {
   const date = new Date();
@@ -103,55 +104,52 @@ function SchedulePlayground() {
 // ─── Schedule ──────────────────────────────────────────────────
 export default function ScheduleDemo() {
   return (
-    <>
-      <h1>Schedule</h1>
-      <p className={intro}>
-        Calendar surface with day, week and month views: a time grid with
-        all-day row, current-time indicator and pointer/keyboard
-        rescheduling, plus a month grid with overflow chips. View and
-        anchor date follow the controllable-state pattern, and events stay
-        consumer-owned — drag and arrow moves surface through
-        <code>onEventChange</code>.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Schedule'
+      description={
+        <>
+          Calendar surface with day, week and month views: a time grid with
+          all-day row, current-time indicator and pointer/keyboard
+          rescheduling, plus a month grid with overflow chips. View and
+          anchor date follow the controllable-state pattern, and events stay
+          consumer-owned — drag and arrow moves surface through
+          <code>onEventChange</code>.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <SchedulePlayground />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Schedule Props</h2>
+      <DemoSection title='Schedule Props'>
         <PropsTable of='ScheduleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Events render as focusable buttons whose accessible name
-              combines the title and the time range
-            </li>
-            <li>
-              ArrowUp/ArrowDown reschedule by <code>slotMinutes</code>,
-              ArrowLeft/ArrowRight by one day (mirrored in RTL);
-              Enter/Space fire <code>onEventClick</code>
-            </li>
-            <li>
-              The month view is an ARIA <strong>grid</strong> with roving
-              tabindex: arrows move between day cells, Enter/Space
-              activate <code>onDayClick</code>
-            </li>
-            <li>
-              No builtin copy beyond the toolbar glyphs — override
-              <code>todayLabel</code>, <code>prevLabel</code>,
-              <code>nextLabel</code> and <code>viewLabels</code> as needed
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Events render as focusable buttons whose accessible name
+            combines the title and the time range
+          </li>
+          <li>
+            ArrowUp/ArrowDown reschedule by <code>slotMinutes</code>,
+            ArrowLeft/ArrowRight by one day (mirrored in RTL);
+            Enter/Space fire <code>onEventClick</code>
+          </li>
+          <li>
+            The month view is an ARIA <strong>grid</strong> with roving
+            tabindex: arrows move between day cells, Enter/Space
+            activate <code>onDayClick</code>
+          </li>
+          <li>
+            No builtin copy beyond the toolbar glyphs — override
+            <code>todayLabel</code>, <code>prevLabel</code>,
+            <code>nextLabel</code> and <code>viewLabels</code> as needed
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='schedule' />
-    </>
+    </DemoPage>
   );
 }

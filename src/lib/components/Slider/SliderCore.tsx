@@ -13,6 +13,10 @@ import { useControl } from 'react-use-control';
 
 import { getDirection } from '../../utils/direction';
 import { quantize } from '../../utils/math';
+import {
+  tooltipBubbleDeclarations,
+  tooltipBubbleForcedColors,
+} from '../../utils/tooltip-bubble-skin';
 
 type SliderCoreProps = {
   /** `number` in single mode, `[low, high]` when `range` is set. An
@@ -381,25 +385,20 @@ const markLabel = css`
  * `data-state`, so enter and exit both animate on the duration token.
  * Anchored past the block-start edge (not from block-end) so the
  * marks' block-end padding cannot shift it. Visual only — the native
- * input keeps announcing the value.
+ * input keeps announcing the value. The chip itself is the surface
+ * Tooltip's bubble paints too (utils/tooltip-bubble-skin — the
+ * declarations strings, forced-colors block included); the anchoring,
+ * the data-state reveal and the transition are this bubble's own.
  */
 const tooltipBubble = css`
   position: absolute;
   /* Above the rail stripe (not the strip edge): the stripe's block
-   * offset minus the original 4px breathing room. */
+     offset minus the original 4px breathing room. */
   inset-block-start: calc(
     (var(--haze-space-6) - 6px) / 2 - var(--haze-space-1)
   );
   transform: translate(-50%, -100%);
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-text);
-  color: var(--haze-color-text-inverse);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  line-height: var(--haze-leading-normal);
-  white-space: nowrap;
-  pointer-events: none;
+${tooltipBubbleDeclarations}
   opacity: 0;
   visibility: hidden;
   transition:
@@ -411,14 +410,7 @@ const tooltipBubble = css`
     visibility: visible;
   }
 
-  /* Forced-colors: the dark bubble and its inverse text flatten onto
-     Canvas/CanvasText — restated with a CanvasText boundary so the
-     value stays readable as a chip. */
-  @media (forced-colors: active) {
-    background: Canvas;
-    color: CanvasText;
-    border: 1px solid CanvasText;
-  }
+${tooltipBubbleForcedColors}
 `;
 
 /** Vertical sliders carry the bubble beside the thumb instead. */

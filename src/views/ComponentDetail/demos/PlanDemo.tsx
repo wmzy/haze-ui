@@ -2,26 +2,29 @@ import { Plan, PlanItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth360,
+} from './shared';
 
 // ─── Plan ──────────────────────────────────────────────────────
 export default function PlanDemo() {
   return (
-    <>
-      <h1>Plan</h1>
-      <p className={intro}>
-        Agent plan and progress display: a titled checklist whose per-step
-        statuses (pending, active, done, error, skipped) feed an auto progress
-        summary and progress bar.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 360 }}>
+    <DemoPage
+      title='Plan'
+      description={
+        <>
+          Agent plan and progress display: a titled checklist whose per-step
+          statuses (pending, active, done, error, skipped) feed an auto progress
+          summary and progress bar.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth360}>
           <Plan title='Deploying feature'>
             <PlanItem label='Fetch context' description='Repository indexed' status='done' />
             <PlanItem label='Write tests' description='3 files touched' status='done' />
@@ -29,11 +32,10 @@ export default function PlanDemo() {
             <PlanItem label='Open pull request' status='pending' />
           </Plan>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Error and Skipped States</h2>
-        <div style={{ maxWidth: 360 }}>
+      <DemoSection title='Error and Skipped States'>
+        <div style={maxWidth360}>
           <Plan
             title='Refactor plan'
             summary={(done, total) => `${done} of ${total} steps complete`}
@@ -44,41 +46,36 @@ export default function PlanDemo() {
             <PlanItem label='Release notes' status='pending' />
           </Plan>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Plan Props</h2>
+      <DemoSection title='Plan Props'>
         <PropsTable of='PlanProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>PlanItem Props</h2>
+      <DemoSection title='PlanItem Props'>
         <PropsTable of='PlanItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Native <strong>list</strong>/<strong>listitem</strong> semantics
-              from the underlying <code>ul</code>/<code>li</code> elements
-            </li>
-            <li>
-              Progress is exposed as a <code>progressbar</code> with
-              <code> aria-valuenow</code>/<code>aria-valuemax</code>, named by
-              the plan title when rendered
-            </li>
-            <li>
-              Status indicator glyphs are decorative
-              (<code>aria-hidden</code>) — word statuses through{' '}
-              <code>label</code>/<code>description</code> content
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Native <strong>list</strong>/<strong>listitem</strong> semantics
+            from the underlying <code>ul</code>/<code>li</code> elements
+          </li>
+          <li>
+            Progress is exposed as a <code>progressbar</code> with
+            <code> aria-valuenow</code>/<code>aria-valuemax</code>, named by
+            the plan title when rendered
+          </li>
+          <li>
+            Status indicator glyphs are decorative
+            (<code>aria-hidden</code>) — word statuses through{' '}
+            <code>label</code>/<code>description</code> content
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='plan' />
-    </>
+    </DemoPage>
   );
 }

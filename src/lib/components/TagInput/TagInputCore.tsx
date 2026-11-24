@@ -5,11 +5,10 @@ import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { fieldBareInner, fieldChrome, focusWithinRing } from '../../utils/field-skin';
-import { listWrap, tag, tagFieldContainer } from '../../utils/tag-skin';
-
-import TagRemoveButton from './TagRemoveButton';
+import { listWrap, removeBtn, tag, tagFieldContainer } from '../../utils/tag-skin';
+import TagRemoveButton from '../../utils/tag-remove-button';
 
 /** One rendered tag, offered to `renderTag` injectors.
  * @internal */
@@ -102,10 +101,7 @@ export default function TagInputCore({
   const inputRef = useRef<HTMLInputElement>(null);
   // The consumer's ref rides the same inner input (id/aria land there
   // for the same reason — the root div is not the focusable field).
-  const setInputRef = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(inputRef, ref)(node),
-    [inputRef, ref]
-  );
+  const setInputRef = useMergedRefs(inputRef, ref);
   // After a removal re-render, focus the remove button at this index (or
   // the input when no tags remain) so keyboard focus never drops.
   const pendingFocusRef = useRef<number | null>(null);
@@ -197,6 +193,7 @@ export default function TagInputCore({
           <li key={i} data-slot="item" x-class={[tag]}>
             {t}
             <TagRemoveButton
+              className={removeBtn}
               removeLabel={removeLabel}
               onRemove={() => removeTag(i)}
               disabled={disabled}

@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations } from './focus-ring-delta';
+
 /**
  * Shared quiet-button skin — the compact bordered action chrome the
  * error-recovery surfaces paint (AsyncSection's retry button,
@@ -26,6 +28,12 @@ import { css } from '@linaria/core';
  * disagree, a companion that must beat a base declaration arms its
  * specificity instead of relying on source order (compound
  * `&[data-slot]` selector, Banner's closeBtnSize precedent).
+ *
+ * The keyboard ring of quietButton and quietIconButton interpolates
+ * utils/focus-ring-delta's declarations — the box-shadow pair AND its
+ * forced-colors Highlight fallback (the hand-copied arms had dropped
+ * the fallback), so a consumer needs no local forced-colors ring arm;
+ * textToggle and quietSquareButton ship no ring (the UA outline).
  */
 
 /**
@@ -58,8 +66,7 @@ export const quietButton = css`
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingDeclarations}
   }
 `;
 
@@ -93,8 +100,7 @@ export const quietIconButton = css`
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingDeclarations}
   }
 `;
 

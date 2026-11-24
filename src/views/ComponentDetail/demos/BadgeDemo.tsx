@@ -3,13 +3,16 @@ import { css } from '@linaria/core';
 import { Badge } from '@/lib';
 import { badgeVariants, badgeSizes } from '@/lib/components/Badge';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // Composition demo: wear the exported skin pieces on a custom element.
 const brandedCompose = css`
@@ -19,14 +22,11 @@ const brandedCompose = css`
 // ─── Badge ─────────────────────────────────────────────────────
 export default function BadgeDemo() {
   return (
-    <>
-      <h1>Badge</h1>
-      <p className={intro}>
-        Small status indicators for labeling and categorization.
-      </p>
-
-      <div className={section}>
-        <h2>Colors</h2>
+    <DemoPage
+      title='Badge'
+      description='Small status indicators for labeling and categorization.'
+    >
+      <DemoSection title='Colors'>
         <div className={row}>
           <Badge color='default'>Default</Badge>
           <Badge color='primary'>Primary</Badge>
@@ -35,25 +35,17 @@ export default function BadgeDemo() {
           <Badge color='danger'>Danger</Badge>
           <Badge color='info'>Info</Badge>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Badge size='sm'>Small</Badge>
           <Badge size='md'>Medium</Badge>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Composing with badgeVariants / badgeSizes</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Composing with badgeVariants / badgeSizes'>
+        <p style={noteStyle}>
           The exported <code>badgeVariants</code> /{' '}
           <code>badgeSizes</code> maps carry the exact skin classes{' '}
           <code>Badge</code> wears — spread them onto any custom element
@@ -69,29 +61,23 @@ export default function BadgeDemo() {
             Composed span
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='BadgeProps' />
-      </div>
+      <PropsSection of='BadgeProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as a <strong>&lt;span&gt;</strong> — purely decorative
-            </li>
-            <li>
-              Add <strong>aria-label</strong> if the badge conveys meaning not
-              present in surrounding text
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as a <strong>&lt;span&gt;</strong> — purely decorative
+          </li>
+          <li>
+            Add <strong>aria-label</strong> if the badge conveys meaning not
+            present in surrounding text
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='badge' />
-    </>
+    </DemoPage>
   );
 }

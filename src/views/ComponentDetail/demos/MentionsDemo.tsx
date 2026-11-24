@@ -1,10 +1,13 @@
 import { Mentions } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const PEOPLE = [
   { value: 'alice', label: 'Alice Zhang' },
@@ -28,14 +31,11 @@ const TEAM = Array.from({ length: 20 }, (_, i) => ({
 // ─── Mentions ──────────────────────────────────────────────────
 export default function MentionsDemo() {
   return (
-    <>
-      <h1>Mentions</h1>
-      <p className={intro}>
-        Textarea that suggests options after a trigger character is typed.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Mentions'
+      description='Textarea that suggests options after a trigger character is typed.'
+    >
+      <DemoSection title='Demo'>
         <div className={fieldRow}>
           <Mentions
             options={PEOPLE}
@@ -43,10 +43,9 @@ export default function MentionsDemo() {
             rows={3}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom trigger</h2>
+      <DemoSection title='Custom trigger'>
         <div className={fieldRow}>
           <Mentions
             options={CHANNELS}
@@ -55,10 +54,9 @@ export default function MentionsDemo() {
             rows={3}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Many options</h2>
+      <DemoSection title='Many options'>
         <div className={fieldRow}>
           <Mentions
             options={TEAM}
@@ -66,36 +64,30 @@ export default function MentionsDemo() {
             rows={3}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='MentionsProps' />
-      </div>
+      <PropsSection of='MentionsProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The widget exposes <strong>role=&quot;combobox&quot;</strong>{' '}
-              with <strong>aria-expanded</strong> and{' '}
-              <strong>aria-controls</strong>; the textarea carries{' '}
-              <strong>aria-autocomplete=&quot;list&quot;</strong> and{' '}
-              <strong>aria-activedescendant</strong>
-            </li>
-            <li>
-              Suggestions use <strong>role=&quot;listbox&quot;</strong> and{' '}
-              <strong>role=&quot;option&quot;</strong>
-            </li>
-            <li>
-              <strong>Arrow keys</strong> navigate suggestions,{' '}
-              <strong>Enter</strong> or <strong>Tab</strong> inserts,{' '}
-              <strong>Escape</strong> closes
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The widget exposes <strong>role=&quot;combobox&quot;</strong>{' '}
+            with <strong>aria-expanded</strong> and{' '}
+            <strong>aria-controls</strong>; the textarea carries{' '}
+            <strong>aria-autocomplete=&quot;list&quot;</strong> and{' '}
+            <strong>aria-activedescendant</strong>
+          </li>
+          <li>
+            Suggestions use <strong>role=&quot;listbox&quot;</strong> and{' '}
+            <strong>role=&quot;option&quot;</strong>
+          </li>
+          <li>
+            <strong>Arrow keys</strong> navigate suggestions,{' '}
+            <strong>Enter</strong> or <strong>Tab</strong> inserts,{' '}
+            <strong>Escape</strong> closes
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

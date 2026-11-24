@@ -2,28 +2,26 @@ import { useState } from 'react';
 
 import { Button, ApprovalCard } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth400,
+  PropsSection,
+} from './shared';
 
 // ─── ApprovalCard ─────────────────────────────────────────────
 export default function ApprovalCardDemo() {
   const [status, setStatus] = useState<'pending' | 'approved' | 'denied'>('pending');
 
   return (
-    <>
-      <h1>ApprovalCard</h1>
-      <p className={intro}>
-        Card with approve/deny actions for human-in-the-loop workflows.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 400 }}>
+    <DemoPage
+      title='ApprovalCard'
+      description='Card with approve/deny actions for human-in-the-loop workflows.'
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth400}>
           {status === 'pending' ? (
             <ApprovalCard
               title='Deploy to Production'
@@ -56,26 +54,20 @@ export default function ApprovalCardDemo() {
             </div>
           )}
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ApprovalCardProps' />
-      </div>
+      <PropsSection of='ApprovalCardProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Buttons render as native <strong>&lt;button&gt;</strong> elements
-            </li>
-            <li>Warning border provides visual emphasis for required action</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Buttons render as native <strong>&lt;button&gt;</strong> elements
+          </li>
+          <li>Warning border provides visual emphasis for required action</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='approvalcard' />
-    </>
+    </DemoPage>
   );
 }

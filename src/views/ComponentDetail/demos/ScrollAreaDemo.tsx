@@ -1,10 +1,11 @@
 import { ScrollArea, Scrollbar, ScrollViewport } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const itemStyle = { margin: '0 0 var(--haze-space-2)' } as const;
 
@@ -21,24 +22,24 @@ function Items({ count }: { count: number }) {
 // ─── ScrollArea ─────────────────────────────────────────────────
 export default function ScrollAreaDemo() {
   return (
-    <>
-      <h1>ScrollArea</h1>
-      <p className={intro}>
-        Scrollable region with overlay scrollbar thumbs: sugar one-liner or
-        compound Viewport/Scrollbar composition, hover/always/scroll
-        visibility modes, keyboard-focusable viewport.
-      </p>
-
-      <div className={section}>
-        <h2>Sugar — maxHeight one-liner</h2>
+    <DemoPage
+      title='ScrollArea'
+      description={
+        <>
+          Scrollable region with overlay scrollbar thumbs: sugar one-liner or
+          compound Viewport/Scrollbar composition, hover/always/scroll
+          visibility modes, keyboard-focusable viewport.
+        </>
+      }
+    >
+      <DemoSection title='Sugar — maxHeight one-liner'>
         <p>Plain content is wrapped in a viewport with overlay scrollbars.</p>
         <ScrollArea maxHeight={200} label='Item list'>
           <Items count={30} />
         </ScrollArea>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Compound composition</h2>
+      <DemoSection title='Compound composition'>
         <p>
           Compose <code>ScrollViewport</code> and <code>Scrollbar</code>{' '}
           explicitly (an explicit scrollbar suppresses the auto-appended
@@ -50,10 +51,9 @@ export default function ScrollAreaDemo() {
           </ScrollViewport>
           <Scrollbar orientation='vertical' />
         </ScrollArea>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Scrollbar modes — type hover / always / scroll</h2>
+      <DemoSection title='Scrollbar modes — type hover / always / scroll'>
         <p>
           <code>type</code> (default <code>hover</code>) controls when the
           thumbs appear.
@@ -69,10 +69,9 @@ export default function ScrollAreaDemo() {
             <Items count={20} />
           </ScrollArea>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Keyboard</h2>
+      <DemoSection title='Keyboard'>
         <p>
           The viewport becomes focusable while its content overflows — Tab
           into it, then scroll with arrow keys, Space, PageUp/PageDown, Home
@@ -83,37 +82,31 @@ export default function ScrollAreaDemo() {
         <ScrollArea maxHeight={160} label='Keyboard-scrollable list'>
           <Items count={20} />
         </ScrollArea>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ScrollAreaProps' />
-      </div>
+      <PropsSection of='ScrollAreaProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Viewport gains <code>tabindex=0</code> and{' '}
-              <code>data-scrollable</code> while content overflows — native
-              keyboard scrolling for free
-            </li>
-            <li>
-              Thumbs are draggable with pointer capture; tracks page toward
-              the press and hand focus to the viewport
-            </li>
-            <li>
-              Forced-colors mode paints visible thumbs with the Highlight
-              system color
-            </li>
-            <li>
-              Horizontal thumb geometry mirrors automatically in RTL
-              (<code>dir=&quot;rtl&quot;</code>)
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Viewport gains <code>tabindex=0</code> and{' '}
+            <code>data-scrollable</code> while content overflows — native
+            keyboard scrolling for free
+          </li>
+          <li>
+            Thumbs are draggable with pointer capture; tracks page toward
+            the press and hand focus to the viewport
+          </li>
+          <li>
+            Forced-colors mode paints visible thumbs with the Highlight
+            system color
+          </li>
+          <li>
+            Horizontal thumb geometry mirrors automatically in RTL
+            (<code>dir=&quot;rtl&quot;</code>)
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

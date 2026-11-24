@@ -1,24 +1,23 @@
 import { Input } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Input ─────────────────────────────────────────────────────
 export default function InputDemo() {
   return (
-    <>
-      <h1>Input</h1>
-      <p className={intro}>
-        Single-line text input with controlled/uncontrolled support.
-      </p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Input'
+      description='Single-line text input with controlled/uncontrolled support.'
+    >
+      <DemoSection title='Sizes'>
         <div className={fieldRow}>
           <Input size='sm' placeholder='Small' />
         </div>
@@ -28,39 +27,32 @@ export default function InputDemo() {
         <div className={fieldRow}>
           <Input size='lg' placeholder='Large' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={fieldRow}>
           <Input disabled placeholder='Disabled' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='InputProps' />
-      </div>
+      <PropsSection of='InputProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as native <strong>&lt;input&gt;</strong>
-            </li>
-            <li>
-              Use <strong>aria-label</strong> or a visible{' '}
-              <strong>&lt;label&gt;</strong> for screen readers
-            </li>
-            <li>
-              Focus ring via <strong>:focus</strong> pseudo-class
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as native <strong>&lt;input&gt;</strong>
+          </li>
+          <li>
+            Use <strong>aria-label</strong> or a visible{' '}
+            <strong>&lt;label&gt;</strong> for screen readers
+          </li>
+          <li>
+            Focus ring via <strong>:focus</strong> pseudo-class
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='input' />
-    </>
+    </DemoPage>
   );
 }

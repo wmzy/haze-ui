@@ -8,9 +8,12 @@ import { css } from '@linaria/core';
 import { useEffect, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
+import { axisMoveTarget } from '../../utils/axis-traversal';
+import { classnames } from '../../utils/classnames';
+import { getDirection } from '../../utils/direction';
 import { FloatingPanel } from '../../utils/floating';
 import { useMenuPanel } from '../../utils/menu-panel';
-import { findWrapIndex, useTypeahead } from '../../utils/menuKeyboard';
+import { resolveMenuKey, typeaheadTarget, useTypeahead } from '../../utils/menuKeyboard';
 import { renderMenuDataItems } from '../../utils/menuItems';
 import { menuPanelLg } from '../../utils/menu-skins';
 import { PICKER_ROW_HEIGHT } from '../../utils/picker-trigger';
@@ -165,14 +168,6 @@ function renderVirtualRow(entry: MenuDataItem) {
   return renderMenuDataItems([entry], menuFamily);
 }
 
-/** Joins the panel's own `className` prop with the `classNames.panel`
- * slot — the slot class lands after it, both after the visual skin. */
-function panelClassName(className: string | undefined, slot: string | undefined) {
-  if (className === undefined) return slot;
-  if (slot === undefined) return className;
-  return `${className} ${slot}`;
-}
-
 export default function Menu({
   open: openControl,
   trigger,
@@ -259,8 +254,9 @@ export default function Menu({
    * ArrowDown from the window's edge would wrap instead of stepping
    * into the unmounted rows. This handler walks the data model: it
    * scrolls the target row into the window and focuses it after the
-   * commit (focusVirtualRow). Keymap otherwise matches the plain layer:
-   * wrapping arrows, Home/End, Escape/Tab close, typeahead.
+   * commit (focusVirtualRow). The keymap is the one both layers share
+   * (utils/menuKeyboard's resolveMenuKey) — wrapping arrows, Home/End,
+   * Escape/Tab close, typeahead, Space through to checkable rows.
    */
   function handleVirtualKeyDown(event: ReactKeyboardEvent) {
     const panel = panelRef.current;
@@ -290,93 +286,49 @@ export default function Menu({
     const current =
       rowEl && panel.contains(rowEl) ? Number(rowEl.dataset.index) : -1;
 
-    /** Next focusable row from `from` stepping by `step`, wrapping. */
-    const advance = (from: number, step: 1 | -1): number => {
-      for (let k = 1; k <= rows.length; k++) {
-        const index =
-          (((from + step * k) % rows.length) + rows.length) % rows.length;
-        const row = rows[index];
-        if (row !== undefined && isFocusableEntry(row)) return index;
-      }
-      return from;
-    };
-    const firstFocusable = rows.findIndex(isFocusableEntry);
-    let lastFocusable = -1;
-    for (let i = rows.length - 1; i >= 0; i--) {
-      if (isFocusableEntry(rows[i]!)) {
-        lastFocusable = i;
-        break;
-      }
-    }
+    const action = resolveMenuKey(event, {
+      orientation: 'vertical',
+      dir: getDirection(panel),
+    });
+    // Not ours, or Space on a checkable row: the native activation
+    // must go through untouched.
+    if (!action || action.kind === 'activate') return;
 
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        if (current < 0) {
-          if (firstFocusable >= 0) focusVirtualRow(firstFocusable);
-        } else {
-          focusVirtualRow(advance(current, 1));
-        }
-        return;
-      case 'ArrowUp':
-        event.preventDefault();
-        if (current < 0) {
-          if (lastFocusable >= 0) focusVirtualRow(lastFocusable);
-        } else {
-          focusVirtualRow(advance(current, -1));
-        }
-        return;
-      case 'Home':
-        event.preventDefault();
-        if (firstFocusable >= 0) focusVirtualRow(firstFocusable);
-        return;
-      case 'End':
-        event.preventDefault();
-        if (lastFocusable >= 0) focusVirtualRow(lastFocusable);
-        return;
-      case 'Escape':
-        event.preventDefault();
-        setOpen(false);
-        return;
-      case 'Tab':
-        // Close and hand focus to the trigger (the scope returns it);
-        // a following Tab continues past the trigger.
-        event.preventDefault();
-        setOpen(false);
-        return;
-      default: {
-        if (
-          event.key.length !== 1 ||
-          event.ctrlKey ||
-          event.metaKey ||
-          event.altKey
-        ) {
-          return;
-        }
-        // Space on a checkbox item must reach the native button
-        // activation — the same carve-out as the plain keyboard layer.
-        if (
-          event.key === ' ' &&
-          target instanceof Element &&
-          (target.getAttribute('role') === 'menuitemcheckbox' ||
-            target.getAttribute('role') === 'menuitemradio')
-        ) {
-          return;
-        }
-        event.preventDefault();
-        const typed = pushTyped(event.key);
-        // Search forward from the current row, wrapping; the current
-        // row itself is the last candidate so repeating a character
-        // cycles between rows starting with it.
-        const start = current < 0 ? 0 : current + 1;
-        const match = findWrapIndex(rows.length, start, (index) => {
-          const row = rows[index];
-          return (
-            row !== undefined &&
-            isFocusableEntry(row) &&
-            menuEntryText(row).toLowerCase().startsWith(typed)
-          );
+    /** The row at `index` when it can take focus — undefined for
+     *  dividers, disabled entries and indices outside the data. */
+    const focusableRow = (index: number): MenuDataItem | undefined => {
+      const row = rows[index];
+      return row !== undefined && isFocusableEntry(row) ? row : undefined;
+    };
+
+    event.preventDefault();
+    switch (action.kind) {
+      case 'move': {
+        const index = axisMoveTarget(action.move, {
+          current,
+          length: rows.length,
+          isFocusable: (index) => focusableRow(index) !== undefined,
         });
+        if (index >= 0) focusVirtualRow(index);
+        return;
+      }
+      case 'close':
+        // Escape and Tab: closing returns focus to the trigger (the
+        // scope does it); a following Tab continues past the trigger.
+        setOpen(false);
+        return;
+      case 'typeahead': {
+        // The match runs against the data model — rows outside the
+        // virtual window have no DOM to read textContent from.
+        const match = typeaheadTarget(
+          rows.length,
+          current,
+          pushTyped(action.char),
+          (index) => {
+            const row = focusableRow(index);
+            return row && menuEntryText(row);
+          }
+        );
         if (match >= 0) focusVirtualRow(match);
       }
     }
@@ -401,7 +353,7 @@ export default function Menu({
           placement="bottom"
           role="menu"
           visualClass={menuPanelLg}
-          className={panelClassName(className, resolvedClassNames?.panel)}
+          className={classnames(className, resolvedClassNames?.panel)}
           onKeyDown={virtual ? handleVirtualKeyDown : handleKeyDown}
         >
           {/* `virtual` truthy narrows `items` to defined via TS's

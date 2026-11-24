@@ -7,16 +7,16 @@
  *      loading modes, architecture notes) with the component count
  *      interpolated;
  *   2. a generated "## Components" section — group headers and entries
- *      parsed straight from src/views/Layout/component-groups.ts (the demo
- *      sidebar contract: the same source of truth its coverage guard and
- *      scripts/generate-registry.mjs mirror), one bullet per entry using
- *      the DESCRIPTIONS table in this file;
+ *      read straight from src/views/Layout/component-groups.ts (the demo
+ *      sidebar contract, through scripts/component-groups.mjs), one bullet
+ *      per entry using the blurb table in
+ *      scripts/component-descriptions.mjs (shared with the registry);
  *   3. hand-written closing sections (design tokens, floating tiers,
  *      headless, forms, agent protocol, links).
  *
- * The DESCRIPTIONS table must name every sidebar entry — a missing blurb
- * fails the run, so adding a component without its sentence cannot pass
- * silently (same contract as generate-registry.mjs' descriptions table).
+ * Every sidebar entry needs a blurb and every blurb a sidebar entry —
+ * either mismatch fails the run, so adding a component without its
+ * sentence cannot pass silently.
  *
  * The output is deterministic (no timestamps) so consecutive runs are
  * byte-identical.
@@ -27,12 +27,11 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { defaultRoot, invokedDirectly, runCli, wroteLine } from './cli-utils.mjs';
+import { readComponentGroups } from './component-groups.mjs';
+import { LLMS_BLURBS } from './component-descriptions.mjs';
 import { RSC_SAFE_MODULES } from './rsc-safe.mjs';
-
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
  * Display names for bullets that present a family, not a single component
@@ -44,335 +43,6 @@ const DISPLAY_NAMES = {
   Form: 'Form (FormItem)',
   FloatButton: 'FloatButton / FloatButtonGroup',
 };
-
-/**
- * One-line blurbs, keyed by the sidebar component name. Written by hand,
- * kept in sync with generate-registry.mjs' per-css-family descriptions.
- */
-const DESCRIPTIONS = {
-  // General
-  Avatar:
-    'user avatar with image, size variants and fallback content when the image is missing.',
-  AvatarGroup:
-    'stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).',
-  Badge: 'small inline status label with a semantic `color` prop.',
-  Button:
-    'action button with `variant`/`size`/`square` options; native `<button>` under the hood.',
-  CountUp:
-    'animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.',
-  Countdown:
-    'deadline countdown with second-boundary-aligned setTimeout-chain ticks, `onFinish` firing once, and adaptive `d`/`h:mm:ss` formatting.',
-  Divider: 'content separator line, horizontal or vertical.',
-  Ellipsis:
-    'interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse.',
-  Icon: 'inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.',
-  Tag: 'compact status label with semantic `color` and an optional close button.',
-  TagGroup:
-    'flex-wrap container laying out Tag children with consistent gap; `sortable` + `onReorder(nextOrder)` for dnd-kit drag reordering.',
-  Typography: 'text primitives: `Title`, `Text`, `Paragraph` on typography tokens.',
-
-  // Layout
-  AspectRatio: 'boxes children to a fixed width/height ratio.',
-  AppShell:
-    'application frame with sticky header, collapsible sidebar (`ControlOrValue`), content and footer slots; CSS-Grid layout, sidebar turns overlay below 768px.',
-  Container: 'centered max-width page container with horizontal padding.',
-  Flex: 'flexbox layout primitive mapping props to flex CSS.',
-  Grid: 'CSS grid layout primitive.',
-  Masonry:
-    'pinboard layout: JS greedy column distribution balances children across `columns` (order-first, shortest-column-next).',
-  Resizable:
-    'split-pane group with draggable dividers (`ResizableGroup`, horizontal or vertical); px `defaultSize`/`minSize`/`maxSize` per panel (`id`-keyed), keyboard arrows (16px), `collapsible`/`collapsed` control and `onResizeCommit(sizes)` for persistence.',
-  ScrollArea:
-    'scrollable region with overlay scrollbar thumbs: `maxHeight` sugar one-liner or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` composition; `type` = `hover`/`always`/`scroll` thumb visibility, keyboard-focusable viewport, draggable/pageable tracks, RTL-mirrored thumbs.',
-  Sidebar:
-    'app sidebar shell with controllable collapsed state (`aside` + rail width tokens).',
-  Splitter:
-    'multi-pane split layout with implicit draggable dividers (AntD `Splitter` semantics); `sizes` as percentages of the pane area (`ControlOrValue` of `number[]`, live `onSizesChange`), per-pane `min`/`max` percent clamps, opt-in per-pane `collapsible` (divider collapse/expand triggers with pre-collapse restore, localized labels), keyboard arrows (5% steps) + Home/End, RTL-mirrored; px-sized panes live in `ResizableGroup`.',
-  ActivityRail:
-    'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
-  StatusBar:
-    'VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.',
-  TabBar:
-    'mobile bottom navigation (the ActivityRail viewport peer): 56px strip with safe-area inset, icon+label items, badge, `onSelect`/`onReselect` (tap-active-again) semantics.',
-  Workbench:
-    'IDE-style application frame (`100dvh`): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable, collapsible regions (`ControlOrValue`), maximizable bottom panel; below 768px side regions become overlays and the tabBar takes over.',
-
-  // Forms
-  Cascader:
-    'multi-level drill-down selector committing a path of option values; `onSearch` filters remotely while `loading` shows the pending state.',
-  Checkbox: 'checkbox input with controllable `checked` state.',
-  ColorPicker: 'color selector with controllable value and preset swatches.',
-  Combobox:
-    'autocomplete text input with filterable option list; `onSearch` defers filtering to the host.',
-  Datepicker:
-    'date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field.',
-  DateField:
-    'segmented date input (year/month/day spinbuttons) typing `YYYY-MM-DD` directly — no calendar; `DateFieldCore` is the headless core.',
-  DateTimePicker:
-    'date+time picker (Datepicker with the time row always on); `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
-  DateRangePicker:
-    'picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
-  FileInput: 'trigger element that opens a hidden native file input.',
-  FollowUpSuggestions: 'AI-chat follow-up suggestions: wrapping row of clickable prompt chips (role=list/listitem) with loading skeletons and disabled states.',
-  Form:
-    'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
-  InlineEdit: 'click-to-edit text value in place.',
-  Fieldset:
-    'semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.',
-  Highlight:
-    'search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML).',
-  Indicator:
-    'corner badge attached to a host element: dot or count label, tone + corner position, zero hides unless `showZero`.',
-  Input: 'text input with `leftSection`/`rightSection` adornments; sugar over `InputCore`.',
-  MaskedInput:
-    'masked text input enforcing a pattern (`9` digit, `a` letter, `A` uppercase letter, `*` alphanumeric, `\\` escape); literals render as typed, `unmask()` extracts the raw slot content.',
-  Mentions:
-    'mentions input with trigger-character suggestions picked from an option list.',
-  NumberInput: 'numeric input with `min`/`max`/`step`.',
-  OTPInput:
-    'one-time-password input of `length` segmented character boxes.',
-  PasswordInput: 'text input with a visibility reveal toggle.',
-  PhoneInput:
-    'international phone input on libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` helper.',
-  Radio:
-    'radio option and group with controllable selection.',
-  Rating: 'star rating with half-step support.',
-  RichTextEditor:
-    'Tiptap-powered rich text editor (a haze-ui dependency) with built-in formatting toolbar and controllable HTML `value`.',
-  Segmented: 'segmented control selecting one option from a compact set.',
-  Select:
-    'dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.',
-  Signature:
-    'canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.',
-  ImageCrop:
-    'interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.',
-  Slider: 'native range slider with controllable value.',
-  Switch: 'toggle switch (`role="switch"`) with controllable `checked`.',
-  TagInput:
-    'enter-to-commit token input over `TagInputCore`; `sortable` enables dnd-kit drag reordering (new order via `onChange`).',
-  Textarea: 'multiline text input.',
-  TimePicker: 'time-of-day input with controllable value.',
-  TimeField:
-    'segmented time-of-day input (hour/minute/second spinbuttons, optional 12-hour AM/PM) typing `HH:mm[:ss]` directly.',
-  Toggle:
-    'two-state pressed button (`aria-pressed`) with sizes and `square` icon mode; `ToolbarToggle` variant rides toolbar roving focus.',
-  Transfer:
-    'two-column shuttle moving options between source and target lists.',
-  TreeSelect:
-    'tree selection in a floating panel (AntD TreeSelect counterpart): selectable rows commit one key, cascading checkboxes commit `string[]`, with panel search, lazy `loadData` and chip overflow.',
-  Upload:
-    'file picker with accumulating `File[]` value, `accept`/`multiple`, `directory` picking and `listType` rendering.',
-
-  // Overlays
-  BottomSheet: 'mobile-style sheet sliding from the bottom screen edge.',
-  ConfirmDialog:
-    'ready-made confirm dialog with confirm/cancel actions and a danger variant.',
-  ContextMenu: 'floating menu opened on right-click.',
-  Dialog: 'modal dialog with focus trapping.',
-  Drawer: 'edge-anchored sliding panel (`placement` left/right).',
-  DropdownMenu: 'click-triggered floating menu.',
-  HoverCard:
-    'non-modal floating preview (avatar card, link summary) anchored to its trigger.',
-  Menu:
-    'lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).',
-  NotificationCenter:
-    'persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows (`task`/`agent`/`system`), mark-all-read and clear-all — declarative `items`, not an imperative open() API.',
-  Popconfirm: 'anchored confirmation bubble with confirm/cancel actions and async busy support.',
-  Popover: 'floating popover anchored to a trigger element.',
-  Tooltip: 'hover/focus hint bubble.',
-
-  // Data Display
-  Accordion: 'collapsible section list (`AccordionItem` with `title`).',
-  Calendar: 'month-grid date surface with `min`/`max`, locale and `weekStartsOn`.',
-  Card: 'content card with `elevated`/`outlined`/`filled` variants.',
-  Carousel: 'slideshow with controllable active index and autoplay.',
-  Chart:
-    'line/area/bar/pie charts over `recharts` (a haze-ui dependency), colors and axes on haze tokens; series cycle the semantic palette, `renderTooltip` customizes the tooltip.',
-  Schedule:
-    'calendar surface with day/week/month views — pointer drag and keyboard rescheduling, month grid with +N overflow chips.',
-  NavigationMenu:
-    'hover mega-menu navigation (WAI-ARIA disclosure navigation pattern): `NavigationMenuTrigger` opens `NavigationMenuContent` panels with a ~100ms intent dwell and ~300ms pointer grace, instantly switching between open panels; `activeValue` is controllable, Escape closes, left/right arrows traverse triggers.',
-  ButtonGroup:
-    'attached button bar — corners and seams merge via wrapper CSS while children stay real focusable `Button`s; group-wide `size`/`variant`/`disabled` fill in on children that leave them unset, `ButtonGroupSeparator` divides the bar (1px rule or a glyph/label).',
-  InputGroup:
-    'field cluster merging `Input`/`Select` with prefix/suffix `InputGroupAddon` cells (icon, text) and an optional trailing `Button` into one attached control; the composition layer keeps zero state — the field value contract is untouched.',
-  Meter:
-    'read-only semantic gauge (React Aria `role=meter` + aria-valuenow/min/max): `value` normalized over `min`/`max`, `thresholds` bands recolor track (subtle wash) and bar (solid color) as the value crosses each `at` bound, `label` wires a visible label via aria-labelledby, `showValue` renders the numeric readout, `size` sm/md/lg matches Progress bar heights.',
-  CopyButton:
-    'one-click copy button over Button\u2019s skin and `useClipboard`: copies `value` or a lazy `getValue()` on click, flips into a copied state for `copiedTimeout` ms (copy→check glyph, Copy→Copied accessible name, visually-hidden `role=status` announcement); render-prop children receive the copied state. `Snippet` is the code-chip form — mono content with a small ghost CopyButton; the clipboard always gets `value`, never the display children.',
-  Heatmap:
-    'GitHub-style activity calendar: week columns × weekday rows of squares, `data` (array or Record) binned into `levels` intensity steps (default 4) and tinted via `color-mix` of primary↔bg-subtle — light/dark/brand themes follow automatically; `getLabel`/`getMonthLabel`/`getWeekdayLabel`/`summary` carry all i18n, RSC-safe (hook-free).',
-  TimeGrid:
-    'single-select `\'HH:mm\'` slot grid generated from `from`/`to` (inclusive) and a minute `step` (default 60): ARIA radiogroup of native buttons with roving tabindex, arrows move-and-select, `value` is ControlOrValue, `name` rides a hidden input bridge for FormData/server actions.',
-  Chip: 'rounded status chip with optional icon and close button.',
-  CodeBlock:
-    'monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.',
-  DataTable:
-    'feature table on `@tanstack/react-table` (sorting, row selection, client or `manual` pagination); `dataTableToCsv` exports the rows.',
-  Descriptions:
-    'definition-list description groups (`dl`/`dt`/`dd` on CSS Grid): `items` pairs, `columns`, `bordered`, `size`.',
-  Image: 'image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',
-  JsonView:
-    'collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.',
-  Kbd: 'keyboard key-cap styling for shortcuts.',
-  List: 'styled `ul`/`ol`/plain list variants.',
-  Progress: 'progress bar or circle driven by a percentage `value`.',
-  QRCode:
-    'QR code rendered as one crisp SVG path with `value`/`size`/`level`/`bordered` options and theme-token module/background colors.',
-  Sparkline:
-    'inline-SVG mini trend chart (line/area variants, semantic stroke colors); stateless, recharts-free and RSC-safe.',
-  Stat: 'metric display with title, value and trend indicator.',
-  Table: 'styled semantic table (`striped`, `bordered`).',
-  Timeline: 'vertical timeline container for `TimelineItem` children.',
-  TaskList: 'agent task checklist: TaskList/TaskListItem checkbox rows strike through and dim when done; compound children or items data.',
-  Tree:
-    'hierarchical tree with expand, select and check state, async `loadData` and `searchValue` filtering.',
-  VirtualList:
-    'windowed list rendering only visible rows; fixed or measured dynamic heights.',
-  Watermark:
-    'tiled canvas watermark layer over children (or `fullscreen`); theme-aware color, degrades gracefully without canvas 2d support.',
-
-  // Navigation
-  Affix: 'fixes children to a viewport edge once scrolled past an offset.',
-  Anchor:
-    'sticky scroll-spy navigation: `items` list highlighting the active section (IntersectionObserver, controllable `activeId`), click scrolls with `offsetTop`.',
-  BackToTop: 'floating scroll-to-top button appearing past a scroll threshold.',
-  Breadcrumb: 'breadcrumb trail nav with configurable separator.',
-  Command:
-    'command palette surface: `CommandInput` plus filterable `CommandItem`s.',
-  FloatButton:
-    'floating action button over the page; `FloatButtonGroup` stacks actions behind an expand trigger, with back-to-top and help glyphs built in.',
-  NavigationBar: 'top nav bar with `brand` and `end` slots.',
-  Pagination: 'page navigation with controllable `page` and ellipsis windows.',
-  Stepper: 'step indicator driven by `activeStep` (`Step` children).',
-  Tabs:
-    'tab panel switcher with controllable active tab; document affordances on `Tab` (`icon`, `status` dot, `closable` ×/Delete) and `TabList` overflow ⋯ menu; `SortableTabList` adds dnd-kit drag reordering.',
-  Toolbar:
-    'button group with toolbar a11y (roving tabindex; `ToolbarButton`, `ToolbarSeparator`).',
-  Tour:
-    'guided walkthrough spotlighting `steps` behind a mask, controllable `current`.',
-
-  // Feedback
-  Alert: 'inline status message box.',
-  AsyncSection:
-    'declarative loading / error / content states for async data.',
-  Banner:
-    'dismissible top banner with semantic status colors.',
-  Empty: 'empty-state placeholder with image and description.',
-  ErrorBoundary:
-    'render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop receiving `error`/`info`/`resetErrorBoundary`) with a reset callback; `resetKeys` shallow-change resets.',
-  Result:
-    'result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.',
-  Skeleton:
-    'shimmering loading placeholder (`text`/`circular`/`rectangular`).',
-  Spinner: 'loading spinner.',
-  LoadingOverlay:
-    'container-level loading state: dims content, centers a spinner (or custom loader), `aria-busy` mirrors the phase.',
-  Mark: 'text-level highlight — semantic `<mark>` skinned with status tokens.',
-  NumberFormatter:
-    'presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.',
-  Spoiler:
-    'collapsed long-content gate ("show more/less"): height-capped preview with a fade edge; controllable `expanded`.',
-  VisuallyHidden:
-    'screen-reader-only content: clipped off the visual canvas, kept in the a11y tree.',
-  Toast:
-    'toast notifications via `useToast` + `ToastContainer` (imperative `toast()` helper included).',
-
-  // AI & Chat
-  ApprovalCard:
-    'approval gate with approve / deny actions for agent-initiated operations.',
-  ChatContainer:
-    'chat transcript scroll container with stick-to-bottom auto-scroll.',
-  ChatInput: 'message composer with a controllable value and onSend callback.',
-  ChatMessage:
-    'chat bubble with role-based layout (user / assistant / system), avatar, name, timestamp and delivery status.',
-  ConversationList:
-    'selectable list of conversations for a chat-history sidebar.',
-  DiffViewer:
-    'renders the line diff between old and new content for agent-proposed edits.',
-  FilePreview:
-    'attachment card with image thumbnail or extension badge, upload progress and remove/retry actions.',
-  InlineCitation:
-    'inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.',
-  InlineCompletion:
-    'ghost-text completion overlay for input/textarea; Tab accepts the suggestion, Escape dismisses it.',
-  LogViewer: 'scrollable log stream with severity-level filtering.',
-  MarkdownRenderer:
-    'renders markdown content (including code blocks) for assistant responses.',
-  ModelPicker: 'controllable dropdown for selecting the active model.',
-  Plan:
-    'agent plan and progress display: `Plan` + `Plan.Item` step list whose statuses drive an auto progress bar and summary.',
-  Queue:
-    'queue of pending agent actions or messages — `Queue` + `Queue.Item` with queued/sending/failed status and optional per-item removal.',
-  PromptInput:
-    'AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.',
-  Sources:
-    'numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` renders inline `[1] [2]` badges.',
-  StepTimeline:
-    'vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.',
-  StreamingText:
-    'typewriter effect that reveals streaming text character by character, with an optional cursor.',
-  ThinkingIndicator:
-    'animated bouncing-dots indicator that the agent is processing.',
-  TokenCounter: 'context-window token usage counter with budget progress.',
-  ToolCallCard:
-    'card presenting an agent tool call — name, input, output and running state.',
-  Trace:
-    'line-by-line agent reasoning trace — `Trace` + `TraceItem` steps with `pending`/`running`/`done`/`error` status, custom icons, collapsible `details` and sr-only status-change announcements.',
-
-  // Utilities
-  Collapsible:
-    'unstyled open/close container with controllable `open` state.',
-  Disclosure:
-    'summary-header disclosure panel (details/summary semantics).',
-  Fullscreen:
-    'wrap-mode Fullscreen API binding around a single trigger child with controllable `fullscreen` state; `useFullscreen()` hook also exported.',
-  LocaleProvider:
-    'supplies UI string packs (built-in English, zh-CN and ja-JP) to locale-aware components; `direction` (explicit or locale-derived) feeds `useDirection()`; `createStrings(base, overrides)` derives packs without forking the table. RTL locales (ar/he/fa/…) are derived automatically.',
-  ConfigProvider:
-    'per-component prop-default overrides (one section per exported component — sizes, delays, slot classNames) read via `useConfigDefaults()`, plus a global `density` knob (normal | compact) that density-aware components (Table) apply by re-declaring the spacing scale; explicit props always win, providers nest with shallow per-section merge, and components without a provider keep their built-in defaults.',
-  SwipeAction:
-    'swipe-to-reveal row actions on left/right edges with a commit threshold.',
-  PullToRefresh:
-    'mobile pull-to-refresh gesture over scrolling children: hand-written pointer/touch state machine (idle → pulling → ready → refreshing) with damped finger-follow, scroll-edge canRefresh gate, promise-gated spinner head and a render-prop indicator.',
-};
-
-/**
- * Parse the COMPONENT_GROUPS literal out of component-groups.ts. The file
- * is a TS module (imports '@/generated/props.json' and runs its coverage
- * guard at load time), so it cannot be imported here — the array literal
- * is stable, simple and guarded by the module's own assertions upstream.
- */
-function parseGroups(rootDir) {
-  const file = path.join(rootDir, 'src/views/Layout/component-groups.ts');
-  const source = readFileSync(file, 'utf8');
-  const marker = 'export const COMPONENT_GROUPS';
-  const start = source.indexOf(marker);
-  if (start < 0) {
-    throw new Error(`COMPONENT_GROUPS not found in ${path.relative(rootDir, file)}`);
-  }
-  const open = source.indexOf('[', start);
-  const close = source.indexOf('\n];', open);
-  if (open < 0 || close < 0) {
-    throw new Error(`cannot locate the COMPONENT_GROUPS array literal in ${path.relative(rootDir, file)}`);
-  }
-  const groups = [];
-  const token =
-    /group: '([^']+)'|\{\s*name:\s*'([^']+)',\s*route:\s*'([^']+)'\s*\}/g;
-  for (const match of source.slice(open, close).matchAll(token)) {
-    if (match[1] !== undefined) {
-      groups.push({ group: match[1], items: [] });
-    } else if (groups.length > 0) {
-      groups.at(-1).items.push({ name: match[2], route: match[3] });
-    } else {
-      throw new Error('component item found before any group header');
-    }
-  }
-  if (groups.length === 0) {
-    throw new Error('no groups parsed from component-groups.ts — shape changed?');
-  }
-  return groups;
-}
 
 /**
  * Parse the `haze-ui/headless` barrel. Every export clause carries a JSDoc
@@ -495,16 +165,23 @@ function parseIcons(rootDir) {
 
 function renderComponents(groups) {
   const lines = ['## Components', ''];
+  const sidebarRoutes = new Set(groups.flatMap(({ items }) => items.map((item) => item.route)));
+  const orphan = [...LLMS_BLURBS.keys()].find((route) => !sidebarRoutes.has(route));
+  if (orphan !== undefined) {
+    throw new Error(
+      `llms.txt blurb written for "${orphan}" but it is not a sidebar entry in src/views/Layout/component-groups.ts — remove it from COMPONENT_DESCRIPTIONS in scripts/component-descriptions.mjs`
+    );
+  }
   for (const { group, items } of groups) {
     lines.push(`### ${group}`, '');
-    for (const item of items) {
-      const blurb = DESCRIPTIONS[item.name];
+    for (const { name, route } of items) {
+      const blurb = LLMS_BLURBS.get(route);
       if (blurb === undefined) {
         throw new Error(
-          `no llms.txt blurb written for "${item.name}" — add it to DESCRIPTIONS in scripts/generate-llms.mjs`
+          `no llms.txt blurb written for "${route}" (${name}) — add it to COMPONENT_DESCRIPTIONS in scripts/component-descriptions.mjs`
         );
       }
-      lines.push(`- **${DISPLAY_NAMES[item.name] ?? item.name}** — ${blurb}`);
+      lines.push(`- **${DISPLAY_NAMES[name] ?? name}** — ${blurb}`);
     }
     lines.push('');
   }
@@ -756,17 +433,18 @@ interruption tiers, async option loading and lazy trees).
 
 The Components section above is generated from the demo sidebar contract
 (\`src/views/Layout/component-groups.ts\`) plus the blurb table in
-\`scripts/generate-llms.mjs\`; the Headless / Hooks / Icons sections are
-generated from the subpath barrels (\`src/lib/headless/index.ts\`,
-\`src/lib/hooks/index.ts\`, \`src/lib/icons/index.ts\`) — every export is
-enumerated with the JSDoc blurb written next to it in source. Regenerate with
-\`node scripts/generate-llms.mjs\` when any of those change. The preamble and
-the remaining closing sections are maintained by hand.
+\`scripts/component-descriptions.mjs\` (shared with the shadcn registry); the
+Headless / Hooks / Icons sections are generated from the subpath barrels
+(\`src/lib/headless/index.ts\`, \`src/lib/hooks/index.ts\`,
+\`src/lib/icons/index.ts\`) — every export is enumerated with the JSDoc blurb
+written next to it in source. Regenerate with \`node scripts/generate-llms.mjs\`
+when any of those change. The preamble and the remaining closing sections are
+maintained by hand.
 `;
 
 /** Build the full document. */
 export function generateLlms(rootDir = defaultRoot()) {
-  const groups = parseGroups(rootDir);
+  const groups = readComponentGroups(rootDir).groups;
   const componentCount = groups.reduce((sum, group) => sum + group.items.length, 0);
   // The RSC-safe count comes from the manifest the build itself uses
   // (scripts/rsc-safe.mjs) — never a hand-updated number.
@@ -791,7 +469,7 @@ export function writeLlms(rootDir = defaultRoot()) {
   if (!unchanged) {
     writeFileSync(outFile, content);
   }
-  const groups = parseGroups(rootDir);
+  const groups = readComponentGroups(rootDir).groups;
   return {
     changed: !unchanged,
     outFile,
@@ -800,26 +478,9 @@ export function writeLlms(rootDir = defaultRoot()) {
   };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-llms', (started) => {
     const { changed, outFile, componentCount, groupCount } = writeLlms();
-    console.log(
-      `generate-llms: ${componentCount} components in ${groupCount} groups, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-llms: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${componentCount} components in ${groupCount} groups, ${wroteLine(started, changed, outFile)}`;
+  });
 }

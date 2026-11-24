@@ -21,12 +21,17 @@ import {
 } from '@/lib/components/DataTable';
 import { Option, SelectCore } from '@/lib/components/Select';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { row, codeBlock } from '../styles';
 
-import { CssVarsSection, dataTableNote } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  dataTableNote,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── DataTable ─────────────────────────────────────────────────
 type EmployeeStatus = 'active' | 'away' | 'offline';
@@ -487,21 +492,22 @@ export default function DataTableDemo() {
   };
 
   return (
-    <>
-      <h1>DataTable</h1>
-      <p className={intro}>
-        Feature-complete table on top of TanStack Table v9 with the haze
-        skin: opt-in sorting, row selection, pagination, loading skeleton,
-        empty state, sticky header, column resizing, per-column filtering,
-        column visibility, expandable rows, tree data, summary rows,
-        inline cell editing, column reordering and infinite scroll — plus
-        a toolbar slot, three density sizes and roving cell keyboard
-        navigation. The plain <code>Table</code> primitives remain
-        available for bespoke layouts.
-      </p>
-
-      <div className={section}>
-        <h2>Sortable, selectable, paginated</h2>
+    <DemoPage
+      title='DataTable'
+      description={
+        <>
+          Feature-complete table on top of TanStack Table v9 with the haze
+          skin: opt-in sorting, row selection, pagination, loading skeleton,
+          empty state, sticky header, column resizing, per-column filtering,
+          column visibility, expandable rows, tree data, summary rows,
+          inline cell editing, column reordering and infinite scroll — plus
+          a toolbar slot, three density sizes and roving cell keyboard
+          navigation. The plain <code>Table</code> primitives remain
+          available for bespoke layouts.
+        </>
+      }
+    >
+      <DemoSection title='Sortable, selectable, paginated'>
         <div className={row}>
           <button onClick={() => setLoading((v) => !v)}>
             {loading ? 'Show data' : 'Show loading'}
@@ -521,19 +527,17 @@ export default function DataTableDemo() {
           className={stickyViewport}
           empty={<>No employees found</>}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Minimal — plain columns</h2>
+      <DemoSection title='Minimal — plain columns'>
         <DataTable
           columns={baseColumns.slice(0, 3)}
           data={PEOPLE.slice(0, 4)}
           getRowId={(employee) => String(employee.id)}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Column widths &amp; fixed columns</h2>
+      <DemoSection title='Column widths &amp; fixed columns'>
         <p className={dataTableNote}>
           Declare sizing through <code>meta.width</code> — a number is px,
           strings pass through as CSS lengths (<code>&apos;32%&apos;</code>,{' '}
@@ -559,10 +563,11 @@ export default function DataTableDemo() {
             getRowId={(employee) => String(employee.id)}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Enterprise: resize, filter, column menu &amp; expansion</h2>
+      <DemoSection
+        title='Enterprise: resize, filter, column menu &amp; expansion'
+      >
         <p className={dataTableNote}>
           Four independent opt-ins that compose: <code>resizable</code> adds
           header drag handles (double-click resets to the declared width;
@@ -598,10 +603,9 @@ export default function DataTableDemo() {
           )}
           getRowId={(employee) => String(employee.id)}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Column filter menus</h2>
+      <DemoSection title='Column filter menus'>
         <p className={dataTableNote}>
           Columns declaring <code>meta.filters</code> grow a funnel button
           in the header: it opens a checklist panel (edits stay a draft
@@ -639,10 +643,9 @@ export default function DataTableDemo() {
           }
           getRowId={(employee) => String(employee.id)}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tree data (subRows)</h2>
+      <DemoSection title='Tree data (subRows)'>
         <p className={dataTableNote}>
           Rows carrying a <code>subRows</code> array turn on tree mode by
           themselves — parents grow expander buttons, expanded children
@@ -664,10 +667,9 @@ export default function DataTableDemo() {
             },
           ]}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Summary rows</h2>
+      <DemoSection title='Summary rows'>
         <p className={dataTableNote}>
           <code>summary</code> renders rows in a <code>tfoot</code> — one
           cell per column, strings or functions of the summarized rows (the
@@ -699,10 +701,9 @@ export default function DataTableDemo() {
             },
           ]}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Editable cells</h2>
+      <DemoSection title='Editable cells'>
         <p className={dataTableNote}>
           <code>editable</code> makes cells focusable — double-click or Enter
           opens an editor, Enter or blur commits, Escape discards, and{' '}
@@ -722,10 +723,9 @@ export default function DataTableDemo() {
           editable
           onCellEdit={handleCellEdit}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Toolbar slot</h2>
+      <DemoSection title='Toolbar slot'>
         <p className={dataTableNote}>
           <code>toolbar</code> renders custom actions in the strip at the
           table&apos;s top-right corner — the same flex row as the{' '}
@@ -751,10 +751,9 @@ export default function DataTableDemo() {
             </button>
           }
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Density (size)</h2>
+      <DemoSection title='Density (size)'>
         <p className={dataTableNote}>
           <code>size</code> sets the cell padding density across header,
           body and summary footer — <code>&apos;sm&apos;</code> tight,{' '}
@@ -784,10 +783,9 @@ export default function DataTableDemo() {
           size={density}
           getRowId={(employee) => String(employee.id)}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Keyboard navigation</h2>
+      <DemoSection title='Keyboard navigation'>
         <p className={dataTableNote}>
           Body cells use a roving tabindex — exactly one cell carries the
           tab stop (the first cell until you move), the rest join the
@@ -813,10 +811,9 @@ export default function DataTableDemo() {
           editable
           onCellEdit={handleCellEdit}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Server mode (manual pagination &amp; sorting)</h2>
+      <DemoSection title='Server mode (manual pagination &amp; sorting)'>
         <p className={dataTableNote}>
           <code>manual</code> hands pagination and sorting to the server:
           the table renders <code>data</code> exactly as fetched — no local
@@ -832,10 +829,9 @@ export default function DataTableDemo() {
           <code>virtualized</code> compose unchanged.
         </p>
         <ServerModeTable />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CSV export</h2>
+      <DemoSection title='CSV export'>
         <p className={dataTableNote}>
           <code>dataTableToCsv(rows, columns, options?)</code> serializes
           the same rows and column defs the table renders — RFC 4180
@@ -849,10 +845,9 @@ export default function DataTableDemo() {
           <code>columnVisibility</code> straight from your control value.
         </p>
         <CsvExportTable />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Column reorder</h2>
+      <DemoSection title='Column reorder'>
         <p className={dataTableNote}>
           <code>columnReorderable</code> grows a ⠿ grip on every leaf
           header. Drag one with the pointer — the drag runtime loads
@@ -871,10 +866,9 @@ export default function DataTableDemo() {
           switch reordering off with a dev-mode warning.
         </p>
         <ColumnReorderTable />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Infinite scroll</h2>
+      <DemoSection title='Infinite scroll'>
         <p className={dataTableNote}>
           <code>onEndReached</code> fires when the table scrolls within{' '}
           <code>endReachedThreshold</code> px (default 200) of its last
@@ -889,69 +883,63 @@ export default function DataTableDemo() {
           exactly like any hand-rolled pagination.
         </p>
         <InfiniteScrollTable />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='DataTableProps' />
-      </div>
+      <PropsSection of='DataTableProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Sortable headers expose <code>aria-sort</code> and act as buttons
-            </li>
-            <li>
-              The selection column is a real checkbox column with an
-              indeterminate select-all
-            </li>
-            <li>Pagination reuses the Pagination component&apos;s semantics</li>
-            <li>
-              Resize handles are focusable <code>separator</code> widgets:
-              ArrowLeft/ArrowRight nudge the width (mirrored under RTL),
-              double-click resets it
-            </li>
-            <li>
-              Reorder grips are labeled focusable buttons with{' '}
-              <code>aria-keyshortcuts</code>: Alt+ArrowLeft/ArrowRight
-              move the column one slot (mirrored under RTL); the sr-only
-              keyboard description mentions the model while reordering is
-              on
-            </li>
-            <li>
-              Expander buttons expose <code>aria-expanded</code> and{' '}
-              <code>aria-controls</code>; the panel is a row spanning every
-              column
-            </li>
-            <li>
-              Filter inputs are labeled textboxes; the column menu&apos;s
-              checkboxes carry <code>menuitemcheckbox</code> semantics
-            </li>
-            <li>
-              Tree expanders expose <code>aria-expanded</code>; children are
-              real rows indented by depth
-            </li>
-            <li>
-              Summary rows are real <code>tfoot</code> rows, named through{' '}
-              <code>aria-label</code>
-            </li>
-            <li>
-              Editable cells are focusable and open a labeled editor on
-              Enter/double-click; Enter or blur commits, Escape discards
-            </li>
-            <li>
-              Body cells use a roving tabindex with an sr-only keyboard
-              description (<code>aria-describedby</code> on the container):
-              arrows move the active cell (mirrored under RTL),
-              Home/End/PageUp/PageDown jump, Enter/F2 edit
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Sortable headers expose <code>aria-sort</code> and act as buttons
+          </li>
+          <li>
+            The selection column is a real checkbox column with an
+            indeterminate select-all
+          </li>
+          <li>Pagination reuses the Pagination component&apos;s semantics</li>
+          <li>
+            Resize handles are focusable <code>separator</code> widgets:
+            ArrowLeft/ArrowRight nudge the width (mirrored under RTL),
+            double-click resets it
+          </li>
+          <li>
+            Reorder grips are labeled focusable buttons with{' '}
+            <code>aria-keyshortcuts</code>: Alt+ArrowLeft/ArrowRight
+            move the column one slot (mirrored under RTL); the sr-only
+            keyboard description mentions the model while reordering is
+            on
+          </li>
+          <li>
+            Expander buttons expose <code>aria-expanded</code> and{' '}
+            <code>aria-controls</code>; the panel is a row spanning every
+            column
+          </li>
+          <li>
+            Filter inputs are labeled textboxes; the column menu&apos;s
+            checkboxes carry <code>menuitemcheckbox</code> semantics
+          </li>
+          <li>
+            Tree expanders expose <code>aria-expanded</code>; children are
+            real rows indented by depth
+          </li>
+          <li>
+            Summary rows are real <code>tfoot</code> rows, named through{' '}
+            <code>aria-label</code>
+          </li>
+          <li>
+            Editable cells are focusable and open a labeled editor on
+            Enter/double-click; Enter or blur commits, Escape discards
+          </li>
+          <li>
+            Body cells use a roving tabindex with an sr-only keyboard
+            description (<code>aria-describedby</code> on the container):
+            arrows move the active cell (mirrored under RTL),
+            Home/End/PageUp/PageDown jump, Enter/F2 edit
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='data-table' />
-    </>
+    </DemoPage>
   );
 }

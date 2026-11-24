@@ -3,9 +3,7 @@ import { useControl } from 'react-use-control';
 
 import { Signature } from '@/lib/components/Signature';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── Signature ─────────────────────────────────────────────────
 const row = css`
@@ -38,15 +36,16 @@ export default function SignatureDemo() {
   const [value, setValue, control] = useControl(undefined, '');
 
   return (
-    <>
-      <h1>Signature</h1>
-      <p className={intro}>
-        A canvas handwriting pad. Drawing, undo and clear all commit a PNG data URL into
-        the controllable <code>value</code> — wire it straight into a form field.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
+    <DemoPage
+      title='Signature'
+      description={
+        <>
+          A canvas handwriting pad. Drawing, undo and clear all commit a PNG data URL into
+          the controllable <code>value</code> — wire it straight into a form field.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
         <div className={row}>
           <div>
             <Signature value={control} onChange={setValue} width={360} height={180} />
@@ -60,35 +59,30 @@ export default function SignatureDemo() {
             ) : null}
           </div>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom pen and labels</h2>
+      <DemoSection title='Custom pen and labels'>
         <Signature penColor="#b91c1c" penWidth={3} undoLabel="Undo stroke" clearLabel="Erase all" />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <Signature disabled width={280} height={140} />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Pointer-driven drawing (with pointer capture, so strokes survive leaving the
-              canvas); <strong>Undo</strong> / <strong>Clear</strong> are real buttons and
-              keyboard-operable.
-            </li>
-            <li>
-              Label the pad through the root (e.g. <strong>aria-label</strong> on the
-              component spreads to the wrapper).
-            </li>
-            <li>High-DPI screens render crisp strokes via devicePixelRatio scaling.</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Pointer-driven drawing (with pointer capture, so strokes survive leaving the
+            canvas); <strong>Undo</strong> / <strong>Clear</strong> are real buttons and
+            keyboard-operable.
+          </li>
+          <li>
+            Label the pad through the root (e.g. <strong>aria-label</strong> on the
+            component spreads to the wrapper).
+          </li>
+          <li>High-DPI screens render crisp strokes via devicePixelRatio scaling.</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

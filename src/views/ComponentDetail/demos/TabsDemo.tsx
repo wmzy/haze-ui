@@ -8,11 +8,16 @@ import { Tabs, TabList, Tab, TabPanel, SortableTabList, Segmented } from '@/lib'
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  flushStyle,
+  noteStyle,
+} from './shared';
 
 // classNames 槽位演示：一条记录从 <Tabs> 根分发到全部四个部位
 // （root/list/tab/panel，键名见 TabsClassNames）。
@@ -161,7 +166,7 @@ function VariantTabs() {
  * unmount (the input below resets when you switch away and back). */
 function DraftPanel({ name }: { name: string }) {
   return (
-    <p style={{ margin: 0 }}>
+    <p style={flushStyle}>
       {name} — type a note, then switch tabs and back: the field comes
       back empty because{' '}
       <code>destroyInactiveTabPane</code> unmounted the panel.
@@ -244,14 +249,11 @@ export default function TabsDemo() {
   const [, , tabCtrl] = useControl(undefined, 'tab1');
 
   return (
-    <>
-      <h1>Tabs</h1>
-      <p className={intro}>
-        Organize content into switchable panels with tabbed navigation.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Tabs'
+      description='Organize content into switchable panels with tabbed navigation.'
+    >
+      <DemoSection title='Demo'>
         <Tabs value={tabCtrl}>
           <TabList>
             <Tab value='tab1'>Tab One</Tab>
@@ -262,10 +264,9 @@ export default function TabsDemo() {
           <TabPanel value='tab2'>Content for Tab Two.</TabPanel>
           <TabPanel value='tab3'>Content for Tab Three.</TabPanel>
         </Tabs>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Variants — line / card / pill</h2>
+      <DemoSection title='Variants — line / card / pill'>
         <p className={row}>
           One <code>variant</code> prop on the <code>&lt;Tabs&gt;</code> root
           re-skins the whole strip through context:{' '}
@@ -283,17 +284,10 @@ export default function TabsDemo() {
   <TabList>…</TabList>
 </Tabs>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>classNames slots</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='classNames slots'>
+        <p style={noteStyle}>
           One <code>classNames</code> record on the{' '}
           <code>&lt;Tabs&gt;</code> root reaches every part through
           context (AntD v6 shape): <code>root</code>, <code>list</code>,{' '}
@@ -310,10 +304,9 @@ export default function TabsDemo() {
           <TabPanel value='tab1'>Content for Tab One.</TabPanel>
           <TabPanel value='tab2'>Content for Tab Two.</TabPanel>
         </Tabs>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>items — data-driven tabs</h2>
+      <DemoSection title='items — data-driven tabs'>
         <p className={row}>
           Pass <code>items</code> instead of compound children and{' '}
           <code>&lt;Tabs&gt;</code> renders the whole strip for you —
@@ -333,21 +326,21 @@ export default function TabsDemo() {
             {
               value: 'overview',
               label: 'Overview',
-              panel: <p style={{ margin: 0 }}>Everything, at a glance.</p>,
+              panel: <p style={flushStyle}>Everything, at a glance.</p>,
             },
             {
               value: 'activity',
               label: 'Activity',
               icon: <FileText size={14} />,
               status: 'syncing',
-              panel: <p style={{ margin: 0 }}>Syncing your activity…</p>,
+              panel: <p style={flushStyle}>Syncing your activity…</p>,
             },
             {
               value: 'settings',
               label: 'Settings',
               icon: <FileJson size={14} />,
               disabled: true,
-              panel: <p style={{ margin: 0 }}>Settings for this workspace.</p>,
+              panel: <p style={flushStyle}>Settings for this workspace.</p>,
             },
           ]}
         />
@@ -358,10 +351,9 @@ export default function TabsDemo() {
   { value: 'settings', label: 'Settings', disabled: true, panel: <p>…</p> },
 ]} />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>destroyInactiveTabPane + addable</h2>
+      <DemoSection title='destroyInactiveTabPane + addable'>
         <p className={row}>
           By default inactive panels stay mounted and hidden — panel
           state survives tab switches.{' '}
@@ -381,10 +373,9 @@ export default function TabsDemo() {
   addable={{ onAdd: () => setItems([...items, newDraft]),
              addLabel: 'New draft' }} />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Document tabs — icon, status, closable</h2>
+      <DemoSection title='Document tabs — icon, status, closable'>
         <p className={row}>
           The document layer turns the strip into an editor tab bar:{' '}
           <code>icon</code> decorates the inline-start slot,{' '}
@@ -411,10 +402,9 @@ export default function TabsDemo() {
     onClose={() => close('pkg')}>package.json</Tab>
 </TabList>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Overflow</h2>
+      <DemoSection title='Overflow'>
         <p className={row}>
           When the strip runs out of room, tabs that no longer fit fold
           into a <code>⋯</code> overflow menu (<code>overflowLabel</code>{' '}
@@ -431,10 +421,9 @@ export default function TabsDemo() {
           }))}
           defaultValue='file-1'
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sortable tabs</h2>
+      <DemoSection title='Sortable tabs'>
         <p className={row}>
           <code>SortableTabList</code> is the dnd-kit variant of{' '}
           <code>TabList</code>: drag a tab to reorder (8px distance
@@ -447,79 +436,71 @@ export default function TabsDemo() {
           scrolls instead.
         </p>
         <SortableDocumentTabs />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tabs Props</h2>
+      <DemoSection title='Tabs Props'>
         <PropsTable of='TabsProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tab Props</h2>
+      <DemoSection title='Tab Props'>
         <PropsTable of='TabProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TabPanel Props</h2>
+      <DemoSection title='TabPanel Props'>
         <PropsTable of='TabPanelProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TabList Props</h2>
+      <DemoSection title='TabList Props'>
         <PropsTable of='TabListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SortableTabList Props</h2>
+      <DemoSection title='SortableTabList Props'>
         <PropsTable of='SortableTabListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;tablist&quot;</strong>,{' '}
-              <strong>role=&quot;tab&quot;</strong>,{' '}
-              <strong>role=&quot;tabpanel&quot;</strong>
-            </li>
-            <li>
-              Active tab has <strong>aria-selected=&quot;true&quot;</strong>
-            </li>
-            <li>
-              Tabs linked to panels via <strong>aria-controls</strong>
-            </li>
-            <li>
-              <strong>Arrow keys</strong> navigate between tabs
-            </li>
-            <li>
-              <strong>Delete</strong> on a focused closable tab requests a
-              close (APG deletable tabs); the × is a real button but not a
-              tab stop, keeping one roving stop
-            </li>
-            <li>
-              The status dot is color-only decoration — the status word
-              (<code>statusLabel</code>, defaulting per status) is what
-              reaches screen readers
-            </li>
-            <li>
-              Folded overflow tabs stay reachable through the{' '}
-              <code>⋯</code> menu button
-            </li>
-            <li>
-              Disabled tabs are inert but visible — no click selection,
-              skipped by the roving arrows and by the overflow menu
-            </li>
-            <li>
-              The <code>addable</code> <code>+</code> sits outside the
-              tablist (the strip owns nothing but tabs) as a real
-              button — its own tab stop, Enter/Space activate
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;tablist&quot;</strong>,{' '}
+            <strong>role=&quot;tab&quot;</strong>,{' '}
+            <strong>role=&quot;tabpanel&quot;</strong>
+          </li>
+          <li>
+            Active tab has <strong>aria-selected=&quot;true&quot;</strong>
+          </li>
+          <li>
+            Tabs linked to panels via <strong>aria-controls</strong>
+          </li>
+          <li>
+            <strong>Arrow keys</strong> navigate between tabs
+          </li>
+          <li>
+            <strong>Delete</strong> on a focused closable tab requests a
+            close (APG deletable tabs); the × is a real button but not a
+            tab stop, keeping one roving stop
+          </li>
+          <li>
+            The status dot is color-only decoration — the status word
+            (<code>statusLabel</code>, defaulting per status) is what
+            reaches screen readers
+          </li>
+          <li>
+            Folded overflow tabs stay reachable through the{' '}
+            <code>⋯</code> menu button
+          </li>
+          <li>
+            Disabled tabs are inert but visible — no click selection,
+            skipped by the roving arrows and by the overflow menu
+          </li>
+          <li>
+            The <code>addable</code> <code>+</code> sits outside the
+            tablist (the strip owns nothing but tabs) as a real
+            button — its own tab stop, Enter/Space activate
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='tabs' />
-    </>
+    </DemoPage>
   );
 }

@@ -1,61 +1,57 @@
 import { Divider } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  flushStyle,
+  maxWidth480,
+  PropsSection,
+} from './shared';
 
 // ─── Divider ────────────────────────────────────────────────────
 export default function DividerDemo() {
   return (
-    <>
-      <h1>Divider</h1>
-      <p className={intro}>Visual separator between content sections.</p>
-
-      <div className={section}>
-        <h2>Horizontal</h2>
-        <div style={{ maxWidth: 480 }}>
-          <p style={{ margin: 0 }}>Content above</p>
+    <DemoPage
+      title='Divider'
+      description='Visual separator between content sections.'
+    >
+      <DemoSection title='Horizontal'>
+        <div style={maxWidth480}>
+          <p style={flushStyle}>Content above</p>
           <Divider />
-          <p style={{ margin: 0 }}>Content below</p>
+          <p style={flushStyle}>Content below</p>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Vertical</h2>
+      <DemoSection title='Vertical'>
         <div className={row}>
           <span>Left</span>
           <Divider orientation='vertical' />
           <span>Right</span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='DividerProps' />
-      </div>
+      <PropsSection of='DividerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;separator&quot;</strong>
-            </li>
-            <li>
-              Vertical dividers have <strong>aria-orientation=&quot;vertical&quot;</strong>
-            </li>
-            <li>
-              Horizontal renders as native <strong>&lt;hr&gt;</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;separator&quot;</strong>
+          </li>
+          <li>
+            Vertical dividers have <strong>aria-orientation=&quot;vertical&quot;</strong>
+          </li>
+          <li>
+            Horizontal renders as native <strong>&lt;hr&gt;</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='divider' />
-    </>
+    </DemoPage>
   );
 }

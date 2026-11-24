@@ -2,13 +2,16 @@ import { useControl } from 'react-use-control';
 
 import { Datepicker } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Datepicker ────────────────────────────────────────────────
 export default function DatepickerDemo() {
@@ -26,29 +29,22 @@ export default function DatepickerDemo() {
   const [custom] = useControl(customCtrl);
 
   return (
-    <>
-      <h1>Datepicker</h1>
-      <p className={intro}>Date selection with a calendar dropdown panel.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Datepicker'
+      description='Date selection with a calendar dropdown panel.'
+    >
+      <DemoSection title='Demo'>
         <div className={fieldRow}>
           <Datepicker value={valueCtrl} placeholder='Pick a date' />
         </div>
         {value && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {value}
           </p>
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Picker modes</h2>
+      <DemoSection title='Picker modes'>
         <p>
           <code>picker</code> swaps the panel for a week, month, quarter
           or year grid; the value serializes as{' '}
@@ -60,12 +56,7 @@ export default function DatepickerDemo() {
           <Datepicker picker='month' value={monthCtrl} placeholder='Pick a month' />
         </div>
         {month && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {month}
           </p>
         )}
@@ -73,12 +64,7 @@ export default function DatepickerDemo() {
           <Datepicker picker='week' value={weekCtrl} placeholder='Pick a week' />
         </div>
         {week && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {week}
           </p>
         )}
@@ -88,10 +74,9 @@ export default function DatepickerDemo() {
         <div className={fieldRow}>
           <Datepicker picker='year' placeholder='Pick a year' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Panel header drill-down</h2>
+      <DemoSection title='Panel header drill-down'>
         <p>
           The date panel&apos;s header carries two clickable titles: the
           month opens a month grid, the year a decade year grid (the
@@ -104,10 +89,9 @@ export default function DatepickerDemo() {
         <div className={fieldRow}>
           <Datepicker value={valueCtrl} placeholder='Pick a date' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Date and time</h2>
+      <DemoSection title='Date and time'>
         <p>
           <code>showTime</code> adds an hour/minute input below the
           calendar; the value serializes as{' '}
@@ -129,12 +113,7 @@ export default function DatepickerDemo() {
           />
         </div>
         {dateTime && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {dateTime}
           </p>
         )}
@@ -146,19 +125,13 @@ export default function DatepickerDemo() {
           />
         </div>
         {seconds && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {seconds}
           </p>
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom format / parse</h2>
+      <DemoSection title='Custom format / parse'>
         <p>
           A <code>format</code>/<code>parse</code> pair replaces the
           built-in value serialization: picks serialize through{' '}
@@ -188,19 +161,13 @@ export default function DatepickerDemo() {
           />
         </div>
         {custom && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {custom}
           </p>
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Presets</h2>
+      <DemoSection title='Presets'>
         <p>
           <code>presets</code> renders shortcut rows above the calendar —
           clicking one applies its value and closes the panel.
@@ -215,10 +182,9 @@ export default function DatepickerDemo() {
             ]}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>disabledDate</h2>
+      <DemoSection title='disabledDate'>
         <p>
           A predicate over each day&apos;s <code>Date</code> disables cells
           alongside <code>min</code>/<code>max</code> — weekends below.
@@ -229,10 +195,9 @@ export default function DatepickerDemo() {
             disabledDate={(date) => date.getDay() === 0 || date.getDay() === 6}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>cellRender</h2>
+      <DemoSection title='cellRender'>
         <p>
           <code>cellRender</code> passes through to the panel&apos;s
           calendar and appends custom content inside picker cells —
@@ -256,39 +221,33 @@ export default function DatepickerDemo() {
             }
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='DatepickerProps' />
-      </div>
+      <PropsSection of='DatepickerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Input has <strong>aria-haspopup=&quot;dialog&quot;</strong> and{' '}
-              <strong>aria-expanded</strong>
-            </li>
-            <li>
-              Calendar grid uses <strong>role=&quot;grid&quot;</strong> with{' '}
-              <strong>aria-label</strong>
-            </li>
-            <li>
-              Header drill titles carry <strong>aria-haspopup</strong> and{' '}
-              <strong>aria-expanded</strong>; drilled grids keep the grid
-              pattern with their own roving focus
-            </li>
-            <li>
-              Navigation buttons have <strong>aria-label</strong>
-            </li>
-            <li>Click outside closes the calendar</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Input has <strong>aria-haspopup=&quot;dialog&quot;</strong> and{' '}
+            <strong>aria-expanded</strong>
+          </li>
+          <li>
+            Calendar grid uses <strong>role=&quot;grid&quot;</strong> with{' '}
+            <strong>aria-label</strong>
+          </li>
+          <li>
+            Header drill titles carry <strong>aria-haspopup</strong> and{' '}
+            <strong>aria-expanded</strong>; drilled grids keep the grid
+            pattern with their own roving focus
+          </li>
+          <li>
+            Navigation buttons have <strong>aria-label</strong>
+          </li>
+          <li>Click outside closes the calendar</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='datepicker' />
-    </>
+    </DemoPage>
   );
 }

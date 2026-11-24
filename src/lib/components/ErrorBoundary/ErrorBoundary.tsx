@@ -24,6 +24,7 @@ import { Component } from 'react';
 import { css } from '@linaria/core';
 
 import { useStrings } from '../LocaleProvider';
+import { calloutBorders, calloutColors, calloutSurface } from '../../utils/callout-skin';
 import { quietButton } from '../../utils/quiet-button-skin';
 
 /** Arguments handed to a render-prop fallback. */
@@ -74,20 +75,18 @@ function resetKeysChanged(
   return next.some((key, index) => !Object.is(key, prev[index]));
 }
 
-// 与 Alert danger 变体 / AsyncSection 错误框同一套配色（subtle 背景 +
-// 25% color-mix 边框），保持错误语义的视觉一致。
-const fallbackBox = css`
-  display: flex;
+/* The fallback box is the shared danger callout (utils/callout-skin.ts:
+ * calloutSurface + the danger tint + the 25% danger edge — the pair
+ * Alert's danger variant and AsyncSection's error box wear; composed on
+ * the element in DefaultFallback, never interpolated into this css).
+ * Only the stacked, inline-start layout is ErrorBoundary's own: message
+ * on top, Retry below. Properties are disjoint from the three shared
+ * classes, so dev-server injection order and dist split-css order
+ * cannot change the computed result. */
+const fallbackLayout = css`
   flex-direction: column;
   align-items: flex-start;
   gap: var(--haze-space-3);
-  padding: var(--haze-space-3) var(--haze-space-4);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-danger-subtle);
-  border: 1px solid
-    color-mix(in srgb, var(--haze-color-danger) 25%, transparent);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-sm);
   line-height: var(--haze-leading-normal);
 `;
 
@@ -105,21 +104,6 @@ const fallbackMessage = css`
   overflow-wrap: anywhere;
 `;
 
-/* The fallback button's chrome lives in the shared quiet-button skin
- * (utils/quiet-button-skin.ts); only the forced-colors focus outline —
- * the box-shadow ring the UA drops under forced colors — stays here.
- * The compound `&[data-slot]` selector keeps the arm winning over the
- * shared base's `outline: none` in any cascade order (dev-server
- * injection order and the dist split disagree — Banner's closeBtnSize
- * precedent). */
-const fallbackButtonForcedColors = css`
-  @media (forced-colors: active) {
-    &[data-slot='retry-button']:focus-visible {
-      outline: 2px solid Highlight;
-    }
-  }
-`;
-
 /** Default fallback UI: danger-skinned alert with the error message and a
  * reset button (copy from the locale packs). A function component so it can
  * consume `useStrings` — the class cannot call hooks. */
@@ -134,7 +118,17 @@ function DefaultFallback({
 }) {
   const strings = useStrings('errorBoundary');
   return (
-    <div x-class={[fallbackBox, className]} role="alert" data-slot="fallback">
+    <div
+      x-class={[
+        calloutSurface,
+        calloutColors.danger,
+        calloutBorders.danger,
+        fallbackLayout,
+        className,
+      ]}
+      role="alert"
+      data-slot="fallback"
+    >
       <p x-class={fallbackTitle} data-slot="title">
         {strings.title}
       </p>
@@ -144,7 +138,7 @@ function DefaultFallback({
         </p>
       )}
       <button
-        x-class={[quietButton, fallbackButtonForcedColors]}
+        x-class={quietButton}
         type="button"
         data-slot="retry-button"
         onClick={onReset}

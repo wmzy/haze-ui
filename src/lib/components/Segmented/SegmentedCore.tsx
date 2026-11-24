@@ -7,7 +7,8 @@ import type {
 import { css } from '@linaria/core';
 import { useRef } from 'react';
 
-import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { axisMove, axisMoveTarget } from '../../utils/axis-traversal';
+import { getDirection } from '../../utils/direction';
 import { focusRingVisible } from '../../utils/focus-ring';
 import { useCallbackRef } from '../../utils/refs';
 
@@ -115,14 +116,15 @@ function normalize(option: SegmentedOption) {
 }
 
 /**
- * Keyboard model: roving tabindex + select-on-move arrows (RTL-aware
- * via `inlineAxisKeys`, key set aligned with TabList: arrows + Home/
- * End). `role` deliberately stays `group` — the exhaustive ARIA shape
- * for a single-select segmented control is `radiogroup` + `radio`, but
- * swapping it now would break the published aria contract (consumer
- * role queries, axe baselines) for what is a keyboard-only enhancement.
- * The roving stop plus arrow selection delivers the expected keyboard
- * behavior without changing what assistive tech announces.
+ * Keyboard model: roving tabindex + select-on-move arrows (keys
+ * resolved through utils/axis-traversal, the set aligned with TabList:
+ * arrows + Home/End, mirrored under RTL). `role` deliberately stays
+ * `group` — the exhaustive ARIA shape for a single-select segmented
+ * control is `radiogroup` + `radio`, but swapping it now would break
+ * the published aria contract (consumer role queries, axe baselines)
+ * for what is a keyboard-only enhancement. The roving stop plus arrow
+ * selection delivers the expected keyboard behavior without changing
+ * what assistive tech announces.
  */
 export default function SegmentedCore({
   options,
@@ -151,10 +153,10 @@ export default function SegmentedCore({
       ? selectedIndex
       : Math.max(0, options.findIndex((opt) => !normalize(opt).disabled));
 
-  // Select-on-move, the single-select sibling of TabList's strip
-  // keyboard model (menuKeyboard's moveFocusInAxis is pure focus
-  // movement — a different contract from arrows that must select).
-  // Written inline for the same reason TabList does not share one.
+  // Select-on-move: the axis keys resolve through the shared axis
+  // traversal (utils/axis-traversal — the same one TabList and the menu
+  // keyboard layers use); landing on a stop selects it, which is this
+  // component's own contract on top of the focus movement.
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     const stops = Array.from(
       groupRef.current?.querySelectorAll<HTMLButtonElement>(
@@ -162,47 +164,28 @@ export default function SegmentedCore({
       ) ?? []
     );
     if (stops.length === 0) return;
-    const current = stops.findIndex((stop) =>
-      stop.contains(document.activeElement)
-    );
+    // Direction read from the DOM at event time — the layout truth the
+    // arrow keys must follow.
+    const move = axisMove(event.key, 'horizontal', getDirection(groupRef.current));
+    if (!move) return;
+    // While focus sits on no segment the arrows step relative to the
+    // selected stop (the group's tab stop), not from the ends; disabled
+    // stops are skipped, wrapping past both ends.
+    const target = axisMoveTarget(move, {
+      current: stops.findIndex((stop) =>
+        stop.contains(document.activeElement)
+      ),
+      length: stops.length,
+      isFocusable: (index) => stops[index]?.disabled !== true,
+      entry: stopIndex,
+    });
 
-    // Step from `from` in `step` direction, wrapping, skipping
-    // disabled stops; land on the first enabled one and select it.
-    const move = (from: number, step: 1 | -1) => {
-      const len = stops.length;
-      for (let offset = 1; offset <= len; offset += 1) {
-        const index = (from + step * offset + len * 2) % len;
-        if (stops[index]!.disabled) continue;
-        stops[index]!.focus();
-        onChange(normalize(options[index]!).value);
-        return;
-      }
-    };
-
-    const { next: nextKey, prev: prevKey } = inlineAxisKeys(
-      'horizontal',
-      getDirection(groupRef.current)
-    );
-
-    const anchor = current < 0 ? stopIndex : current;
-    switch (event.key) {
-      case nextKey:
-        event.preventDefault();
-        move(anchor, 1);
-        return;
-      case prevKey:
-        event.preventDefault();
-        move(anchor, -1);
-        return;
-      case 'Home':
-        event.preventDefault();
-        move(-1, 1);
-        return;
-      case 'End':
-        event.preventDefault();
-        move(stops.length, -1);
-        return;
-    }
+    event.preventDefault();
+    const stop = stops[target];
+    const option = options[target];
+    if (!stop || !option) return;
+    stop.focus();
+    onChange(normalize(option).value);
   };
 
   return (

@@ -2,11 +2,13 @@ import { LogViewer } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── LogViewer ────────────────────────────────────────────────
 export default function LogViewerDemo() {
@@ -23,46 +25,35 @@ export default function LogViewerDemo() {
   ];
 
   return (
-    <>
-      <h1>LogViewer</h1>
-      <p className={intro}>
-        Structured log viewer with level-based filtering (debug, info, warn,
-        error).
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='LogViewer'
+      description='Structured log viewer with level-based filtering (debug, info, warn, error).'
+    >
+      <DemoSection title='Demo'>
         <div style={{ maxWidth: 560 }}>
           <LogViewer logs={logs} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='LogViewerProps' />
-      </div>
+      <PropsSection of='LogViewerProps' />
 
-      <div className={section}>
-        <h2>LogEntry Type</h2>
+      <DemoSection title='LogEntry Type'>
         <PropsTable of='LogEntry' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Filter buttons are native <strong>&lt;button&gt;</strong> elements
-            </li>
-            <li>Level badges use distinct colors for visual differentiation</li>
-            <li>
-              Scrollable body with <strong>max-height: 24rem</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Filter buttons are native <strong>&lt;button&gt;</strong> elements
+          </li>
+          <li>Level badges use distinct colors for visual differentiation</li>
+          <li>
+            Scrollable body with <strong>max-height: 24rem</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='logviewer' />
-    </>
+    </DemoPage>
   );
 }

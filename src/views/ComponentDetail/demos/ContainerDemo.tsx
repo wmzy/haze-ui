@@ -1,20 +1,20 @@
 import { Container } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Container ──────────────────────────────────────────────────
 export default function ContainerDemo() {
   return (
-    <>
-      <h1>Container</h1>
-      <p className={intro}>Centered content container with max-width breakpoints.</p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Container'
+      description='Centered content container with max-width breakpoints.'
+    >
+      <DemoSection title='Sizes'>
         {(['sm', 'md', 'lg', 'xl'] as const).map((size) => (
           <div key={size} style={{ marginBottom: 'var(--haze-space-3)' }}>
             <Container size={size}>
@@ -24,22 +24,16 @@ export default function ContainerDemo() {
             </Container>
           </div>
         ))}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ContainerProps' />
-      </div>
+      <PropsSection of='ContainerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Renders as a plain <strong>&lt;div&gt;</strong></li>
-            <li>Purely presentational layout component</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Renders as a plain <strong>&lt;div&gt;</strong></li>
+          <li>Purely presentational layout component</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

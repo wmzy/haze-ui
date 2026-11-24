@@ -6,10 +6,16 @@ import { useControl } from 'react-use-control';
 
 import { Cascader } from '@/lib';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
 
-import { intro, section, fieldRow, codeBlock } from '../styles';
+import { fieldRow, codeBlock } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Cascader ──────────────────────────────────────────────────
 const REGIONS: CascaderOption[] = [
@@ -114,16 +120,17 @@ export default function CascaderDemo() {
   };
 
   return (
-    <>
-      <h1>Cascader</h1>
-      <p className={intro}>
-        Drill-down cascading selection for hierarchical paths (region
-        pickers, category trees). The panel shows one scrolling column per
-        level; the trigger displays the committed path.
-      </p>
-
-      <div className={section}>
-        <h2>Basic — leaf selection</h2>
+    <DemoPage
+      title='Cascader'
+      description={
+        <>
+          Drill-down cascading selection for hierarchical paths (region
+          pickers, category trees). The panel shows one scrolling column per
+          level; the trigger displays the committed path.
+        </>
+      }
+    >
+      <DemoSection title='Basic — leaf selection'>
         <div className={fieldRow}>
           <Cascader
             options={REGIONS}
@@ -132,10 +139,9 @@ export default function CascaderDemo() {
           />
         </div>
         <pre className={codeBlock}>{JSON.stringify(path)}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>changeOnSelect — commit every level</h2>
+      <DemoSection title='changeOnSelect — commit every level'>
         <div className={fieldRow}>
           <Cascader
             options={REGIONS}
@@ -143,10 +149,9 @@ export default function CascaderDemo() {
             placeholder='Select region'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>expandTrigger=&quot;hover&quot;</h2>
+      <DemoSection title='expandTrigger="hover"'>
         <div className={fieldRow}>
           <Cascader
             options={REGIONS}
@@ -154,17 +159,10 @@ export default function CascaderDemo() {
             placeholder='Select region'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Virtualized — wide trees</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Virtualized — wide trees'>
+        <p style={noteStyle}>
           <code>virtualized</code> renders every column through{' '}
           <code>VirtualList</code>: only the visible window per column
           stays mounted. Keyboard focus steps scroll the target row into
@@ -180,17 +178,10 @@ export default function CascaderDemo() {
             placeholder='Select province / city'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Remote search</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Remote search'>
+        <p style={noteStyle}>
           <code>onSearch</code> adds a search field to the panel: every
           query transition fires the callback with the raw query — each
           keystroke, clearing the field, and the reset back to{' '}
@@ -210,10 +201,9 @@ export default function CascaderDemo() {
             placeholder='Search regions…'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { Cascader } from 'haze-ui';
 
 <Cascader
@@ -224,33 +214,27 @@ export default function CascaderDemo() {
   changeOnSelect={false}    // true: every level commits
   expandTrigger="click"     // 'hover' also available
 />`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CascaderProps' />
-      </div>
+      <PropsSection of='CascaderProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Trigger exposes <code>aria-expanded</code> /
-              <code>aria-haspopup=&quot;menu&quot;</code>
-            </li>
-            <li>
-              Columns are menus; parents carry <code>aria-haspopup</code> and{' '}
-              <code>aria-expanded</code>, with an expand glyph labelled
-              through the locale dictionary
-            </li>
-            <li>
-              Arrow keys navigate, <strong>Enter</strong> drills or commits,{' '}
-              <strong>Escape</strong> closes and restores focus to the trigger
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Trigger exposes <code>aria-expanded</code> /
+            <code>aria-haspopup=&quot;menu&quot;</code>
+          </li>
+          <li>
+            Columns are menus; parents carry <code>aria-haspopup</code> and{' '}
+            <code>aria-expanded</code>, with an expand glyph labelled
+            through the locale dictionary
+          </li>
+          <li>
+            Arrow keys navigate, <strong>Enter</strong> drills or commits,{' '}
+            <strong>Escape</strong> closes and restores focus to the trigger
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

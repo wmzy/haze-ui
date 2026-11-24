@@ -5,13 +5,17 @@ import { css } from '@linaria/core';
 import { Button, ButtonLink, Icon } from '@/lib';
 import { buttonVariants, buttonSizes } from '@/lib/components/Button';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection, StrokeSvg } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+  StrokeSvg,
+} from './shared';
 
 // Component-level tokens: set --haze-button-* on any ancestor to retheme
 // the buttons inside (sizes that aren't overridden keep their fallbacks).
@@ -35,37 +39,28 @@ const brandedCompose = css`
 // ─── Button ────────────────────────────────────────────────────
 export default function ButtonDemo() {
   return (
-    <>
-      <h1>Button</h1>
-      <p className={intro}>Trigger actions with configurable style and size.</p>
-
-      <div className={section}>
-        <h2>Variants</h2>
+    <DemoPage
+      title='Button'
+      description='Trigger actions with configurable style and size.'
+    >
+      <DemoSection title='Variants'>
         <div className={row}>
           <Button variant='solid'>Solid</Button>
           <Button variant='outline'>Outline</Button>
           <Button variant='ghost'>Ghost</Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Button size='sm'>Small</Button>
           <Button size='md'>Medium</Button>
           <Button size='lg'>Large</Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Component-level tokens</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Component-level tokens'>
+        <p style={noteStyle}>
           Buttons read <code>--haze-button-*</code> custom properties with
           global-token fallbacks, so an ancestor can retheme just the
           buttons it wraps: this container sets{' '}
@@ -85,17 +80,10 @@ export default function ButtonDemo() {
             Small (height untouched)
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Square (Icon Button)</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Square (Icon Button)'>
+        <p style={noteStyle}>
           Use <code>square</code> for icon-only buttons with equal padding on
           all sides.
         </p>
@@ -126,10 +114,9 @@ export default function ButtonDemo() {
             </Icon>
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={row}>
           <Button disabled>Disabled Solid</Button>
           <Button variant='outline' disabled>
@@ -139,17 +126,10 @@ export default function ButtonDemo() {
             Disabled Ghost
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ButtonLink — a real anchor with the Button skin</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='ButtonLink — a real anchor with the Button skin'>
+        <p style={noteStyle}>
           Navigation that must look like a button: <code>ButtonLink</code>{' '}
           renders a native <code>&lt;a&gt;</code> (href, ⌘/middle-click,
           crawlers) wearing the same variants/sizes. Anchors have no{' '}
@@ -168,17 +148,10 @@ export default function ButtonDemo() {
             Link Disabled
           </ButtonLink>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Composing with buttonVariants / buttonSizes</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Composing with buttonVariants / buttonSizes'>
+        <p style={noteStyle}>
           The exported <code>buttonVariants</code> /{' '}
           <code>buttonSizes</code> maps carry the exact skin classes{' '}
           <code>Button</code> wears (shadcn <code>buttonVariants</code>{' '}
@@ -201,37 +174,31 @@ export default function ButtonDemo() {
             Ghost skin, sm
           </a>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ButtonProps' />
-      </div>
+      <PropsSection of='ButtonProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as native <strong>&lt;button&gt;</strong> with{' '}
-              <strong>type=&quot;button&quot;</strong>
-            </li>
-            <li>
-              Supports <strong>Tab</strong> focus and <strong>Enter</strong>/
-              <strong>Space</strong> activation
-            </li>
-            <li>
-              Disabled state uses <strong>disabled</strong> attribute, removing
-              from tab order
-            </li>
-            <li>
-              Focus ring via <strong>:focus-visible</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as native <strong>&lt;button&gt;</strong> with{' '}
+            <strong>type=&quot;button&quot;</strong>
+          </li>
+          <li>
+            Supports <strong>Tab</strong> focus and <strong>Enter</strong>/
+            <strong>Space</strong> activation
+          </li>
+          <li>
+            Disabled state uses <strong>disabled</strong> attribute, removing
+            from tab order
+          </li>
+          <li>
+            Focus ring via <strong>:focus-visible</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='button' />
-    </>
+    </DemoPage>
   );
 }

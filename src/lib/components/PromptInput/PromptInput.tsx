@@ -13,14 +13,14 @@ import { useControl } from 'react-use-control';
 
 import { useFloating } from '../../utils/floating';
 import { fieldBareInner, fieldChrome, focusWithinRing } from '../../utils/field-skin';
-import { listWrap, tag as tagStyle, tagFieldContainer } from '../../utils/tag-skin';
+import { listWrap, removeBtn, tag as tagStyle, tagFieldContainer } from '../../utils/tag-skin';
 import { SuggestListbox, useSuggestField, useSuggestWiring } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
 import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 import { formatString } from '../LocaleProvider/locale';
-import TagRemoveButton from '../TagInput/TagRemoveButton';
+import TagRemoveButton from '../../utils/tag-remove-button';
 
 type PromptInputProps = {
   /** Free-form draft text. */
@@ -74,10 +74,11 @@ type PromptInputProps = {
 /* The field chrome (border/radius/fill, the :focus-within ring), the
  * container's flex flow and the tag list/chip skin are shared with
  * TagInput (utils/field-skin.ts, utils/tag-skin.ts); the tag chips
- * render TagInput's TagRemoveButton (the × glyph plus its Backspace
- * removal arm). The container below keeps only what is PromptInput's
- * own: position:relative anchors the fallback-tier suggestion panel,
- * the block sizing, sm type, ink and the hover/disabled states. */
+ * render the shared TagRemoveButton (utils/tag-remove-button.tsx: the
+ * × glyph plus its Backspace removal arm, chrome passed in). The
+ * container below keeps only what is PromptInput's own: position:relative
+ * anchors the fallback-tier suggestion panel, the block sizing, sm type,
+ * ink and the hover/disabled states. */
 const container = css`
   position: relative;
   width: 100%;
@@ -216,10 +217,7 @@ export default function PromptInput({
   const { ref: autosizeRef, resize } = useAutosizeTextarea({ maxRows });
   // Stable merged ref: the autosize node plus every textareaRef consumer
   // (floating trigger, caret restore, live-value reads).
-  const textareaRefs = useCallback(
-    (node: HTMLTextAreaElement | null) => mergeRefs(textareaRef, autosizeRef)(node),
-    [autosizeRef]
-  );
+  const textareaRefs = useMergedRefs(textareaRef, autosizeRef);
   useEffect(() => {
     resize();
   }, [value, maxRows, disabled, resize]);
@@ -343,6 +341,7 @@ export default function PromptInput({
             <li key={`${tag}:${i}`} data-slot='tag' x-class={[tagStyle]}>
               {tag}
               <TagRemoveButton
+                className={removeBtn}
                 removeLabel={formatString(strings.removeTag, { tag })}
                 onRemove={() => updateTags(tags.filter((_, j) => j !== i))}
                 disabled={disabled}

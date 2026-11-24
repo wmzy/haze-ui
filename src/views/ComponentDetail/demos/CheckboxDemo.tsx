@@ -1,22 +1,20 @@
 import { Checkbox } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row, labelStyle } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row, labelStyle } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Checkbox ──────────────────────────────────────────────────
 export default function CheckboxDemo() {
   return (
-    <>
-      <h1>Checkbox</h1>
-      <p className={intro}>Toggle a boolean value on or off.</p>
-
-      <div className={section}>
-        <h2>Default</h2>
+    <DemoPage title='Checkbox' description='Toggle a boolean value on or off.'>
+      <DemoSection title='Default'>
         <div className={row}>
           <label className={labelStyle}>
             <Checkbox /> Unchecked
@@ -25,10 +23,9 @@ export default function CheckboxDemo() {
             <Checkbox checked /> Checked
           </label>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={row}>
           <label className={labelStyle}>
             <Checkbox disabled /> Disabled
@@ -37,32 +34,26 @@ export default function CheckboxDemo() {
             <Checkbox checked disabled /> Checked Disabled
           </label>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CheckboxProps' />
-      </div>
+      <PropsSection of='CheckboxProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as native{' '}
-              <strong>&lt;input type=&quot;checkbox&quot;&gt;</strong>
-            </li>
-            <li>
-              <strong>Space</strong> toggles the checked state
-            </li>
-            <li>
-              Wrap with <strong>&lt;label&gt;</strong> for accessible labeling
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as native{' '}
+            <strong>&lt;input type=&quot;checkbox&quot;&gt;</strong>
+          </li>
+          <li>
+            <strong>Space</strong> toggles the checked state
+          </li>
+          <li>
+            Wrap with <strong>&lt;label&gt;</strong> for accessible labeling
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='checkbox' />
-    </>
+    </DemoPage>
   );
 }

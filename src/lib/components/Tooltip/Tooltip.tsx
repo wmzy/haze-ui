@@ -15,6 +15,10 @@ import {
   type FloatingPlacement,
 } from '../../utils/floating';
 import { floatingPairHost } from '../../utils/panel-skin';
+import {
+  tooltipBubbleDeclarations,
+  tooltipBubbleForcedColors,
+} from '../../utils/tooltip-bubble-skin';
 import { useCollisionStrategy } from '../../utils/use-collision-strategy';
 import { useHoverIntent } from '../../utils/use-hover-intent';
 
@@ -53,26 +57,17 @@ type TooltipProps = {
   children: ReactNode;
 };
 
+/**
+ * The bubble's dark chip: the surface Tooltip shares with Slider's
+ * value bubble (utils/tooltip-bubble-skin — the declarations strings,
+ * forced-colors block included). Nothing else is the bubble's own:
+ * placement and the animated lifecycle ride utils/floating's panel
+ * classes, composed at the call site.
+ */
 const bubble = css`
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-text);
-  color: var(--haze-color-text-inverse);
-  font-family: var(--haze-font-sans);
-  font-size: var(--haze-text-xs);
-  line-height: var(--haze-leading-normal);
-  white-space: nowrap;
-  pointer-events: none;
+${tooltipBubbleDeclarations}
 
-  /* Forced-colors: the dark bubble flattens onto Canvas with its
-     inverse text forced to CanvasText — the tooltip would float as
-     unbounded text. The Windows-native shape renders instead: Canvas
-     background, CanvasText text, CanvasText boundary. */
-  @media (forced-colors: active) {
-    background: Canvas;
-    color: CanvasText;
-    border: 1px solid CanvasText;
-  }
+${tooltipBubbleForcedColors}
 `;
 
 /** `position` prop → floating placement; sides center over the trigger. */

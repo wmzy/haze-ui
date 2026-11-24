@@ -2,11 +2,15 @@ import { useControl } from 'react-use-control';
 
 import { Button, BottomSheet, Input, Switch } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { intro, fieldRow, row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow, row } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  flushStyle,
+  PropsSection,
+} from './shared';
 
 // ─── BottomSheet ────────────────────────────────────────────────
 export default function BottomSheetDemo() {
@@ -20,25 +24,23 @@ export default function BottomSheetDemo() {
   const [swipe, , swipeCtrl] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>BottomSheet</h1>
-      <p className={intro}>Bottom sheet overlay panel for mobile-friendly interactions.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='BottomSheet'
+      description='Bottom sheet overlay panel for mobile-friendly interactions.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button onClick={() => setOpen(true)}>Open Bottom Sheet</Button>
         </div>
         <BottomSheet open={openCtrl} onClose={() => setOpen(false)}>
-          <p style={{ margin: 0 }}>Bottom sheet content. Click the backdrop to close.</p>
+          <p style={flushStyle}>Bottom sheet content. Click the backdrop to close.</p>
           <Button onClick={() => setOpen(false)} size='sm' variant='outline' style={{ marginTop: 'var(--haze-space-3)' }}>
             Close
           </Button>
         </BottomSheet>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Mobile: swipe to dismiss &amp; virtual keyboard</h2>
+      <DemoSection title='Mobile: swipe to dismiss &amp; virtual keyboard'>
         <div className={fieldRow}>
           <Switch
             checked={swipeCtrl}
@@ -63,30 +65,24 @@ export default function BottomSheetDemo() {
           <Input aria-label='Message' placeholder='Focus me — the sheet lifts above the keyboard' />
           <div style={{ marginTop: 'var(--haze-space-4)', display: 'grid', gap: 'var(--haze-space-2)' }}>
             {Array.from({ length: 8 }, (_, i) => (
-              <p key={i} style={{ margin: 0 }}>
+              <p key={i} style={flushStyle}>
                 Scrollable row {i + 1} — drag down from the top of this list to dismiss.
               </p>
             ))}
           </div>
         </BottomSheet>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='BottomSheetProps' />
-      </div>
+      <PropsSection of='BottomSheetProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Overlay click closes the sheet</li>
-            <li>Sheet has a drag handle indicator</li>
-            <li>Safe area insets are respected for mobile</li>
-            <li>The swipe gesture is a pointer-only affordance; Escape and the backdrop remain the keyboard paths</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Overlay click closes the sheet</li>
+          <li>Sheet has a drag handle indicator</li>
+          <li>Safe area insets are respected for mobile</li>
+          <li>The swipe gesture is a pointer-only affordance; Escape and the backdrop remain the keyboard paths</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

@@ -1,44 +1,37 @@
 import { Banner } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { noop } from './shared';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  noop,
+  PropsSection,
+} from './shared';
 
 // ─── Banner ─────────────────────────────────────────────────────
 export default function BannerDemo() {
   return (
-    <>
-      <h1>Banner</h1>
-      <p className={intro}>Dismissible alert banner with semantic colors.</p>
-
-      <div className={section}>
-        <h2>Colors</h2>
+    <DemoPage
+      title='Banner'
+      description='Dismissible alert banner with semantic colors.'
+    >
+      <DemoSection title='Colors'>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--haze-space-2)' }}>
           <Banner color='info'>This is an informational banner.</Banner>
           <Banner color='success'>Operation completed successfully.</Banner>
           <Banner color='warning'>Please review your settings.</Banner>
           <Banner color='danger' onClose={noop}>Something went wrong.</Banner>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='BannerProps' />
-      </div>
+      <PropsSection of='BannerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Uses <strong>role=&quot;alert&quot;</strong></li>
-            <li>Close button has <strong>aria-label=&quot;Close&quot;</strong></li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Uses <strong>role=&quot;alert&quot;</strong></li>
+          <li>Close button has <strong>aria-label=&quot;Close&quot;</strong></li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

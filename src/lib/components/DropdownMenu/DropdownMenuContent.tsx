@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 import { classnames } from '../../utils/classnames';
 import { FloatingPanel, type FloatingPlacement } from '../../utils/floating';
 import { getEnabledMenuItems } from '../../utils/menuKeyboard';
 import { useMenuPanelWiring } from '../../utils/menu-panel';
 import { menuPanel } from '../../utils/menu-skins';
+import { useFocusWhenShown } from '../../utils/use-focus-when-shown';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
@@ -66,15 +67,13 @@ export default function DropdownMenuContent({
   // showPopover() effect, so at open-flip time the popover=auto panel is
   // still display:none and .focus() would be silently dropped in
   // Chromium; `floating.shown` flips only once the panel is focusable.
-  useEffect(() => {
-    if (!open || !floating.shown) return;
+  useFocusWhenShown(open && floating.shown, () => {
     const request = focusRequestRef.current;
     focusRequestRef.current = null;
-    if (!request) return;
+    if (!request) return null;
     const items = getEnabledMenuItems(contentRef.current);
-    const target = request === 'first' ? items[0] : items[items.length - 1];
-    target?.focus();
-  }, [open, floating.shown, contentRef, focusRequestRef]);
+    return request === 'first' ? items[0] : items[items.length - 1];
+  });
 
   // Animated exit: the panel stays mounted (fading out via
   // data-state=closed) until the exit settles — `exited` starts true

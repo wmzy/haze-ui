@@ -4,9 +4,9 @@ import { Title, Text, Paragraph } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // Constrained width so the truncation demos actually have something to clip.
 const narrow = css`
@@ -19,21 +19,19 @@ const narrow = css`
 // ─── Typography ─────────────────────────────────────────────────
 export default function TypographyDemo() {
   return (
-    <>
-      <h1>Typography</h1>
-      <p className={intro}>Title, Text, and Paragraph components for consistent typography.</p>
-
-      <div className={section}>
-        <h2>Title</h2>
+    <DemoPage
+      title='Typography'
+      description='Title, Text, and Paragraph components for consistent typography.'
+    >
+      <DemoSection title='Title'>
         <Title level={1}>Heading Level 1</Title>
         <Title level={2}>Heading Level 2</Title>
         <Title level={3}>Heading Level 3</Title>
         <Title level={4}>Heading Level 4</Title>
         <Title level={5}>Heading Level 5</Title>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Text</h2>
+      <DemoSection title='Text'>
         <div className={row}>
           <Text>Default text</Text>
           <Text type='secondary'>Secondary text</Text>
@@ -42,16 +40,14 @@ export default function TypographyDemo() {
           <Text code>inline code</Text>
           <Text mark>Highlighted</Text>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Paragraph</h2>
+      <DemoSection title='Paragraph'>
         <Paragraph>This is a paragraph component with relaxed line height and bottom margin.</Paragraph>
         <Paragraph>Another paragraph follows naturally.</Paragraph>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Ellipsis</h2>
+      <DemoSection title='Ellipsis'>
         <div className={row}>
           <div className={narrow}>
             <Text ellipsis>Single-line truncation; the full text rides along in the native title attribute.</Text>
@@ -66,28 +62,23 @@ export default function TypographyDemo() {
             hover reveals the full content through the title fallback.
           </Paragraph>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Title Props</h2>
+      <DemoSection title='Title Props'>
         <PropsTable of='TitleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Text Props</h2>
+      <DemoSection title='Text Props'>
         <PropsTable of='TextProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Title renders semantic <strong>&lt;h1&gt;</strong> through <strong>&lt;h5&gt;</strong></li>
-            <li>Text renders as <strong>&lt;span&gt;</strong>, <strong>&lt;strong&gt;</strong>, or <strong>&lt;code&gt;</strong></li>
-            <li>Paragraph renders as <strong>&lt;p&gt;</strong></li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Title renders semantic <strong>&lt;h1&gt;</strong> through <strong>&lt;h5&gt;</strong></li>
+          <li>Text renders as <strong>&lt;span&gt;</strong>, <strong>&lt;strong&gt;</strong>, or <strong>&lt;code&gt;</strong></li>
+          <li>Paragraph renders as <strong>&lt;p&gt;</strong></li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

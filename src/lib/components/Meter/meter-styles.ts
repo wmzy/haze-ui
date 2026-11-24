@@ -1,5 +1,7 @@
 import {css} from '@linaria/core';
 
+import { trackSizeLg, trackSizeMd, trackSizeSm } from '../../utils/track-size-skin';
+
 /**
  * Shared Meter skin — the labeled gauge chrome (root, header row with
  * label/value, track and bar classes) the `Meter` component wears.
@@ -76,12 +78,13 @@ export const track = css`
   }
 `;
 
-/* Same three steps as Progress's barSizes — the read-only gauge keeps
- * the determinate bar's track profile so the two compose visually. */
+/* Same three steps as Progress's barSizes — the shared track size skin
+ * (utils/track-size-skin.ts), so the read-only gauge keeps the
+ * determinate bar's track profile and the two compose visually. */
 export const trackSizes = {
-  sm: css`height: 4px;`,
-  md: css`height: 8px;`,
-  lg: css`height: 12px;`,
+  sm: css`${trackSizeSm}`,
+  md: css`${trackSizeMd}`,
+  lg: css`${trackSizeLg}`,
 } as const;
 
 /* The fill's geometry and motion ride the shared linear-meter skin

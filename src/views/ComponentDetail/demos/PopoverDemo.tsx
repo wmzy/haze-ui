@@ -2,13 +2,16 @@ import { css } from '@linaria/core';
 
 import { Button, Popover } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // classNames 槽位演示：trigger 落在触发器包裹元素上、content 落在浮层
 // 面板上（键名见 PopoverClassNames）。
@@ -24,30 +27,20 @@ const brandedPanel = css`
 // ─── Popover ───────────────────────────────────────────────────
 export default function PopoverDemo() {
   return (
-    <>
-      <h1>Popover</h1>
-      <p className={intro}>
-        Click-triggered floating panel for additional content.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Popover'
+      description='Click-triggered floating panel for additional content.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Popover content={<div>Popover content goes here.</div>}>
             <Button variant='outline'>Toggle Popover</Button>
           </Popover>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>classNames slots</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='classNames slots'>
+        <p style={noteStyle}>
           The <code>classNames</code> record targets the two structural
           parts (AntD v6 shape): <code>trigger</code> lands on the
           clickable wrapper around the children, <code>content</code> on
@@ -62,30 +55,24 @@ export default function PopoverDemo() {
             <Button variant='outline'>Toggle Popover</Button>
           </Popover>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='PopoverProps' />
-      </div>
+      <PropsSection of='PopoverProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Trigger has <strong>aria-expanded</strong> and{' '}
-              <strong>aria-controls</strong>
-            </li>
-            <li>
-              Panel is hidden with <strong>display: none</strong> when closed
-            </li>
-            <li>Click trigger to toggle open/close</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Trigger has <strong>aria-expanded</strong> and{' '}
+            <strong>aria-controls</strong>
+          </li>
+          <li>
+            Panel is hidden with <strong>display: none</strong> when closed
+          </li>
+          <li>Click trigger to toggle open/close</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='popover' />
-    </>
+    </DemoPage>
   );
 }

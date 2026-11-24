@@ -12,9 +12,11 @@
  *   - api:       one generated reference page per component
  *                (route=/api/<slug>, label "<Name> API", keywords reuse the
  *                component's ALIASES)
- *   - section:   every <h2> title in each registered component demo (the
- *                registry in ComponentDetail/index.tsx maps routes → demo
- *                files); generic headings (Demo/Props/API/Accessibility)
+ *   - section:   every section heading in each registered component demo —
+ *                a literal <h2>, or the `title` of the demo page template's
+ *                <DemoSection> (demos/shared.tsx renders it as that <h2>).
+ *                The registry in ComponentDetail/index.tsx maps routes →
+ *                demo files; generic headings (Demo/Props/API/Accessibility)
  *                carry no component-specific meaning and are skipped
  *   - prop:      src/generated/props-docs.json descriptions joined onto
  *                props.json routes, plus the hand-written inline
@@ -26,7 +28,9 @@
  *                preceding h2/h3 heading.
  *
  * Extraction is purely syntactic (ts.createSourceFile, no type checker):
- * the data sources are literal object/array initializers and JSX text.
+ * the data sources are literal object/array initializers and JSX text. The
+ * sidebar literal is read through scripts/component-groups.mjs — the same
+ * reader llms.txt and the registry categories derive from.
  *
  * The output is deterministic (fixed page list, sidebar/registry source
  * order, sorted prop type names — no timestamps) so two runs produce
@@ -39,11 +43,12 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import ts from 'typescript';
 
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { defaultRoot, invokedDirectly, readJson, runCli } from './cli-utils.mjs';
+import { readComponentGroups } from './component-groups.mjs';
+import { objectProps, parseSource } from './ts-source.mjs';
 
 /*
  * Docs pages surfaced as first-class search targets. Labels mirror the
@@ -270,82 +275,20 @@ const PAGES = [
  */
 const GENERIC_SECTIONS = new Set(['Demo', 'Props', 'API', 'Accessibility']);
 
+/*
+ * Section wrappers of the demo page template (src/views/ComponentDetail/
+ * demos/shared.tsx). Each renders a section whose <h2> is either the
+ * wrapper's `title` attribute or a fixed generic heading, so the scanner
+ * reads the heading off the wrapper instead of off a literal <h2>.
+ */
+const SECTION_WRAPPERS = new Map([
+  ['DemoSection', 'title'],
+  ['PropsSection', 'Props'],
+  ['AccessibilitySection', 'Accessibility'],
+]);
+
 /** Prop rows that exist on every component with a generic description. */
 const GHOST_PROPS = new Set(['className', 'style']);
-
-const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
-
-function parseSource(file) {
-  return ts.createSourceFile(
-    file,
-    readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
-}
-
-/** Property assignments of an object literal keyed by property name. */
-function objectProps(obj) {
-  const map = new Map();
-  for (const prop of obj.properties) {
-    if (ts.isPropertyAssignment(prop)) map.set(prop.name.text, prop.initializer);
-  }
-  return map;
-}
-
-/** COMPONENT_GROUPS + ALIASES from component-groups.ts (syntactic read). */
-function readComponentGroups(rootDir) {
-  const sourceFile = parseSource(
-    path.join(rootDir, 'src/views/Layout/component-groups.ts')
-  );
-  const groups = [];
-  const aliases = {};
-
-  for (const statement of sourceFile.statements) {
-    if (!ts.isVariableStatement(statement)) continue;
-    for (const decl of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(decl.name) || !decl.initializer) continue;
-      if (
-        decl.name.text === 'COMPONENT_GROUPS' &&
-        ts.isArrayLiteralExpression(decl.initializer)
-      ) {
-        for (const element of decl.initializer.elements) {
-          if (!ts.isObjectLiteralExpression(element)) continue;
-          const props = objectProps(element);
-          const group = props.get('group');
-          const items = props.get('items');
-          if (!group || !ts.isStringLiteral(group)) continue;
-          const itemRows = [];
-          if (items && ts.isArrayLiteralExpression(items)) {
-            for (const item of items.elements) {
-              if (!ts.isObjectLiteralExpression(item)) continue;
-              const name = objectProps(item).get('name');
-              const route = objectProps(item).get('route');
-              if (name && route && ts.isStringLiteral(name) && ts.isStringLiteral(route)) {
-                itemRows.push({ name: name.text, route: route.text });
-              }
-            }
-          }
-          groups.push({ group: group.text, items: itemRows });
-        }
-      }
-      if (
-        decl.name.text === 'ALIASES' &&
-        ts.isObjectLiteralExpression(decl.initializer)
-      ) {
-        for (const prop of decl.initializer.properties) {
-          if (!ts.isPropertyAssignment(prop)) continue;
-          if (!ts.isArrayLiteralExpression(prop.initializer)) continue;
-          aliases[prop.name.text] = prop.initializer.elements
-            .filter(ts.isStringLiteral)
-            .map((element) => element.text);
-        }
-      }
-    }
-  }
-  return { groups, aliases };
-}
 
 /*
  * The demo registry: `const demos = { route: ImportedDemo, ... }` plus the
@@ -438,6 +381,28 @@ function jsxAttributes(node) {
     : node.openingElement.attributes;
 }
 
+/** Heading text of a section wrapper: its `title` attribute, or its fixed heading. */
+function wrapperHeading(node, tag) {
+  const heading = SECTION_WRAPPERS.get(tag);
+  if (heading !== 'title') return heading;
+  for (const attr of jsxAttributes(node).properties) {
+    if (!ts.isJsxAttribute(attr) || attr.name.text !== 'title') continue;
+    const initializer = attr.initializer;
+    const literal =
+      initializer && ts.isStringLiteral(initializer)
+        ? initializer
+        : initializer &&
+            ts.isJsxExpression(initializer) &&
+            initializer.expression &&
+            ts.isStringLiteralLike(initializer.expression)
+          ? initializer.expression
+          : undefined;
+    // Same normalisation as jsxText, so a heading reads the same whichever form it was written in.
+    return literal ? decodeEntities(literal.text).replace(/\s+/g, ' ').trim() : '';
+  }
+  return '';
+}
+
 /** Owner context for a props table, derived from its nearest heading. */
 function ownerFromHeading(heading) {
   return heading
@@ -462,6 +427,12 @@ function scanDemo(sourceFile) {
         if (text) {
           lastHeading = text;
           if (tag === 'h2' && !GENERIC_SECTIONS.has(text)) sections.push(text);
+        }
+      } else if (SECTION_WRAPPERS.has(tag)) {
+        const text = wrapperHeading(node, tag);
+        if (text) {
+          lastHeading = text;
+          if (!GENERIC_SECTIONS.has(text)) sections.push(text);
         }
       } else if (tag === 'PropsTable') {
         for (const attr of jsxAttributes(node).properties) {
@@ -500,8 +471,8 @@ function scanDemo(sourceFile) {
 
 /** Prop entries from props.json routes × props-docs.json descriptions. */
 function generatedPropEntries(rootDir) {
-  const props = readJson(path.join(rootDir, 'src/generated/props.json'));
-  const docs = readJson(path.join(rootDir, 'src/generated/props-docs.json'));
+  const props = readJson(rootDir, 'src/generated/props.json');
+  const docs = readJson(rootDir, 'src/generated/props-docs.json');
   const entries = [];
   for (const component of Object.keys(props.components).sort()) {
     const entry = props.components[component];
@@ -634,26 +605,9 @@ export function writeSearchIndex(rootDir = defaultRoot()) {
   return { changed: !unchanged, outFile, entryCount: data.length };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-search-index', (started) => {
     const { changed, outFile, entryCount } = writeSearchIndex();
-    console.log(
-      `generate-search-index: ${entryCount} entries, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-search-index: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${entryCount} entries, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`;
+  });
 }

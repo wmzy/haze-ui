@@ -1,22 +1,23 @@
 import { Avatar, Badge, Button, Indicator, Kbd } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
+import { DemoPage, DemoSection, PropsSection } from './shared';
 
 // ─── Indicator ────────────────────────────────────────────────
 export default function IndicatorDemo() {
   return (
-    <>
-      <h1>Indicator</h1>
-      <p className={intro}>
-        Corner badge attached to a host element (avatar, icon button) —
-        the notification-dot affordance. Dot without a label; count with
-        one. Tone + corner position + zero semantics.
-      </p>
-
-      <div className={section}>
-        <h2>Modes</h2>
+    <DemoPage
+      title='Indicator'
+      description={
+        <>
+          Corner badge attached to a host element (avatar, icon button) —
+          the notification-dot affordance. Dot without a label; count with
+          one. Tone + corner position + zero semantics.
+        </>
+      }
+    >
+      <DemoSection title='Modes'>
         <div className={row}>
           <Indicator>
             <Avatar fallback='U' />
@@ -28,10 +29,9 @@ export default function IndicatorDemo() {
             <Avatar fallback='U' />
           </Indicator>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Zero semantics</h2>
+      <DemoSection title='Zero semantics'>
         <div className={row}>
           <Indicator label={0}>
             <Badge>hidden by default</Badge>
@@ -40,10 +40,9 @@ export default function IndicatorDemo() {
             <Badge>showZero</Badge>
           </Indicator>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Position</h2>
+      <DemoSection title='Position'>
         <div className={row}>
           <Indicator label={1} position='top-end'>
             <Button size='sm'>top-end</Button>
@@ -55,12 +54,9 @@ export default function IndicatorDemo() {
             <Button size='sm' variant='ghost'>top-start · <Kbd>⌘K</Kbd></Button>
           </Indicator>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='IndicatorProps' />
-      </div>
-    </>
+      <PropsSection of='IndicatorProps' />
+    </DemoPage>
   );
 }

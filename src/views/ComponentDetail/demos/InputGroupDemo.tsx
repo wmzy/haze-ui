@@ -3,24 +3,27 @@ import { InputGroup, InputGroupAddon } from '@/lib/components/InputGroup';
 
 import PropsTable from '../PropsTable';
 
-import { intro, section, fieldRow } from '../styles';
+import { fieldRow } from '../styles';
+
+import { DemoPage, DemoSection } from './shared';
 
 // ─── InputGroup ────────────────────────────────────────────────
 export default function InputGroupDemo() {
   return (
-    <>
-      <h1>InputGroup</h1>
-      <p className={intro}>
-        输入组合：前缀/后缀 <code>InputGroupAddon</code>（图标、文本）与
-        <code>Input</code>/<code>Select</code> 在 CSS 层合体为一个控件——外沿
-        圆角保留、内侧圆角与边缝抑制，addon 自带底色与边框区分。组合层零
-        状态：字段值的受控/非受控完全由字段自己定义；尾部还可以直接挂一个
-        <code>Button</code>（搜索框的经典形态）。请给字段本身{' '}
-        <code>aria-label</code>，addon 文案会留在可访问树里作为语义前缀。
-      </p>
-
-      <div className={section}>
-        <h2>Search box</h2>
+    <DemoPage
+      title='InputGroup'
+      description={
+        <>
+          输入组合：前缀/后缀 <code>InputGroupAddon</code>（图标、文本）与
+          <code>Input</code>/<code>Select</code> 在 CSS 层合体为一个控件——外沿
+          圆角保留、内侧圆角与边缝抑制，addon 自带底色与边框区分。组合层零
+          状态：字段值的受控/非受控完全由字段自己定义；尾部还可以直接挂一个
+          <code>Button</code>（搜索框的经典形态）。请给字段本身{' '}
+          <code>aria-label</code>，addon 文案会留在可访问树里作为语义前缀。
+        </>
+      }
+    >
+      <DemoSection title='Search box'>
         <InputGroup>
           <InputGroupAddon>
             <span aria-hidden='true'>🔍</span>
@@ -28,19 +31,17 @@ export default function InputGroupDemo() {
           <Input aria-label='搜索组件' placeholder='搜索组件…' />
           <Button>搜索</Button>
         </InputGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Text prefixes &amp; suffixes</h2>
+      <DemoSection title='Text prefixes &amp; suffixes'>
         <InputGroup>
           <InputGroupAddon>https://</InputGroupAddon>
           <Input aria-label='域名' placeholder='example' />
           <InputGroupAddon>.dev</InputGroupAddon>
         </InputGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Select</h2>
+      <DemoSection title='With Select'>
         <InputGroup>
           <InputGroupAddon>范围</InputGroupAddon>
           <Select aria-label='统计范围'>
@@ -49,10 +50,9 @@ export default function InputGroupDemo() {
             <option value='user'>仅我自己</option>
           </Select>
         </InputGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={fieldRow}>
           <InputGroup size='sm'>
             <InputGroupAddon>¥</InputGroupAddon>
@@ -67,13 +67,12 @@ export default function InputGroupDemo() {
             <Input aria-label='大尺寸金额' placeholder='0.00' />
           </InputGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
+      <DemoSection title='Props'>
         <PropsTable of='InputGroupProps' />
         <PropsTable of='InputGroupAddonProps' />
-      </div>
-    </>
+      </DemoSection>
+    </DemoPage>
   );
 }

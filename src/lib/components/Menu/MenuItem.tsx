@@ -1,21 +1,19 @@
-import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
+import type { ComponentPropsWithRef, ElementType } from 'react';
 
-import { MenuItemImpl, type MenuItemImplOwnProps } from '../../utils/menu-item-parts';
+import {
+  MenuItemImpl,
+  type MenuItemChromeProps,
+  type MenuItemImplOwnProps,
+} from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
+/** A plain item's own props: the activation handler plus the item
+ * chrome every family's item exposes (utils/menu-item-parts — the
+ * prop docs live on the shared type). */
 type MenuItemOwnProps = {
   onSelect?: () => void;
-  disabled?: boolean;
-  /** Danger skin for destructive actions: danger-colored text and interaction states. */
-  danger?: boolean;
-  /** Inline-start icon slot; bare `svg` children are sized to 1em by the slot. */
-  icon?: ReactNode;
-  /** Inline-end shortcut hint (e.g. '⌘C'), muted and pushed to the item's end. */
-  kbdLabel?: ReactNode;
-  className?: string;
-  children: ReactNode;
-};
+} & MenuItemChromeProps;
 
 /**
  * Polymorphic like Button's `as`: the item skin and the menuitem wiring

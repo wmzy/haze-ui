@@ -4,11 +4,15 @@ import { Button, ToastContainer, useToast } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+} from './shared';
 
 // classNames 槽位演示：viewport 落在容器渲染的固定堆叠上，
 // item/content/close 流进它渲染的每一条 toast（键名见 ToastClassNames）。
@@ -86,15 +90,16 @@ function ToastDemoInner() {
   };
 
   return (
-    <>
-      <h1>Toast</h1>
-      <p className={intro}>
-        Temporary notification messages via useToast() hook (or the
-        module-level <code>toast()</code> twin).
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Toast'
+      description={
+        <>
+          Temporary notification messages via useToast() hook (or the
+          module-level <code>toast()</code> twin).
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button variant='outline' onClick={() => toast('Info toast message')}>
             Info
@@ -179,17 +184,10 @@ function ToastDemoInner() {
             promise (failure)
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>classNames slots</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='classNames slots'>
+        <p style={noteStyle}>
           Toasts are fired imperatively, so the <code>classNames</code>{' '}
           record lives on <code>&lt;ToastContainer&gt;</code> (AntD v6
           shape): <code>viewport</code> lands on the fixed stack, while{' '}
@@ -206,10 +204,9 @@ function ToastDemoInner() {
         >
           <SlottedToastActions />
         </ToastContainer>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>useToast API</h2>
+      <DemoSection title='useToast API'>
         <PropsTable
           props={[
             {
@@ -262,33 +259,30 @@ function ToastDemoInner() {
             },
           ]}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Each toast is a live region — <strong>role=&quot;status&quot;</strong>{' '}
-              (polite) for info/success/warning/loading,{' '}
-              <strong>role=&quot;alert&quot;</strong> (assertive) for danger
-              only
-            </li>
-            <li>
-              Close button has <strong>aria-label=&quot;Close&quot;</strong>;
-              the action button is a real focusable <code>&lt;button&gt;</code>{' '}
-              (Tab + Enter), and the loading spinner is aria-hidden art
-            </li>
-            <li>
-              Countdown pauses on hover and focus (WCAG 2.2.1); toasts
-              auto-dismiss after the configured duration
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Each toast is a live region — <strong>role=&quot;status&quot;</strong>{' '}
+            (polite) for info/success/warning/loading,{' '}
+            <strong>role=&quot;alert&quot;</strong> (assertive) for danger
+            only
+          </li>
+          <li>
+            Close button has <strong>aria-label=&quot;Close&quot;</strong>;
+            the action button is a real focusable <code>&lt;button&gt;</code>{' '}
+            (Tab + Enter), and the loading spinner is aria-hidden art
+          </li>
+          <li>
+            Countdown pauses on hover and focus (WCAG 2.2.1); toasts
+            auto-dismiss after the configured duration
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='toast' />
-    </>
+    </DemoPage>
   );
 }
 

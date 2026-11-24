@@ -17,9 +17,8 @@ import Tokens from './index';
  * - live swatch 引用 var(--haze-*)，当前模式列随站级主题切换。
  */
 
-// jsdom 30 没有 matchMedia——ThemeProvider 的 getSystemPreference 与
-// prefers-color-scheme 订阅都需要。默认不匹配（system → light）；本页只
-// 关心这一条查询，其它查询进来即抛错。
+// jsdom 30 没有 matchMedia——ThemeProvider 经 useMediaQuery 读 prefers-color-scheme
+// 并订阅它。默认不匹配（system → light）；本页只关心这一条查询，其它查询进来即抛错。
 function installPrefersScheme() {
   const query = '(prefers-color-scheme: dark)';
   window.matchMedia = ((q: string): MediaQueryList => {

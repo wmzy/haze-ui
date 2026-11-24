@@ -2,11 +2,16 @@ import type { Highlighter } from '@/lib/components/CodeBlock';
 
 import { CodeBlock } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
 import A11yNote from '../A11yNote';
 
-import { intro, section } from '../styles';
+import { intro } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Pluggable highlighting demo helpers ────────────────────────
 // Fake stand-in for shiki / Prism / highlight.js — the library ships no
@@ -56,20 +61,18 @@ export function mount(target: HTMLElement) {
 // ─── CodeBlock ──────────────────────────────────────────────────
 export default function CodeBlockDemo() {
   return (
-    <>
-      <h1>CodeBlock</h1>
-      <p className={intro}>Code display with language label and monospace styling.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='CodeBlock'
+      description='Code display with language label and monospace styling.'
+    >
+      <DemoSection title='Demo'>
         <CodeBlock language='tsx'>
 {`const greeting = "Hello, world!";
 console.log(greeting);`}
         </CodeBlock>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Pluggable highlighting</h2>
+      <DemoSection title='Pluggable highlighting'>
         <p className={intro}>
           Pass a <code>highlight</code> function to enable syntax highlighting. The library ships
           no highlighter of its own — wire one in and keep the base bundle lean:
@@ -107,23 +110,17 @@ console.log(greeting);`}
             <li>While an async highlighter is pending, the plain code stays readable (no loading state)</li>
           </ul>
         </A11yNote>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CodeBlockProps' />
-      </div>
+      <PropsSection of='CodeBlockProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Renders as <strong>&lt;pre&gt;&lt;code&gt;</strong></li>
-            <li>Language label is decorative (user-select: none)</li>
-            <li>Horizontal scroll for long lines</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Renders as <strong>&lt;pre&gt;&lt;code&gt;</strong></li>
+          <li>Language label is decorative (user-select: none)</li>
+          <li>Horizontal scroll for long lines</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

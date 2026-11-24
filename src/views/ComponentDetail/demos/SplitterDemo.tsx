@@ -6,7 +6,9 @@ import PropsTable from '../PropsTable';
 
 import A11yNote from '../A11yNote';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { section, row, codeBlock } from '../styles';
+
+import { DemoPage, DemoSection } from './shared';
 
 const pane = {
   padding: 'var(--haze-space-3)',
@@ -36,20 +38,21 @@ export default function SplitterDemo() {
   const [, , collapsibleSizes] = useControl<number[]>(undefined, [30, 70]);
 
   return (
-    <>
-      <h1>Splitter</h1>
-      <p className={intro}>
-        AntD-style multi-pane split layout: panes share{' '}
-        <strong>percentages</strong> of the pane area through a single{' '}
-        <code>sizes</code> control (<code>ControlOrValue</code>), dividers
-        are implicit between <code>SplitterPane</code> children, and every
-        pane can declare <code>min</code>/<code>max</code> percent clamps.
-        For per-pane pixel sizing see{' '}
-        <code>ResizableGroup</code> instead.
-      </p>
-
-      <div className={section}>
-        <h2>Horizontal — three panes</h2>
+    <DemoPage
+      title='Splitter'
+      description={
+        <>
+          AntD-style multi-pane split layout: panes share{' '}
+          <strong>percentages</strong> of the pane area through a single{' '}
+          <code>sizes</code> control (<code>ControlOrValue</code>), dividers
+          are implicit between <code>SplitterPane</code> children, and every
+          pane can declare <code>min</code>/<code>max</code> percent clamps.
+          For per-pane pixel sizing see{' '}
+          <code>ResizableGroup</code> instead.
+        </>
+      }
+    >
+      <DemoSection title='Horizontal — three panes'>
         <p className={row}>
           Sizes read-back: <code>{JSON.stringify(sizes)}</code> — the{' '}
           <code>Control</code> form keeps the owner's state in sync.
@@ -76,10 +79,9 @@ export default function SplitterDemo() {
   <SplitterPane min={10} max={40}>{inspector}</SplitterPane>
 </Splitter>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Vertical</h2>
+      <DemoSection title='Vertical'>
         <p className={row}>
           <code>orientation='vertical'</code> stacks the panes
           top-to-bottom; the grip reports a horizontal separator.
@@ -106,10 +108,9 @@ export default function SplitterDemo() {
   <SplitterPane min={20}>{terminal}</SplitterPane>
 </Splitter>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Collapsible panes</h2>
+      <DemoSection title='Collapsible panes'>
         <p className={row}>
           <code>collapsible</code> opts a pane into divider triggers:
           hover a divider and the chevrons collapse the adjacent pane
@@ -133,7 +134,7 @@ export default function SplitterDemo() {
   <SplitterPane min={20}>{content}</SplitterPane>
 </Splitter>`}
         </pre>
-      </div>
+      </DemoSection>
 
       <div className={section}>
         <A11yNote>
@@ -164,15 +165,13 @@ export default function SplitterDemo() {
         </A11yNote>
       </div>
 
-      <div className={section}>
-        <h2>Splitter Props</h2>
+      <DemoSection title='Splitter Props'>
         <PropsTable of='SplitterProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SplitterPane Props</h2>
+      <DemoSection title='SplitterPane Props'>
         <PropsTable of='SplitterPaneProps' />
-      </div>
-    </>
+      </DemoSection>
+    </DemoPage>
   );
 }

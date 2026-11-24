@@ -12,12 +12,10 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const target = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  '../src/generated/version.json'
-);
+import { defaultRoot } from './cli-utils.mjs';
+
+const target = resolve(defaultRoot(), 'src/generated/version.json');
 
 /** git 命令失败（无 git / 浅克隆无 tag / 非仓库）一律返回 null。 */
 function git(args) {

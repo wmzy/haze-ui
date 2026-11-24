@@ -8,6 +8,7 @@ import type { FloatingBehavior } from './floating';
 import { css } from '@linaria/core';
 
 import { pickerFieldInput } from './field-skin';
+import { focusRingDeclarations } from './focus-ring-delta';
 
 /**
  * Shared trigger building block of the picker families (Select's
@@ -54,11 +55,14 @@ import { pickerFieldInput } from './field-skin';
  * Select (floating), Cascader and TreeSelect triggers, including the
  * keyboard focus arm — the one state arm every consumer's local delta
  * shipped verbatim (Select's tags box keeps its own broader
- * `:focus, :focus-within` delta for the inline input, which draws the
- * same declarations). Extension classes layered after it add only
- * properties it does not declare — where selectors do overlap the
- * declarations are identical, so cascade order between the two can
- * never matter.
+ * `:focus, :focus-within` delta for the inline input, which paints the
+ * same ring). The ring body of all three focus arms in this module
+ * interpolates utils/focus-ring-delta's declarations — the box-shadow
+ * pair AND its forced-colors Highlight fallback — with the picker's
+ * border repaint declared next to it. Extension classes layered after
+ * it add only properties it does not declare — where selectors do
+ * overlap the declarations are identical, so cascade order between the
+ * two can never matter.
  */
 export const pickerTrigger = css`
   display: flex;
@@ -78,9 +82,8 @@ export const pickerTrigger = css`
     box-shadow var(--haze-duration-fast);
 
   &:focus-visible {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -119,9 +122,8 @@ export const pickerNativeSelect = css`
   }
 
   &:focus {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 
   &:disabled {
@@ -248,9 +250,8 @@ export const pickerSearchInput = css`
   margin-block-end: var(--haze-space-2);
 
   &:focus {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 

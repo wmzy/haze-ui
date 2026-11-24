@@ -13,17 +13,16 @@ import { useControl } from 'react-use-control';
 import { Upload, Button } from '@/lib';
 import ImagePreview from '@/lib/components/Image/ImagePreview';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-const noteStyle = {
-  fontSize: 'var(--haze-text-sm)',
-  color: 'var(--haze-color-text-secondary)',
-  margin: '0 0 var(--haze-space-3)',
-} as const;
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  maxWidth400,
+  maxWidth480,
+  noteStyle,
+  offsetNoteStyle,
+  PropsSection,
+} from './shared';
 
 /** Simulated transport for the upload demos: reports progress every
  * 300ms and settles at 100% — files whose name contains "fail" take
@@ -103,57 +102,53 @@ export default function UploadDemo() {
   };
 
   return (
-    <>
-      <h1>Upload</h1>
-      <p className={intro}>File upload with drag and drop support.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 400 }}>
+    <DemoPage
+      title='Upload'
+      description='File upload with drag and drop support.'
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth400}>
           <Upload accept='image/*' onChange={(f) => setFiles(f)} />
         </div>
         {files.length > 0 && (
-          <p style={{ fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', marginTop: 'var(--haze-space-2)' }}>
+          <p style={offsetNoteStyle}>
             Selected: {files.map((f) => f.name).join(', ')}
           </p>
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Click-only picker</h2>
+      <DemoSection title='Click-only picker'>
         <p style={noteStyle}>
           <code>droppable</code> defaults to <code>true</code> (the dashed
           drop area above). Set <code>droppable=&#123;false&#125;</code> for
           a plain click-only picker area.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload accept='image/*' droppable={false} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>beforeUpload gate</h2>
+      <DemoSection title='beforeUpload gate'>
         <p style={noteStyle}>
           Every picked or dropped file passes <code>beforeUpload</code>{' '}
           after the <code>accept</code> filter — return <code>false</code>{' '}
           (or a rejected promise) to refuse it. Here files over 512 KB are
           rejected.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             accept='image/*'
             beforeUpload={sizeGate}
             onChange={(f) => setGateFiles(f)}
           />
         </div>
-        <p style={{ fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', marginTop: 'var(--haze-space-2)' }}>
+        <p style={offsetNoteStyle}>
           {gateMsg || 'Pick a file to see the verdict…'}
           {gateFiles.length > 0 && ` — committed: ${gateFiles.map((f) => f.name).join(', ')}`}
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Paste to upload</h2>
+      <DemoSection title='Paste to upload'>
         <p style={noteStyle}>
           <code>paste</code> lets the zone accept clipboard files: focus
           it (the zone is a <code>role="button"</code> in the tab order)
@@ -163,19 +158,18 @@ export default function UploadDemo() {
           any pick. Copy a file in your file manager and paste it here;
           clipboard text passes through untouched.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload paste multiple showUploadList />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>maxCount</h2>
+      <DemoSection title='maxCount'>
         <p style={noteStyle}>
           The pipeline runs <code>accept → beforeUpload → maxSize → maxCount</code>:
           existing entries are kept first, excess fresh files are dropped
           silently. This picker caps the list at three images.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             accept='image/*'
             multiple
@@ -194,10 +188,9 @@ export default function UploadDemo() {
             Reset counter
           </Button>
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>maxSize</h2>
+      <DemoSection title='maxSize'>
         <p style={noteStyle}>
           <code>maxSize</code> caps each file in bytes. An over-limit
           file stays in the list as a rejected error row carrying its
@@ -208,7 +201,7 @@ export default function UploadDemo() {
           something larger to see the rejection row next to a normal
           upload.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             request={simulateRequest}
             maxSize={512 * 1024}
@@ -216,10 +209,9 @@ export default function UploadDemo() {
             showUploadList
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Auto upload with progress</h2>
+      <DemoSection title='Auto upload with progress'>
         <p style={noteStyle}>
           Pass a <code>request</code> executor (or an <code>action</code> URL
           for the built-in XHR transport) and every pick uploads right away.
@@ -227,7 +219,7 @@ export default function UploadDemo() {
           progress, cancel while uploading, retry + remove on error. Pick a
           file with <code>fail</code> in its name to see the error path.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             request={simulateRequest}
             multiple
@@ -241,13 +233,12 @@ export default function UploadDemo() {
             }
           />
         </div>
-        <p style={{ fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', marginTop: 'var(--haze-space-2)' }}>
+        <p style={offsetNoteStyle}>
           {autoStatus || 'Pick files to watch them upload…'}
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Manual upload</h2>
+      <DemoSection title='Manual upload'>
         <p style={noteStyle}>
           <code>manual</code> keeps picks at <code>idle</code>; the{' '}
           <code>UploadHandle</code> ref (React 19 ref-as-prop) starts them —
@@ -255,7 +246,7 @@ export default function UploadDemo() {
           <code>abort()</code> cancels in-flight uploads back to idle,{' '}
           <code>clear()</code> aborts and empties the list.
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             ref={uploadRef}
             request={simulateRequest}
@@ -275,17 +266,16 @@ export default function UploadDemo() {
             Clear
           </Button>
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom itemRender</h2>
+      <DemoSection title='Custom itemRender'>
         <p style={noteStyle}>
           Replace whole rows with{' '}
           <code>showUploadList={'{{'} itemRender {'}}'}</code> — it receives
           the file, live status, percent and action callbacks
           (<code>remove</code> / <code>retry</code> / <code>cancel</code>).
         </p>
-        <div style={{ maxWidth: 400 }}>
+        <div style={maxWidth400}>
           <Upload
             request={simulateRequest}
             multiple
@@ -312,10 +302,9 @@ export default function UploadDemo() {
             }}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Picture-card list</h2>
+      <DemoSection title='Picture-card list'>
         <p style={noteStyle}>
           <code>{"listType='picture-card'"}</code> turns the built-in
           list into a grid of thumbnail cards: image files preview through
@@ -326,7 +315,7 @@ export default function UploadDemo() {
           <code>Delete image</code>). Pick or drop several files; a name
           containing <code>fail</code> takes the error path.
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Upload
             request={simulateRequest}
             multiple
@@ -335,10 +324,9 @@ export default function UploadDemo() {
             removeLabel='Delete image'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Picture list with preview</h2>
+      <DemoSection title='Picture list with preview'>
         <p style={noteStyle}>
           <code>{"listType='picture'"}</code> renders text rows with a 32px
           inline thumbnail — a <code>url</code> image for{' '}
@@ -347,7 +335,7 @@ export default function UploadDemo() {
           each thumbnail into a click target (Esc or the backdrop closes the
           lightbox; remove stays an independent action).
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Upload
             request={simulateRequest}
             multiple
@@ -359,10 +347,9 @@ export default function UploadDemo() {
         {previewSrc !== '' && (
           <ImagePreview src={previewSrc} alt='Uploaded file preview' open={previewOpenCtrl} />
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Server file echo (UploadFile)</h2>
+      <DemoSection title='Server file echo (UploadFile)'>
         <p style={noteStyle}>
           Files already on the server echo through <code>value</code> as{' '}
           <code>UploadFile</code> entries (<code>name</code>,{' '}
@@ -375,7 +362,7 @@ export default function UploadDemo() {
           local <code>File</code>s. Here the list starts with two healthy
           echoes and one failed; new picks upload and append after them.
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Upload
             value={echoCtrl}
             request={simulateRequest}
@@ -385,16 +372,15 @@ export default function UploadDemo() {
             onPreview={openPreview}
           />
         </div>
-        <p style={{ fontSize: 'var(--haze-text-sm)', color: 'var(--haze-color-text-secondary)', marginTop: 'var(--haze-space-2)' }}>
+        <p style={offsetNoteStyle}>
           Value: {echoValue.map((f) => f.name).join(', ') || '(empty)'}
         </p>
         {previewSrc !== '' && (
           <ImagePreview src={previewSrc} alt='Uploaded file preview' open={previewOpenCtrl} />
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Directory picker</h2>
+      <DemoSection title='Directory picker'>
         <p style={noteStyle}>
           <code>directory</code> forwards the non-standard{' '}
           <code>webkitdirectory</code> attribute to the hidden input — the
@@ -402,27 +388,21 @@ export default function UploadDemo() {
           list (combine with <code>multiple</code>). Dragging several files
           in at once works in every mode.
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Upload directory multiple showUploadList />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='UploadProps' />
-      </div>
+      <PropsSection of='UploadProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Uses <strong>role=&quot;button&quot;</strong> with <strong>tabIndex</strong></li>
-            <li>Click or drag-and-drop to select files</li>
-            <li>With <strong>paste</strong>, focus the zone and press Ctrl/Cmd+V</li>
-            <li>Hidden native <strong>&lt;input type=&quot;file&quot;&gt;</strong></li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Uses <strong>role=&quot;button&quot;</strong> with <strong>tabIndex</strong></li>
+          <li>Click or drag-and-drop to select files</li>
+          <li>With <strong>paste</strong>, focus the zone and press Ctrl/Cmd+V</li>
+          <li>Hidden native <strong>&lt;input type=&quot;file&quot;&gt;</strong></li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

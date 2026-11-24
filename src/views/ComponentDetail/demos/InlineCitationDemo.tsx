@@ -2,24 +2,26 @@ import { InlineCitation } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── InlineCitation ────────────────────────────────────────────
 export default function InlineCitationDemo() {
   return (
-    <>
-      <h1>InlineCitation</h1>
-      <p className={intro}>
-        Inline superscript citation marker that opens a floating source card
-        with the title, an excerpt and an optional outbound link.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='InlineCitation'
+      description={
+        <>
+          Inline superscript citation marker that opens a floating source card
+          with the title, an excerpt and an optional outbound link.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p style={{ maxWidth: 480, lineHeight: 1.7 }}>
           Retrieval-augmented answers cite their evidence
           <InlineCitation
@@ -36,41 +38,36 @@ export default function InlineCitationDemo() {
  />
           .
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled Open State</h2>
+      <DemoSection title='Controlled Open State'>
         <p style={{ maxWidth: 480, lineHeight: 1.7 }}>
           The card visibility is a control-prop state
           <InlineCitation index={3} title='Pinned source' snippet='Opened through the open control.' open />
           .
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>InlineCitation Props</h2>
+      <DemoSection title='InlineCitation Props'>
         <PropsTable of='InlineCitationProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The badge is a real <code>button</code> (Enter/Space activate)
-              with <code>aria-haspopup</code>/<code>aria-expanded</code>/
-              <code>aria-controls</code> wiring
-            </li>
-            <li>Escape and outside pointerdown close the card</li>
-            <li>
-              Outbound links open in a new tab with{' '}
-              <code>rel=&quot;noopener noreferrer&quot;</code>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The badge is a real <code>button</code> (Enter/Space activate)
+            with <code>aria-haspopup</code>/<code>aria-expanded</code>/
+            <code>aria-controls</code> wiring
+          </li>
+          <li>Escape and outside pointerdown close the card</li>
+          <li>
+            Outbound links open in a new tab with{' '}
+            <code>rel=&quot;noopener noreferrer&quot;</code>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='inline-citation' />
-    </>
+    </DemoPage>
   );
 }

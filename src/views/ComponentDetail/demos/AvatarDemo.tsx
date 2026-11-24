@@ -1,59 +1,53 @@
 import { Avatar } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Avatar ────────────────────────────────────────────────────
 export default function AvatarDemo() {
   return (
-    <>
-      <h1>Avatar</h1>
-      <p className={intro}>Circular image container with fallback support.</p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Avatar'
+      description='Circular image container with fallback support.'
+    >
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Avatar size='sm' src='https://i.pravatar.cc/64?u=a' alt='Alice' />
           <Avatar size='md' src='https://i.pravatar.cc/80?u=b' alt='Bob' />
           <Avatar size='lg' src='https://i.pravatar.cc/112?u=c' alt='Carol' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Fallback</h2>
+      <DemoSection title='Fallback'>
         <div className={row}>
           <Avatar size='md' alt='Dave' />
           <Avatar size='md' fallback='🎨' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='AvatarProps' />
-      </div>
+      <PropsSection of='AvatarProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>&lt;img&gt;</strong> with <strong>alt</strong> text
-              when image is available
-            </li>
-            <li>
-              Fallback shows first letter of <strong>alt</strong> or custom
-              content
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>&lt;img&gt;</strong> with <strong>alt</strong> text
+            when image is available
+          </li>
+          <li>
+            Fallback shows first letter of <strong>alt</strong> or custom
+            content
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='avatar' />
-    </>
+    </DemoPage>
   );
 }

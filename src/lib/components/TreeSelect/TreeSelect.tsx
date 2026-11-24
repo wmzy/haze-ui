@@ -8,7 +8,7 @@ import type { Control, ControlOrValue } from 'react-use-control';
 import type { TreeNodeData, TreeVirtualizedConfig } from '../Tree/types';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { isControl, useControl, useThru, watch } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
@@ -22,12 +22,13 @@ import {
   pickerPanelWidth,
   pickerSearchInput,
 } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
 import {
   descendantKeysOf,
   findNodeByKey,
+  flattenTreeData,
   mergeLoadedChildren,
   parentKeysOf,
 } from '../../utils/tree-utils';
@@ -299,17 +300,13 @@ export default function TreeSelect({
     () => mergeLoadedChildren(treeData, loadedChildren),
     [treeData, loadedChildren]
   );
-  const nodeByKey = useMemo(() => {
-    const map = new Map<string, TreeNodeData>();
-    const walk = (nodes: TreeNodeData[]) => {
-      for (const node of nodes) {
-        map.set(node.key, node);
-        walk(node.children ?? []);
-      }
-    };
-    walk(labelData);
-    return map;
-  }, [labelData]);
+  const nodeByKey = useMemo(
+    () =>
+      new Map(
+        flattenTreeData(labelData).map((node) => [node.key, node] as const)
+      ),
+    [labelData]
+  );
 
   // The committed key set in Tree's shape. The consumer's control (or
   // uncontrolled initial value) is adapted through useThru: the panel
@@ -358,10 +355,7 @@ export default function TreeSelect({
   const triggerRef = useRef<HTMLButtonElement>(null);
   // The consumer's ref rides the same trigger button the floating
   // behavior anchors on.
-  const setTriggerRef = useCallback(
-    (node: HTMLButtonElement | null) => mergeRefs(triggerRef, ref)(node),
-    [triggerRef, ref]
-  );
+  const setTriggerRef = useMergedRefs(triggerRef, ref);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -381,13 +375,7 @@ export default function TreeSelect({
     autoFocus: false,
     returnFocus: true,
   });
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      setScope(node);
-    },
-    [panelRef, setScope]
-  );
+  const setPanelRef = useMergedRefs(panelRef, setScope);
 
   // Panel focus on open: the search input when showSearch is set
   // (typing filters straight away, ArrowDown roams into the tree),

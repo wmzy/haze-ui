@@ -9,7 +9,7 @@ import { fieldFocusRing } from '../../utils/field-skin';
 import { focusListEdge, useMenuKeyboard, useRovingTabindex } from '../../utils/menuKeyboard';
 import { menuOptionStates } from '../../utils/menu-skins';
 import { PICKER_ROW_HEIGHT } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { stateOptionRow } from '../../utils/state-option-skin';
 import Kbd from '../Kbd/Kbd';
 import { useStrings } from '../LocaleProvider';
@@ -175,9 +175,10 @@ const inputStyle = css`
 
 export function CommandInput({ placeholder, className, ref }: CommandInputProps) {
   const { query, setQuery, inputRef, listRef } = useCommandContext();
+  const setInputRef = useMergedRefs(inputRef, ref);
   return (
     <input
-      ref={mergeRefs(inputRef, ref)}
+      ref={setInputRef}
       data-slot='input'
       x-class={[inputStyle, fieldFocusRing, className]}
       type="text"

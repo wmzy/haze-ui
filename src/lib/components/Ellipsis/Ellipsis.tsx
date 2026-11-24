@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
+import { lineClampStyle } from '../../utils/line-clamp';
 import { textToggle } from '../../utils/quiet-button-skin';
 import { useStrings } from '../LocaleProvider';
 import { Tooltip } from '../Tooltip';
@@ -34,10 +35,11 @@ const root = css`
 `;
 
 /* Always the -webkit-box clamp (even for one line, unlike Typography's
-   pure-CSS split): the box model makes overflow vertical, so the same
-   scrollHeight > clientHeight probe detects truncation for every line
-   budget. The inline style carries the runtime `lines` value; when
-   expanded the style drops entirely and the text flows unclamped. */
+ * pure-CSS split) — the shared inline style (utils/line-clamp.ts): the
+ * box model makes overflow vertical, so the same scrollHeight >
+ * clientHeight probe detects truncation for every line budget. The
+ * inline style carries the runtime `lines` value; when expanded the
+ * style drops entirely and the text flows unclamped. */
 const clampBase = css`
   display: block;
   overflow: hidden;
@@ -92,16 +94,7 @@ export default function Ellipsis({
     <span
       data-slot="content"
       ref={textRef}
-      style={
-        clamped
-          ? {
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: lines,
-              overflow: 'hidden',
-            }
-          : undefined
-      }
+      style={clamped ? lineClampStyle(lines) : undefined}
       x-class={[clampBase]}
     >
       {children}

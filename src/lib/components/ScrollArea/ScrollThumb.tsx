@@ -15,7 +15,7 @@ import {
   capturePointer,
   releasePointerCaptureSafe,
 } from '../../utils/pointer-capture';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { useScrollAreaContext } from './ScrollAreaContext';
 import {
@@ -105,6 +105,10 @@ export default function ScrollThumb({
     thumbStart: number;
     rtl: boolean;
   } | null>(null);
+  // One identity while the consumer ref holds: an inline mergeRefs in
+  // the JSX would hand React a fresh callback every render, detaching
+  // (old callback, null) and re-attaching the thumb on every pass.
+  const setThumbRef = useMergedRefs(ref, thumbRef);
 
   useEffect(() => {
     const el = thumbRef.current;
@@ -267,7 +271,7 @@ export default function ScrollThumb({
 
   return (
     <div
-      ref={mergeRefs(ref, thumbRef)}
+      ref={setThumbRef}
       data-slot='scroll-thumb'
       data-orientation={orientation}
       data-visible='false'

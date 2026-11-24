@@ -141,20 +141,13 @@ const container = css`
  * box. Ring and ink converge on the skin: the old 2px offset outline and the
  * text-secondary ink give way to the shared 3px box-shadow ring and the
  * muted→text shift (deliberate unification across the quiet buttons). The
- * forced-colors Highlight-outline fallback stays local (the skin ships none)
- * and doubles :focus-visible so it outspecifies the skin's outline:none
- * instead of trusting cross-module source order. */
+ * forced-colors Highlight fallback rides the skin's ring arm too (it used
+ * to be a local doubled-pseudo companion that outspecified the skin's
+ * outline:none) — no local focus arm remains. */
 const triggerBtn = css`
   position: relative;
   padding: var(--haze-space-2);
   border-radius: var(--haze-radius-md);
-
-  @media (forced-colors: active) {
-    &:focus-visible:focus-visible {
-      outline: 2px solid Highlight;
-      box-shadow: none;
-    }
-  }
 `;
 
 /** Corner seat for the count badge — logical insets so RTL mirrors. */
@@ -305,8 +298,7 @@ const panelActions = css`
  * so a disabled action keeps the resting muted ink with no local
  * re-mute patch — only the not-allowed cursor stays local. Ring
  * convergence as on the trigger: 2px offset outline → the shared 3px
- * box-shadow ring; the forced-colors Highlight fallback stays local with
- * the doubled-pseudo specificity. */
+ * box-shadow ring, its forced-colors Highlight fallback included. */
 const actionBtn = css`
   appearance: none;
   padding: var(--haze-space-1) var(--haze-space-2);
@@ -316,13 +308,6 @@ const actionBtn = css`
 
   &:disabled {
     cursor: not-allowed;
-  }
-
-  @media (forced-colors: active) {
-    &:focus-visible:focus-visible {
-      outline: 2px solid Highlight;
-      box-shadow: none;
-    }
   }
 `;
 

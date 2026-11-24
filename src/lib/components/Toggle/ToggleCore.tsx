@@ -8,6 +8,7 @@ import type {
 import { css } from '@linaria/core';
 
 import { focusRingVisible } from '../../utils/focus-ring';
+import { ghostVariant, solidVariant } from '../../utils/button-variant-skin';
 import { base, sizes, squareSizes } from '../Button/styles';
 
 type ToggleCoreOwnProps = {
@@ -39,39 +40,34 @@ type ToggleCoreProps<T extends ElementType = 'button'> = ToggleCoreOwnProps & {
  * variants, so no emission-order games decide which background wins.
  * Unpressed is a quiet ghost (the toggle recedes); pressed goes solid
  * primary (the "this state is on" signal), each with its own
- * interaction-state tokens.
+ * interaction-state tokens. Both surfaces are Button's own variant
+ * arms (utils/button-variant-skin — the toggle is a ghost or solid
+ * Button whose fill is keyed on `pressed` instead of a `variant` prop).
  */
 const surfaces = {
-  rest: css`
-    background: transparent;
-    color: var(--haze-color-text);
+  rest: ghostVariant,
+  pressed: solidVariant,
+} as const;
 
-    &:hover {
-      background: var(--haze-color-bg-subtle);
-    }
-
-    &:active {
-      background: var(--haze-color-bg-muted);
-    }
-  `,
-  pressed: css`
-    background: var(--haze-color-primary);
-    color: var(--haze-color-text-inverse);
-
-    &:hover {
-      background: var(--haze-color-primary-hover);
-    }
-
-    &:active {
-      background: var(--haze-color-primary-active);
-    }
-
-    /* Forced-colors: the pressed fill flattens onto Canvas — the
-       on/off signal would vanish against the transparent rest state.
-       Pressed renders as the Windows-native Highlight chip (stable
-       across hover/active, which the UA would flatten back to
-       Canvas). */
-    @media (forced-colors: active) {
+/**
+ * Forced-colors: the pressed fill flattens onto Canvas — the on/off
+ * signal would vanish against the transparent rest state. Pressed
+ * renders as the Windows-native Highlight chip (stable across
+ * hover/active, which the UA would flatten back to Canvas). Toggle's
+ * own delta over the shared solid surface: Button's solid variant ships
+ * no forced-colors arm.
+ *
+ * The compound `&[data-slot]` selector keeps every arm of this delta
+ * winning over the shared variant's hover/active backgrounds in any
+ * cascade order (dev-server injection order and the dist split-css
+ * order disagree — quiet-button-skin's header); and the disabled ink
+ * restates Button's base GrayText at the raised specificity, so a
+ * disabled pressed toggle stays disabled-looking in both orders too
+ * (against the plain base arm it would be a same-specificity tie).
+ */
+const pressedForcedColors = css`
+  @media (forced-colors: active) {
+    &[data-slot='toggle'] {
       background: Highlight;
       color: HighlightText;
 
@@ -79,9 +75,13 @@ const surfaces = {
       &:active {
         background: Highlight;
       }
+
+      &:disabled {
+        color: GrayText;
+      }
     }
-  `,
-} as const;
+  }
+`;
 
 /**
  * The controlled half of Toggle: a momentary pressed-state button
@@ -110,7 +110,14 @@ export default function ToggleCore<T extends ElementType = 'button'>({
       {...(isNativeButton ? { type: 'button' as const } : {})}
       aria-pressed={pressed}
       data-slot='toggle'
-      x-class={[base, focusRingVisible, surfaces[pressed ? 'pressed' : 'rest'], sizeClass, className]}
+      x-class={[
+        base,
+        focusRingVisible,
+        surfaces[pressed ? 'pressed' : 'rest'],
+        pressed && pressedForcedColors,
+        sizeClass,
+        className,
+      ]}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
         // The historical onNativeClick signature stays button-typed; the
         // event itself is whatever element `as` rendered.

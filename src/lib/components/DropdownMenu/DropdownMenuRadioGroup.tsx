@@ -1,18 +1,13 @@
 import type { ReactNode } from 'react';
-import type { ControlOrValue } from 'react-use-control';
 
-import { MenuRadioGroupImpl } from '../../utils/menu-item-parts';
+import {
+  MenuRadioGroupImpl,
+  type MenuRadioGroupBaseProps,
+} from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
-type DropdownMenuRadioGroupProps = {
-  /** Selected value — controlled control or uncontrolled initial value ('' = none). */
-  value?: ControlOrValue<string>;
-  /** Fires when the selection changes, whatever drove it (click, Enter, Space). */
-  onValueChange?: (value: string) => void;
-  /** Optional non-interactive heading naming the radio group (aria-labelledby). */
-  label?: ReactNode;
-  className?: string;
+type DropdownMenuRadioGroupProps = MenuRadioGroupBaseProps & {
   /** The group's `DropdownMenuRadioItem`s. */
   children: ReactNode;
 };

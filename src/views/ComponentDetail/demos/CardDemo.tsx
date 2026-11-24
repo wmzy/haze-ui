@@ -1,73 +1,54 @@
+import type { CSSProperties } from 'react';
+
 import { Card } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  flushNoteStyle,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+/** Card heading: a tight bottom margin so the description sits close. */
+const cardTitleStyle: CSSProperties = { margin: '0 0 4px' };
 
 // ─── Card ──────────────────────────────────────────────────────
 export default function CardDemo() {
   return (
-    <>
-      <h1>Card</h1>
-      <p className={intro}>
-        Container for grouping related content with visual separation.
-      </p>
-
-      <div className={section}>
-        <h2>Variants</h2>
+    <DemoPage
+      title='Card'
+      description='Container for grouping related content with visual separation.'
+    >
+      <DemoSection title='Variants'>
         <div className={row} style={{ alignItems: 'stretch' }}>
           <Card variant='elevated'>
-            <h3 style={{ margin: '0 0 4px' }}>Elevated</h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--haze-color-text-secondary)',
-                fontSize: 'var(--haze-text-sm)',
-              }}
-            >
+            <h3 style={cardTitleStyle}>Elevated</h3>
+            <p style={flushNoteStyle}>
               Shadow-based elevation.
             </p>
           </Card>
           <Card variant='outlined'>
-            <h3 style={{ margin: '0 0 4px' }}>Outlined</h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--haze-color-text-secondary)',
-                fontSize: 'var(--haze-text-sm)',
-              }}
-            >
+            <h3 style={cardTitleStyle}>Outlined</h3>
+            <p style={flushNoteStyle}>
               Border-based separation.
             </p>
           </Card>
           <Card variant='filled'>
-            <h3 style={{ margin: '0 0 4px' }}>Filled</h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--haze-color-text-secondary)',
-                fontSize: 'var(--haze-text-sm)',
-              }}
-            >
+            <h3 style={cardTitleStyle}>Filled</h3>
+            <p style={flushNoteStyle}>
               Background-based distinction.
             </p>
           </Card>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Whole-card link (as)</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Whole-card link (as)'>
+        <p style={noteStyle}>
           <code>as=&#123;'a'&#125;</code> renders the entire card as a native{' '}
           <code>&lt;a&gt;</code>: <code>href</code>, <code>target</code>,{' '}
           <code>rel</code> and every other anchor attribute flow through,
@@ -82,57 +63,39 @@ export default function CardDemo() {
          * stretched-link overlay on a non-interactive card body. */}
         <div className={row} style={{ alignItems: 'stretch' }}>
           <Card as='a' href='#card'>
-            <h3 style={{ margin: '0 0 4px' }}>Linked card</h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--haze-color-text-secondary)',
-                fontSize: 'var(--haze-text-sm)',
-              }}
-            >
+            <h3 style={cardTitleStyle}>Linked card</h3>
+            <p style={flushNoteStyle}>
               The whole card is one link target — no buttons inside.
             </p>
           </Card>
           <Card as='a' href='#card' variant='outlined' target='_blank' rel='noopener'>
-            <h3 style={{ margin: '0 0 4px' }}>New tab</h3>
-            <p
-              style={{
-                margin: 0,
-                color: 'var(--haze-color-text-secondary)',
-                fontSize: 'var(--haze-text-sm)',
-              }}
-            >
+            <h3 style={cardTitleStyle}>New tab</h3>
+            <p style={flushNoteStyle}>
               Anchor attrs (target/rel) pass straight through.
             </p>
           </Card>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CardProps' />
-      </div>
+      <PropsSection of='CardProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as a <strong>&lt;div&gt;</strong> — add{' '}
-              <strong>role</strong> and <strong>aria-label</strong> if the
-              card represents a distinct landmark
-            </li>
-            <li>
-              <code>as=&#123;'a'&#125;</code> gives the card real link
-              semantics (focusable, announced as a link) — never nest
-              buttons or links inside it
-            </li>
-            <li>Purely presentational by default</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as a <strong>&lt;div&gt;</strong> — add{' '}
+            <strong>role</strong> and <strong>aria-label</strong> if the
+            card represents a distinct landmark
+          </li>
+          <li>
+            <code>as=&#123;'a'&#125;</code> gives the card real link
+            semantics (focusable, announced as a link) — never nest
+            buttons or links inside it
+          </li>
+          <li>Purely presentational by default</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='card' />
-    </>
+    </DemoPage>
   );
 }

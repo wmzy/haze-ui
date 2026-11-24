@@ -25,8 +25,10 @@
  */
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import ts from 'typescript';
+
+import { defaultRoot, invokedDirectly, runCli, wroteLine } from './cli-utils.mjs';
 
 /** Non-Props public types that are documented in their own props table. */
 const OTHER_TYPES = [
@@ -38,9 +40,6 @@ const OTHER_TYPES = [
   'SegmentedOption',
   'ChatMessageRole',
 ];
-
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Same casing rule as scripts/split-css.mjs (dist/css family names). */
 const kebab = (name) =>
@@ -278,26 +277,9 @@ export function writeProps(rootDir = defaultRoot()) {
 const readTrimmed = (file) =>
   existsSync(file) ? ts.sys.readFile(file)?.trimEnd() ?? '' : '';
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-props', (started) => {
     const { changed, outFile, componentCount } = writeProps();
-    console.log(
-      `generate-props: ${componentCount} components, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-props: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${componentCount} components, ${wroteLine(started, changed, outFile)}`;
+  });
 }

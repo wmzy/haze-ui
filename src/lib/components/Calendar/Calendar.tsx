@@ -9,7 +9,7 @@ import type { CalendarProps, HeaderPanelView } from './types';
 import type { MonthPaneView, PeriodGridView } from './grids';
 
 import { useControl } from 'react-use-control';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   addMonths,
@@ -29,7 +29,7 @@ import {
 } from '../../utils/date-math';
 import { focusRingVisible } from '../../utils/focus-ring';
 import { dayButtons, useGridRoving } from '../../utils/grid-roving';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
 import { renderMonthGrid, renderMonthPane, renderQuarterGrid, renderYearGrid } from './grids';
@@ -77,9 +77,16 @@ function useGridKeyboard(
 ) {
   return useGridRoving(gridRef, 7, (delta, current, buttons) => {
     const next = addMonths(view.year, view.month, delta);
-    const fromDay = current >= 0 ? Number(buttons[current]!.textContent) : 1;
+    // The focused cell's day comes from its data-haze-day date — the
+    // identity the focus handover queries — never from the rendered
+    // text, which cellRender decorates ("15•", "1599"). Day 1 when no
+    // cell is focused.
+    const focusedDate =
+      current < 0
+        ? null
+        : parseCivilDate(buttons[current]!.dataset.hazeDay ?? '');
     const day = Math.min(
-      Math.max(fromDay, 1),
+      focusedDate?.getDate() ?? 1,
       getDaysInMonth(next.year, next.month)
     );
     setView(next);
@@ -134,10 +141,7 @@ export default function Calendar({
   const rootRef = useRef<HTMLDivElement>(null);
   // The consumer's ref rides the same root wrapper div (React 19
   // ref-as-prop, merged with the internal focus-scope handle above).
-  const setRootRef = useCallback(
-    (node: HTMLDivElement | null) => mergeRefs(rootRef, ref)(node),
-    [rootRef, ref]
-  );
+  const setRootRef = useMergedRefs(rootRef, ref);
   // Day ("YYYY-MM-DD") to focus once the next view renders (PageUp/Down
   // month hops and quick-select month picks — the cells do not exist
   // until the state commits).
@@ -215,9 +219,18 @@ export default function Calendar({
 
   // ISO weeks run Monday–Sunday by definition, so the week grid is
   // always Monday-first — a Sunday-first row would straddle two ISO
-  // weeks and make "the row's week" ambiguous.
-  const weekStart = weekMode ? 1 : resolveWeekStart(locale, weekStartsOn);
-  const weekdayLabels = getWeekdayLabels(locale, weekStart);
+  // weeks and make "the row's week" ambiguous. Both derivations build
+  // Intl objects (Intl.Locale, Intl.DateTimeFormat), so they are
+  // memoized like the formatters below (Schedule's weekdayLabels
+  // precedent) instead of running on every render.
+  const weekStart = useMemo(
+    () => (weekMode ? 1 : resolveWeekStart(locale, weekStartsOn)),
+    [weekMode, locale, weekStartsOn]
+  );
+  const weekdayLabels = useMemo(
+    () => getWeekdayLabels(locale, weekStart),
+    [locale, weekStart]
+  );
   const showWeekColumn = showWeekNumbers || weekMode;
 
   // Locale-only formatters (and the month-name list they shape) are

@@ -4,11 +4,13 @@ import { SortableTree, Tree, useTree, type TreeNodeData } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth320,
+} from './shared';
 
 // ─── SortableTree ───────────────────────────────────────────────
 
@@ -223,7 +225,7 @@ function UseTreeDemo({ data }: { data: TreeNodeData[] }) {
         )}{' '}
         · {tree.flattenVisible().length} rows visible
       </p>
-      <div style={{ maxWidth: 320 }}>
+      <div style={maxWidth320}>
         <Tree {...tree.treeProps} virtualized={{ height: 288 }} />
       </div>
     </>
@@ -245,36 +247,34 @@ export default function TreeDemo() {
   );
 
   return (
-    <>
-      <h1>Tree</h1>
-      <p className={intro}>
-        Hierarchical data display with expandable nodes, selection, and checkbox
-        support.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
-        <div style={{ maxWidth: 320 }}>
+    <DemoPage
+      title='Tree'
+      description={
+        <>
+          Hierarchical data display with expandable nodes, selection, and checkbox
+          support.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
+        <div style={maxWidth320}>
           <Tree treeData={treeData} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Checkable</h2>
-        <div style={{ maxWidth: 320 }}>
+      <DemoSection title='Checkable'>
+        <div style={maxWidth320}>
           <Tree treeData={treeData} checkable />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Icons and Lines</h2>
-        <div style={{ maxWidth: 320 }}>
+      <DemoSection title='With Icons and Lines'>
+        <div style={maxWidth320}>
           <Tree treeData={treeData} showIcon showLine />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Keyboard Navigation</h2>
+      <DemoSection title='Keyboard Navigation'>
         <p>
           The tree follows the WAI-ARIA tree pattern with a roving tabindex:
           Tab enters at the current node, and every node is reachable without
@@ -307,10 +307,9 @@ export default function TreeDemo() {
             <code>checkable</code>)
           </li>
         </ul>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Virtualized (1200 nodes)</h2>
+      <DemoSection title='Virtualized (1200 nodes)'>
         <p>
           With <code>virtualized</code> the visible rows are flattened and
           rendered through <code>VirtualList</code> — only the window (plus
@@ -319,7 +318,7 @@ export default function TreeDemo() {
           <code>expandedKeys</code> / <code>selectedKeys</code> /{' '}
           <code>checkedKeys</code>) behave exactly as on the plain path.
         </p>
-        <div style={{ maxWidth: 320 }}>
+        <div style={maxWidth320}>
           <Tree
             treeData={virtualData}
             virtualized={{ height: 288 }}
@@ -327,10 +326,9 @@ export default function TreeDemo() {
             checkable
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>useTree (path queries + scrollTo)</h2>
+      <DemoSection title='useTree (path queries + scrollTo)'>
         <p>
           <code>useTree</code> is the companion hook: it owns{' '}
           <code>expandedKeys</code> through the same control contract as the
@@ -345,10 +343,9 @@ export default function TreeDemo() {
           the component share one state; an unknown key is a durable no-op.
         </p>
         <UseTreeDemo data={virtualData} />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Lazy Loading (loadData)</h2>
+      <DemoSection title='Lazy Loading (loadData)'>
         <p>
           With <code>loadData</code>, nodes that ship no children (and are not{' '}
           <code>isLeaf</code>) fetch them from your server the first time they
@@ -360,13 +357,12 @@ export default function TreeDemo() {
           <code>Media</code> below is <code>isLeaf</code> and never loads;{' '}
           <code>Flaky server</code> fails once on purpose.
         </p>
-        <div style={{ maxWidth: 320 }}>
+        <div style={maxWidth320}>
           <LazyTreeDemo />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Search Filtering (searchValue)</h2>
+      <DemoSection title='Search Filtering (searchValue)'>
         <p>
           A non-empty <code>searchValue</code> keeps only the nodes whose title
           matches (case-insensitive) plus the ancestor path to them —
@@ -375,13 +371,12 @@ export default function TreeDemo() {
           localized empty state is shown. Controlled{' '}
           <code>expandedKeys</code> keep working underneath the filter.
         </p>
-        <div style={{ maxWidth: 320 }}>
+        <div style={maxWidth320}>
           <SearchTreeDemo />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sortable (SortableTree)</h2>
+      <DemoSection title='Sortable (SortableTree)'>
         <p>
           <code>SortableTree</code> wraps the same tree with drag and drop
           (backed by the <code>@dnd-kit</code> dependency — the plain{' '}
@@ -401,7 +396,7 @@ export default function TreeDemo() {
         <div style={{ maxWidth: 320, marginBottom: 16 }}>
           <SortableTreeExample />
         </div>
-        <div style={{ maxWidth: 320 }}>
+        <div style={maxWidth320}>
           <SortableTreeExample dragHandle />
         </div>
         <ul>
@@ -412,52 +407,46 @@ export default function TreeDemo() {
             <kbd>Space</kbd> drops, <kbd>Escape</kbd> cancels
           </li>
         </ul>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tree Props</h2>
+      <DemoSection title='Tree Props'>
         <PropsTable of='TreeProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TreeNodeData</h2>
+      <DemoSection title='TreeNodeData'>
         <PropsTable of='TreeNodeData' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SortableTree Props</h2>
+      <DemoSection title='SortableTree Props'>
         <PropsTable of='SortableTreeProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              <strong>role=&quot;tree&quot;</strong> /{' '}
-              <strong>role=&quot;treeitem&quot;</strong> semantics with{' '}
-              <strong>aria-expanded</strong> / <strong>aria-level</strong> on
-              each node
-            </li>
-            <li>
-              Selected state via <strong>aria-selected</strong>, checked state
-              via <strong>aria-checked</strong>
-            </li>
-            <li>
-              Roving tabindex: one tab stop per tree, full keyboard operation
-              (see Keyboard Navigation above)
-            </li>
-            <li>
-              SortableTree keeps the tree semantics — keyboard drags run on
-              the focused row (<kbd>Space</kbd> lift/drop), the{' '}
-              <code>dragHandle</code> grip is a pointer-only affordance
-              hidden from assistive tech
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            <strong>role=&quot;tree&quot;</strong> /{' '}
+            <strong>role=&quot;treeitem&quot;</strong> semantics with{' '}
+            <strong>aria-expanded</strong> / <strong>aria-level</strong> on
+            each node
+          </li>
+          <li>
+            Selected state via <strong>aria-selected</strong>, checked state
+            via <strong>aria-checked</strong>
+          </li>
+          <li>
+            Roving tabindex: one tab stop per tree, full keyboard operation
+            (see Keyboard Navigation above)
+          </li>
+          <li>
+            SortableTree keeps the tree semantics — keyboard drags run on
+            the focused row (<kbd>Space</kbd> lift/drop), the{' '}
+            <code>dragHandle</code> grip is a pointer-only affordance
+            hidden from assistive tech
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='tree' />
-    </>
+    </DemoPage>
   );
 }

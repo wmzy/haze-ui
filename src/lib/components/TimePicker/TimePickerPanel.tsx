@@ -6,7 +6,8 @@ import { useCallback, useEffect, useId, useRef } from 'react';
 
 import { FloatingPanel, useFloating, useOpenAdaptor } from '../../utils/floating';
 import { PickerInputTrigger } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
+import { useFocusWhenShown } from '../../utils/use-focus-when-shown';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -95,10 +96,7 @@ export default function TimePickerPanel({
   const inputRef = useRef<HTMLInputElement>(null);
   // The consumer's ref rides the same trigger input the floating
   // behavior anchors on.
-  const setInputRef = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(inputRef, ref)(node),
-    [inputRef, ref]
-  );
+  const setInputRef = useMergedRefs(inputRef, ref);
   const panelRef = useRef<HTMLDivElement>(null);
   const hourColumnRef = useRef<HTMLDivElement>(null);
   const minuteColumnRef = useRef<HTMLDivElement>(null);
@@ -248,9 +246,7 @@ export default function TimePickerPanel({
   // Focus lands on the hour column when the panel becomes visible —
   // gated on `shown` (a display:none panel would drop the focus call;
   // see FloatingBehavior.shown).
-  useEffect(() => {
-    if (open && floating.shown) hourColumnRef.current?.focus();
-  }, [open, floating.shown]);
+  useFocusWhenShown(open && floating.shown, () => hourColumnRef.current);
 
   // Center the selected option of every column in its highlight band —
   // on open and after each commit while open.

@@ -2,11 +2,14 @@ import { useState } from 'react';
 
 import { NotificationCenter, type NotificationCenterItem } from '@/lib/components/NotificationCenter';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const initialFeed: NotificationCenterItem[] = [
   {
@@ -49,17 +52,18 @@ export default function NotificationCenterDemo() {
   const [items, setItems] = useState(initialFeed);
 
   return (
-    <>
-      <h1>NotificationCenter</h1>
-      <p className={intro}>
-        Persistent notification feed behind a bell trigger: unread-count badge,
-        severity/kind rows, mark-all-read and clear-all — the durable
-        counterpart to <code>Toast</code>, declarative through{' '}
-        <code>items</code> instead of an imperative <code>open()</code> API.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='NotificationCenter'
+      description={
+        <>
+          Persistent notification feed behind a bell trigger: unread-count badge,
+          severity/kind rows, mark-all-read and clear-all — the durable
+          counterpart to <code>Toast</code>, declarative through{' '}
+          <code>items</code> instead of an imperative <code>open()</code> API.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <NotificationCenter
             items={items}
@@ -69,17 +73,15 @@ export default function NotificationCenterDemo() {
             onClearAll={() => setItems([])}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled open state</h2>
+      <DemoSection title='Controlled open state'>
         <div className={row}>
           <ControlledOpen />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Badge ceiling</h2>
+      <DemoSection title='Badge ceiling'>
         <div className={row}>
           <NotificationCenter
             items={Array.from({ length: 120 }, (_, index) => ({
@@ -91,25 +93,19 @@ export default function NotificationCenterDemo() {
           />
           <NotificationCenter items={[]} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='NotificationCenterProps' />
-      </div>
+      <PropsSection of='NotificationCenterProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>The bell trigger carries <strong>aria-expanded</strong>, <strong>aria-controls</strong> and an <strong>aria-label</strong> that names the unread count (&quot;Notifications (2 unread)&quot;)</li>
-            <li>The panel is a labelled <strong>role=&quot;dialog&quot;</strong>; rows and the footer actions form one roving-tabindex list — arrows, Home/End and typeahead move focus, Escape/Tab close and return focus to the trigger</li>
-            <li>Unread rows expose an <strong>Unread</strong> label through the dot accent; severity tints are decorative (icon + color, never color alone)</li>
-            <li>Panel copy (title, actions, empty state, trigger labels) localizes through <code>LocaleProvider</code> strings — 11 built-in packs</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>The bell trigger carries <strong>aria-expanded</strong>, <strong>aria-controls</strong> and an <strong>aria-label</strong> that names the unread count (&quot;Notifications (2 unread)&quot;)</li>
+          <li>The panel is a labelled <strong>role=&quot;dialog&quot;</strong>; rows and the footer actions form one roving-tabindex list — arrows, Home/End and typeahead move focus, Escape/Tab close and return focus to the trigger</li>
+          <li>Unread rows expose an <strong>Unread</strong> label through the dot accent; severity tints are decorative (icon + color, never color alone)</li>
+          <li>Panel copy (title, actions, empty state, trigger labels) localizes through <code>LocaleProvider</code> strings — 11 built-in packs</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }
 

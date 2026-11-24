@@ -16,22 +16,17 @@
  * ships. Missing dist is an error, not a skip.
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
-const distDir = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'dist'
-);
+import { defaultRoot, failFor } from './cli-utils.mjs';
+
+const distDir = path.join(defaultRoot(), 'dist');
 const registryPath = path.join(distDir, 'tokens', 'registry.js');
 const palettePath = path.join(distDir, 'tokens', 'palette.js');
 const oklchPath = path.join(distDir, 'tokens', 'oklch.js');
 
-function fail(message) {
-  console.error(`generate-design-tokens: ${message}`);
-  process.exit(1);
-}
+const fail = failFor('generate-design-tokens');
 
 for (const modulePath of [registryPath, palettePath, oklchPath]) {
   if (!existsSync(modulePath)) {

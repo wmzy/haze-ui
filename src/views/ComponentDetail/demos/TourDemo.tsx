@@ -2,26 +2,31 @@ import { useControl } from 'react-use-control';
 
 import { Button, Tour } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  flushNoteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Tour ──────────────────────────────────────────────────────
 export default function TourDemo() {
   const [, setOpen, openCtrl] = useControl(false);
 
   return (
-    <>
-      <h1>Tour</h1>
-      <p className={intro}>
-        Spotlight walkthrough that dims the page and guides users across
-        regions, one step at a time.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Tour'
+      description={
+        <>
+          Spotlight walkthrough that dims the page and guides users across
+          regions, one step at a time.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button id='tour-demo-import' variant='outline'>
             Import data
@@ -45,13 +50,7 @@ export default function TourDemo() {
           <h3 style={{ margin: 0, fontSize: 'var(--haze-text-lg)' }}>
             Project summary
           </h3>
-          <p
-            style={{
-              margin: 0,
-              color: 'var(--haze-color-text-secondary)',
-              fontSize: 'var(--haze-text-sm)',
-            }}
-          >
+          <p style={flushNoteStyle}>
             Everything about the current milestone at a glance — progress,
             owners and recent activity.
           </p>
@@ -88,35 +87,29 @@ export default function TourDemo() {
           open={openCtrl}
           onClose={() => setOpen(false)}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='TourProps' />
-      </div>
+      <PropsSection of='TourProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Step card is a named <strong>role=&quot;dialog&quot;</strong>{' '}
-              (titled by the step title, or the step counter) and takes focus
-              on each step
-            </li>
-            <li>
-              <strong>Esc</strong> skips, <strong>ArrowRight</strong>/
-              <strong>ArrowLeft</strong> step through (ignored while typing in
-              fields)
-            </li>
-            <li>Mask and spotlight are <strong>aria-hidden</strong> decoration</li>
-            <li>
-              A missing or hidden target degrades to a screen-centered card
-              instead of failing
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Step card is a named <strong>role=&quot;dialog&quot;</strong>{' '}
+            (titled by the step title, or the step counter) and takes focus
+            on each step
+          </li>
+          <li>
+            <strong>Esc</strong> skips, <strong>ArrowRight</strong>/
+            <strong>ArrowLeft</strong> step through (ignored while typing in
+            fields)
+          </li>
+          <li>Mask and spotlight are <strong>aria-hidden</strong> decoration</li>
+          <li>
+            A missing or hidden target degrades to a screen-centered card
+            instead of failing
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

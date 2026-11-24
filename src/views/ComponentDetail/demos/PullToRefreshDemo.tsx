@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 import { PullToRefresh } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── PullToRefresh ──────────────────────────────────────────────
 export default function PullToRefreshDemo() {
@@ -30,15 +31,16 @@ export default function PullToRefreshDemo() {
   };
 
   return (
-    <>
-      <h1>PullToRefresh</h1>
-      <p className={intro}>
-        Mobile pull-to-refresh around any scrolling content — a hand-written
-        pointer/touch gesture with zero extra dependencies.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='PullToRefresh'
+      description={
+        <>
+          Mobile pull-to-refresh around any scrolling content — a hand-written
+          pointer/touch gesture with zero extra dependencies.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p>
           Drag the list downward with a mouse or finger (the gesture takes over
           only when the list is scrolled back to the top). {pulls} refresh
@@ -70,10 +72,9 @@ export default function PullToRefreshDemo() {
             </div>
           </PullToRefresh>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom indicator and texts</h2>
+      <DemoSection title='Custom indicator and texts'>
         <p>
           The head is a render prop ({'{ phase, progress }'}), and the default
           status texts are plain props — no library locale strings involved.
@@ -110,33 +111,27 @@ export default function PullToRefreshDemo() {
             </div>
           </PullToRefresh>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='PullToRefreshProps' />
-      </div>
+      <PropsSection of='PullToRefreshProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The gesture is touch/pointer only; the container carries{' '}
-              <code>aria-busy</code> while refreshing and the default head
-              announces through the Spinner&apos;s <code>role=&quot;status&quot;</code>.
-            </li>
-            <li>
-              While pulling, the head is <code>aria-hidden</code> — gesture
-              feedback stays visual, so screen readers are not spammed mid-drag.
-            </li>
-            <li>
-              Keyboard users refresh through the page&apos;s own affordances;
-              native scrolling (both axes) is never blocked by the gesture.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The gesture is touch/pointer only; the container carries{' '}
+            <code>aria-busy</code> while refreshing and the default head
+            announces through the Spinner&apos;s <code>role=&quot;status&quot;</code>.
+          </li>
+          <li>
+            While pulling, the head is <code>aria-hidden</code> — gesture
+            feedback stays visual, so screen readers are not spammed mid-drag.
+          </li>
+          <li>
+            Keyboard users refresh through the page&apos;s own affordances;
+            native scrolling (both axes) is never blocked by the gesture.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

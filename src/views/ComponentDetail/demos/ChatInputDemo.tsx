@@ -6,13 +6,17 @@ import { css } from '@linaria/core';
 
 import { Button, FileInput, ChatMessage, ChatInput, UploadCore } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection, dataTableNote, feedToolbar, feedMeta } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  dataTableNote,
+  DemoPage,
+  DemoSection,
+  feedMeta,
+  feedToolbar,
+  maxWidth480,
+  PropsSection,
+} from './shared';
 
 // ─── ChatInput × Upload — attachment bridge (recipe) ──────────
 /** Fixed epoch (2026-01-01 09:00 UTC) — deterministic lastModified. */
@@ -309,7 +313,7 @@ function ChatStopDemo() {
   };
 
   return (
-    <div style={{ maxWidth: 480 }}>
+    <div style={maxWidth480}>
       <ChatInput
         generating={generating}
         onSend={send}
@@ -340,15 +344,12 @@ export default function ChatInputDemo() {
   const [messages, setMessages] = useState<string[]>([]);
 
   return (
-    <>
-      <h1>ChatInput</h1>
-      <p className={intro}>
-        Auto-resizing textarea with Enter-to-send and Shift+Enter for newlines.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 480 }}>
+    <DemoPage
+      title='ChatInput'
+      description='Auto-resizing textarea with Enter-to-send and Shift+Enter for newlines.'
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth480}>
           <ChatInput
             onSend={(msg) => setMessages((prev) => [...prev, msg])}
             placeholder='Type a message...'
@@ -365,10 +366,9 @@ export default function ChatInputDemo() {
             </div>
           )}
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Stop generation</h2>
+      <DemoSection title='Stop generation'>
         <ChatStopDemo />
         <p className={dataTableNote}>
           <code>generating</code> swaps the send control for a stop control:
@@ -380,17 +380,15 @@ export default function ChatInputDemo() {
           survives). Here a 2s scripted reply plays the role of the model;
           stopping cancels it.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
-        <div style={{ maxWidth: 480 }}>
+      <DemoSection title='Disabled'>
+        <div style={maxWidth480}>
           <ChatInput disabled placeholder='Disabled input' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Attachments bridge (recipe)</h2>
+      <DemoSection title='Attachments bridge (recipe)'>
         <ChatAttachmentBridgeDemo />
         <p className={dataTableNote}>
           ChatInput has no attachment slot, so the recipe bridges one: the
@@ -410,43 +408,37 @@ export default function ChatInputDemo() {
           stand-in for <code>DataTransfer</code>-driven picks) — nothing is
           uploaded.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ChatInputProps' />
-      </div>
+      <PropsSection of='ChatInputProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Send button has <strong>aria-label=&quot;Send&quot;</strong>;
-              while <code>generating</code> it becomes a stop control labeled
-              by the <strong>chat.stopGeneration</strong> string
-            </li>
-            <li>
-              <strong>Enter</strong> sends (or stops mid-generation),
-              <strong>Shift+Enter</strong> inserts newline
-            </li>
-            <li>
-              Focus ring appears on <strong>:focus-within</strong>
-            </li>
-            <li>
-              Recipe: every remove button carries an{' '}
-              <strong>aria-label</strong> naming its file, the pending set
-              is a labeled <strong>role=&quot;group&quot;</strong>, the
-              dropzone is the library <strong>UploadCore</strong>{' '}
-              (<strong>role=&quot;button&quot;</strong>, keyboard-operable),
-              and sent attachment chips are plain text so they read together
-              with the message
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Send button has <strong>aria-label=&quot;Send&quot;</strong>;
+            while <code>generating</code> it becomes a stop control labeled
+            by the <strong>chat.stopGeneration</strong> string
+          </li>
+          <li>
+            <strong>Enter</strong> sends (or stops mid-generation),
+            <strong>Shift+Enter</strong> inserts newline
+          </li>
+          <li>
+            Focus ring appears on <strong>:focus-within</strong>
+          </li>
+          <li>
+            Recipe: every remove button carries an{' '}
+            <strong>aria-label</strong> naming its file, the pending set
+            is a labeled <strong>role=&quot;group&quot;</strong>, the
+            dropzone is the library <strong>UploadCore</strong>{' '}
+            (<strong>role=&quot;button&quot;</strong>, keyboard-operable),
+            and sent attachment chips are plain text so they read together
+            with the message
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='chatinput' />
-    </>
+    </DemoPage>
   );
 }

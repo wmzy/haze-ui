@@ -166,6 +166,11 @@ const TOOLTIP_STYLE = {
 } as const;
 const LEGEND_STYLE = { fontSize: 'var(--haze-text-sm)' } as const;
 
+/** Tooltip cursor for the cartesian and scatter charts: a hairline at the
+ * hovered X position. The polar charts pass no cursor and keep recharts'
+ * default — the hovered sector's outline. */
+const TOOLTIP_CURSOR = { stroke: AXIS_STROKE } as const;
+
 /** The palette entry for `index`, cycling once sectors/series outnumber
  * the five semantic tokens. */
 function cycleColor(index: number): string {
@@ -375,8 +380,6 @@ export function buildTooltipContent(
   };
 }
 
-/** The full token-styled chart tree Chart renders — kept beside the pure
- * helpers so the component module stays a single component export. */
 /** Builds the recharts Legend `content` for the Chart `classNames.legend`
  * slot: a div wrapping the default legend items (recharts v3's own
  * Legend wrapper takes no consumer class). Legend hands the payload to
@@ -389,6 +392,46 @@ function legendContentFactory(className: string) {
   );
 }
 
+/** The Tooltip + Legend pair every `chartTree` branch mounts between its
+ * grid/axis chrome and its series, each half gated on its `show*` toggle.
+ * `cursor` is the one prop that differs between the chart kinds:
+ * cartesian and scatter charts pass `TOOLTIP_CURSOR`, the polar charts
+ * leave it out. */
+function tooltipAndLegend(options: {
+  showTooltip: boolean;
+  showLegend: boolean;
+  cursor?: ComponentProps<typeof Tooltip>['cursor'];
+  tooltipContent?: (props: unknown) => ReactNode;
+  tooltipClassName?: string;
+  legendContent?: ReturnType<typeof legendContentFactory>;
+}): ReactElement {
+  const {
+    showTooltip,
+    showLegend,
+    cursor,
+    tooltipContent,
+    tooltipClassName,
+    legendContent,
+  } = options;
+  return (
+    <>
+      {showTooltip && (
+        <Tooltip
+          cursor={cursor}
+          contentStyle={TOOLTIP_STYLE}
+          content={tooltipContent}
+          wrapperClassName={tooltipClassName}
+        />
+      )}
+      {showLegend && (
+        <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
+      )}
+    </>
+  );
+}
+
+/** The full token-styled chart tree Chart renders — kept beside the pure
+ * helpers so the component module stays a single component export. */
 export function chartTree(options: {
   type: RechartsChartType;
   data: readonly unknown[];
@@ -437,6 +480,17 @@ export function chartTree(options: {
     ? buildTooltipContent(renderTooltip)
     : undefined;
 
+  /* Every branch below mounts the same tooltip/legend pair; only the
+   * cursor differs — the polar branches keep recharts' default sector
+   * outline, the scatter and cartesian branches add the crosshair. */
+  const tooltipLegend = {
+    showTooltip,
+    showLegend,
+    tooltipContent,
+    tooltipClassName,
+    legendContent,
+  };
+
   /* recharts reference annotations, spread through verbatim so consumers
    * control stroke/fill/label — rendered before the series so plots draw
    * on top. Polar branches below simply never mount them. */
@@ -463,16 +517,7 @@ export function chartTree(options: {
           type,
           data,
           <>
-            {showTooltip && (
-              <Tooltip
-                contentStyle={TOOLTIP_STYLE}
-                content={tooltipContent}
-                wrapperClassName={tooltipClassName}
-              />
-            )}
-            {showLegend && (
-              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
-            )}
+            {tooltipAndLegend(tooltipLegend)}
             {/* Per-series `type` and `stackId` are cartesian-only — each pie
              * series is one ring regardless, so both are ignored here. */}
             {series.map((entry, index) =>
@@ -504,16 +549,7 @@ export function chartTree(options: {
             {showGrid && <PolarGrid stroke={AXIS_STROKE} />}
             <PolarAngleAxis dataKey={xKey} tick={AXIS_TICK} />
             <PolarRadiusAxis tick={AXIS_TICK} />
-            {showTooltip && (
-              <Tooltip
-                contentStyle={TOOLTIP_STYLE}
-                content={tooltipContent}
-                wrapperClassName={tooltipClassName}
-              />
-            )}
-            {showLegend && (
-              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
-            )}
+            {tooltipAndLegend(tooltipLegend)}
             {/* Per-series `type` and `stackId` are cartesian-only — radar
              * renders one polygon per series regardless, so both are
              * ignored here. */}
@@ -544,17 +580,7 @@ export function chartTree(options: {
               tick={AXIS_TICK}
             />
             <YAxis type='number' stroke={AXIS_STROKE} tick={AXIS_TICK} />
-            {showTooltip && (
-              <Tooltip
-                cursor={{ stroke: AXIS_STROKE }}
-                contentStyle={TOOLTIP_STYLE}
-                content={tooltipContent}
-                wrapperClassName={tooltipClassName}
-              />
-            )}
-            {showLegend && (
-              <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
-            )}
+            {tooltipAndLegend({ ...tooltipLegend, cursor: TOOLTIP_CURSOR })}
             {annotations}
             {/* Same as radar: `type`/`stackId` are cartesian-only — scatter
              * renders one point set per series regardless. */}
@@ -595,17 +621,7 @@ export function chartTree(options: {
               <YAxis stroke={AXIS_STROKE} tick={AXIS_TICK} />
             </>
           )}
-          {showTooltip && (
-            <Tooltip
-              cursor={{ stroke: AXIS_STROKE }}
-              contentStyle={TOOLTIP_STYLE}
-              content={tooltipContent}
-              wrapperClassName={tooltipClassName}
-            />
-          )}
-          {showLegend && (
-            <Legend wrapperStyle={LEGEND_STYLE} content={legendContent} />
-          )}
+          {tooltipAndLegend({ ...tooltipLegend, cursor: TOOLTIP_CURSOR })}
           {annotations}
           {/* Composed charts: a per-series `type` overrides that series'
            * element shape (bar series inside a line chart, a line over an

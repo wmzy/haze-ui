@@ -1,10 +1,13 @@
 import { Heatmap } from '@/lib/components/Heatmap';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // Deterministic pseudo-activity over the first 120 days of 2026 — a
 // fixed wave pattern, no Math.random (stable demo source + snapshots).
@@ -20,15 +23,16 @@ const demoData = Array.from({ length: 120 }, (_, index) => {
 // ─── Heatmap ─────────────────────────────────────────────────────
 export default function HeatmapDemo() {
   return (
-    <>
-      <h1>Heatmap</h1>
-      <p className={intro}>
-        GitHub-style activity calendar: week columns × weekday rows,
-        intensity-binned by value against the data's maximum.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Heatmap'
+      description={
+        <>
+          GitHub-style activity calendar: week columns × weekday rows,
+          intensity-binned by value against the data's maximum.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Heatmap
             data={demoData}
@@ -38,10 +42,9 @@ export default function HeatmapDemo() {
             }
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom levels and labels</h2>
+      <DemoSection title='Custom levels and labels'>
         <div className={row}>
           <Heatmap
             data={demoData}
@@ -52,10 +55,9 @@ export default function HeatmapDemo() {
             getWeekdayLabel={(weekday) => ['日', '一', '二', '三', '四', '五', '六'][weekday] ?? ''}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Record data shape</h2>
+      <DemoSection title='Record data shape'>
         <div className={row}>
           <Heatmap
             data={{ '2026-02-02': 3, '2026-02-03': 1, '2026-02-06': 5 }}
@@ -64,23 +66,17 @@ export default function HeatmapDemo() {
             summary='February activity'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='HeatmapProps' />
-      </div>
+      <PropsSection of='HeatmapProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>The calendar is a single <strong>role=&quot;img&quot;</strong> named by the <code>summary</code> prop — one announcement instead of hundreds of squares</li>
-            <li>Each day square carries a native <strong>title</strong> tooltip from <code>getLabel</code>, plus <code>data-date</code> / <code>data-level</code> for custom tooltip wiring</li>
-            <li>Intensity bins map onto <code>color-mix()</code> of the theme's primary and subtle background — light, dark and brand themes follow automatically</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>The calendar is a single <strong>role=&quot;img&quot;</strong> named by the <code>summary</code> prop — one announcement instead of hundreds of squares</li>
+          <li>Each day square carries a native <strong>title</strong> tooltip from <code>getLabel</code>, plus <code>data-date</code> / <code>data-level</code> for custom tooltip wiring</li>
+          <li>Intensity bins map onto <code>color-mix()</code> of the theme's primary and subtle background — light, dark and brand themes follow automatically</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

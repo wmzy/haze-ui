@@ -24,7 +24,7 @@ import {
 } from 'react';
 
 import { getDirection, inlineAxisKeys } from '../../utils/direction';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import {
   computeCheckedState,
   findNodeByKey,
@@ -274,10 +274,7 @@ export default function Tree({
   // The consumer's ref rides the same root node every render path
   // roots at; the tree's own handle stays live alongside (TreeSelect's
   // setTriggerRef pattern).
-  const setRootRef = useCallback(
-    (node: HTMLDivElement | null) => mergeRefs(rootRef, ref)(node),
-    [ref]
-  );
+  const setRootRef = useMergedRefs(rootRef, ref);
 
   // Visible rows in depth-first order — the keyboard model and the
   // virtualized windowing share this one flattening.

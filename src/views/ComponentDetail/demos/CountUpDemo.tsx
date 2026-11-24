@@ -6,9 +6,7 @@ import { CountUp, Button, Stat, StatGroup  } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // CountUp inherits size and color; give the standalone examples stat weight.
 const big = css`
@@ -41,33 +39,31 @@ function RetriggerExample() {
 // ─── CountUp ───────────────────────────────────────────────────
 export default function CountUpDemo() {
   return (
-    <>
-      <h1>CountUp</h1>
-      <p className={intro}>
-        Animated number transitions with rAF + ease-out cubic; honors
-        prefers-reduced-motion with an instant jump.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
+    <DemoPage
+      title='CountUp'
+      description={
+        <>
+          Animated number transitions with rAF + ease-out cubic; honors
+          prefers-reduced-motion with an instant jump.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
         <CountUp to={9821} duration={1800} className={big} />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Decimals & custom format</h2>
+      <DemoSection title='Decimals &amp; custom format'>
         <div className={row}>
           <CountUp to={98.76} decimals={2} duration={1600} className={big} />
           <CountUp to={4200} duration={1600} className={big} format={(n) => `$${n.toLocaleString()}`} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Re-animating on target change</h2>
+      <DemoSection title='Re-animating on target change'>
         <RetriggerExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Stat</h2>
+      <DemoSection title='With Stat'>
         <StatGroup>
           <Stat
             title='Bandwidth used'
@@ -85,23 +81,19 @@ export default function CountUpDemo() {
             description='4xx + 5xx share of total requests'
           />
         </StatGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CountUp Props</h2>
+      <DemoSection title='CountUp Props'>
         <PropsTable of='CountUpProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Counts are presentational — pair with a labeled container (e.g. Stat&#39;s <code>title</code>) for semantics</li>
-            <li><code>prefers-reduced-motion: reduce</code> skips the animation entirely (value jumps to the target)</li>
-            <li><code>font-variant-numeric: tabular-nums</code> keeps digit widths stable while counting</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Counts are presentational — pair with a labeled container (e.g. Stat&#39;s <code>title</code>) for semantics</li>
+          <li><code>prefers-reduced-motion: reduce</code> skips the animation entirely (value jumps to the target)</li>
+          <li><code>font-variant-numeric: tabular-nums</code> keeps digit widths stable while counting</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

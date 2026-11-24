@@ -2,26 +2,30 @@ import { useState } from 'react';
 
 import { Button, HoverCard } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row, codeBlock } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row, codeBlock } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── HoverCard ─────────────────────────────────────────────────
 export default function HoverCardDemo() {
   const [visits, setVisits] = useState(0);
 
   return (
-    <>
-      <h1>HoverCard</h1>
-      <p className={intro}>
-        Non-modal floating preview — link summaries, profile cards — that
-        opens on hover or focus and stays open while the pointer rests on it.
-      </p>
-
-      <div className={section}>
-        <h2>Link preview</h2>
+    <DemoPage
+      title='HoverCard'
+      description={
+        <>
+          Non-modal floating preview — link summaries, profile cards — that
+          opens on hover or focus and stays open while the pointer rests on it.
+        </>
+      }
+    >
+      <DemoSection title='Link preview'>
         <div className={row}>
           <HoverCard
             content={
@@ -39,10 +43,9 @@ export default function HoverCardDemo() {
             </a>
           </HoverCard>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Profile card with resting zone</h2>
+      <DemoSection title='Profile card with resting zone'>
         <div className={row}>
           <HoverCard
             openDelay={100}
@@ -68,10 +71,9 @@ export default function HoverCardDemo() {
             closeDelay grace keeps it open mid-travel.
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Interactive card (PreviewTrigger semantics)</h2>
+      <DemoSection title='Interactive card (PreviewTrigger semantics)'>
         <div className={row}>
           <HoverCard
             interactive
@@ -100,10 +102,9 @@ export default function HoverCardDemo() {
             pointer leaves.
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { HoverCard } from 'haze-ui';
 
 <HoverCard
@@ -114,36 +115,30 @@ export default function HoverCardDemo() {
 >
   <a href={user.url}>{user.handle}</a>
 </HoverCard>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of="HoverCardProps" />
-      </div>
+      <PropsSection of='HoverCardProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Trigger and panel are linked via <strong>aria-describedby</strong>
-            </li>
-            <li>
-              Opens on <strong>hover</strong> and <strong>focus</strong> alike —
-              render a focusable trigger (link, button) for keyboard access
-            </li>
-            <li>
-              Card content stays in the DOM; <strong>Escape</strong> closes an
-              open card
-            </li>
-            <li>
-              With <strong>interactive</strong>, card content is Tab-reachable
-              (never focus-trapped — a hover card is a preview, not a modal)
-              and Escape returns focus to the trigger
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Trigger and panel are linked via <strong>aria-describedby</strong>
+          </li>
+          <li>
+            Opens on <strong>hover</strong> and <strong>focus</strong> alike —
+            render a focusable trigger (link, button) for keyboard access
+          </li>
+          <li>
+            Card content stays in the DOM; <strong>Escape</strong> closes an
+            open card
+          </li>
+          <li>
+            With <strong>interactive</strong>, card content is Tab-reachable
+            (never focus-trapped — a hover card is a preview, not a modal)
+            and Escape returns focus to the trigger
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

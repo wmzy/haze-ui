@@ -2,25 +2,25 @@ import { useState } from 'react';
 
 import { Button, Alert } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth480,
+  PropsSection,
+} from './shared';
 
 // ─── Alert ─────────────────────────────────────────────────────
 export default function AlertDemo() {
   const [key, setKey] = useState(0);
 
   return (
-    <>
-      <h1>Alert</h1>
-      <p className={intro}>Contextual feedback messages for user actions.</p>
-
-      <div className={section}>
-        <h2>Colors</h2>
+    <DemoPage
+      title='Alert'
+      description='Contextual feedback messages for user actions.'
+    >
+      <DemoSection title='Colors'>
         <div
           style={{
             display: 'flex',
@@ -34,11 +34,10 @@ export default function AlertDemo() {
           <Alert color='warning'>Please review before proceeding.</Alert>
           <Alert color='danger'>An error occurred. Please try again.</Alert>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Closable</h2>
-        <div style={{ maxWidth: 480 }}>
+      <DemoSection title='Closable'>
+        <div style={maxWidth480}>
           <Alert key={key} color='info' closable>
             This alert can be dismissed. Click the × button.
           </Alert>
@@ -50,30 +49,24 @@ export default function AlertDemo() {
             Reset
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='AlertProps' />
-      </div>
+      <PropsSection of='AlertProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;alert&quot;</strong> — announced by screen
-              readers immediately
-            </li>
-            <li>
-              Close button has <strong>aria-label=&quot;Close&quot;</strong>
-            </li>
-            <li>Focus management: close button is keyboard accessible</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;alert&quot;</strong> — announced by screen
+            readers immediately
+          </li>
+          <li>
+            Close button has <strong>aria-label=&quot;Close&quot;</strong>
+          </li>
+          <li>Focus management: close button is keyboard accessible</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='alert' />
-    </>
+    </DemoPage>
   );
 }

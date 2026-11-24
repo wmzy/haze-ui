@@ -1,24 +1,16 @@
-import type { ReactNode } from 'react';
-
 import { useMenuRadioItem } from '../../utils/menuRadio';
 
-import { MenuRadioItemImpl } from '../../utils/menu-item-parts';
+import {
+  MenuRadioItemImpl,
+  type MenuItemChromeProps,
+} from '../../utils/menu-item-parts';
 
 import { useMenuClassNames } from './MenuContext';
 
 type MenuRadioItemProps = {
   /** Value this option selects in its MenuRadioGroup when activated. */
   value: string;
-  disabled?: boolean;
-  /** Danger skin for destructive actions: danger-colored text and interaction states. */
-  danger?: boolean;
-  /** Inline-start icon slot; bare `svg` children are sized to 1em by the slot. */
-  icon?: ReactNode;
-  /** Inline-end shortcut hint (e.g. '⌘C'), muted and pushed to the item's end. */
-  kbdLabel?: ReactNode;
-  className?: string;
-  children: ReactNode;
-};
+} & MenuItemChromeProps;
 
 /**
  * One option of a MenuRadioGroup (`role="menuitemradio"`): activating

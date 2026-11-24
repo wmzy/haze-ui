@@ -1,22 +1,21 @@
 import { NumberFormatter } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import { intro, section } from '../styles';
+import { DemoPage, DemoSection, PropsSection } from './shared';
 
 // ─── NumberFormatter ──────────────────────────────────────────
 export default function NumberFormatterDemo() {
   return (
-    <>
-      <h1>NumberFormatter</h1>
-      <p className={intro}>
-        Presentational number formatting on <code>Intl.NumberFormat</code>:
-        locale + <code>formatOptions</code> (currency, unit, percent) with
-        prefix/suffix — SSR-stable by construction.
-      </p>
-
-      <div className={section}>
-        <h2>Basics</h2>
+    <DemoPage
+      title='NumberFormatter'
+      description={
+        <>
+          Presentational number formatting on <code>Intl.NumberFormat</code>:
+          locale + <code>formatOptions</code> (currency, unit, percent) with
+          prefix/suffix — SSR-stable by construction.
+        </>
+      }
+    >
+      <DemoSection title='Basics'>
         <p>
           共 <NumberFormatter value={1234567.89} locale='en-US' /> 条结果
           ·{' '}
@@ -25,10 +24,9 @@ export default function NumberFormatterDemo() {
             locale='de-DE'
           />
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Currency</h2>
+      <DemoSection title='Currency'>
         <p>
           <NumberFormatter
             value={99.5}
@@ -42,19 +40,15 @@ export default function NumberFormatterDemo() {
             formatOptions={{ style: 'currency', currency: 'CNY' }}
           />
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Prefix + suffix</h2>
+      <DemoSection title='Prefix + suffix'>
         <p>
           <NumberFormatter value={42} prefix='~' suffix=' items remaining' />
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='NumberFormatterProps' />
-      </div>
-    </>
+      <PropsSection of='NumberFormatterProps' />
+    </DemoPage>
   );
 }

@@ -1,5 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { waitForOpenAnimationToSettle } from './animation';
+
 /**
  * Popover smoke in a real browser: the panel must run the native popover
  * path (top-layer `popover=auto`) with CSS anchor positioning under the
@@ -12,31 +14,11 @@ async function openPopover(page: Page): Promise<{ trigger: Locator; panel: Locat
   const panelId = await trigger.getAttribute('aria-controls');
   const panel = page.locator(`[id="${panelId}"]`);
   await expect(panel).toBeVisible();
+  // Panels fade in via data-state over the motion tokens — pixel reads
+  // must observe the settled state.
   await waitForOpenAnimationToSettle(panel);
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   return { trigger, panel };
-}
-
-/**
- * Panels fade in over var(--haze-duration-fast) via data-state
- * animations. Geometry is stable (opacity-only keyframes on floating
- * panels), but pixel reads / scans must observe the settled state. The
- * attribute check runs first so the poll cannot pass in the commit
- * window before the enter animation has even been created; a panel
- * without data-state (not animated) settles immediately.
- */
-async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
-  await expect
-    .poll(() =>
-      panel.evaluate((el) => {
-        if (el.dataset.state === 'closed') return false;
-        return (
-          el.getAnimations({ subtree: true }).length === 0 &&
-          getComputedStyle(el).opacity === '1'
-        );
-      })
-    )
-    .toBe(true);
 }
 
 test.describe('Popover', () => {

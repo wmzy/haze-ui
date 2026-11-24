@@ -72,10 +72,11 @@ type RichTextEditorProps = {
   'value' | 'placeholder' | 'contentEditable' | 'suppressContentEditableWarning' | 'children'
 >;
 
-/* The surface chrome (border/radius/fill) and the :focus-within ring
- * are the shared fieldChrome + focusWithinRing pair (utils/field-skin)
- * composed below. Local: the column flex shell, the field ink/sans,
- * the overflow clip, the hover arm and the forced-colors focus arm. */
+/* The surface chrome (border/radius/fill) and the :focus-within ring —
+ * its forced-colors Highlight fallback included — are the shared
+ * fieldChrome + focusWithinRing pair (utils/field-skin) composed below.
+ * Local: the column flex shell, the field ink/sans, the overflow clip
+ * and the hover arm. */
 const root = css`
   display: flex;
   flex-direction: column;
@@ -88,25 +89,6 @@ const root = css`
 
   &:hover {
     border-color: var(--haze-color-border-hover);
-  }
-
-  /* Focus: the ProseMirror contenteditable carries the keyboard focus;
-     the chrome wears the shared ring (utils/field-skin's focusWithinRing
-     composed below — an outline on the content div itself would fight
-     the caret). Forced-colors: the UA keeps the author border visible
-     by forcing its color to CanvasText, and the box-shadow ring is
-     dropped, so focus moves to a Highlight outline. No CanvasText
-     restatement: it would tie the shared border shorthand's
-     specificity, and dev-server injection order and the dist split-css
-     order disagree on that tie (utils/quiet-button-skin documents the
-     trap) — the UA force already delivers the same used value. No
-     box-shadow: none restatement either — the UA drop makes it
-     redundant, and re-declaring it would race the composed ring arm on
-     injection order. */
-  @media (forced-colors: active) {
-    &:focus-within {
-      outline: 2px solid Highlight;
-    }
   }
 `;
 
@@ -149,7 +131,7 @@ const contentArea = css`
 `;
 
 type ToolbarItem = {
-  key: string;
+  key: ToolbarCommandName;
   label: string;
   glyph: string;
   pressed: boolean;
@@ -157,154 +139,229 @@ type ToolbarItem = {
   run: () => void;
 };
 
-type ToolbarState = {
-  bold: boolean;
-  italic: boolean;
-  strike: boolean;
-  heading2: boolean;
-  heading3: boolean;
-  bulletList: boolean;
-  orderedList: boolean;
-  blockquote: boolean;
-  codeBlock: boolean;
-  link: boolean;
-  canBold: boolean;
-  canItalic: boolean;
-  canStrike: boolean;
-  canHeading2: boolean;
-  canHeading3: boolean;
-  canBulletList: boolean;
-  canOrderedList: boolean;
-  canBlockquote: boolean;
-  canCodeBlock: boolean;
-  canLink: boolean;
+type RichTextEditorStrings = Readonly<HazeStrings['richTextEditor']>;
+
+/** The built-in toolbar's item groups, in toolbar order. */
+type ToolbarGroup = 'marks' | 'headings' | 'lists' | 'blocks' | 'link';
+
+/** A toolbar glyph: a fixed literal, or one read off the live strings. */
+type ToolbarGlyph = string | ((strings: RichTextEditorStrings) => string);
+
+/** One built-in toolbar command: how it is presented and what it does. */
+type ToolbarCommand = {
+  /** Item group; a ToolbarSeparator sits between consecutive groups. */
+  group: ToolbarGroup;
+  /** Accessible name — a key into the `richTextEditor` strings. */
+  label: keyof HazeStrings['richTextEditor'];
+  /** What the button shows. */
+  glyph: ToolbarGlyph;
+  /** `isActive`: the pressed look (`aria-pressed`). */
+  isActive: (editor: Editor) => boolean;
+  /** `can()`: whether the command would dispatch (commands go inert
+   * inside code blocks etc.) — the disabled source. */
+  can: (editor: Editor) => boolean;
+  /** Dispatches the command. */
+  run: (editor: Editor) => void;
 };
 
 /**
+ * Every command on the built-in toolbar, declared once: toolbar order
+ * and grouping, labels, glyphs, pressed/disabled state and dispatch all
+ * derive from this table (TOOLBAR_GROUPS, buildToolbarItems,
+ * selectToolbarState). Labels are string keys and glyphs literals or
+ * string thunks: the table holds no translated text, because the locale
+ * is only known inside the component (useStrings), never at module load.
+ */
+const TOOLBAR_COMMANDS = {
+  bold: {
+    group: 'marks',
+    label: 'bold',
+    glyph: 'B',
+    isActive: (editor) => editor.isActive('bold'),
+    can: (editor) => editor.can().chain().focus().toggleBold().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleBold().run();
+    },
+  },
+  italic: {
+    group: 'marks',
+    label: 'italic',
+    glyph: 'I',
+    isActive: (editor) => editor.isActive('italic'),
+    can: (editor) => editor.can().chain().focus().toggleItalic().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleItalic().run();
+    },
+  },
+  strike: {
+    group: 'marks',
+    label: 'strikethrough',
+    glyph: 'S',
+    isActive: (editor) => editor.isActive('strike'),
+    can: (editor) => editor.can().chain().focus().toggleStrike().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleStrike().run();
+    },
+  },
+  heading2: {
+    group: 'headings',
+    label: 'heading2',
+    glyph: 'H2',
+    isActive: (editor) => editor.isActive('heading', { level: 2 }),
+    can: (editor) =>
+      editor.can().chain().focus().toggleHeading({ level: 2 }).run(),
+    run: (editor) => {
+      editor.chain().focus().toggleHeading({ level: 2 }).run();
+    },
+  },
+  heading3: {
+    group: 'headings',
+    label: 'heading3',
+    glyph: 'H3',
+    isActive: (editor) => editor.isActive('heading', { level: 3 }),
+    can: (editor) =>
+      editor.can().chain().focus().toggleHeading({ level: 3 }).run(),
+    run: (editor) => {
+      editor.chain().focus().toggleHeading({ level: 3 }).run();
+    },
+  },
+  bulletList: {
+    group: 'lists',
+    label: 'bulletList',
+    glyph: (strings) => strings.bulletListGlyph,
+    isActive: (editor) => editor.isActive('bulletList'),
+    can: (editor) => editor.can().chain().focus().toggleBulletList().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleBulletList().run();
+    },
+  },
+  orderedList: {
+    group: 'lists',
+    label: 'orderedList',
+    glyph: (strings) => strings.orderedListGlyph,
+    isActive: (editor) => editor.isActive('orderedList'),
+    can: (editor) => editor.can().chain().focus().toggleOrderedList().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleOrderedList().run();
+    },
+  },
+  blockquote: {
+    group: 'blocks',
+    label: 'blockquote',
+    glyph: (strings) => strings.blockquoteGlyph,
+    isActive: (editor) => editor.isActive('blockquote'),
+    can: (editor) => editor.can().chain().focus().toggleBlockquote().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleBlockquote().run();
+    },
+  },
+  codeBlock: {
+    group: 'blocks',
+    label: 'codeBlock',
+    glyph: (strings) => strings.codeBlockGlyph,
+    isActive: (editor) => editor.isActive('codeBlock'),
+    can: (editor) => editor.can().chain().focus().toggleCodeBlock().run(),
+    run: (editor) => {
+      editor.chain().focus().toggleCodeBlock().run();
+    },
+  },
+  link: {
+    group: 'link',
+    label: 'link',
+    glyph: (strings) => strings.linkGlyph,
+    isActive: (editor) => editor.isActive('link'),
+    can: (editor) =>
+      editor
+        .can()
+        .chain()
+        .focus()
+        .extendMarkRange('link')
+        .setLink({ href: 'https://' })
+        .run(),
+    run: (editor) => {
+      if (editor.isActive('link')) {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      // Prompt-free v1: reapply the current href when the selection
+      // overlaps one, otherwise the neutral placeholder scheme.
+      const attrs: Record<string, unknown> = editor.getAttributes('link');
+      const current = attrs.href;
+      const href = typeof current === 'string' && current ? current : 'https://';
+      editor.chain().focus().extendMarkRange('link').setLink({ href }).run();
+    },
+  },
+} as const satisfies Record<string, ToolbarCommand>;
+
+type ToolbarCommandName = keyof typeof TOOLBAR_COMMANDS;
+
+/** The commands in toolbar order (object key order = declaration order). */
+const COMMAND_NAMES = Object.keys(TOOLBAR_COMMANDS) as ToolbarCommandName[];
+
+/** The commands per group, groups in toolbar order — one array per
+ * ToolbarSeparator-delimited group. */
+const TOOLBAR_GROUPS = [
+  ...new Set(COMMAND_NAMES.map((name) => TOOLBAR_COMMANDS[name].group)),
+].map((group) =>
+  COMMAND_NAMES.filter((name) => TOOLBAR_COMMANDS[name].group === group)
+);
+
+/** What the editor says about one command right now. */
+type ToolbarCommandState = {
+  active: boolean;
+  enabled: boolean;
+};
+
+type ToolbarState = Record<ToolbarCommandName, ToolbarCommandState>;
+
+/**
+ * `isActive` (pressed look) and `can()` (focus in a can-chain is side-
+ * effect free — the command guards on dispatch) for every command, read
+ * off the editor on each transaction (useEditorState re-renders on
+ * selectionUpdate/transaction).
+ */
+function selectToolbarState(editor: Editor): ToolbarState {
+  // Every COMMAND_NAMES entry gets a value, so the cast only restores
+  // the literal keys fromEntries' index signature loses.
+  return Object.fromEntries(
+    COMMAND_NAMES.map((name) => {
+      const { isActive, can } = TOOLBAR_COMMANDS[name];
+      return [name, { active: isActive(editor), enabled: can(editor) }] as const;
+    })
+  ) as ToolbarState;
+}
+
+/**
  * The built-in toolbar's item groups (marks / headings / lists / blocks /
- * link), each pair separated by a ToolbarSeparator. Built from the live
- * editor + its selection state, so `pressed` reflects `isActive` and
- * `disabled` reflects `can()` (commands go inert inside code blocks etc.)
- * plus read-only mode.
+ * link), each pair separated by a ToolbarSeparator. Built from
+ * TOOLBAR_COMMANDS plus the live editor and its selection state, so
+ * `pressed` reflects `isActive` and `disabled` reflects `can()` plus
+ * read-only mode.
  */
 function buildToolbarItems(
   editor: Editor | null,
   state: ToolbarState | null,
   editable: boolean,
-  strings: Readonly<HazeStrings['richTextEditor']>
+  strings: RichTextEditorStrings
 ): ToolbarItem[][] {
-  const chain = () => editor?.chain().focus();
   const off = !editor || !state || !editable;
-  return [
-    [
-      {
-        key: 'bold',
-        label: strings.bold,
-        glyph: 'B',
-        pressed: state?.bold ?? false,
-        disabled: off || !state.canBold,
-        run: () => chain()?.toggleBold().run(),
+  const toItem = (name: ToolbarCommandName): ToolbarItem => {
+    const command = TOOLBAR_COMMANDS[name];
+    return {
+      key: name,
+      label: strings[command.label],
+      glyph:
+        typeof command.glyph === 'function'
+          ? command.glyph(strings)
+          : command.glyph,
+      pressed: state?.[name].active ?? false,
+      disabled: off || !state[name].enabled,
+      run: () => {
+        if (editor) command.run(editor);
       },
-      {
-        key: 'italic',
-        label: strings.italic,
-        glyph: 'I',
-        pressed: state?.italic ?? false,
-        disabled: off || !state.canItalic,
-        run: () => chain()?.toggleItalic().run(),
-      },
-      {
-        key: 'strike',
-        label: strings.strikethrough,
-        glyph: 'S',
-        pressed: state?.strike ?? false,
-        disabled: off || !state.canStrike,
-        run: () => chain()?.toggleStrike().run(),
-      },
-    ],
-    [
-      {
-        key: 'heading-2',
-        label: strings.heading2,
-        glyph: 'H2',
-        pressed: state?.heading2 ?? false,
-        disabled: off || !state.canHeading2,
-        run: () => chain()?.toggleHeading({ level: 2 }).run(),
-      },
-      {
-        key: 'heading-3',
-        label: strings.heading3,
-        glyph: 'H3',
-        pressed: state?.heading3 ?? false,
-        disabled: off || !state.canHeading3,
-        run: () => chain()?.toggleHeading({ level: 3 }).run(),
-      },
-    ],
-    [
-      {
-        key: 'bullet-list',
-        label: strings.bulletList,
-        glyph: strings.bulletListGlyph,
-        pressed: state?.bulletList ?? false,
-        disabled: off || !state.canBulletList,
-        run: () => chain()?.toggleBulletList().run(),
-      },
-      {
-        key: 'ordered-list',
-        label: strings.orderedList,
-        glyph: strings.orderedListGlyph,
-        pressed: state?.orderedList ?? false,
-        disabled: off || !state.canOrderedList,
-        run: () => chain()?.toggleOrderedList().run(),
-      },
-    ],
-    [
-      {
-        key: 'blockquote',
-        label: strings.blockquote,
-        glyph: strings.blockquoteGlyph,
-        pressed: state?.blockquote ?? false,
-        disabled: off || !state.canBlockquote,
-        run: () => chain()?.toggleBlockquote().run(),
-      },
-      {
-        key: 'code-block',
-        label: strings.codeBlock,
-        glyph: strings.codeBlockGlyph,
-        pressed: state?.codeBlock ?? false,
-        disabled: off || !state.canCodeBlock,
-        run: () => chain()?.toggleCodeBlock().run(),
-      },
-    ],
-    [
-      {
-        key: 'link',
-        label: strings.link,
-        glyph: strings.linkGlyph,
-        pressed: state?.link ?? false,
-        disabled: off || !state.canLink,
-        run: () => {
-          const active = editor?.isActive('link');
-          if (!editor) return;
-          if (active) {
-            editor.chain().focus().unsetLink().run();
-            return;
-          }
-          // Prompt-free v1: reapply the current href when the selection
-          // overlaps one, otherwise the neutral placeholder scheme.
-          const attrs: Record<string, unknown> = editor.getAttributes('link');
-          const current = attrs.href;
-          const href = typeof current === 'string' && current ? current : 'https://';
-          editor
-            .chain()
-            .focus()
-            .extendMarkRange('link')
-            .setLink({ href })
-            .run();
-        },
-      },
-    ],
-  ];
+    };
+  };
+  return TOOLBAR_GROUPS.map((names) => names.map(toItem));
 }
 
 export default function RichTextEditor({
@@ -399,42 +456,12 @@ export default function RichTextEditor({
     [editor]
   );
 
-  // Toolbar state: `isActive` for the pressed look, `can()` (focus in a
-  // can-chain is side-effect free — the command guards on dispatch) for
-  // disabled. useEditorState re-renders on selectionUpdate/transaction.
+  // Toolbar state: `isActive` for the pressed look, `can()` for disabled
+  // (see selectToolbarState). useEditorState re-renders on
+  // selectionUpdate/transaction.
   const toolbarState = useEditorState({
     editor,
-    selector: ({ editor: e }) => {
-      if (!e) return null;
-      return {
-        bold: e.isActive('bold'),
-        italic: e.isActive('italic'),
-        strike: e.isActive('strike'),
-        heading2: e.isActive('heading', { level: 2 }),
-        heading3: e.isActive('heading', { level: 3 }),
-        bulletList: e.isActive('bulletList'),
-        orderedList: e.isActive('orderedList'),
-        blockquote: e.isActive('blockquote'),
-        codeBlock: e.isActive('codeBlock'),
-        link: e.isActive('link'),
-        canBold: e.can().chain().focus().toggleBold().run(),
-        canItalic: e.can().chain().focus().toggleItalic().run(),
-        canStrike: e.can().chain().focus().toggleStrike().run(),
-        canHeading2: e.can().chain().focus().toggleHeading({ level: 2 }).run(),
-        canHeading3: e.can().chain().focus().toggleHeading({ level: 3 }).run(),
-        canBulletList: e.can().chain().focus().toggleBulletList().run(),
-        canOrderedList: e.can().chain().focus().toggleOrderedList().run(),
-        canBlockquote: e.can().chain().focus().toggleBlockquote().run(),
-        canCodeBlock: e.can().chain().focus().toggleCodeBlock().run(),
-        canLink: e
-          .can()
-          .chain()
-          .focus()
-          .extendMarkRange('link')
-          .setLink({ href: 'https://' })
-          .run(),
-      } satisfies ToolbarState;
-    },
+    selector: ({ editor: e }) => (e ? selectToolbarState(e) : null),
   });
 
   const toolbarGroups = buildToolbarItems(editor, toolbarState, editable, strings);

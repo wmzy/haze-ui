@@ -7,34 +7,34 @@ import { Toggle } from '@/lib/components/Toggle';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── Toggle ────────────────────────────────────────────────────
 export default function ToggleDemo() {
   return (
-    <>
-      <h1>Toggle</h1>
-      <p className={intro}>
-        A two-state button that reports <code>aria-pressed</code> — the
-        momentary &quot;pressed&quot; semantic for format bars, filters and
-        mode switches. Where Switch means a setting that is on or off, Toggle
-        means an action that is currently active.
-      </p>
-
-      <div className={section}>
-        <h2>Uncontrolled</h2>
+    <DemoPage
+      title='Toggle'
+      description={
+        <>
+          A two-state button that reports <code>aria-pressed</code> — the
+          momentary &quot;pressed&quot; semantic for format bars, filters and
+          mode switches. Where Switch means a setting that is on or off, Toggle
+          means an action that is currently active.
+        </>
+      }
+    >
+      <DemoSection title='Uncontrolled'>
         <div className={row}>
           <Toggle>Bold</Toggle>
         </div>
         <pre className={codeBlock}>
           {`<Toggle>Bold</Toggle>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled (ControlOrValue)</h2>
+      <DemoSection title='Controlled (ControlOrValue)'>
         <p className={row}>
           One prop covers both modes — pass a plain value to control, or a{' '}
           <code>[value, setValue]</code> pair from <code>useControl</code> for
@@ -47,10 +47,9 @@ export default function ToggleDemo() {
   Muted
 </Toggle>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes and square (icon) toggles</h2>
+      <DemoSection title='Sizes and square (icon) toggles'>
         <div className={row}>
           <Toggle size='sm'>Small</Toggle>
           <Toggle>Medium</Toggle>
@@ -63,10 +62,9 @@ export default function ToggleDemo() {
           {`<Toggle size='lg'>Large</Toggle>
 <Toggle square aria-label='Mute'>🔇</Toggle>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ToggleCore — the controlled primitive</h2>
+      <DemoSection title='ToggleCore — the controlled primitive'>
         <p className={row}>
           The flat <code>&#123;pressed, onPressedChange&#125;</code> pair for
           form libraries (react-f0rm binds cores with zero adapters), mirroring{' '}
@@ -75,10 +73,9 @@ export default function ToggleDemo() {
         <pre className={codeBlock}>
           {`<ToggleCore pressed={false} onPressedChange={(v) => apply(v)} />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Inside a toolbar</h2>
+      <DemoSection title='Inside a toolbar'>
         <p className={row}>
           <code>ToolbarToggle</code> keeps the roving-tabindex behavior of{' '}
           <code>ToolbarButton</code> and owns its pressed state — the toolbar
@@ -104,40 +101,34 @@ export default function ToggleDemo() {
   <ToolbarToggle>Dark mode</ToolbarToggle>
 </Toolbar>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Toggle Props</h2>
+      <DemoSection title='Toggle Props'>
         <PropsTable of='ToggleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ToggleCore Props</h2>
+      <DemoSection title='ToggleCore Props'>
         <PropsTable of='ToggleCoreProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ToolbarToggle Props</h2>
+      <DemoSection title='ToolbarToggle Props'>
         <PropsTable of='ToolbarToggleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Native <strong>&lt;button&gt;</strong> with{' '}
-              <strong>aria-pressed</strong>; label text (or aria-label for
-              square/icon toggles) names the action
-            </li>
-            <li>
-              <code>Toggle</code> accepts the full{' '}
-              <code>ControlOrValue&lt;boolean&gt;</code> protocol;{' '}
-              <code>ToolbarToggle</code> is roving-tabindex compatible
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Native <strong>&lt;button&gt;</strong> with{' '}
+            <strong>aria-pressed</strong>; label text (or aria-label for
+            square/icon toggles) names the action
+          </li>
+          <li>
+            <code>Toggle</code> accepts the full{' '}
+            <code>ControlOrValue&lt;boolean&gt;</code> protocol;{' '}
+            <code>ToolbarToggle</code> is roving-tabindex compatible
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

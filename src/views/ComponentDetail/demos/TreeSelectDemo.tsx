@@ -5,7 +5,9 @@ import { useControl } from 'react-use-control';
 
 import { TreeSelect } from '@/lib';
 
-import { intro, section, fieldRow, codeBlock } from '../styles';
+import { fieldRow, codeBlock } from '../styles';
+
+import { DemoPage, DemoSection, maxWidth320, maxWidth360 } from './shared';
 
 // ─── TreeSelect ────────────────────────────────────────────────
 
@@ -67,7 +69,7 @@ function SingleDemo() {
   const [value, , control] = useControl('');
   return (
     <>
-      <div className={fieldRow} style={{ maxWidth: 320 }}>
+      <div className={fieldRow} style={maxWidth320}>
         <TreeSelect
           treeData={TREE_DATA}
           value={control}
@@ -87,7 +89,7 @@ function MultipleDemo() {
   const [value, , control] = useControl<string[]>([]);
   return (
     <>
-      <div className={fieldRow} style={{ maxWidth: 360 }}>
+      <div className={fieldRow} style={maxWidth360}>
         <TreeSelect
           treeData={TREE_DATA}
           multiple
@@ -109,7 +111,7 @@ function SearchDemo() {
   const [value, , control] = useControl('');
   return (
     <>
-      <div className={fieldRow} style={{ maxWidth: 320 }}>
+      <div className={fieldRow} style={maxWidth320}>
         <TreeSelect
           treeData={TREE_DATA}
           showSearch
@@ -129,7 +131,7 @@ function LazyDemo() {
   const [value, , control] = useControl('');
   return (
     <>
-      <div className={fieldRow} style={{ maxWidth: 320 }}>
+      <div className={fieldRow} style={maxWidth320}>
         <TreeSelect
           treeData={[
             { key: 'team-a', title: 'Team A' },
@@ -148,19 +150,20 @@ function LazyDemo() {
 
 export default function TreeSelectDemo() {
   return (
-    <>
-      <h1>TreeSelect</h1>
-      <p className={intro}>
-        Tree selection in a floating panel (the Ant Design TreeSelect
-        counterpart): a combobox trigger opens a full <code>Tree</code> —
-        selectable rows commit a single value, cascading checkboxes commit a{' '}
-        <code>string[]</code> — with panel search, lazy loading and chip
-        overflow on the same controllable-state contract as the rest of the
-        library.
-      </p>
-
-      <div className={section}>
-        <h2>Single — shared control</h2>
+    <DemoPage
+      title='TreeSelect'
+      description={
+        <>
+          Tree selection in a floating panel (the Ant Design TreeSelect
+          counterpart): a combobox trigger opens a full <code>Tree</code> —
+          selectable rows commit a single value, cascading checkboxes commit a{' '}
+          <code>string[]</code> — with panel search, lazy loading and chip
+          overflow on the same controllable-state contract as the rest of the
+          library.
+        </>
+      }
+    >
+      <DemoSection title='Single — shared control'>
         <p>
           Rows are selectable (parents commit too — click the switcher arrow
           to expand without committing); a commit closes the panel, and the
@@ -169,10 +172,9 @@ export default function TreeSelectDemo() {
           on first open.
         </p>
         <SingleDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multiple — cascading checkboxes</h2>
+      <DemoSection title='Multiple — cascading checkboxes'>
         <p>
           Checking a parent checks its whole subtree and commits the
           normalized fully-checked set (AntD semantics — parents included
@@ -183,10 +185,9 @@ export default function TreeSelectDemo() {
           <code>maxTagCount</code> collapses the overflow into a +N badge.
         </p>
         <MultipleDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Search — panel filter</h2>
+      <DemoSection title='Search — panel filter'>
         <p>
           <code>showSearch</code> heads the panel with a filter input:
           matches are highlighted, their ancestor paths stay visible, and
@@ -195,20 +196,18 @@ export default function TreeSelectDemo() {
           it with <code>aria-label</code>.
         </p>
         <SearchDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Lazy loading — loadData</h2>
+      <DemoSection title='Lazy loading — loadData'>
         <p>
           Childless non-leaf nodes fetch children on first expand (spinner
           on the switcher, results cached), and the trigger resolves labels
           from the loaded nodes — this fake server answers in 400 ms.
         </p>
         <LazyDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { TreeSelect } from 'haze-ui';
 
 <TreeSelect
@@ -228,7 +227,7 @@ export default function TreeSelectDemo() {
   showSearch
   loadData={(node) => fetchChildren(node.key)}
 />`}</pre>
-      </div>
-    </>
+      </DemoSection>
+    </DemoPage>
   );
 }

@@ -2,10 +2,16 @@ import { useControl } from 'react-use-control';
 
 import { MaskedInput, unmask } from '@/lib';
 
-import A11yNote from '../A11yNote';
-import PropsTable from '../PropsTable';
 
-import { intro, row, section } from '../styles';
+import { row } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  PropsSection,
+} from './shared';
 
 const PHONE = '(999) 999-9999';
 const CARD = '9999 9999 9999 9999';
@@ -17,17 +23,18 @@ export default function MaskedInputDemo() {
   const [phone] = useControl(phoneCtrl);
 
   return (
-    <>
-      <h1>MaskedInput</h1>
-      <p className={intro}>
-        Text input enforcing a mask pattern: <code>9</code> digit,{' '}
-        <code>a</code> letter, <code>A</code> uppercase letter,{' '}
-        <code>*</code> alphanumeric; any other character is a literal and{' '}
-        <code>\</code> escapes a rule character.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='MaskedInput'
+      description={
+        <>
+          Text input enforcing a mask pattern: <code>9</code> digit,{' '}
+          <code>a</code> letter, <code>A</code> uppercase letter,{' '}
+          <code>*</code> alphanumeric; any other character is a literal and{' '}
+          <code>\</code> escapes a rule character.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <MaskedInput
             mask={PHONE}
@@ -35,19 +42,13 @@ export default function MaskedInputDemo() {
             placeholder="(555) 123-4567"
             aria-label="Phone"
           />
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Masked: {phone} · digits: {unmask(phone, PHONE)}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Card number &amp; date</h2>
+      <DemoSection title='Card number &amp; date'>
         <div className={row}>
           <MaskedInput
             mask={CARD}
@@ -56,28 +57,21 @@ export default function MaskedInputDemo() {
           />
           <MaskedInput mask={DATE} placeholder="MM/DD/YYYY" aria-label="Date" />
         </div>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-          }}
-        >
+        <p style={hintStyle}>
           Use <code>unmask(value, mask)</code> to pull the typed characters
           out of the masked string for storage or validation.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={row}>
           <MaskedInput mask={PHONE} size="sm" aria-label="Small" />
           <MaskedInput mask={PHONE} size="md" aria-label="Medium" />
           <MaskedInput mask={PHONE} size="lg" aria-label="Large" />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Slots</h2>
+      <DemoSection title='Slots'>
         <div className={row}>
           <MaskedInput
             mask={CARD}
@@ -90,33 +84,27 @@ export default function MaskedInputDemo() {
           />
           <MaskedInput mask={DATE} disabled value="10/14/2026" aria-label="Locked date" />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of="MaskedInputProps" />
-      </div>
+      <PropsSection of='MaskedInputProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders a native <strong>&lt;input&gt;</strong> — labels,
-              hints, and form wiring flow through <code>FormItem</code>
-            </li>
-            <li>
-              Rejected characters (a letter into a digit slot) are no-ops;
-              the caret stays put
-            </li>
-            <li>
-              The mask pattern is visual only — pair with a{' '}
-              <code>pattern</code> or <code>Validator</code> for input
-              constraints
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders a native <strong>&lt;input&gt;</strong> — labels,
+            hints, and form wiring flow through <code>FormItem</code>
+          </li>
+          <li>
+            Rejected characters (a letter into a digit slot) are no-ops;
+            the caret stays put
+          </li>
+          <li>
+            The mask pattern is visual only — pair with a{' '}
+            <code>pattern</code> or <code>Validator</code> for input
+            constraints
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

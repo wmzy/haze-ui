@@ -7,7 +7,7 @@ import type { ControlOrValue } from 'react-use-control';
 import type { GalleryImage } from './ImageGalleryContext';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider/useStrings';
@@ -22,6 +22,7 @@ import {
 } from '../../icons';
 import { focusRingVisible } from '../../utils/focus-ring';
 import { useNativeDialogShell } from '../../utils/native-dialog';
+import { useMergedRefs } from '../../utils/refs';
 import { usePointerDrag } from '../../utils/use-pointer-drag';
 import { quietIconButton } from '../../utils/quiet-button-skin';
 
@@ -366,13 +367,7 @@ export default function ImagePreview({
 
   // The non-passive wheel listener below needs the node as well — merge
   // the shell's ref callback with a local copy.
-  const setPreviewRef = useCallback(
-    (node: HTMLDialogElement | null) => {
-      internalRef.current = node;
-      setDialogRef(node);
-    },
-    [setDialogRef]
-  );
+  const setPreviewRef = useMergedRefs(internalRef, setDialogRef);
 
   // Wheel zoom as a native non-passive listener: React's onWheel is
   // passive at the root, so preventDefault (stop the page behind the

@@ -1,10 +1,14 @@
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations } from './focus-ring-delta';
+
 /**
  * Shared preset shortcut rows (SelectFloating's option-row style):
  * full-width quiet rows on the panel's list surface, a hairline
  * separating them from the calendar(s) below. Formerly copy-pasted
- * between DatepickerCore and DateRangePickerCore.
+ * between DatepickerCore and DateRangePickerCore. The row's keyboard
+ * ring interpolates utils/focus-ring-delta's declarations — the
+ * box-shadow pair AND its forced-colors Highlight fallback.
  */
 
 /** The shortcut block heading a picker panel. */
@@ -40,7 +44,6 @@ export const presetRow = css`
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingDeclarations}
   }
 `;

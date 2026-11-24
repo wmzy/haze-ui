@@ -5,12 +5,13 @@ import type { SelectClassNames } from './Select';
 import type { SelectEntryData, SelectOptionData } from './select-options';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { checkMarkGlyph } from '../../utils/check-glyph';
 import { fieldSizes } from '../../utils/field-skin';
+import { focusRingForcedColors } from '../../utils/focus-ring-delta';
 import { PickerChips, PickerClearButton } from '../../utils/picker-chips';
 import {
   dropLastPickerValue,
@@ -37,8 +38,9 @@ import {
   pickerTrigger,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useCallbackRef, useMergedRefs } from '../../utils/refs';
 import { truncate } from '../../utils/truncate';
+import { useFocusWhenShown } from '../../utils/use-focus-when-shown';
 import { useHighlightScroll } from '../../utils/use-highlight-scroll';
 import { useListboxNavigation } from '../../utils/use-listbox-navigation';
 import { usePanelQuery } from '../../utils/use-panel-query';
@@ -196,11 +198,18 @@ const trigger = css`
     border-color: var(--haze-color-border-hover);
   }
 
+  /* The fallback is declared here as well as in the shared picker
+     trigger: the tags box has no other focus indicator (its inline
+     input is outline: none), and on the button trigger the shared
+     arm's fallback sits at equal specificity — which one wins depends
+     on injection order, and dev injection and the dist split-css order
+     disagree. */
   &:focus,
   &:focus-within {
     outline: none;
     border-color: var(--haze-color-primary);
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingForcedColors}
   }
 
   &:disabled {
@@ -421,27 +430,15 @@ export default function SelectFloating<T extends string | number = string>({
   const triggerRef = useRef<HTMLElement>(null);
   // The consumer's ref rides the same trigger button the floating
   // behavior anchors on.
-  const setTriggerRef = useCallback(
-    (node: HTMLButtonElement | null) => mergeRefs(triggerRef, ref)(node),
-    [triggerRef, ref]
-  );
+  const setTriggerRef = useMergedRefs(triggerRef, ref);
   // Tags mode: the box hosts the floating anchor while the consumer's
   // ref merges onto the focusable inline input instead.
-  const setTagsBoxRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      triggerRef.current = node;
-    },
-    [triggerRef]
-  );
+  const setTagsBoxRef = useCallbackRef(triggerRef);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const setTagsInputRef = useCallback(
-    (node: HTMLInputElement | null) =>
-      mergeRefs(
-        searchRef,
-        ref as Ref<HTMLInputElement> | undefined
-      )(node),
-    [searchRef, ref]
+  const setTagsInputRef = useMergedRefs(
+    searchRef,
+    ref as Ref<HTMLInputElement> | undefined
   );
   const activeOptionRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<VirtualListHandle>(null);
@@ -558,11 +555,10 @@ export default function SelectFloating<T extends string | number = string>({
   // popover is silently dropped by real engines), so typing filters
   // straight away. Tags keeps focus in its always-mounted trigger
   // input instead.
-  useEffect(() => {
-    if (showPanelSearch && open && floating.shown) {
-      searchRef.current?.focus();
-    }
-  }, [showPanelSearch, open, floating.shown]);
+  useFocusWhenShown(
+    showPanelSearch && open && floating.shown,
+    () => searchRef.current
+  );
 
   useSearchReport(onSearch, query);
 

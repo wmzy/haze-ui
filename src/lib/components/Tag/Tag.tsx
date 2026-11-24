@@ -2,6 +2,7 @@ import type { ComponentPropsWithRef, ElementType, ReactNode } from 'react';
 import type { StatusColor } from '../../utils/status-skin';
 
 import { dismissBtn } from '../../utils/status-skin';
+import TagRemoveButton from '../../utils/tag-remove-button';
 
 import { base, colors, tagSizes, closeBtn, linkShape } from './tag-styles';
 
@@ -65,15 +66,11 @@ export default function Tag<T extends ElementType = 'span'>({
     >
       {children}
       {closable && (
-        <button
-          data-slot="remove-button"
-          type='button'
-          x-class={[dismissBtn, closeBtn]}
-          aria-label={removeLabel}
-          onClick={onClose}
-        >
-          ×
-        </button>
+        <TagRemoveButton
+          className={[dismissBtn, closeBtn]}
+          removeLabel={removeLabel}
+          onRemove={() => onClose?.()}
+        />
       )}
     </Root>
   );

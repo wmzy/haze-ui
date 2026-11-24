@@ -4,11 +4,9 @@ import { SortableTagGroup, TagGroup, TagGroupItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { fieldRow } from '../styles';
 
-import { intro, section, fieldRow } from '../styles';
-
-import { noop } from './shared';
+import { AccessibilitySection, DemoPage, DemoSection, noop } from './shared';
 
 /** Reorders `list` by the index permutation SortableTagGroup reports. */
 function applyOrder<T>(list: T[], order: number[]): T[] {
@@ -45,55 +43,50 @@ function SortableTagGroupExample() {
 // ─── TagGroup ───────────────────────────────────────────────────
 export default function TagGroupDemo() {
   return (
-    <>
-      <h1>TagGroup</h1>
-      <p className={intro}>
-        Group of tags with optional close buttons, plus a sortable variant
-        built on <a href='https://dndkit.com'>dnd-kit</a> (a haze-ui
-        dependency, bundled only when you import{' '}
-        <code>SortableTagGroup</code>/<code>SortableTagInput</code>).
-        Reordering is parent-driven: <code>onReorder</code> reports the
-        new index order and you re-render the children accordingly.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='TagGroup'
+      description={
+        <>
+          Group of tags with optional close buttons, plus a sortable variant
+          built on <a href='https://dndkit.com'>dnd-kit</a> (a haze-ui
+          dependency, bundled only when you import{' '}
+          <code>SortableTagGroup</code>/<code>SortableTagInput</code>).
+          Reordering is parent-driven: <code>onReorder</code> reports the
+          new index order and you re-render the children accordingly.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <TagGroup>
           <TagGroupItem>React</TagGroupItem>
           <TagGroupItem>TypeScript</TagGroupItem>
           <TagGroupItem onClose={noop}>Removable</TagGroupItem>
         </TagGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sortable chips</h2>
+      <DemoSection title='Sortable chips'>
         <SortableTagGroupExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TagGroup Props</h2>
+      <DemoSection title='TagGroup Props'>
         <PropsTable of='TagGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TagGroupItem Props</h2>
+      <DemoSection title='TagGroupItem Props'>
         <PropsTable of='TagGroupItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Group uses <strong>role=&quot;group&quot;</strong></li>
-            <li>Close button has <strong>aria-label=&quot;Remove&quot;</strong></li>
-            <li>
-              SortableTagGroup: focus a chip, press <strong>Space</strong> to
-              lift, arrow keys to move, <strong>Space</strong> to drop,{' '}
-              <strong>Escape</strong> to cancel
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Group uses <strong>role=&quot;group&quot;</strong></li>
+          <li>Close button has <strong>aria-label=&quot;Remove&quot;</strong></li>
+          <li>
+            SortableTagGroup: focus a chip, press <strong>Space</strong> to
+            lift, arrow keys to move, <strong>Space</strong> to drop,{' '}
+            <strong>Escape</strong> to cancel
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

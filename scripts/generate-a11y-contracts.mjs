@@ -34,11 +34,10 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import ts from 'typescript';
 
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { defaultRoot, invokedDirectly, runCli, wroteLine } from './cli-utils.mjs';
 
 /** Canonical keyboard-contract key names (case-insensitive source match). */
 const CANONICAL_KEYS = [
@@ -331,26 +330,9 @@ export function writeA11yContracts(rootDir = defaultRoot()) {
   return { changed, outFile, componentCount: data.components.length };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-a11y-contracts', (started) => {
     const { changed, outFile, componentCount } = writeA11yContracts();
-    console.log(
-      `generate-a11y-contracts: ${componentCount} components, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-a11y-contracts: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${componentCount} components, ${wroteLine(started, changed, outFile)}`;
+  });
 }

@@ -1,24 +1,23 @@
 import { Avatar, AvatarGroup } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── AvatarGroup ───────────────────────────────────────────────
 export default function AvatarGroupDemo() {
   return (
-    <>
-      <h1>AvatarGroup</h1>
-      <p className={intro}>
-        Overlapping avatar stack with an overflow counter for large teams.
-      </p>
-
-      <div className={section}>
-        <h2>Basic stack</h2>
+    <DemoPage
+      title='AvatarGroup'
+      description='Overlapping avatar stack with an overflow counter for large teams.'
+    >
+      <DemoSection title='Basic stack'>
         <div className={row}>
           <AvatarGroup>
             <Avatar src='https://i.pravatar.cc/64?u=a' alt='Alice' />
@@ -26,10 +25,9 @@ export default function AvatarGroupDemo() {
             <Avatar src='https://i.pravatar.cc/64?u=c' alt='Carol' />
           </AvatarGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Max with overflow counter</h2>
+      <DemoSection title='Max with overflow counter'>
         <div className={row}>
           <AvatarGroup max={3}>
             <Avatar src='https://i.pravatar.cc/64?u=a' alt='Alice' />
@@ -39,10 +37,9 @@ export default function AvatarGroupDemo() {
             <Avatar src='https://i.pravatar.cc/64?u=e' alt='Eve' />
           </AvatarGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Total override</h2>
+      <DemoSection title='Total override'>
         <p>
           When the full set is virtualized or paginated, pass{' '}
           <code>total</code> to display it instead of the rendered remainder.
@@ -56,10 +53,9 @@ export default function AvatarGroupDemo() {
             <Avatar src='https://i.pravatar.cc/64?u=e' alt='Eve' />
           </AvatarGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes follow the stacked avatars</h2>
+      <DemoSection title='Sizes follow the stacked avatars'>
         <div className={row}>
           <AvatarGroup max={3}>
             <Avatar size='lg' src='https://i.pravatar.cc/112?u=a' alt='Alice' />
@@ -68,30 +64,24 @@ export default function AvatarGroupDemo() {
             <Avatar size='lg' src='https://i.pravatar.cc/112?u=d' alt='Dave' />
           </AvatarGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='AvatarGroupProps' />
-      </div>
+      <PropsSection of='AvatarGroupProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Add <strong>aria-label</strong> to describe the group, e.g.
-              aria-label=&quot;Team members&quot;
-            </li>
-            <li>
-              The overflow chip exposes its count as text (“+2”), readable by
-              screen readers
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Add <strong>aria-label</strong> to describe the group, e.g.
+            aria-label=&quot;Team members&quot;
+          </li>
+          <li>
+            The overflow chip exposes its count as text (“+2”), readable by
+            screen readers
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='avatarGroup' />
-    </>
+    </DemoPage>
   );
 }

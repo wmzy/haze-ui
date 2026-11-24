@@ -12,28 +12,23 @@
  *   - dist/tokens/registry.js        optional — TOKEN_REGISTRY (dynamic import)
  *
  * CLI: node scripts/generate-mcp-docs.mjs
+ *
+ * The props merge is scripts/props-merge.mjs, shared with llms-full.txt
+ * (scripts/generate-llms-full.mjs) — this snapshot additionally keeps the
+ * `required` column.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { defaultRoot, readJson } from './cli-utils.mjs';
+import { mergeRows, typeEntries } from './props-merge.mjs';
 
-function readJson(relPath, { required }) {
-  const file = path.join(rootDir, relPath);
-  if (!existsSync(file)) {
-    if (!required) return null;
-    console.error(
-      `${relPath} not found — run \`node scripts/generate-props.mjs\` first (fatal).`
-    );
-    process.exit(1);
-  }
-  return JSON.parse(readFileSync(file, 'utf8'));
-}
+const rootDir = defaultRoot();
 
 /** Load the shadcn registry; degrade to no metadata when dist/ is absent. */
 function loadRegistry() {
-  const registry = readJson('dist/registry.json', { required: false });
+  const registry = readJson(rootDir, 'dist/registry.json', { optional: true });
   if (!registry) {
     console.error(
       'generate-mcp-docs: dist/registry.json missing — components ship without descriptions (run a lib build to include them).'
@@ -57,38 +52,6 @@ async function loadTokens() {
 }
 
 /**
- * Merge one type's generated rows with its handwritten doc rows.
- * PropsTable parity (scripts/generate-llms-full.mjs): generated type wins;
- * docs only add description/default; unconsumed doc rows (ghost rows) are
- * appended in handwritten order.
- */
-function mergeRows(generatedRows, docRows = []) {
-  const docsByName = new Map(docRows.map((row) => [row.name, row]));
-  const rows = generatedRows.map((row) => {
-    const doc = docsByName.get(row.name);
-    docsByName.delete(row.name);
-    return {
-      name: row.name,
-      type: row.type,
-      required: row.required ?? false,
-      default: doc?.default,
-      description: doc?.description ?? '',
-    };
-  });
-  for (const doc of docRows) {
-    if (!docsByName.has(doc.name)) continue;
-    rows.push({
-      name: doc.name,
-      type: doc.type ?? '—',
-      required: false,
-      default: doc.default,
-      description: doc.description ?? '',
-    });
-  }
-  return rows;
-}
-
-/**
  * Build the component map: props tables + registry metadata, keyed by the
  * PascalCase export name (the props.json key). Registry items without a
  * props entry ('base', 'form', 'tokens', …) are not components and are
@@ -100,11 +63,10 @@ function buildComponents(propsComponents, docsByType, registryByFamily) {
     const cssFamily = entry.cssFamily;
     const item = registryByFamily.get(cssFamily);
     const props = {};
-    for (const [typeName, generatedRows] of [
-      ...Object.entries(entry.propsTypes ?? {}),
-      ...Object.entries(entry.otherTypes ?? {}),
-    ]) {
-      props[typeName] = mergeRows(generatedRows, docsByType[typeName]);
+    for (const [typeName, generatedRows] of typeEntries(entry)) {
+      props[typeName] = mergeRows(generatedRows, docsByType[typeName], {
+        required: true,
+      });
     }
     components[name] = {
       cssFamily,
@@ -121,9 +83,17 @@ function buildComponents(propsComponents, docsByType, registryByFamily) {
 }
 
 async function main() {
-  const props = readJson('src/generated/props.json', { required: true });
+  // props.json is the one fatal input: missing means generate-props has not
+  // run — the wording is kept stable for anyone matching on it.
+  if (!existsSync(path.join(rootDir, 'src/generated/props.json'))) {
+    console.error(
+      'src/generated/props.json not found — run `node scripts/generate-props.mjs` first (fatal).'
+    );
+    process.exit(1);
+  }
+  const props = readJson(rootDir, 'src/generated/props.json');
   const docsByType =
-    readJson('src/generated/props-docs.json', { required: false }) ?? {};
+    readJson(rootDir, 'src/generated/props-docs.json', { optional: true }) ?? {};
   const registryByFamily = loadRegistry();
   const tokens = await loadTokens();
 

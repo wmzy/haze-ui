@@ -2,13 +2,16 @@ import { useControl } from 'react-use-control';
 
 import { Calendar } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection, noop } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noop,
+  PropsSection,
+} from './shared';
 
 // ─── Calendar ──────────────────────────────────────────────────
 export default function CalendarDemo() {
@@ -16,25 +19,25 @@ export default function CalendarDemo() {
   const [date] = useControl(dateCtrl);
 
   return (
-    <>
-      <h1>Calendar</h1>
-      <p className={intro}>
-        Standalone month grid with controllable selection, locale formatting
-        and range limits. The same calendar powers the Datepicker popup.
-      </p>
-
-      <div className={section}>
-        <h2>Controlled selection</h2>
+    <DemoPage
+      title='Calendar'
+      description={
+        <>
+          Standalone month grid with controllable selection, locale formatting
+          and range limits. The same calendar powers the Datepicker popup.
+        </>
+      }
+    >
+      <DemoSection title='Controlled selection'>
         <div className={row}>
           <Calendar value={dateCtrl} />
         </div>
         <p>
           Selected: <strong>{date || 'none'}</strong>
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Month quick select</h2>
+      <DemoSection title='Month quick select'>
         <p>
           The header&apos;s month title is a button: click it (or focus it
           and press Enter) to swap the day grid for a year stepper plus a
@@ -45,10 +48,9 @@ export default function CalendarDemo() {
         <div className={row}>
           <Calendar onSelect={noop} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Picker modes</h2>
+      <DemoSection title='Picker modes'>
         <p>
           <code>picker</code> promotes the quick-select grids to
           first-class modes. Values serialize per mode: <code>month</code>{' '}
@@ -67,10 +69,9 @@ export default function CalendarDemo() {
         <div className={row}>
           <Calendar picker='year' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>disabledDate</h2>
+      <DemoSection title='disabledDate'>
         <p>
           A predicate over the representative <code>Date</code> — the day
           itself in date mode, day 1 of the period in month/quarter/year
@@ -83,20 +84,18 @@ export default function CalendarDemo() {
             disabledDate={(date) => date.getDay() === 0 || date.getDay() === 6}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Week numbers</h2>
+      <DemoSection title='Week numbers'>
         <div className={row}>
           <Calendar showWeekNumbers onSelect={noop} />
         </div>
         <div className={row}>
           <Calendar showWeekNumbers weekStartsOn={1} onSelect={noop} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Dual month grid</h2>
+      <DemoSection title='Dual month grid'>
         <p>
           <code>months={2}</code> renders two adjacent grids under one
           navigation — prev/next, Today and the quick select move both
@@ -111,34 +110,30 @@ export default function CalendarDemo() {
             locale='en-GB'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Uncontrolled</h2>
+      <DemoSection title='Uncontrolled'>
         <div className={row}>
           <Calendar onSelect={noop} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Min / max range</h2>
+      <DemoSection title='Min / max range'>
         <div className={row}>
           <Calendar min='2025-01-10' max='2025-01-20' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Locale and week start</h2>
+      <DemoSection title='Locale and week start'>
         <div className={row}>
           <Calendar locale='zh-CN' />
         </div>
         <div className={row}>
           <Calendar locale='de-DE' weekStartsOn={1} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Week picker</h2>
+      <DemoSection title='Week picker'>
         <p>
           <code>picker=&apos;week&apos;</code> selects whole ISO 8601 weeks:
           rows run Monday–Sunday, the week-number column is always shown
@@ -151,10 +146,9 @@ export default function CalendarDemo() {
         <div className={row}>
           <Calendar picker='week' onSelect={noop} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Header drill-down</h2>
+      <DemoSection title='Header drill-down'>
         <p>
           The date panel&apos;s header carries two clickable titles: the
           month opens a month grid, the year a decade year grid — as does
@@ -169,10 +163,9 @@ export default function CalendarDemo() {
         <div className={row}>
           <Calendar picker='month' onSelect={noop} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>cellRender</h2>
+      <DemoSection title='cellRender'>
         <p>
           <code>cellRender</code> appends custom content inside picker
           cells — schedule dots below. It receives the cell&apos;s civil
@@ -197,40 +190,34 @@ export default function CalendarDemo() {
             }
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CalendarProps' />
-      </div>
+      <PropsSection of='CalendarProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Grid uses <strong>role=&quot;grid&quot;</strong> with rows,
-              columnheaders and gridcells — the month quick select, the
-              header drill-down grids and the week/month/quarter/year
-              picker modes keep the same grid pattern with their own
-              roving focus
-            </li>
-            <li>
-              The selected day (or every day of the selected week) is
-              exposed via <strong>aria-selected</strong> on its gridcell
-              (range days included)
-            </li>
-            <li>
-              Navigation buttons carry localized labels (previous month, next
-              month, today, previous year, next year) via{' '}
-              <strong>useStrings</strong>; the week-number column header is
-              localized the same way
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Grid uses <strong>role=&quot;grid&quot;</strong> with rows,
+            columnheaders and gridcells — the month quick select, the
+            header drill-down grids and the week/month/quarter/year
+            picker modes keep the same grid pattern with their own
+            roving focus
+          </li>
+          <li>
+            The selected day (or every day of the selected week) is
+            exposed via <strong>aria-selected</strong> on its gridcell
+            (range days included)
+          </li>
+          <li>
+            Navigation buttons carry localized labels (previous month, next
+            month, today, previous year, next year) via{' '}
+            <strong>useStrings</strong>; the week-number column header is
+            localized the same way
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='calendar' />
-    </>
+    </DemoPage>
   );
 }

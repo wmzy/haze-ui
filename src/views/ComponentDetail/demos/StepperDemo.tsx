@@ -4,23 +4,25 @@ import { Button, Stepper, Step } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── Stepper ───────────────────────────────────────────────────
 export default function StepperDemo() {
   const [active, setActive, activeCtrl] = useControl(undefined, 1);
 
   return (
-    <>
-      <h1>Stepper</h1>
-      <p className={intro}>Step-by-step progress indicator for multi-step flows.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Stepper'
+      description='Step-by-step progress indicator for multi-step flows.'
+    >
+      <DemoSection title='Demo'>
         <Stepper activeStep={activeCtrl}>
           <Step title='Account' description='Create account' />
           <Step title='Profile' description='Add details' />
@@ -34,36 +36,31 @@ export default function StepperDemo() {
             Next
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Stepper Props</h2>
+      <DemoSection title='Stepper Props'>
         <PropsTable of='StepperProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Step Props</h2>
+      <DemoSection title='Step Props'>
         <PropsTable of='StepProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Container uses <strong>role=&quot;list&quot;</strong>
-            </li>
-            <li>
-              Each step uses <strong>role=&quot;listitem&quot;</strong>
-            </li>
-            <li>
-              Visual state (active/completed/pending) is conveyed through color and icon
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Container uses <strong>role=&quot;list&quot;</strong>
+          </li>
+          <li>
+            Each step uses <strong>role=&quot;listitem&quot;</strong>
+          </li>
+          <li>
+            Visual state (active/completed/pending) is conveyed through color and icon
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='stepper' />
-    </>
+    </DemoPage>
   );
 }

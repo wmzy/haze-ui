@@ -91,6 +91,38 @@ type ColorPickerPanelProps = {
 
 const BLACK: Rgb = {r: 0, g: 0, b: 0};
 
+/** The panel's three arrow-key rails (the role="slider" elements). */
+type Rail = 'sv' | 'hue' | 'alpha';
+
+/** One arrow-key move: the channel it adjusts — `h`/`s`/`v` of the HSV
+ * triple, `a` the alpha — and its direction (+1 advances, −1 recedes). */
+type ArrowMove = readonly [channel: 'h' | 's' | 'v' | 'a', sign: 1 | -1];
+
+/** Arrow keys per rail. The SV surface maps each arrow to its own axis
+ * (saturation horizontal, value vertical); the hue and alpha rails are
+ * one-axis — Left/Down recede, Right/Up advance. A key missing from the
+ * rail's row is left to the browser. */
+const ARROW_MOVES: Record<Rail, Record<string, ArrowMove>> = {
+  sv: {
+    ArrowLeft: ['s', -1],
+    ArrowRight: ['s', 1],
+    ArrowDown: ['v', -1],
+    ArrowUp: ['v', 1],
+  },
+  hue: {
+    ArrowLeft: ['h', -1],
+    ArrowDown: ['h', -1],
+    ArrowRight: ['h', 1],
+    ArrowUp: ['h', 1],
+  },
+  alpha: {
+    ArrowLeft: ['a', -1],
+    ArrowDown: ['a', -1],
+    ArrowRight: ['a', 1],
+    ArrowUp: ['a', 1],
+  },
+};
+
 /** A laid-out rect, or null for the zero-size rects jsdom reports. */
 function rectOf(el: Element): DOMRect | null {
   const rect = el.getBoundingClientRect();
@@ -250,61 +282,35 @@ export default function ColorPickerPanel({
     (next) => applyAlpha(next, true)
   );
 
-  // Arrow keys adjust by 1% (SV/alpha) or 1° (hue); Shift ×10.
-  const svKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const step = (event.shiftKey ? 10 : 1) / 100;
-    switch (event.key) {
-      case 'ArrowLeft':
-        applyHsv({...hsv, s: clamp01(hsv.s - step)}, true);
-        break;
-      case 'ArrowRight':
-        applyHsv({...hsv, s: clamp01(hsv.s + step)}, true);
-        break;
-      case 'ArrowDown':
-        applyHsv({...hsv, v: clamp01(hsv.v - step)}, true);
-        break;
-      case 'ArrowUp':
-        applyHsv({...hsv, v: clamp01(hsv.v + step)}, true);
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  };
-
-  const hueKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const step = event.shiftKey ? 10 : 1;
-    switch (event.key) {
-      case 'ArrowLeft':
-      case 'ArrowDown':
-        applyHsv({...hsv, h: (((hsv.h - step) % 360) + 360) % 360}, true);
-        break;
-      case 'ArrowRight':
-      case 'ArrowUp':
-        applyHsv({...hsv, h: (hsv.h + step) % 360}, true);
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  };
-
-  const alphaKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    const step = (event.shiftKey ? 10 : 1) / 100;
-    switch (event.key) {
-      case 'ArrowLeft':
-      case 'ArrowDown':
-        applyAlpha(clamp01(alpha - step), true);
-        break;
-      case 'ArrowRight':
-      case 'ArrowUp':
-        applyAlpha(clamp01(alpha + step), true);
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  };
+  // Arrow keys adjust by 1% (SV/alpha) or 1° (hue); Shift ×10. One
+  // handler serves the three rails through ARROW_MOVES; hue wraps
+  // around the circle, the other channels clamp to 0..1.
+  const railKeyDown =
+    (rail: Rail) => (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      const move = ARROW_MOVES[rail][event.key];
+      if (!move) return;
+      const [channel, sign] = move;
+      const step = sign * (event.shiftKey ? 10 : 1);
+      if (channel === 'h') {
+        const h = hsv.h + step;
+        applyHsv(
+          {...hsv, h: step < 0 ? ((h % 360) + 360) % 360 : h % 360},
+          true
+        );
+      } else if (channel === 'a') {
+        applyAlpha(clamp01(alpha + step / 100), true);
+      } else {
+        const next = clamp01(hsv[channel] + step / 100);
+        applyHsv(
+          channel === 's' ? {...hsv, s: next} : {...hsv, v: next},
+          true
+        );
+      }
+      event.preventDefault();
+    };
+  const svKeyDown = railKeyDown('sv');
+  const hueKeyDown = railKeyDown('hue');
+  const alphaKeyDown = railKeyDown('alpha');
 
   // Text field: a local draft while focused; Enter/blur commits a
   // parsable draft — in solid mode any color format (normalized to

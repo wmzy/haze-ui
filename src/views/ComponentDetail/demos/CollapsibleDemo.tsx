@@ -9,9 +9,13 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  flushStyle,
+  noteStyle,
+} from './shared';
 
 // classNames 槽位演示：一条记录在 <Collapsible> 根上声明，经 context
 // 分发到 trigger/content（键名见 CollapsibleClassNames）。
@@ -32,12 +36,11 @@ const paddedContent = css`
 // ─── Collapsible ────────────────────────────────────────────────
 export default function CollapsibleDemo() {
   return (
-    <>
-      <h1>Collapsible</h1>
-      <p className={intro}>Controlled collapsible section with trigger and content.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Collapsible'
+      description='Controlled collapsible section with trigger and content.'
+    >
+      <DemoSection title='Demo'>
         <Collapsible>
           <CollapsibleTrigger>
             <Button variant='outline' size='sm'>Toggle Content</Button>
@@ -46,17 +49,10 @@ export default function CollapsibleDemo() {
             <p style={{ padding: 'var(--haze-space-3) 0', margin: 0 }}>This content is shown when expanded.</p>
           </CollapsibleContent>
         </Collapsible>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>classNames slots</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='classNames slots'>
+        <p style={noteStyle}>
           One <code>classNames</code> record on the{' '}
           <code>&lt;Collapsible&gt;</code> root reaches every
           sub-component through context (AntD v6 shape):{' '}
@@ -72,25 +68,21 @@ export default function CollapsibleDemo() {
             <Button variant='ghost' size='sm'>Toggle Content</Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <p style={{ margin: 0 }}>The frame, trigger color and content spacing all come from the slot classes.</p>
+            <p style={flushStyle}>The frame, trigger color and content spacing all come from the slot classes.</p>
           </CollapsibleContent>
         </Collapsible>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Collapsible Props</h2>
+      <DemoSection title='Collapsible Props'>
         <PropsTable of='CollapsibleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Trigger is a native <strong>&lt;button&gt;</strong></li>
-            <li>Content toggles visibility on trigger click</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Trigger is a native <strong>&lt;button&gt;</strong></li>
+          <li>Content toggles visibility on trigger click</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

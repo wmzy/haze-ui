@@ -1,6 +1,6 @@
 import type { RichTextEditorHandle } from './RichTextEditor';
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
 import { useControl } from 'react-use-control';
@@ -135,6 +135,81 @@ describe('RichTextEditor', () => {
     await user.click(bold);
     expect(getEditable(container).querySelector('strong')).toBeNull();
     expect(bold).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('renders the built-in toolbar in grouped order with the stock labels and glyphs', async () => {
+    render(<RichTextEditor />);
+    await screen.findByRole('textbox');
+    const toolbar = screen.getByRole('toolbar', { name: 'Text formatting' });
+    const items = within(toolbar).getAllByRole('button');
+    expect(items.map((item) => item.getAttribute('aria-label'))).toEqual([
+      'Bold',
+      'Italic',
+      'Strikethrough',
+      'Heading 2',
+      'Heading 3',
+      'Bullet list',
+      'Ordered list',
+      'Blockquote',
+      'Code block',
+      'Link',
+    ]);
+    expect(items.map((item) => item.textContent)).toEqual([
+      'B',
+      'I',
+      'S',
+      'H2',
+      'H3',
+      '• List',
+      '1. List',
+      'Quote',
+      'Code',
+      'Link',
+    ]);
+    // marks / headings / lists / blocks / link: a separator after each
+    // group but the last.
+    const separators = within(toolbar).getAllByRole('separator');
+    expect(
+      separators.map((separator) =>
+        separator.previousElementSibling?.getAttribute('aria-label')
+      )
+    ).toEqual(['Strikethrough', 'Heading 3', 'Ordered list', 'Code block']);
+  });
+
+  it('runs the heading command from the table and tracks its pressed state', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<RichTextEditor />);
+    const editable = await screen.findByRole('textbox');
+    await user.click(editable);
+    await user.type(editable, 'Hello');
+
+    const heading = screen.getByRole('button', { name: 'Heading 2' });
+    expect(heading).toHaveAttribute('aria-pressed', 'false');
+    await user.click(heading);
+    expect(getEditable(container).querySelector('h2')).toHaveTextContent('Hello');
+    expect(heading).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('toggles link over the selection from the table', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<RichTextEditor />);
+    const editable = await screen.findByRole('textbox');
+    await user.click(editable);
+    await user.type(editable, 'Hello');
+    await user.keyboard('{Control>}a{/Control}');
+
+    // The first press applies the placeholder scheme, the second removes
+    // the mark again.
+    const link = screen.getByRole('button', { name: 'Link' });
+    await user.click(link);
+    const anchor = getEditable(container).querySelector('a');
+    expect(anchor).toHaveAttribute('href', 'https://');
+    expect(anchor).toHaveTextContent('Hello');
+    expect(link).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(link);
+    expect(getEditable(container).querySelector('a')).toBeNull();
+    expect(link).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows the placeholder on the empty document', async () => {

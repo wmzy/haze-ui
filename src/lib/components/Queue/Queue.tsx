@@ -3,6 +3,13 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { css } from '@linaria/core';
 
 import { quietIconButton } from '../../utils/quiet-button-skin';
+import {
+  statusDot,
+  statusDotError,
+  statusDotPending,
+  timelineDescription,
+  timelineLabel,
+} from '../../utils/timeline-skin';
 import Spinner from '../Spinner/Spinner';
 
 type QueueStatus = 'queued' | 'sending' | 'failed';
@@ -51,40 +58,32 @@ const itemFailed = css`
   border-color: var(--haze-color-danger);
 `;
 
-const indicator = css`
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+/* The status marker is the shared statusDot (utils/timeline-skin):
+ * geometry plus the ring family — the queued ring and the failed disc
+ * are the skin's pending and error arms, what this file used to
+ * re-declare. Two Queue deltas ride after it: the optical nudge below
+ * and the sending seat. */
+const indicatorNudge = css`
   margin-top: 0.0625rem;
-  border-radius: var(--haze-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.5rem;
-  line-height: 1;
 `;
 
-const indicatorQueued = css`
-  border: 2px solid var(--haze-color-border);
-  background: var(--haze-color-bg);
-`;
-
-/* The Spinner owns the whole slot in the sending state. */
+/* The Spinner owns the whole slot in the sending state: the seat
+ * shrinks to the Spinner's own sm box (space-4 — the token Spinner
+ * resolves, so the seat tracks it at every density). The compound
+ * `&[data-slot]` selector keeps the seat winning over the shared
+ * space-5 geometry in any cascade order (dev-server injection order
+ * and the dist split-css order disagree). */
 const indicatorSending = css`
-  width: 1rem;
-  height: 1rem;
-`;
-
-const indicatorFailed = css`
-  border: 2px solid var(--haze-color-danger);
-  background: var(--haze-color-danger);
-  color: var(--haze-color-text-inverse);
+  &[data-slot='queue-indicator'] {
+    width: var(--haze-space-4);
+    height: var(--haze-space-4);
+  }
 `;
 
 const indicatorMap: Record<QueueStatus, string> = {
-  queued: indicatorQueued,
+  queued: statusDotPending,
   sending: indicatorSending,
-  failed: indicatorFailed,
+  failed: statusDotError,
 };
 
 const body = css`
@@ -92,26 +91,15 @@ const body = css`
   min-width: 0;
 `;
 
-const titleStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
-const descriptionStyle = css`
-  font-size: var(--haze-text-xs);
-  color: var(--haze-color-text-muted);
-  margin-top: var(--haze-space-1);
-`;
-
 /* Remove control: the shared quietIconButton chrome
  * (utils/quiet-button-skin) plus the glyph seat. The keyboard ring is
- * the skin's 3px box-shadow arm itself (the former local copy was
- * declaration-identical, so utils/focus-ring is not composed here); the
- * transition timing converges on the skin's plain ease (was
- * var(--haze-ease)). The forced-colors Highlight-backdrop focus
- * indicator stays local — the skin ships no forced-colors arm and this
- * site's backdrop treatment deliberately replaces an outline. */
+ * the skin's 3px box-shadow arm itself — and, since the skin
+ * interpolates utils/focus-ring-delta, its forced-colors Highlight
+ * outline too (the former local copy was declaration-identical, so
+ * utils/focus-ring is not composed here); the transition timing
+ * converges on the skin's plain ease (was var(--haze-ease)). The
+ * Highlight backdrop below stays as this site's additive forced-colors
+ * accent over that outline. */
 const removeBtn = css`
   flex-shrink: 0;
   width: 1.25rem;
@@ -122,8 +110,9 @@ const removeBtn = css`
   font-size: var(--haze-text-md);
   line-height: 1;
 
-  /* Forced-colors: the box-shadow focus ring is dropped by the UA —
-     the system Highlight backdrop keeps a visible focus indicator. */
+  /* Forced-colors: the skin's Highlight outline already marks focus
+     (utils/focus-ring-delta); the system Highlight backdrop doubles the
+     indicator on this seat. */
   @media (forced-colors: active) {
     &:focus-visible {
       background: Highlight;
@@ -152,17 +141,17 @@ function QueueItem({
       <span
         data-slot='queue-indicator'
         aria-hidden={status === 'sending' ? undefined : true}
-        x-class={[indicator, indicatorMap[status]]}
+        x-class={[statusDot, indicatorNudge, indicatorMap[status]]}
       >
         {status === 'sending' && <Spinner size='sm' />}
         {status === 'failed' && '!'}
       </span>
       <div data-slot='queue-body' x-class={body}>
-        <div data-slot='queue-title' x-class={titleStyle}>
+        <div data-slot='queue-title' x-class={timelineLabel}>
           {title}
         </div>
         {description !== undefined && (
-          <div data-slot='queue-description' x-class={descriptionStyle}>
+          <div data-slot='queue-description' x-class={timelineDescription}>
             {description}
           </div>
         )}

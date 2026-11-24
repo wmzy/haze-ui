@@ -9,6 +9,8 @@
  */
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations } from '../../utils/focus-ring-delta';
+
 /**
  * Card deltas on the shared panel surface (utils/panel-skin.ts): the
  * AntD-aligned 240px picker width (a component dimension, like
@@ -125,7 +127,14 @@ export const trackThumb = css`
   top: 50%;
 ${thumbRing}`;
 
-/** Format-aware color code input (Core's text input recipe). */
+/** Format-aware color code input (Core's text input recipe). The focus
+ * arm interpolates utils/focus-ring-delta's declarations — the
+ * `outline: none` + box-shadow pair AND its forced-colors Highlight
+ * fallback, which the hand-copied arm had dropped (no focus indicator
+ * under forced colors) — with the border repaint next to it. The pair's
+ * reset is the input's whole outline reset: the arm is `:focus`, so no
+ * base reset is needed (svArea/track keep theirs for their `:focus-visible`
+ * ring). numberInput below wears the same string. */
 export const valueInput = css`
   width: 100%;
   height: var(--haze-space-8);
@@ -136,13 +145,12 @@ export const valueInput = css`
   color: var(--haze-color-text);
   font-family: var(--haze-font-mono);
   font-size: var(--haze-text-sm);
-  outline: none;
   transition: border-color var(--haze-duration-fast), box-shadow var(--haze-duration-fast);
   box-sizing: border-box;
 
   &:focus {
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -240,7 +248,9 @@ export const angleRow = css`
   color: var(--haze-color-text-secondary);
 `;
 
-/** Compact mono number input (angle, stop positions). */
+/** Compact mono number input (angle, stop positions) — the valueInput
+ * focus recipe (utils/focus-ring-delta's declarations: the pair and its
+ * forced-colors fallback). */
 export const numberInput = css`
   width: var(--haze-space-12);
   height: var(--haze-space-6);
@@ -251,12 +261,11 @@ export const numberInput = css`
   color: var(--haze-color-text);
   font-family: var(--haze-font-mono);
   font-size: var(--haze-text-xs);
-  outline: none;
   box-sizing: border-box;
 
   &:focus {
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 

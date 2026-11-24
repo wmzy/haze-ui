@@ -6,13 +6,15 @@ import { css } from '@linaria/core';
 
 import { Button, TextareaCore, ChatMessage } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection, dataTableMeta, dataTableNote } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  dataTableMeta,
+  dataTableNote,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── ChatMessage — edit / resend / branch (recipe) ────────────
 type BranchMessage = {
@@ -500,15 +502,16 @@ function ChatMessageWorkflowDemo() {
 // ─── ChatMessage ──────────────────────────────────────────────
 export default function ChatMessageDemo() {
   return (
-    <>
-      <h1>ChatMessage</h1>
-      <p className={intro}>
-        Chat bubble component with role-based styling for user, assistant, and
-        system messages.
-      </p>
-
-      <div className={section}>
-        <h2>Roles</h2>
+    <DemoPage
+      title='ChatMessage'
+      description={
+        <>
+          Chat bubble component with role-based styling for user, assistant, and
+          system messages.
+        </>
+      }
+    >
+      <DemoSection title='Roles'>
         <ChatMessage role='user' name='You' timestamp='10:00 AM'>
           Can you explain how React hooks work?
         </ChatMessage>
@@ -517,20 +520,18 @@ export default function ChatMessageDemo() {
           components. The most common ones are useState and useEffect.
         </ChatMessage>
         <ChatMessage role='system'>Conversation started</ChatMessage>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Status</h2>
+      <DemoSection title='With Status'>
         <ChatMessage role='user' name='You' status='sent'>
           Message sent successfully.
         </ChatMessage>
         <ChatMessage role='user' name='You' status='error'>
           This message failed to send.
         </ChatMessage>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Copy &amp; Actions</h2>
+      <DemoSection title='Copy &amp; Actions'>
         <ChatMessage
           role='assistant'
           name='Assistant'
@@ -569,10 +570,9 @@ export default function ChatMessageDemo() {
           markdown or nested elements copy as their visible text; the button
           label comes from the <code>chat.copy</code> string.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Edit / Resend / Branch (recipe)</h2>
+      <DemoSection title='Edit / Resend / Branch (recipe)'>
         <ChatMessageWorkflowDemo />
         <p className={dataTableNote}>
           The message tree is a plain <code>branches: BranchMessage[][]</code>{' '}
@@ -590,45 +590,39 @@ export default function ChatMessageDemo() {
           keyboard-reachable — and each button carries a descriptive{' '}
           <code>aria-label</code>.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ChatMessageProps' />
-      </div>
+      <PropsSection of='ChatMessageProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              User messages are visually reversed with{' '}
-              <strong>flex-direction: row-reverse</strong>
-            </li>
-            <li>System messages are centered with muted styling</li>
-            <li>Status text provides visual feedback for message delivery</li>
-            <li>
-              The copy/actions bar reveals on{' '}
-              <strong>:focus-within</strong> as well as hover, so Tab reaches
-              the built-in copy button (labeled by the{' '}
-              <strong>chat.copy</strong> string) and every slotted action;
-              <code>visibility</code> transitions with <code>opacity</code>,
-              keeping hidden buttons out of the tab order
-            </li>
-            <li>
-              Recipe rows reveal their action bar on{' '}
-              <strong>:focus-within</strong>, so Tab reaches every action
-              button; each carries a descriptive <strong>aria-label</strong>,
-              the pending row is a <strong>role=&quot;status&quot;</strong>{' '}
-              live region, and the editor saves with{' '}
-              <strong>Ctrl/Cmd+Enter</strong>, cancels with{' '}
-              <strong>Escape</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            User messages are visually reversed with{' '}
+            <strong>flex-direction: row-reverse</strong>
+          </li>
+          <li>System messages are centered with muted styling</li>
+          <li>Status text provides visual feedback for message delivery</li>
+          <li>
+            The copy/actions bar reveals on{' '}
+            <strong>:focus-within</strong> as well as hover, so Tab reaches
+            the built-in copy button (labeled by the{' '}
+            <strong>chat.copy</strong> string) and every slotted action;
+            <code>visibility</code> transitions with <code>opacity</code>,
+            keeping hidden buttons out of the tab order
+          </li>
+          <li>
+            Recipe rows reveal their action bar on{' '}
+            <strong>:focus-within</strong>, so Tab reaches every action
+            button; each carries a descriptive <strong>aria-label</strong>,
+            the pending row is a <strong>role=&quot;status&quot;</strong>{' '}
+            live region, and the editor saves with{' '}
+            <strong>Ctrl/Cmd+Enter</strong>, cancels with{' '}
+            <strong>Escape</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='chatmessage' />
-    </>
+    </DemoPage>
   );
 }

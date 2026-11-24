@@ -14,10 +14,15 @@ import {
   useToast,
 } from '@/lib';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
 
-import { intro, section, row, fieldRow, codeBlock } from '../styles';
+import { row, fieldRow, codeBlock } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const SIZES = ['sm', 'md', 'lg'] as const;
 
@@ -50,20 +55,21 @@ export default function ConfigProviderDemo() {
   const [compact, setCompact] = useState(false);
 
   return (
-    <>
-      <h1>ConfigProvider</h1>
-      <p className={intro}>
-        Library-wide component defaults and spacing density through one
-        provider — a scoped take on the AntD v6{' '}
-        <code>ConfigProvider</code> idea. Every wired component reads its
-        section (keyed by exported name) via <code>useConfigDefaults</code>;
-        an explicit prop still wins, nested providers shallow-merge per
-        component section with the inner one taking precedence, and with no
-        provider mounted every component keeps its built-in defaults.
-      </p>
-
-      <div className={section}>
-        <h2>Default Button size</h2>
+    <DemoPage
+      title='ConfigProvider'
+      description={
+        <>
+          Library-wide component defaults and spacing density through one
+          provider — a scoped take on the AntD v6{' '}
+          <code>ConfigProvider</code> idea. Every wired component reads its
+          section (keyed by exported name) via <code>useConfigDefaults</code>;
+          an explicit prop still wins, nested providers shallow-merge per
+          component section with the inner one taking precedence, and with no
+          provider mounted every component keeps its built-in defaults.
+        </>
+      }
+    >
+      <DemoSection title='Default Button size'>
         <div className={fieldRow}>
           <div className={row}>
             {SIZES.map((s) => (
@@ -80,10 +86,9 @@ export default function ConfigProviderDemo() {
             <ButtonLink href='#config-provider'>anchors wear it too</ButtonLink>
           </div>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Nested providers</h2>
+      <DemoSection title='Nested providers'>
         <p>
           The inner provider&apos;s keys win for the sections it names;
           everything else keeps the outer value.
@@ -96,10 +101,9 @@ export default function ConfigProviderDemo() {
             </ConfigProvider>
           </div>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Toast defaults</h2>
+      <DemoSection title='Toast defaults'>
         <p>
           <code>duration</code>, <code>placement</code> and{' '}
           <code>maxCount</code> apply to the container and{' '}
@@ -116,10 +120,9 @@ export default function ConfigProviderDemo() {
             <ToastActions />
           </ToastContainer>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tooltip delay</h2>
+      <DemoSection title='Tooltip delay'>
         <p>
           Hover the trigger: the config delay (400ms here) replaces the
           built-in 150ms when the prop is omitted.
@@ -129,10 +132,9 @@ export default function ConfigProviderDemo() {
             <Button variant='outline'>Hover me</Button>
           </Tooltip>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Field defaults</h2>
+      <DemoSection title='Field defaults'>
         <p>
           Form-field sections work the same way — <code>Input</code>,{' '}
           <code>Textarea</code>, <code>NumberInput</code>,{' '}
@@ -148,10 +150,9 @@ export default function ConfigProviderDemo() {
             <Input size='sm' placeholder='size="sm" wins' />
           </div>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Global density</h2>
+      <DemoSection title='Global density'>
         <p>
           The <code>density</code> knob re-declares the spacing scale at
           75% inside density-aware components — <code>Table</code> today.
@@ -179,10 +180,9 @@ export default function ConfigProviderDemo() {
             </TableBody>
           </Table>
         </ConfigProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { ConfigProvider } from 'haze-ui';
 
 <ConfigProvider
@@ -208,33 +208,27 @@ export default function ConfigProviderDemo() {
         </p>
         <pre className={codeBlock}>{`const config = useConfigDefaults('MyComponent');
 const size = sizeProp ?? config.size ?? 'md'; // prop → config → built-in`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ConfigProviderProps' />
-      </div>
+      <PropsSection of='ConfigProviderProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The provider renders no DOM and changes no semantics — it
-              only substitutes default prop values
-            </li>
-            <li>
-              Defaults that affect timing (Tooltip <code>delay</code>,
-              Toast <code>duration</code>) remain hover-pausable and
-              pause-on-focus as their components define
-            </li>
-            <li>
-              SSR-safe: no <code>document</code>/<code>window</code>{' '}
-              access, safe for string rendering and hydration
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The provider renders no DOM and changes no semantics — it
+            only substitutes default prop values
+          </li>
+          <li>
+            Defaults that affect timing (Tooltip <code>delay</code>,
+            Toast <code>duration</code>) remain hover-pausable and
+            pause-on-focus as their components define
+          </li>
+          <li>
+            SSR-safe: no <code>document</code>/<code>window</code>{' '}
+            access, safe for string rendering and hydration
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

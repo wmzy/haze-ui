@@ -12,10 +12,12 @@
  *                                      cannot see (className, `...rest`,
  *                                      children, …)
  *
- * Merge semantics mirror the docs site's PropsTable
- * (src/views/ComponentDetail/PropsTable.tsx): generated rows keep their
- * verbatim type string; matching doc rows layer description/default on top;
- * doc-only ghost rows are appended afterwards with their own type (or —).
+ * Merge semantics live in scripts/props-merge.mjs (shared with the MCP
+ * docs snapshot, scripts/generate-mcp-docs.mjs) and mirror the docs
+ * site's PropsTable (src/views/ComponentDetail/PropsTable.tsx): generated
+ * rows keep their verbatim type string; matching doc rows layer
+ * description/default on top; doc-only ghost rows are appended afterwards
+ * with their own type (or —).
  *
  * The output is deterministic (sorted component/type keys, no timestamps) so
  * consecutive runs are byte-identical.
@@ -26,30 +28,17 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-function readJson(rootDir, relPath, { required }) {
-  const file = path.join(rootDir, relPath);
-  if (!existsSync(file)) {
-    if (!required) return {};
-    throw new Error(
-      `${relPath} not found — run \`node scripts/generate-props.mjs\` first`
-    );
-  }
-  return JSON.parse(readFileSync(file, 'utf8'));
-}
+import { defaultRoot, invokedDirectly, readJson, runCli } from './cli-utils.mjs';
+import { mergeRows, typeEntries } from './props-merge.mjs';
 
 /** props.json is mandatory (error explains how to produce it); docs degrade to {}. */
 const loadSources = (rootDir) => {
   const props = readJson(rootDir, 'src/generated/props.json', {
-    required: true,
+    hint: 'run `node scripts/generate-props.mjs` first',
   });
-  const docsByType = readJson(rootDir, 'src/generated/props-docs.json', {
-    required: false,
-  });
+  const docsByType =
+    readJson(rootDir, 'src/generated/props-docs.json', { optional: true }) ?? {};
   return { components: props.components ?? {}, docsByType };
 };
 
@@ -57,35 +46,6 @@ const loadSources = (rootDir) => {
 const escapeCell = (text) => text.replaceAll('|', '\\|').replaceAll('\n', ' ');
 
 const codeCell = (text) => `\`${escapeCell(text)}\``;
-
-/**
- * Merge one type's generated rows with its handwritten doc rows.
- * PropsTable parity: generated type wins; docs only add description/default;
- * unconsumed doc rows (ghost rows) are appended in handwritten order.
- */
-function mergeRows(generatedRows, docRows = []) {
-  const docsByName = new Map(docRows.map((row) => [row.name, row]));
-  const rows = generatedRows.map((row) => {
-    const doc = docsByName.get(row.name);
-    docsByName.delete(row.name);
-    return {
-      name: row.name,
-      type: row.type,
-      default: doc?.default,
-      description: doc?.description ?? '',
-    };
-  });
-  for (const doc of docRows) {
-    if (!docsByName.has(doc.name)) continue;
-    rows.push({
-      name: doc.name,
-      type: doc.type ?? '—',
-      default: doc.default,
-      description: doc.description ?? '',
-    });
-  }
-  return rows;
-}
 
 function renderTable(rows) {
   const lines = [
@@ -100,17 +60,6 @@ function renderTable(rows) {
   }
   return lines.join('\n');
 }
-
-/**
- * A component's documentable types: [typeName, generatedRows] pairs, propsTypes
- * first then otherTypes (TreeNodeData, …) — same precedence as the docs site's
- * type index. props.json already stores both maps key-sorted; sort anyway so
- * output never depends on insertion order.
- */
-const typeEntries = (entry) => [
-  ...Object.entries(entry.propsTypes ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)),
-  ...Object.entries(entry.otherTypes ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)),
-];
 
 function renderComponent(name, entry, docsByType) {
   const lines = [`## ${name}`, ''];
@@ -222,26 +171,9 @@ export function writeLlmsFull(rootDir = defaultRoot()) {
   };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-llms-full', (started) => {
     const { changed, outFile, componentCount, lineCount } = writeLlmsFull();
-    console.log(
-      `generate-llms-full: ${componentCount} components, ${lineCount} lines, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-llms-full: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${componentCount} components, ${lineCount} lines, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`;
+  });
 }

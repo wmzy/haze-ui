@@ -13,9 +13,7 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 /** The dialog example needs shared state for the button + the mod+k hotkey. */
 function CommandPaletteExample() {
@@ -59,12 +57,11 @@ const MANY_COMMANDS = Array.from({ length: 500 }, (_, index) =>
 // ─── Command ────────────────────────────────────────────────────
 export default function CommandDemo() {
   return (
-    <>
-      <h1>Command</h1>
-      <p className={intro}>Command palette with fuzzy filterable list of items.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Command'
+      description='Command palette with fuzzy filterable list of items.'
+    >
+      <DemoSection title='Demo'>
         <Command>
           <CommandInput placeholder='Type a command...' />
           <CommandList>
@@ -78,10 +75,9 @@ export default function CommandDemo() {
             </CommandGroup>
           </CommandList>
         </Command>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Fuzzy matching</h2>
+      <DemoSection title='Fuzzy matching'>
         <p>
           Filtering is fuzzy by default: every query character must appear in an item's{' '}
           <code>value</code> / children text / <code>keywords</code> in order
@@ -102,10 +98,9 @@ export default function CommandDemo() {
             <CommandItem keywords={['preferences']}>Settings</CommandItem>
           </CommandList>
         </Command>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Long lists (virtualized)</h2>
+      <DemoSection title='Long lists (virtualized)'>
         <p>
           Pass <code>virtualized</code> to <code>CommandList</code> to render long flat lists
           through VirtualList — only the visible window stays mounted, so the 500 items below
@@ -122,10 +117,9 @@ export default function CommandDemo() {
             ))}
           </CommandList>
         </Command>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandDialog (mod+k)</h2>
+      <DemoSection title='CommandDialog (mod+k)'>
         <p>
           <code>CommandDialog</code> composes <code>Dialog</code> (native top-layer
           <code>&lt;dialog&gt;</code>) with <code>Command</code>: it registers a global
@@ -134,50 +128,41 @@ export default function CommandDemo() {
           renders the empty-state copy when filtering leaves nothing.
         </p>
         <CommandPaletteExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Command Props</h2>
+      <DemoSection title='Command Props'>
         <PropsTable of='CommandProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandInput Props</h2>
+      <DemoSection title='CommandInput Props'>
         <PropsTable of='CommandInputProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandList Props</h2>
+      <DemoSection title='CommandList Props'>
         <PropsTable of='CommandListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandItem Props</h2>
+      <DemoSection title='CommandItem Props'>
         <PropsTable of='CommandItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandGroup Props</h2>
+      <DemoSection title='CommandGroup Props'>
         <PropsTable of='CommandGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>CommandDialog Props</h2>
+      <DemoSection title='CommandDialog Props'>
         <PropsTable of='CommandDialogProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Uses <strong>role=&quot;combobox&quot;</strong> on the container</li>
-            <li>Items use <strong>role=&quot;option&quot;</strong>, groups <strong>role=&quot;group&quot;</strong> named by their heading</li>
-            <li>Typing in the input fuzzy-matches items by <code>value</code> / children text / <code>keywords</code> and ranks hits best-first</li>
-            <li>Groups whose every item was filtered out hide entirely; keyboard focus stays continuous across groups</li>
-            <li>CommandDialog traps focus in the native modal dialog and returns it on close</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Uses <strong>role=&quot;combobox&quot;</strong> on the container</li>
+          <li>Items use <strong>role=&quot;option&quot;</strong>, groups <strong>role=&quot;group&quot;</strong> named by their heading</li>
+          <li>Typing in the input fuzzy-matches items by <code>value</code> / children text / <code>keywords</code> and ranks hits best-first</li>
+          <li>Groups whose every item was filtered out hide entirely; keyboard focus stays continuous across groups</li>
+          <li>CommandDialog traps focus in the native modal dialog and returns it on close</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

@@ -9,7 +9,6 @@ import {
   Children,
   createContext,
   isValidElement,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -20,6 +19,7 @@ import {
 import { arrayMove, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { css } from '@linaria/core';
 
+import { useMergedRefs } from '../../utils/refs';
 import { SortableRegion } from '../../utils/sortable';
 import { sortableItemStyle } from '../../utils/sortable-shared';
 
@@ -182,13 +182,7 @@ function SortableTabItem({ id, children }: SortableTabItemProps) {
   // Own element ref, merged with dnd-kit's node ref so the
   // drag clamp can measure the wrapper against the strip.
   const selfRef = useRef<HTMLSpanElement>(null);
-  const setRefs = useCallback(
-    (node: HTMLSpanElement | null) => {
-      selfRef.current = node;
-      setNodeRef(node);
-    },
-    [setNodeRef]
-  );
+  const setRefs = useMergedRefs(selfRef, setNodeRef);
   // The wrapped tab's value decides this wrapper's compression
   // floor (the active tab's is raised — see sortableTabActive).
   const wrappedValue = isValidElement<{ value?: string }>(children)

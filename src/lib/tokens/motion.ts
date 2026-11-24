@@ -55,185 +55,64 @@ export const motion = css`
  *   JS-positioned floating panels: getBoundingClientRect includes
  *   transforms, so an animating panel poisons its own placement math.
  *   Floating panels fade only (see floatingAnimated in utils/floating).
+ *
+ * Every preset shares one skeleton (presetCss below) and differs only in
+ * its row of PRESET_OUT_STATE. The css calls are still spelled out per
+ * preset rather than built in a loop: Linaria resolves a css template
+ * statically and rejects one that depends on a loop variable, and it
+ * names the class after the object key owning the css call
+ * (fade -> haze-motion__fade).
  */
-export const motionPresets = {
+/**
+ * Per preset, the declarations for the element while it is fully out: the
+ * `from` block of the enter keyframes and the `to` block of the exit
+ * keyframes, since a preset leaves toward the side it arrived from. The
+ * row key is the preset name as exposed on motionPresets.
+ */
+const PRESET_OUT_STATE = {
   /** Opacity only — the safe default, also the one floating panels use. */
-  fade: css`
-    &[data-state='open'] {
-      animation: haze-motion-fade-in var(--haze-duration-normal)
-        var(--haze-ease);
-    }
-
-    &[data-state='closed'] {
-      animation: haze-motion-fade-out var(--haze-duration-fast)
-        var(--haze-ease) forwards;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &[data-state='open'],
-      &[data-state='closed'] {
-        animation: none;
-      }
-    }
-
-    @keyframes haze-motion-fade-in {
-      from {
-        opacity: 0;
-      }
-    }
-
-    @keyframes haze-motion-fade-out {
-      to {
-        opacity: 0;
-      }
-    }
-  `,
-
+  fade: ['opacity: 0'],
   /** Fade plus a subtle settle from 97% scale — cards, dialogs, images. */
-  fadeScale: css`
-    &[data-state='open'] {
-      animation: haze-motion-fade-scale-in var(--haze-duration-normal)
-        var(--haze-ease);
-    }
-
-    &[data-state='closed'] {
-      animation: haze-motion-fade-scale-out var(--haze-duration-fast)
-        var(--haze-ease) forwards;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &[data-state='open'],
-      &[data-state='closed'] {
-        animation: none;
-      }
-    }
-
-    @keyframes haze-motion-fade-scale-in {
-      from {
-        opacity: 0;
-        transform: scale(0.97);
-      }
-    }
-
-    @keyframes haze-motion-fade-scale-out {
-      to {
-        opacity: 0;
-        transform: scale(0.97);
-      }
-    }
-  `,
-
+  fadeScale: ['opacity: 0', 'transform: scale(0.97)'],
   /** Rises into place from just below; sinks back down on exit. */
-  slideUp: css`
-    &[data-state='open'] {
-      animation: haze-motion-slide-up-in var(--haze-duration-normal)
-        var(--haze-ease);
-    }
-
-    &[data-state='closed'] {
-      animation: haze-motion-slide-up-out var(--haze-duration-fast)
-        var(--haze-ease) forwards;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &[data-state='open'],
-      &[data-state='closed'] {
-        animation: none;
-      }
-    }
-
-    @keyframes haze-motion-slide-up-in {
-      from {
-        opacity: 0;
-        transform: translateY(var(--haze-space-4));
-      }
-    }
-
-    @keyframes haze-motion-slide-up-out {
-      to {
-        opacity: 0;
-        transform: translateY(var(--haze-space-4));
-      }
-    }
-  `,
-
+  slideUp: ['opacity: 0', 'transform: translateY(var(--haze-space-4))'],
   /** Descends into place from just above; rises back up on exit. */
-  slideDown: css`
-    &[data-state='open'] {
-      animation: haze-motion-slide-down-in var(--haze-duration-normal)
-        var(--haze-ease);
-    }
-
-    &[data-state='closed'] {
-      animation: haze-motion-slide-down-out var(--haze-duration-fast)
-        var(--haze-ease) forwards;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &[data-state='open'],
-      &[data-state='closed'] {
-        animation: none;
-      }
-    }
-
-    @keyframes haze-motion-slide-down-in {
-      from {
-        opacity: 0;
-        transform: translateY(calc(-1 * var(--haze-space-4)));
-      }
-    }
-
-    @keyframes haze-motion-slide-down-out {
-      to {
-        opacity: 0;
-        transform: translateY(calc(-1 * var(--haze-space-4)));
-      }
-    }
-  `,
-
+  slideDown: [
+    'opacity: 0',
+    'transform: translateY(calc(-1 * var(--haze-space-4)))',
+  ],
   /** Slides in leftward, arriving from just right; exits back right. */
-  slideLeft: css`
-    &[data-state='open'] {
-      animation: haze-motion-slide-left-in var(--haze-duration-normal)
-        var(--haze-ease);
-    }
-
-    &[data-state='closed'] {
-      animation: haze-motion-slide-left-out var(--haze-duration-fast)
-        var(--haze-ease) forwards;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &[data-state='open'],
-      &[data-state='closed'] {
-        animation: none;
-      }
-    }
-
-    @keyframes haze-motion-slide-left-in {
-      from {
-        opacity: 0;
-        transform: translateX(var(--haze-space-4));
-      }
-    }
-
-    @keyframes haze-motion-slide-left-out {
-      to {
-        opacity: 0;
-        transform: translateX(var(--haze-space-4));
-      }
-    }
-  `,
-
+  slideLeft: ['opacity: 0', 'transform: translateX(var(--haze-space-4))'],
   /** Slides in rightward, arriving from just left; exits back left. */
-  slideRight: css`
+  slideRight: [
+    'opacity: 0',
+    'transform: translateX(calc(-1 * var(--haze-space-4)))',
+  ],
+} as const;
+
+/** Kebab-cases a preset name for its keyframe pair: slideUp -> slide-up. */
+function kebabCase(name: string): string {
+  return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+}
+
+/**
+ * One preset's template: enter on data-state='open', exit on 'closed',
+ * the reduced-motion collapse and the preset's own keyframe pair. Pure,
+ * and evaluated only by Linaria while it extracts the module — the css
+ * calls that pass it a preset sit at module top level in motionPresets.
+ */
+function presetCss(name: keyof typeof PRESET_OUT_STATE): string {
+  const slug = kebabCase(name);
+  // One declaration per line, indented to the keyframe body.
+  const out = `${PRESET_OUT_STATE[name].join(';\n        ')};`;
+  return `
     &[data-state='open'] {
-      animation: haze-motion-slide-right-in var(--haze-duration-normal)
+      animation: haze-motion-${slug}-in var(--haze-duration-normal)
         var(--haze-ease);
     }
 
     &[data-state='closed'] {
-      animation: haze-motion-slide-right-out var(--haze-duration-fast)
+      animation: haze-motion-${slug}-out var(--haze-duration-fast)
         var(--haze-ease) forwards;
     }
 
@@ -244,20 +123,28 @@ export const motionPresets = {
       }
     }
 
-    @keyframes haze-motion-slide-right-in {
+    @keyframes haze-motion-${slug}-in {
       from {
-        opacity: 0;
-        transform: translateX(calc(-1 * var(--haze-space-4)));
+        ${out}
       }
     }
 
-    @keyframes haze-motion-slide-right-out {
+    @keyframes haze-motion-${slug}-out {
       to {
-        opacity: 0;
-        transform: translateX(calc(-1 * var(--haze-space-4)));
+        ${out}
       }
     }
-  `,
+  `;
+}
+
+/** One class per preset, applied to the element Presence tags. */
+export const motionPresets = {
+  fade: css`${presetCss('fade')}`,
+  fadeScale: css`${presetCss('fadeScale')}`,
+  slideUp: css`${presetCss('slideUp')}`,
+  slideDown: css`${presetCss('slideDown')}`,
+  slideLeft: css`${presetCss('slideLeft')}`,
+  slideRight: css`${presetCss('slideRight')}`,
 } as const;
 
 /** Preset names accepted wherever a motion preset can be chosen. */

@@ -6,9 +6,7 @@ import { Countdown, Button, Stat, StatGroup } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // Countdown inherits size and color; give the standalone examples stat weight.
 const big = css`
@@ -62,31 +60,29 @@ function RestartExample() {
 // ─── Countdown ─────────────────────────────────────────────────
 export default function CountdownDemo() {
   return (
-    <>
-      <h1>Countdown</h1>
-      <p className={intro}>
-        Deadline countdown with setTimeout-chain ticks aligned to second
-        boundaries (no interval drift); `onFinish` fires exactly once and the
-        adaptive default format switches to days past 24h.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
+    <DemoPage
+      title='Countdown'
+      description={
+        <>
+          Deadline countdown with setTimeout-chain ticks aligned to second
+          boundaries (no interval drift); `onFinish` fires exactly once and the
+          adaptive default format switches to days past 24h.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
         <Countdown value={t0 + 26 * 3600_000 + 5 * 60_000} className={big} />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Ending soon</h2>
+      <DemoSection title='Ending soon'>
         <EndingSoonExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Re-aiming on deadline change</h2>
+      <DemoSection title='Re-aiming on deadline change'>
         <RestartExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom format</h2>
+      <DemoSection title='Custom format'>
         <div className={row}>
           <Countdown
             value={t0 + 26 * 3600_000}
@@ -99,10 +95,9 @@ export default function CountdownDemo() {
             format={(p) => `${String(p.minutes).padStart(2, '0')}:${String(p.seconds).padStart(2, '0')}`}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Render escape hatch</h2>
+      <DemoSection title='Render escape hatch'>
         <Countdown
           value={t0 + 90_000}
           render={(p) => (
@@ -111,10 +106,9 @@ export default function CountdownDemo() {
             </strong>
           )}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Stat</h2>
+      <DemoSection title='With Stat'>
         <StatGroup>
           <Stat
             title='Flash sale ends in'
@@ -128,23 +122,19 @@ export default function CountdownDemo() {
             description='Adaptive format: days appear past 24h'
           />
         </StatGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Countdown Props</h2>
+      <DemoSection title='Countdown Props'>
         <PropsTable of='CountdownProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Per-second text updates are deliberately <strong>not</strong> in a live region — screen readers are never spammed by the ticking</li>
-            <li>The root carries an <code>aria-label</code> with the full remaining time (word form), refreshed silently and exposed whenever the element is queried</li>
-            <li>Pair with a labeled container (e.g. Stat&#39;s <code>title</code>) so the countdown has context; <code>font-variant-numeric: tabular-nums</code> keeps digit widths stable while ticking</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Per-second text updates are deliberately <strong>not</strong> in a live region — screen readers are never spammed by the ticking</li>
+          <li>The root carries an <code>aria-label</code> with the full remaining time (word form), refreshed silently and exposed whenever the element is queried</li>
+          <li>Pair with a labeled container (e.g. Stat&#39;s <code>title</code>) so the countdown has context; <code>font-variant-numeric: tabular-nums</code> keeps digit widths stable while ticking</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

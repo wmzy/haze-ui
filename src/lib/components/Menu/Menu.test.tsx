@@ -1200,6 +1200,57 @@ describe('Menu virtualization', () => {
     expect(screen.getByRole('menuitem', { name: 'Alpha' })).toHaveFocus();
   });
 
+  it('enters on the last focusable row for ArrowUp while focus sits on no row', () => {
+    // the WAI-ARIA entry rule, shared with the plain keyboard layer
+    const items: MenuDataItem[] = [
+      { type: 'item', label: 'Alpha' },
+      { type: 'item', label: 'Beta', disabled: true },
+      { type: 'divider' },
+    ];
+    render(<Menu open trigger="T" virtualized items={items} />);
+    // focus parked off the rows: the open menu had it on Item 0
+    (document.activeElement as HTMLElement).blur();
+    expect(document.body).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowUp' });
+    expect(screen.getByRole('menuitem', { name: 'Alpha' })).toHaveFocus();
+  });
+
+  it('enters on the first focusable row for ArrowDown while focus sits on no row', () => {
+    const items: MenuDataItem[] = [
+      { type: 'divider' },
+      { type: 'item', label: 'Beta', disabled: true },
+      { type: 'item', label: 'Alpha' },
+    ];
+    render(<Menu open trigger="T" virtualized items={items} />);
+    (document.activeElement as HTMLElement).blur();
+    expect(document.body).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(screen.getByRole('menuitem', { name: 'Alpha' })).toHaveFocus();
+  });
+
+  it('lets Space through to a virtualized checkable row', () => {
+    const items: MenuDataItem[] = [
+      { type: 'item', label: 'Alpha' },
+      { type: 'checkbox', label: 'Status bar' },
+    ];
+    render(<Menu open trigger="T" virtualized items={items} />);
+    const box = screen.getByRole('menuitemcheckbox', { name: 'Status bar' });
+    box.focus();
+    // the same carve-out as the plain layer: Space must reach the native
+    // activation (the UA click is dispatched by hand — jsdom has no
+    // space→click step)
+    const space = new KeyboardEvent('keydown', {
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    });
+    box.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(false);
+    expect(box).toHaveFocus();
+    fireEvent.click(box);
+    expect(box).toHaveAttribute('aria-checked', 'true');
+  });
+
   it('jumps to the ends with Home and End across the window', () => {
     render(<Menu open trigger="T" virtualized items={makeItems(300)} />);
     giveScrollRange(getPort(), 300);

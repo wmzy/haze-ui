@@ -8,9 +8,9 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 const pane = {
   padding: 'var(--haze-space-3)',
@@ -35,20 +35,21 @@ export default function ResizableDemo() {
   const [collapsed, setCollapsed, collapsedCtrl] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>Resizable</h1>
-      <p className={intro}>
-        Panel groups sized in <strong>pixels</strong>: every panel
-        declares a stable <code>id</code>, an optional{' '}
-        <code>defaultSize</code> in px, and px clamps. Panels without a{' '}
-        <code>defaultSize</code> stay flexible and grow into whatever the
-        fixed panels leave behind — no percentage bookkeeping, and{' '}
-        <code>onResizeCommit</code> hands back a{' '}
-        <code>Record&lt;id, px&gt;</code> ready to persist.
-      </p>
-
-      <div className={section}>
-        <h2>Horizontal — fixed px + flexible</h2>
+    <DemoPage
+      title='Resizable'
+      description={
+        <>
+          Panel groups sized in <strong>pixels</strong>: every panel
+          declares a stable <code>id</code>, an optional{' '}
+          <code>defaultSize</code> in px, and px clamps. Panels without a{' '}
+          <code>defaultSize</code> stay flexible and grow into whatever the
+          fixed panels leave behind — no percentage bookkeeping, and{' '}
+          <code>onResizeCommit</code> hands back a{' '}
+          <code>Record&lt;id, px&gt;</code> ready to persist.
+        </>
+      }
+    >
+      <DemoSection title='Horizontal — fixed px + flexible'>
         <p className={row}>
           The leading panel is pinned at 240px (min 160); the trailing
           panel is flexible. Commit read-back:{' '}
@@ -77,10 +78,9 @@ export default function ResizableDemo() {
   <ResizablePanel id='content'>{content}</ResizablePanel>
 </ResizableGroup>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Vertical</h2>
+      <DemoSection title='Vertical'>
         <div className={row} style={frame}>
           <ResizableGroup direction='vertical'>
             <ResizablePanel id='editor'>
@@ -99,10 +99,9 @@ export default function ResizableDemo() {
   <ResizablePanel id='terminal' defaultSize={140} minSize={80} />
 </ResizableGroup>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Collapsible panel</h2>
+      <DemoSection title='Collapsible panel'>
         <p className={row}>
           <code>collapsible</code> opts a panel into the collapse feature;{' '}
           <code>collapsed</code> is the usual <code>ControlOrValue</code>{' '}
@@ -134,42 +133,36 @@ export default function ResizableDemo() {
             {collapsed ? 'Expand explorer' : 'Collapse explorer'}
           </button>
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ResizableGroup Props</h2>
+      <DemoSection title='ResizableGroup Props'>
         <PropsTable of='ResizableGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ResizablePanel Props</h2>
+      <DemoSection title='ResizablePanel Props'>
         <PropsTable of='ResizablePanelProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ResizableHandle Props</h2>
+      <DemoSection title='ResizableHandle Props'>
         <PropsTable of='ResizableHandleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Handle uses <strong>role=&quot;separator&quot;</strong> with{' '}
-              <strong>aria-orientation</strong> and px value text.
-            </li>
-            <li>
-              Keyboard resizing (WCAG 2.5.7): arrow keys step 16px, Home /
-              End park the leading panel at its clamp.
-            </li>
-            <li>
-              24px hit strip with a 4px visual bar (WCAG 2.5.8); coarse
-              pointers get 44px.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Handle uses <strong>role=&quot;separator&quot;</strong> with{' '}
+            <strong>aria-orientation</strong> and px value text.
+          </li>
+          <li>
+            Keyboard resizing (WCAG 2.5.7): arrow keys step 16px, Home /
+            End park the leading panel at its clamp.
+          </li>
+          <li>
+            24px hit strip with a 4px visual bar (WCAG 2.5.8); coarse
+            pointers get 44px.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

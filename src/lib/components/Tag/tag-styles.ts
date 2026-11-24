@@ -1,5 +1,6 @@
 import {css} from '@linaria/core';
 
+import { chipSizeMd, chipSizeSm } from '../../utils/chip-size-skin';
 import { statusSubtleColors } from '../../utils/status-skin';
 
 /**
@@ -29,14 +30,15 @@ export const base = css`
  * name. */
 export const colors = statusSubtleColors;
 
+/* The sm/md padding + font-size ladder is the shared chip size skin
+ * (utils/chip-size-skin.ts) — the pair Badge's sizes wears identically;
+ * interpolated here so tag.css keeps emitting its own rules. */
 export const tagSizes = {
   sm: css`
-    padding: var(--haze-space-0) var(--haze-space-2);
-    font-size: var(--haze-text-xs);
+    ${chipSizeSm}
   `,
   md: css`
-    padding: var(--haze-space-1) var(--haze-space-3);
-    font-size: var(--haze-text-sm);
+    ${chipSizeMd}
   `,
 } as const;
 

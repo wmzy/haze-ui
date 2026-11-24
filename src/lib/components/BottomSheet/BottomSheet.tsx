@@ -19,6 +19,7 @@ import {
   releasePointerCaptureSafe,
 } from '../../utils/pointer-capture';
 import { Presence } from '../../utils/presence';
+import { useMergedRefs } from '../../utils/refs';
 import { useTouchScrollGuard } from '../../utils/touch-scroll-guard';
 import { useViewTransitionFlip } from '../../utils/view-transition';
 import { useVisualViewportInset } from '../../utils/viewport';
@@ -237,13 +238,7 @@ export default function BottomSheet({
   // ── 下滑关闭手势（swipeToDismiss，默认零开销）──────────────────
   const sheetRef = useRef<HTMLDivElement | null>(null);
   // 合并 focus scope 的 ref 回调与手势所需的 sheet 引用
-  const setSheet = useCallback(
-    (node: HTMLDivElement | null) => {
-      setScope(node);
-      sheetRef.current = node;
-    },
-    [setScope]
-  );
+  const setSheet = useMergedRefs(setScope, sheetRef);
   const swipeRef = useRef<SwipeState | null>(null);
 
   // vaul/Base UI 式 touchmove 守卫（utils/touch-scroll-guard）：在「可

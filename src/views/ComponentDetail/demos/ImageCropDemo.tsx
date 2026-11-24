@@ -7,10 +7,15 @@ import { useControl } from 'react-use-control';
 import { Button } from '@/lib/components/Button';
 import { ImageCrop } from '@/lib/components/ImageCrop';
 
-import A11yNote from '../A11yNote';
-import PropsTable from '../PropsTable';
 
-import { intro, section, row } from '../styles';
+import { row } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const readout = css`
   margin: 0 0 var(--haze-space-2);
@@ -64,17 +69,18 @@ export default function ImageCropDemo() {
   const avatarRef = useRef<ImageCropHandle>(null);
 
   return (
-    <>
-      <h1>ImageCrop</h1>
-      <p className={intro}>
-        Interactive image cropper — the avatar/photo companion to{' '}
-        <code>Upload</code>. The crop rectangle lives in the controllable{' '}
-        <code>value</code> as normalized coordinates (0–1 of the image), and{' '}
-        <code>ref.getCroppedCanvas()</code> rasterizes it at native resolution.
-      </p>
-
-      <div className={section}>
-        <h2>Free crop</h2>
+    <DemoPage
+      title='ImageCrop'
+      description={
+        <>
+          Interactive image cropper — the avatar/photo companion to{' '}
+          <code>Upload</code>. The crop rectangle lives in the controllable{' '}
+          <code>value</code> as normalized coordinates (0–1 of the image), and{' '}
+          <code>ref.getCroppedCanvas()</code> rasterizes it at native resolution.
+        </>
+      }
+    >
+      <DemoSection title='Free crop'>
         <p className={readout}>
           {`x ${format(value.x)} · y ${format(value.y)} · w ${format(value.width)} · h ${format(value.height)}`}
         </p>
@@ -87,10 +93,9 @@ export default function ImageCropDemo() {
             crossOrigin="anonymous"
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Avatar crop (aspect + circle)</h2>
+      <DemoSection title='Avatar crop (aspect + circle)'>
         <p className={readout}>
           <code>aspect=&#123;1&#125;</code> locks a square output;{' '}
           <code>shape="circle"</code> masks the preview.
@@ -126,34 +131,28 @@ export default function ImageCropDemo() {
             <ImageCrop src={PHOTO} alt="Disabled cropper" disabled />
           </div>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ImageCropProps' />
-      </div>
+      <PropsSection of='ImageCropProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The crop region is a labeled, focusable <code>role="group"</code>:{' '}
-              <strong>arrow keys</strong> move it in 1% steps,{' '}
-              <strong>Shift + arrow keys</strong> resize — the cropper is fully
-              operable without a pointer (WCAG 2.5.7).
-            </li>
-            <li>
-              A visually-hidden description announces the live crop geometry,
-              so drags and key steps reach screen readers.
-            </li>
-            <li>
-              The image itself is exposed as <code>role="img"</code> with the{' '}
-              <code>alt</code> prop as its accessible name.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The crop region is a labeled, focusable <code>role="group"</code>:{' '}
+            <strong>arrow keys</strong> move it in 1% steps,{' '}
+            <strong>Shift + arrow keys</strong> resize — the cropper is fully
+            operable without a pointer (WCAG 2.5.7).
+          </li>
+          <li>
+            A visually-hidden description announces the live crop geometry,
+            so drags and key steps reach screen readers.
+          </li>
+          <li>
+            The image itself is exposed as <code>role="img"</code> with the{' '}
+            <code>alt</code> prop as its accessible name.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

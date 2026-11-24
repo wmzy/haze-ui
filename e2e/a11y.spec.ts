@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+import { waitForOpenAnimationToSettle } from './animation';
 
 /**
  * axe baseline for the core interactive components (Popover, menu class,
@@ -33,27 +35,6 @@ async function scan(page: Page, selector: string) {
     )
     .join('\n');
   expect(summary || 'no violations', summary).toBe('no violations');
-}
-
-/**
- * Open panels and toasts animate in via data-state (opacity fade over
- * the motion tokens); scanning a mid-fade element makes axe's
- * visibility math nondeterministic. Wait until no enter animation is
- * running and opacity is back at 1 (elements without data-state or
- * animation settle immediately).
- */
-async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
-  await expect
-    .poll(() =>
-      panel.evaluate((el) => {
-        if (el.dataset.state === 'closed') return false;
-        return (
-          el.getAnimations({ subtree: true }).length === 0 &&
-          getComputedStyle(el).opacity === '1'
-        );
-      })
-    )
-    .toBe(true);
 }
 
 test.describe('axe baseline', () => {

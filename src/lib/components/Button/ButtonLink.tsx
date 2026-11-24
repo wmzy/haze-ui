@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
+import { warnDeprecated } from '../../utils/deprecate';
 import { useConfigDefaults } from '../ConfigProvider/useConfigDefaults';
 
 import Button from './Button';
@@ -26,6 +27,9 @@ import Button from './Button';
  * contract-equal: `variant` still defaults to `'solid'` (the Button
  * tier never read config) and `size` still reads the `ButtonLink`
  * config section first.
+ *
+ * Rendering warns once per page load in dev, through warnDeprecated
+ * (`[haze-ui]` prefix, deduped by key, silent in production builds).
  */
 type ButtonLinkProps = {
   variant?: 'solid' | 'outline' | 'ghost';
@@ -39,6 +43,12 @@ type ButtonLinkProps = {
 
 // eslint-disable-next-line @typescript-eslint/no-deprecated -- 声明点本身必须引用自己的类型
 export default function ButtonLink({ size: sizeProp, ref, ...props }: ButtonLinkProps) {
+  // During render on purpose: "first use" is the first render, on the
+  // server as on the client — the dedup Set keeps it to one line either way.
+  warnDeprecated(
+    'ButtonLink.alias',
+    "ButtonLink is deprecated — use <Button as='a'> instead; the alias is removed in the next major."
+  );
   // ButtonLink keeps its own ConfigProvider section: before the `as`
   // delegation it read 'ButtonLink', and existing consumers keep that
   // tier — explicit prop > ButtonLink config > Button's resolution.

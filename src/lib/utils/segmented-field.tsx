@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef, FocusEvent, KeyboardEvent, Ref } from 'r
 import { css } from '@linaria/core';
 import { Fragment, useRef, useState } from 'react';
 
+import { focusRingForcedColors } from './focus-ring-delta';
 import { mergeRefs } from './refs';
 
 /**
@@ -98,11 +99,18 @@ const field = css`
 
   /* Focus lands on the inner spinbutton spans, so the field ring rides
    * :focus-within — field-skin's fieldFocusRing is a :focus leaf arm
-   * and never fires on this group container. */
+   * and never fires on this group container. Under forced colors the
+   * UA drops that ring, and the focused segment is outline: none (its
+   * arm below), so the UA outline cannot stand in either: the group
+   * wears the Highlight outline instead, exactly as it wears the ring
+   * (field-skin's focusWithinRing, the same wrapper shape — the block
+   * follows the arm's outline: none because it restates it). */
   &:focus-within {
     outline: none;
     border-color: var(--haze-color-primary);
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+
+${focusRingForcedColors}
   }
 
   &[data-invalid] {

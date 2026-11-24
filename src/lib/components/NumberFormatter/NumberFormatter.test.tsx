@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
+import { countNumberFormatConstructions } from '../../utils/testing/count-number-formats';
+
 import NumberFormatter from './NumberFormatter';
 
 describe('NumberFormatter', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('formats with grouping separators in the given locale', () => {
     render(<NumberFormatter value={1234567.89} locale='en-US' data-testid='n' />);
     expect(screen.getByTestId('n')).toHaveTextContent('1,234,567.89');
@@ -34,6 +40,25 @@ describe('NumberFormatter', () => {
     render(<NumberFormatter value={1} className='mine' aria-label='count' />);
     const el = screen.getByLabelText('count');
     expect(el).toHaveClass('mine');
+  });
+
+  it('reuses the cached formatter across rerenders with an inline options literal', () => {
+    const constructions = countNumberFormatConstructions();
+    const { rerender } = render(
+      <NumberFormatter value={1} locale='en-US' formatOptions={{ style: 'unit', unit: 'kilometer' }} />
+    );
+    // Same options, fresh object and different key order: still one entry.
+    rerender(
+      <NumberFormatter value={2} locale='en-US' formatOptions={{ unit: 'kilometer', style: 'unit' }} />
+    );
+    // A changed option is a new entry.
+    rerender(
+      <NumberFormatter value={3} locale='en-US' formatOptions={{ style: 'unit', unit: 'mile' }} />
+    );
+
+    // The default unit display is short ("mi", not "miles").
+    expect(screen.getByText('3 mi')).toBeInTheDocument();
+    expect(constructions).toHaveLength(2);
   });
 
   it('has no axe violations', async () => {

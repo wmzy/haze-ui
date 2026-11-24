@@ -2,27 +2,27 @@ import { useState } from 'react';
 
 import { Button, Tag } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Tag ───────────────────────────────────────────────────────
 export default function TagDemo() {
   const [tags, setTags] = useState(['React', 'TypeScript', 'Linaria']);
 
   return (
-    <>
-      <h1>Tag</h1>
-      <p className={intro}>
-        Interactive labels for categorization and filtering.
-      </p>
-
-      <div className={section}>
-        <h2>Colors</h2>
+    <DemoPage
+      title='Tag'
+      description='Interactive labels for categorization and filtering.'
+    >
+      <DemoSection title='Colors'>
         <div className={row}>
           <Tag color='default'>Default</Tag>
           <Tag color='primary'>Primary</Tag>
@@ -31,10 +31,9 @@ export default function TagDemo() {
           <Tag color='danger'>Danger</Tag>
           <Tag color='info'>Info</Tag>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Closable</h2>
+      <DemoSection title='Closable'>
         <div className={row}>
           {tags.map((t) => (
             <Tag
@@ -55,17 +54,10 @@ export default function TagDemo() {
             </Button>
           )}
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Clickable tag links (as)</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Clickable tag links (as)'>
+        <p style={noteStyle}>
           <code>as=&#123;'a'&#125;</code> renders the tag as a native{' '}
           <code>&lt;a&gt;</code>: <code>href</code>, <code>target</code> and
           the rest of the anchor surface flow through, with the UA
@@ -79,29 +71,23 @@ export default function TagDemo() {
           <Tag as='a' href='#tag' color='primary'>TypeScript</Tag>
           <Tag as='a' href='#tag' color='success' size='sm'>Linaria</Tag>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='TagProps' />
-      </div>
+      <PropsSection of='TagProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Close button has <strong>aria-label=&quot;Remove&quot;</strong>
-            </li>
-            <li>
-              Close button is keyboard accessible via <strong>Tab</strong> +{' '}
-              <strong>Enter</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Close button has <strong>aria-label=&quot;Remove&quot;</strong>
+          </li>
+          <li>
+            Close button is keyboard accessible via <strong>Tab</strong> +{' '}
+            <strong>Enter</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='tag' />
-    </>
+    </DemoPage>
   );
 }

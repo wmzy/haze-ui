@@ -21,6 +21,7 @@ import {
   statusDotPending,
   statusDotRunning,
   statusGlyphs,
+  timelineLabel,
   timelineList,
 } from '../../utils/timeline-skin';
 
@@ -83,15 +84,11 @@ const itemRow = css`
   gap: var(--haze-space-3);
 `;
 
-const titleStyle = css`
-  font-size: var(--haze-text-sm);
-  font-weight: var(--haze-weight-medium);
-  color: var(--haze-color-text);
-`;
-
-/* The status ring rides the shared statusDot geometry and arm set
-   (utils/timeline-skin); only the Trace-specific row chrome above and
-   the sr-only announcement wiring below are local. */
+/* The status ring rides the shared statusDot geometry and arm set, and
+   the title the shared label skin (utils/timeline-skin — the former
+   local titleStyle was declaration-identical); only the Trace-specific
+   row chrome above and the sr-only announcement wiring below are
+   local. */
 const markerMap: Record<TraceStatus, string> = {
   pending: statusDotPending,
   running: statusDotRunning,
@@ -155,7 +152,7 @@ export function TraceItem({
   );
 
   const titleNode = (
-    <div data-slot='title' x-class={[titleStyle]} ref={titleRef}>
+    <div data-slot='title' x-class={[timelineLabel]} ref={titleRef}>
       {title}
     </div>
   );

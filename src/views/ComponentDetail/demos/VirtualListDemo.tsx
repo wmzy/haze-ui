@@ -1,10 +1,11 @@
 import { VirtualList } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── VirtualList ────────────────────────────────────────────────
 export default function VirtualListDemo() {
@@ -13,12 +14,11 @@ export default function VirtualListDemo() {
   const tiles = Array.from({ length: 3000 }, (_, i) => i + 1);
 
   return (
-    <>
-      <h1>VirtualList</h1>
-      <p className={intro}>Virtualized list for rendering large datasets efficiently.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='VirtualList'
+      description='Virtualized list for rendering large datasets efficiently.'
+    >
+      <DemoSection title='Demo'>
         <VirtualList
           items={items}
           height={300}
@@ -29,10 +29,9 @@ export default function VirtualListDemo() {
             </div>
           )}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Horizontal orientation</h2>
+      <DemoSection title='Horizontal orientation'>
         <p>
           <code>orientation=&quot;horizontal&quot;</code> mirrors the windowing system onto the
           x axis: <code>itemHeight</code> is each item&rsquo;s width, sticky group headers pin
@@ -65,10 +64,9 @@ export default function VirtualListDemo() {
             </div>
           )}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Grid mode (columns)</h2>
+      <DemoSection title='Grid mode (columns)'>
         <p>
           <code>columns &gt; 1</code> virtualizes both axes: rows are windowed like a
           vertical list (<code>itemHeight</code> = row height, dynamic measurement
@@ -103,24 +101,18 @@ export default function VirtualListDemo() {
             </div>
           )}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='VirtualListProps' />
-      </div>
+      <PropsSection of='VirtualListProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Only visible items are rendered in the DOM</li>
-            <li>Uses absolute positioning for item placement</li>
-            <li>Native scroll behavior is preserved</li>
-            <li>Horizontal and grid modes keep the same native-scroll semantics — arrow keys, wheel and touch all work</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Only visible items are rendered in the DOM</li>
+          <li>Uses absolute positioning for item placement</li>
+          <li>Native scroll behavior is preserved</li>
+          <li>Horizontal and grid modes keep the same native-scroll semantics — arrow keys, wheel and touch all work</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

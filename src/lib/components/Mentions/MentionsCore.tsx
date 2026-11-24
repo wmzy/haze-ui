@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef, KeyboardEvent, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useFloating } from '../../utils/floating';
@@ -13,7 +13,7 @@ import {
 } from '../../utils/field-skin';
 import { SuggestListbox, useSuggestField, useSuggestWiring } from '../../utils/suggest-listbox';
 import { useTextareaSuggest } from '../../utils/use-textarea-suggest';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
 export type MentionsOption = {
@@ -83,10 +83,7 @@ export default function MentionsCore({
   const [open, setOpen] = useControl(undefined, false);
   const id = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const setTextareaRef = useCallback(
-    (node: HTMLTextAreaElement | null) => mergeRefs(textareaRef, ref)(node),
-    [textareaRef, ref]
-  );
+  const setTextareaRef = useMergedRefs(textareaRef, ref);
   const panelRef = useRef<HTMLDivElement>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
 

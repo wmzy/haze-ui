@@ -2,13 +2,15 @@ import { useControl } from 'react-use-control';
 
 import { ModelPicker } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth320,
+  offsetNoteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── ModelPicker ──────────────────────────────────────────────
 export default function ModelPickerDemo() {
@@ -23,49 +25,34 @@ export default function ModelPickerDemo() {
   ];
 
   return (
-    <>
-      <h1>ModelPicker</h1>
-      <p className={intro}>
-        Dropdown for selecting an AI model with optional context length info.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 320 }}>
+    <DemoPage
+      title='ModelPicker'
+      description='Dropdown for selecting an AI model with optional context length info.'
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth320}>
           <ModelPicker value={modelCtrl} options={models} />
-          <p
-            style={{
-              marginTop: 'var(--haze-space-2)',
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={offsetNoteStyle}>
             Selected: {model}
           </p>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ModelPickerProps' />
-      </div>
+      <PropsSection of='ModelPickerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as a native <strong>&lt;select&gt;</strong> element
-            </li>
-            <li>
-              Full keyboard support via <strong>Arrow keys</strong> and{' '}
-              <strong>Enter</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as a native <strong>&lt;select&gt;</strong> element
+          </li>
+          <li>
+            Full keyboard support via <strong>Arrow keys</strong> and{' '}
+            <strong>Enter</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='modelpicker' />
-    </>
+    </DemoPage>
   );
 }

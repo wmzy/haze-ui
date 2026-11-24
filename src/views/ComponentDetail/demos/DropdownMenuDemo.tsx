@@ -20,9 +20,12 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+} from './shared';
 
 /** A small bare svg for the icon slot demos (sized to 1em by the slot). */
 function DemoIcon() {
@@ -101,12 +104,11 @@ const dataItems: DropdownMenuDataItem[] = [
 // ─── DropdownMenu ───────────────────────────────────────────────
 export default function DropdownMenuDemo() {
   return (
-    <>
-      <h1>DropdownMenu</h1>
-      <p className={intro}>Dropdown menu with trigger, content, items, and separators.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='DropdownMenu'
+      description='Dropdown menu with trigger, content, items, and separators.'
+    >
+      <DemoSection title='Demo'>
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Button variant='outline'>Open Menu</Button>
@@ -118,17 +120,10 @@ export default function DropdownMenuDemo() {
             <DropdownMenuItem danger>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Selection items: checkboxes, radios and groups</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Selection items: checkboxes, radios and groups'>
+        <p style={noteStyle}>
           <code>DropdownMenuCheckboxItem</code> toggles a boolean option;{' '}
           <code>DropdownMenuRadioGroup</code> +{' '}
           <code>DropdownMenuRadioItem</code> form a single-select cluster;{' '}
@@ -138,17 +133,10 @@ export default function DropdownMenuDemo() {
           focused item.
         </p>
         <SelectionDropdown />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Icons, shortcut hints and the items data API</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Icons, shortcut hints and the items data API'>
+        <p style={noteStyle}>
           Items accept an <code>icon</code> (inline-start slot) and a{' '}
           <code>kbdLabel</code> shortcut hint (inline end), and{' '}
           <code>danger</code> marks destructive actions. Passing{' '}
@@ -177,17 +165,10 @@ export default function DropdownMenuDemo() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Nested submenus</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Nested submenus'>
+        <p style={noteStyle}>
           Compose submenus from <code>DropdownMenuSub</code> wrapping a{' '}
           <code>DropdownMenuSubTrigger</code> +{' '}
           <code>DropdownMenuSubContent</code> pair — nesting composes
@@ -221,69 +202,58 @@ export default function DropdownMenuDemo() {
             <DropdownMenuItem>Archive</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenu Props</h2>
+      <DemoSection title='DropdownMenu Props'>
         <PropsTable of='DropdownMenuProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuContent Props</h2>
+      <DemoSection title='DropdownMenuContent Props'>
         <PropsTable of='DropdownMenuContentProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuItem Props</h2>
+      <DemoSection title='DropdownMenuItem Props'>
         <PropsTable of='DropdownMenuItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuCheckboxItem Props</h2>
+      <DemoSection title='DropdownMenuCheckboxItem Props'>
         <PropsTable of='DropdownMenuCheckboxItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuRadioGroup Props</h2>
+      <DemoSection title='DropdownMenuRadioGroup Props'>
         <PropsTable of='DropdownMenuRadioGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuRadioItem Props</h2>
+      <DemoSection title='DropdownMenuRadioItem Props'>
         <PropsTable of='DropdownMenuRadioItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuGroup Props</h2>
+      <DemoSection title='DropdownMenuGroup Props'>
         <PropsTable of='DropdownMenuGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>DropdownMenuSub Props</h2>
+      <DemoSection title='DropdownMenuSub Props'>
         <PropsTable of='DropdownMenuSubProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Trigger is a native <strong>&lt;button&gt;</strong></li>
-            <li>
-              Checkbox and radio options use{' '}
-              <strong>menuitemcheckbox</strong> /{' '}
-              <strong>menuitemradio</strong> with{' '}
-              <strong>aria-checked</strong>; groups are{' '}
-              <strong>role=&quot;group&quot;</strong> named by their label
-            </li>
-            <li>Click outside closes the menu</li>
-            <li>Disabled items have <strong>disabled</strong> attribute</li>
-            <li>
-              Submenu triggers expose <strong>aria-haspopup</strong> /{' '}
-              <strong>aria-expanded</strong>; focus is contained per level
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Trigger is a native <strong>&lt;button&gt;</strong></li>
+          <li>
+            Checkbox and radio options use{' '}
+            <strong>menuitemcheckbox</strong> /{' '}
+            <strong>menuitemradio</strong> with{' '}
+            <strong>aria-checked</strong>; groups are{' '}
+            <strong>role=&quot;group&quot;</strong> named by their label
+          </li>
+          <li>Click outside closes the menu</li>
+          <li>Disabled items have <strong>disabled</strong> attribute</li>
+          <li>
+            Submenu triggers expose <strong>aria-haspopup</strong> /{' '}
+            <strong>aria-expanded</strong>; focus is contained per level
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

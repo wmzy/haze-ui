@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import type {ReactNode} from 'react';
 
-import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {createContext, useCallback, useContext, useMemo, useState} from 'react';
 
-import {TOKEN_REGISTRY} from '@/lib';
+import {TOKEN_REGISTRY, useMediaQuery} from '@/lib';
 
 type ThemeTokens = {
   light: Record<string, string>;
@@ -36,11 +36,6 @@ type ThemeContextValue = ThemeState & {
 };
 
 const STORAGE_KEY = 'haze-ui-themes';
-
-function getSystemPreference(): ResolvedMode {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
 
 function migrateTheme(t: Record<string, unknown>): CustomTheme | null {
   if (typeof t.id !== 'string' || typeof t.name !== 'string') return null;
@@ -93,16 +88,10 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function ThemeProvider({children}: {children: ReactNode}) {
   const [state, setState] = useState<ThemeState>(loadFromStorage);
-  const [systemMode, setSystemMode] = useState<ResolvedMode>(getSystemPreference);
+  const systemDark = useMediaQuery('(prefers-color-scheme: dark)');
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => setSystemMode(e.matches ? 'dark' : 'light');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const resolvedMode: ResolvedMode = state.baseTheme === 'auto' ? systemMode : state.baseTheme;
+  const resolvedMode: ResolvedMode =
+    state.baseTheme === 'auto' ? (systemDark ? 'dark' : 'light') : state.baseTheme;
 
   const setBaseTheme = useCallback((base: BaseTheme) => {
     setState((prev) => {

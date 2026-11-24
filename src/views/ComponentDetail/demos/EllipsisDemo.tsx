@@ -5,9 +5,7 @@ import { Ellipsis } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // Constrained width so truncation is observable in the demo.
 const box = css`
@@ -42,55 +40,49 @@ function ExpandableExample() {
 // ─── Ellipsis ──────────────────────────────────────────────────
 export default function EllipsisDemo() {
   return (
-    <>
-      <h1>Ellipsis</h1>
-      <p className={intro}>
-        Text truncation with line clamping, tooltip preview, and expand/collapse —
-        the interactive sibling of Typography&#39;s pure-CSS ellipsis.
-      </p>
-
-      <div className={section}>
-        <h2>Single line</h2>
+    <DemoPage
+      title='Ellipsis'
+      description={
+        <>
+          Text truncation with line clamping, tooltip preview, and expand/collapse —
+          the interactive sibling of Typography&#39;s pure-CSS ellipsis.
+        </>
+      }
+    >
+      <DemoSection title='Single line'>
         <div className={box}>
           <Ellipsis>{LOREM}</Ellipsis>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multi-line</h2>
+      <DemoSection title='Multi-line'>
         <div className={box}>
           <Ellipsis lines={3}>{LOREM}</Ellipsis>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tooltip preview</h2>
+      <DemoSection title='Tooltip preview'>
         <div className={box}>
           <Ellipsis lines={2} tooltip>{LOREM}</Ellipsis>
         </div>
         <p className={stateLine}>Hover or focus the clamped text to preview the full content.</p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Expandable (controlled)</h2>
+      <DemoSection title='Expandable (controlled)'>
         <ExpandableExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Ellipsis Props</h2>
+      <DemoSection title='Ellipsis Props'>
         <PropsTable of='EllipsisProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Truncation is detected, never assumed — affordances appear only when content overflows</li>
-            <li>The expand toggle is a native <strong>&lt;button&gt;</strong> with <code>aria-expanded</code>, operable by keyboard</li>
-            <li>Tooltip wiring (aria-describedby, hover + focus) is inherited from the library Tooltip</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Truncation is detected, never assumed — affordances appear only when content overflows</li>
+          <li>The expand toggle is a native <strong>&lt;button&gt;</strong> with <code>aria-expanded</code>, operable by keyboard</li>
+          <li>Tooltip wiring (aria-describedby, hover + focus) is inherited from the library Tooltip</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

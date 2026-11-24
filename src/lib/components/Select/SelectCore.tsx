@@ -4,11 +4,11 @@ import type { SelectVirtualizedConfig } from './SelectFloating';
 import type { SelectClassNames } from './Select';
 
 import { css } from '@linaria/core';
-import { useCallback, useRef } from 'react';
+import { useRef } from 'react';
 
 import { fieldSizes } from '../../utils/field-skin';
 import { PickerCaret, pickerNativeCaret, pickerNativeSelect } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { useStrings } from '../LocaleProvider';
 
 import SelectFloating from './SelectFloating';
@@ -218,10 +218,9 @@ export default function SelectCore<T extends string | number = string>({
   const selectRef = useRef<HTMLSelectElement>(null);
   // The consumer's ref merges onto the native select in the clearable
   // branch (the internal handle restores focus after the × clear).
-  const setNativeSelectRef = useCallback(
-    (node: HTMLSelectElement | null) =>
-      mergeRefs(selectRef, ref as Ref<HTMLSelectElement> | undefined)(node),
-    [selectRef, ref]
+  const setNativeSelectRef = useMergedRefs(
+    selectRef,
+    ref as Ref<HTMLSelectElement> | undefined
   );
 
   if (multiple || searchable || tags) {

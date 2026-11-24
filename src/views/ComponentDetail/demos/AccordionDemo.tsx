@@ -2,24 +2,21 @@ import { Accordion, AccordionItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── Accordion ─────────────────────────────────────────────────
 export default function AccordionDemo() {
   return (
-    <>
-      <h1>Accordion</h1>
-      <p className={intro}>
-        Collapsible content sections using native
-        &lt;details&gt;/&lt;summary&gt;.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Accordion'
+      description={'Collapsible content sections using native <details>/<summary>.'}
+    >
+      <DemoSection title='Demo'>
         <Accordion>
           <AccordionItem title='Section One'>
             Content for section one. This uses the native details/summary
@@ -33,46 +30,41 @@ export default function AccordionDemo() {
             height animates on open.
           </AccordionItem>
         </Accordion>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accordion Props</h2>
+      <DemoSection title='Accordion Props'>
         <PropsTable of='AccordionProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>AccordionItem Props</h2>
+      <DemoSection title='AccordionItem Props'>
         <PropsTable of='AccordionItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses native <strong>&lt;details&gt;</strong>/
-              <strong>&lt;summary&gt;</strong> — built-in keyboard and screen
-              reader support
-            </li>
-            <li>
-              <strong>Enter</strong>/<strong>Space</strong> toggles open/close
-            </li>
-            <li>
-              Exclusive mode uses the HTML <strong>name</strong> attribute for
-              mutual exclusion
-            </li>
-            <li>
-              Open/close height animates via CSS progressive enhancement
-              (<code>::details-content</code> + <code>interpolate-size</code>)
-              — engines without support fall back to instant toggles, and{' '}
-              <strong>prefers-reduced-motion</strong> collapses the animation
-              to instant
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses native <strong>&lt;details&gt;</strong>/
+            <strong>&lt;summary&gt;</strong> — built-in keyboard and screen
+            reader support
+          </li>
+          <li>
+            <strong>Enter</strong>/<strong>Space</strong> toggles open/close
+          </li>
+          <li>
+            Exclusive mode uses the HTML <strong>name</strong> attribute for
+            mutual exclusion
+          </li>
+          <li>
+            Open/close height animates via CSS progressive enhancement
+            (<code>::details-content</code> + <code>interpolate-size</code>)
+            — engines without support fall back to instant toggles, and{' '}
+            <strong>prefers-reduced-motion</strong> collapses the animation
+            to instant
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='accordion' />
-    </>
+    </DemoPage>
   );
 }

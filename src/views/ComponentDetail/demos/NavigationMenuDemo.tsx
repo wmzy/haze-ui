@@ -12,11 +12,14 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── mega panel scaffolding ─────────────────────────────────────
 
@@ -98,18 +101,19 @@ export default function NavigationMenuDemo() {
   const [active, setActive] = useControl<string | null>(undefined, 'components');
 
   return (
-    <>
-      <h1>NavigationMenu</h1>
-      <p className={intro}>
-        A hover mega-menu navigation bar: triggers open large content
-        panels (link columns, card grids — any ReactNode) after a short
-        intent dwell, panels stay through a pointer grace, and the whole
-        active item is controllable through{' '}
-        <code>activeValue</code>.
-      </p>
-
-      <div className={section}>
-        <h2>Mega menu</h2>
+    <DemoPage
+      title='NavigationMenu'
+      description={
+        <>
+          A hover mega-menu navigation bar: triggers open large content
+          panels (link columns, card grids — any ReactNode) after a short
+          intent dwell, panels stay through a pointer grace, and the whole
+          active item is controllable through{' '}
+          <code>activeValue</code>.
+        </>
+      }
+    >
+      <DemoSection title='Mega menu'>
         <div className={row}>
           <NavigationMenu aria-label='Product'>
             <NavigationMenuList>
@@ -163,10 +167,9 @@ export default function NavigationMenuDemo() {
           the panel cancels the close. <strong>Blog</strong> is a plain
           item: no panel, no disclosure attributes.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled activeValue</h2>
+      <DemoSection title='Controlled activeValue'>
         <div className={row}>
           <NavigationMenu
             aria-label='Controlled product'
@@ -199,10 +202,9 @@ export default function NavigationMenuDemo() {
 <NavigationMenu activeValue={active} onActiveValueChange={setActive}>
   …
 </NavigationMenu>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Plain links</h2>
+      <DemoSection title='Plain links'>
         <div className={row}>
           <NavigationMenu aria-label='Plain'>
             <NavigationMenuList>
@@ -224,10 +226,9 @@ export default function NavigationMenuDemo() {
           <code>aria-controls</code> — wire them to routing through the
           trigger&apos;s native props.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>stretchToTrigger</h2>
+      <DemoSection title='stretchToTrigger'>
         <div className={row}>
           <NavigationMenu aria-label='Stretched' stretchToTrigger>
             <NavigationMenuList>
@@ -257,10 +258,9 @@ export default function NavigationMenuDemo() {
           its trigger&apos;s — dropdown-like menus instead of
           content-sized mega panels.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>NavigationMenu Props</h2>
+      <DemoSection title='NavigationMenu Props'>
         <PropsTable of='NavigationMenuProps' />
         <h2>NavigationMenuItem Props</h2>
         <PropsTable of='NavigationMenuItemProps' />
@@ -270,50 +270,47 @@ export default function NavigationMenuDemo() {
         <PropsTable of='NavigationMenuContentProps' />
         <h2>NavigationMenuList Props</h2>
         <PropsTable of='NavigationMenuListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              WAI-ARIA <strong>disclosure navigation menu</strong>{' '}
-              pattern: a <code>&lt;nav&gt;</code> landmark wrapping a{' '}
-              <code>role=&quot;list&quot;</code> strip of items
-            </li>
-            <li>
-              Triggers are real buttons —{' '}
-              <strong>aria-expanded</strong> +{' '}
-              <strong>aria-controls</strong> wiring only on items that
-              carry a panel; panels are{' '}
-              <strong>aria-labelledby</strong> their trigger
-            </li>
-            <li>
-              Every trigger is its own Tab stop (no roving tabindex —
-              disclosures, not tab panels); <strong>←/→</strong> move
-              focus between triggers (RTL-aware),{' '}
-              <strong>Home/End</strong> jump to the ends
-            </li>
-            <li>
-              <strong>Enter/Space</strong> toggles,{' '}
-              <strong>Escape</strong> closes; a panel closing under
-              keyboard focus returns focus to its trigger
-            </li>
-            <li>
-              Panels stay open while keyboard focus rests inside them —
-              incidental pointer movement never closes a panel being
-              read
-            </li>
-            <li>
-              Focus opens follow the same intent dwell as hover; give
-              the <code>&lt;nav&gt;</code> an <code>aria-label</code> so
-              the landmark is named
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            WAI-ARIA <strong>disclosure navigation menu</strong>{' '}
+            pattern: a <code>&lt;nav&gt;</code> landmark wrapping a{' '}
+            <code>role=&quot;list&quot;</code> strip of items
+          </li>
+          <li>
+            Triggers are real buttons —{' '}
+            <strong>aria-expanded</strong> +{' '}
+            <strong>aria-controls</strong> wiring only on items that
+            carry a panel; panels are{' '}
+            <strong>aria-labelledby</strong> their trigger
+          </li>
+          <li>
+            Every trigger is its own Tab stop (no roving tabindex —
+            disclosures, not tab panels); <strong>←/→</strong> move
+            focus between triggers (RTL-aware),{' '}
+            <strong>Home/End</strong> jump to the ends
+          </li>
+          <li>
+            <strong>Enter/Space</strong> toggles,{' '}
+            <strong>Escape</strong> closes; a panel closing under
+            keyboard focus returns focus to its trigger
+          </li>
+          <li>
+            Panels stay open while keyboard focus rests inside them —
+            incidental pointer movement never closes a panel being
+            read
+          </li>
+          <li>
+            Focus opens follow the same intent dwell as hover; give
+            the <code>&lt;nav&gt;</code> an <code>aria-label</code> so
+            the landmark is named
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='navigation-menu' />
-    </>
+    </DemoPage>
   );
 }

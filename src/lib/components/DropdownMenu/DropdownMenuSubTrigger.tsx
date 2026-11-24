@@ -1,14 +1,11 @@
-import type { ReactNode } from 'react';
-
-import { MenuSubTriggerImpl } from '../../utils/menu-item-parts';
+import {
+  MenuSubTriggerImpl,
+  type MenuSubTriggerBaseProps,
+} from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
-type DropdownMenuSubTriggerProps = {
-  disabled?: boolean;
-  className?: string;
-  children: ReactNode;
-};
+type DropdownMenuSubTriggerProps = MenuSubTriggerBaseProps;
 
 /**
  * The menuitem that opens a DropdownMenuSub submenu: hover opens it after

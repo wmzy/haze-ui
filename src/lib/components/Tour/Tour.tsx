@@ -10,6 +10,7 @@ import { useControl } from 'react-use-control';
 import { computeFloatingPosition, resolvePadding } from '../../utils/collision';
 import { presenceOverlayFade } from '../../utils/dialog-skin';
 import { getDirection } from '../../utils/direction';
+import { focusRingForcedColors } from '../../utils/focus-ring-delta';
 import { Presence } from '../../utils/presence';
 import { addViewportPlacementListener } from '../../utils/viewport-placement';
 import Button from '../Button/Button';
@@ -173,11 +174,20 @@ const card = css`
     }
   }
 
+  /* The card is the tour's keyboard landing point (tabIndex -1,
+     focused programmatically once per step): under keyboard modality
+     that focus matches :focus-visible and the card wears the ring.
+     Forced colors drops the box-shadow — the ring AND the elevation —
+     and this arm's outline: none silences the UA outline, so the
+     fallback string (utils/focus-ring-delta) restores a Highlight
+     outline, the only focus indicator the card then has. */
   &:focus-visible {
     outline: none;
     box-shadow:
       var(--haze-shadow-xl),
       0 0 0 3px var(--haze-color-focus-ring);
+
+${focusRingForcedColors}
   }
 `;
 

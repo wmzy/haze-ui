@@ -4,10 +4,13 @@ import { useControl } from 'react-use-control';
 
 import { Anchor } from '@/lib';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
-import { intro, section } from '../styles';
 
 const ITEMS = [
   { id: 'anchor-basics', label: 'Basics' },
@@ -72,18 +75,19 @@ export default function AnchorDemo() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
-    <>
-      <h1>Anchor</h1>
-      <p className={intro}>
-        Sticky anchor navigation with IntersectionObserver scroll-spy (the
-        engine is the `useAnchorSpy` hook). Items accept nested `children` for
-        a second level, `indicator` adds a sliding highlight line, and the
-        active id is a controllable state: hand it a control and clicks,
-        scrolling and external writes all flow through the same state.
-      </p>
-
-      <div className={section}>
-        <h2>Scroll-spy in a custom container</h2>
+    <DemoPage
+      title='Anchor'
+      description={
+        <>
+          Sticky anchor navigation with IntersectionObserver scroll-spy (the
+          engine is the `useAnchorSpy` hook). Items accept nested `children` for
+          a second level, `indicator` adds a sliding highlight line, and the
+          active id is a controllable state: hand it a control and clicks,
+          scrolling and external writes all flow through the same state.
+        </>
+      }
+    >
+      <DemoSection title='Scroll-spy in a custom container'>
         <div className={layout}>
           <div className={navColumn}>
             <Anchor
@@ -140,40 +144,34 @@ export default function AnchorDemo() {
             </section>
           </div>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='AnchorProps' />
-      </div>
+      <PropsSection of='AnchorProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders a native <strong>nav</strong> landmark with a list of
-              links
-            </li>
-            <li>
-              The active link carries <strong>aria-current=&quot;true&quot;</strong>
-            </li>
-            <li>
-              Real anchors — middle-click / copy-link still work, clicks just
-              take over the scroll
-            </li>
-            <li>
-              Nested <strong>children</strong> render as a real nested list —
-              native semantics, no extra aria
-            </li>
-            <li>
-              The sliding indicator line is decorative
-              (<strong>aria-hidden</strong>) and its transition turns off
-              under prefers-reduced-motion
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders a native <strong>nav</strong> landmark with a list of
+            links
+          </li>
+          <li>
+            The active link carries <strong>aria-current=&quot;true&quot;</strong>
+          </li>
+          <li>
+            Real anchors — middle-click / copy-link still work, clicks just
+            take over the scroll
+          </li>
+          <li>
+            Nested <strong>children</strong> render as a real nested list —
+            native semantics, no extra aria
+          </li>
+          <li>
+            The sliding indicator line is decorative
+            (<strong>aria-hidden</strong>) and its transition turns off
+            under prefers-reduced-motion
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

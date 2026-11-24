@@ -31,6 +31,11 @@ export const RSC_SAFE_MODULES = new Set([
   // The shared numeric clamp: zero imports, no hooks, no DOM access —
   // the same purity class as classnames above.
   'utils/math.ts',
+  // The Intl formatter cache (utils/intl-cache.ts): module-level Maps
+  // keyed by locale + options, holding only Intl formatters — zero
+  // imports, no hooks, no DOM access. Required for the RSC-safe
+  // closure: the safe-listed NumberFormatter formats through it.
+  'utils/intl-cache.ts',
   // Shared text-match helpers (utils/text-match.ts): the substring
   // range finder + segment splitter Highlight and Tree search delegate
   // to — zero imports, same purity class as math above. Required for
@@ -60,6 +65,12 @@ export const RSC_SAFE_MODULES = new Set([
   // class constants — imported by RSC-safe BreadcrumbItem, StatusBar
   // and TabBar.
   'utils/focus-ring.ts',
+  // Build-time-only modules are deliberately NOT listed: a module whose
+  // exports are consumed only inside css templates (utils/
+  // focus-ring-delta.ts, chip-size-skin.ts, track-size-skin.ts — plain
+  // declaration strings interpolated into the consumers' own classes)
+  // is evaluated by Linaria at build time and emits no dist module, and
+  // the contract test requires every listed module to exist in dist.
   // Shared navigation-item chrome (utils/nav-item-skin.ts): pure
   // Linaria class constants — imported by RSC-safe TabBar.
   'utils/nav-item-skin.ts',
@@ -71,6 +82,16 @@ export const RSC_SAFE_MODULES = new Set([
   // Shared tag skin (tag list/chip/remove button): the same purity
   // class as menu-skins above.
   'utils/tag-skin.ts',
+  // Shared tag remove button (utils/tag-remove-button.tsx): the '×'
+  // TagInput, its sortable variant, PromptInput, Tag and Chip render.
+  // Wiring only — the chrome class arrives through props and the module
+  // imports nothing at runtime: no hooks, no DOM access. Required for
+  // the RSC-safe closure: the safe-listed Tag/Chip import it.
+  'utils/tag-remove-button.tsx',
+  // Shared N-line clamp style (utils/line-clamp.ts): a type-only react
+  // import. Required for the RSC-safe closure: the safe-listed
+  // Typography imports it.
+  'utils/line-clamp.ts',
   // Child-walk helper (utils/walk-children.ts): pure React.Children
   // traversal — no hooks, no DOM access, only react imports.
   'utils/walk-children.ts',

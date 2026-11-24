@@ -5,7 +5,7 @@ import { css } from '@linaria/core';
 
 import { useMutationObserver } from '../../hooks/useMutationObserver';
 import { focusRingVisible } from '../../utils/focus-ring';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -106,13 +106,11 @@ export default function ChatContainer({
     else setShowJump(true);
   }, { childList: true, subtree: true, enabled: autoScroll });
 
-  // mergeRefs behind a useCallback: the observer ref is identity-stable
-  // (hook deps guard re-attaches), so a fresh closure per render would
-  // tear the observer down needlessly (Calendar's setRootRef precedent).
-  const setContainerRef = useCallback(
-    (node: HTMLDivElement | null) => mergeRefs(ref, observeRef)(node),
-    [ref, observeRef]
-  );
+  // useMergedRefs holds the merged identity while both members do: the
+  // observer ref is identity-stable (hook deps guard re-attaches), so a
+  // fresh closure per render would tear the observer down needlessly
+  // (Calendar's setRootRef precedent).
+  const setContainerRef = useMergedRefs(ref, observeRef);
 
   useEffect(() => {
     const el = ref.current;

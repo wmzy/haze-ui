@@ -2,28 +2,31 @@ import { useState } from 'react';
 
 import { Button, StreamingText } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── StreamingText ────────────────────────────────────────────
 export default function StreamingTextDemo() {
   const [key, setKey] = useState(0);
 
   return (
-    <>
-      <h1>StreamingText</h1>
-      <p className={intro}>
-        Typewriter effect that reveals text character by character with an
-        optional blinking cursor.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='StreamingText'
+      description={
+        <>
+          Typewriter effect that reveals text character by character with an
+          optional blinking cursor.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <StreamingText
           key={key}
           text='Hello! This text appears one character at a time, simulating a streaming response from an AI assistant.'
@@ -34,29 +37,23 @@ export default function StreamingTextDemo() {
             Replay
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='StreamingTextProps' />
-      </div>
+      <PropsSection of='StreamingTextProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Cursor animation uses <strong>animation: blink</strong> with
-              step-end timing
-            </li>
-            <li>
-              Respects <strong>prefers-reduced-motion</strong> via CSS
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Cursor animation uses <strong>animation: blink</strong> with
+            step-end timing
+          </li>
+          <li>
+            Respects <strong>prefers-reduced-motion</strong> via CSS
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='streamingtext' />
-    </>
+    </DemoPage>
   );
 }

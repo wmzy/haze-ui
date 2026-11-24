@@ -3,13 +3,14 @@
 // (Wave 5 wiring).
 import { JsonView } from '@/lib/components/JsonView';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth640,
+  PropsSection,
+} from './shared';
 
 const release = {
   name: 'haze-ui',
@@ -29,71 +30,64 @@ const bigPayload = Array.from({ length: 150 }, (_, i) => ({
 // ─── JsonView ─────────────────────────────────────────────────
 export default function JsonViewDemo() {
   return (
-    <>
-      <h1>JsonView</h1>
-      <p className={intro}>
-        Recursive JSON tree with collapsible branches, per-type value coloring
-        and copy support — useful for inspecting tool payloads and API
-        responses.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 640 }}>
+    <DemoPage
+      title='JsonView'
+      description={
+        <>
+          Recursive JSON tree with collapsible branches, per-type value coloring
+          and copy support — useful for inspecting tool payloads and API
+          responses.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth640}>
           <JsonView data={release} copyable />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Collapsed by depth</h2>
+      <DemoSection title='Collapsed by depth'>
         <p>
           <code>defaultExpandedDepth</code> controls the initial disclosure —
           nodes at or beyond that depth start collapsed and expand on click.
         </p>
-        <div style={{ maxWidth: 640 }}>
+        <div style={maxWidth640}>
           <JsonView data={release} defaultExpandedDepth={1} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Large collections</h2>
+      <DemoSection title='Large collections'>
         <p>
           Collections beyond 100 entries render their head plus a &ldquo;+N
           more&rdquo; hint instead of flooding the DOM.
         </p>
-        <div style={{ maxWidth: 640 }}>
+        <div style={maxWidth640}>
           <JsonView data={bigPayload} defaultExpandedDepth={0} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of="JsonViewProps" />
-      </div>
+      <PropsSection of='JsonViewProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Each branch toggle is a native <code>&lt;button&gt;</code> with{' '}
-              <code>aria-expanded</code> (and <code>aria-controls</code> while
-              expanded) — keyboard operable out of the box
-            </li>
-            <li>
-              Value colors carry meaning redundantly — the literal text
-              (<code>true</code>, <code>null</code>, quotes on strings) always
-              identifies the type, never color alone
-            </li>
-            <li>
-              Copy button exposes its action through{' '}
-              <code>aria-label</code> and shows a check glyph on success
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Each branch toggle is a native <code>&lt;button&gt;</code> with{' '}
+            <code>aria-expanded</code> (and <code>aria-controls</code> while
+            expanded) — keyboard operable out of the box
+          </li>
+          <li>
+            Value colors carry meaning redundantly — the literal text
+            (<code>true</code>, <code>null</code>, quotes on strings) always
+            identifies the type, never color alone
+          </li>
+          <li>
+            Copy button exposes its action through{' '}
+            <code>aria-label</code> and shows a check glyph on success
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component="jsonview" />
-    </>
+    </DemoPage>
   );
 }

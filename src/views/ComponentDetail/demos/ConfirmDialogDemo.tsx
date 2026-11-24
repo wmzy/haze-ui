@@ -2,11 +2,14 @@ import { useControl } from 'react-use-control';
 
 import { Button, ConfirmDialog } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── ConfirmDialog ──────────────────────────────────────────────
 export default function ConfirmDialogDemo() {
@@ -14,12 +17,11 @@ export default function ConfirmDialogDemo() {
   const [, setOpen] = useControl(openCtrl);
 
   return (
-    <>
-      <h1>ConfirmDialog</h1>
-      <p className={intro}>Confirmation dialog with confirm/cancel actions.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='ConfirmDialog'
+      description='Confirmation dialog with confirm/cancel actions.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button onClick={() => setOpen(true)}>Open Confirm Dialog</Button>
         </div>
@@ -32,23 +34,17 @@ export default function ConfirmDialogDemo() {
         >
           Are you sure you want to delete this item? This action cannot be undone.
         </ConfirmDialog>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ConfirmDialogProps' />
-      </div>
+      <PropsSection of='ConfirmDialogProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Overlay click closes the dialog</li>
-            <li>Confirm and cancel buttons are keyboard accessible</li>
-            <li>Danger variant uses red confirm button</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Overlay click closes the dialog</li>
+          <li>Confirm and cancel buttons are keyboard accessible</li>
+          <li>Danger variant uses red confirm button</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

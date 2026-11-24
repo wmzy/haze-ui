@@ -28,7 +28,7 @@ import {
   pickerSearchInput,
   pickerVirtualRow,
 } from '../../utils/picker-trigger';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import Spinner from '../Spinner/Spinner';
 import { truncate } from '../../utils/truncate';
 import { usePanelQuery } from '../../utils/use-panel-query';
@@ -370,10 +370,7 @@ export default function Cascader({
   const triggerRef = useRef<HTMLButtonElement>(null);
   // The consumer's ref rides the same trigger button the floating
   // behavior anchors on.
-  const setTriggerRef = useCallback(
-    (node: HTMLButtonElement | null) => mergeRefs(triggerRef, ref)(node),
-    [triggerRef, ref]
-  );
+  const setTriggerRef = useMergedRefs(triggerRef, ref);
   const panelRef = useRef<HTMLDivElement>(null);
   // Keyboard-requested focus targets, applied through the shared
   // retry loop once the matching columns (or their virtualized
@@ -493,13 +490,7 @@ export default function Cascader({
 
   useSearchReport(onSearch, query);
 
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      setScope(node);
-    },
-    [panelRef, setScope]
-  );
+  const setPanelRef = useMergedRefs(panelRef, setScope);
 
   // Per-level VirtualList handle registration (virtualized mode).
   const setListRef = useCallback((level: number) => {

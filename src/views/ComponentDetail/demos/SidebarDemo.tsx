@@ -19,9 +19,9 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { codeBlock } from '../styles';
 
-import { intro, section, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── Sidebar ────────────────────────────────────────────────────
 const shell = css`
@@ -46,15 +46,16 @@ export default function SidebarDemo() {
   const [collapsed, , collapsedCtrl] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>Sidebar</h1>
-      <p className={intro}>
-        App-shell side navigation with grouped links, a footer slot, and a
-        collapsible icon-rail mode.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Sidebar'
+      description={
+        <>
+          App-shell side navigation with grouped links, a footer slot, and a
+          collapsible icon-rail mode.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={shell}>
           <Sidebar collapsed={collapsedCtrl}>
             <SidebarGroup title="Platform">
@@ -91,10 +92,9 @@ export default function SidebarDemo() {
             <code>collapsed: {String(collapsed)}</code>
           </div>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import {
   Sidebar,
   SidebarGroup,
@@ -114,45 +114,37 @@ export default function SidebarDemo() {
 
 // Theme the two rail widths via CSS custom properties:
 // :root { --haze-sidebar-width: 16rem; --haze-sidebar-width-collapsed: 3.5rem; }`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sidebar Props</h2>
+      <DemoSection title='Sidebar Props'>
         <PropsTable of='SidebarProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SidebarGroup Props</h2>
+      <DemoSection title='SidebarGroup Props'>
         <PropsTable of='SidebarGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SidebarItem Props</h2>
+      <DemoSection title='SidebarItem Props'>
         <PropsTable of='SidebarItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SidebarFooter Props</h2>
+      <DemoSection title='SidebarFooter Props'>
         <PropsTable of='SidebarFooterProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>SidebarToggle Props</h2>
+      <DemoSection title='SidebarToggle Props'>
         <PropsTable of='SidebarToggleProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Renders an <strong>&lt;aside&gt;</strong> landmark wrapping a <strong>&lt;nav&gt;</strong> landmark</li>
-            <li>Collapsed items keep their accessible names: labels are visually hidden (clip), and hovering/focusing an item shows its label as a tooltip</li>
-            <li>Active item carries <strong>aria-current=&quot;page&quot;</strong> (explicit <code>active</code> prop or the router-driven aria attribute)</li>
-            <li>The toggle announces <strong>aria-expanded</strong> and controls the nav via <strong>aria-controls</strong>; its label comes from <code>useStrings(&apos;sidebar&apos;)</code> (<code>sidebar.expand</code> / <code>sidebar.collapse</code>, overridable via <code>LocaleProvider</code>)</li>
-            <li>Layout uses logical CSS properties, so the rail flips correctly in RTL</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Renders an <strong>&lt;aside&gt;</strong> landmark wrapping a <strong>&lt;nav&gt;</strong> landmark</li>
+          <li>Collapsed items keep their accessible names: labels are visually hidden (clip), and hovering/focusing an item shows its label as a tooltip</li>
+          <li>Active item carries <strong>aria-current=&quot;page&quot;</strong> (explicit <code>active</code> prop or the router-driven aria attribute)</li>
+          <li>The toggle announces <strong>aria-expanded</strong> and controls the nav via <strong>aria-controls</strong>; its label comes from <code>useStrings(&apos;sidebar&apos;)</code> (<code>sidebar.expand</code> / <code>sidebar.collapse</code>, overridable via <code>LocaleProvider</code>)</li>
+          <li>Layout uses logical CSS properties, so the rail flips correctly in RTL</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

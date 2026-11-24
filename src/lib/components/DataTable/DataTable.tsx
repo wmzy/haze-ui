@@ -4,13 +4,12 @@ import type {
   ReactNode,
   Ref,
 } from 'react';
-import type { Control, ControlOrValue } from 'react-use-control';
+import type { ControlOrValue } from 'react-use-control';
 import type {
   ColumnDef,
   ColumnOrderState,
   ColumnVisibilityState,
   ExpandedState,
-  Header,
   Row,
   RowData,
   RowSelectionState,
@@ -18,58 +17,37 @@ import type {
 } from '@tanstack/react-table';
 
 import type { DataTableCellEditorProps, DataTableColumnMeta } from './features';
-import type { ColumnReorderKit } from './data-table-header';
 import type { DataTableRowsView } from './data-table-rows';
-import type { FixedCellSpec } from './data-table-shared';
 import type { NavCell } from './use-cell-navigation';
 
 import type { VirtualListHandle } from '../VirtualList';
 
 import type { DataTableFiltersState } from './filters';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { useTable } from '@tanstack/react-table';
-import { css } from '@linaria/core';
-import { useControl, useThru, watch, isControl } from 'react-use-control';
-
+import { useId, useRef, useState } from 'react';
 
 import { useDirection } from '../../utils/direction';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
-import { CheckboxCore } from '../Checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '../DropdownMenu';
 import { useStrings } from '../LocaleProvider';
-import { Pagination } from '../Pagination';
-import { TableBody, TableCell } from '../Table';
 
 import { TableClassNamesProvider } from '../Table/TableContext';
 import { baseStyle as tableBase } from '../Table/table-styles';
-import { VisuallyHidden } from '../VisuallyHidden';
-import { VirtualList } from '../VirtualList';
 
+import { resolveColumnLayout } from './column-layout';
+import { renderDataTableBody } from './data-table-body';
+import { renderDataTableChrome } from './data-table-chrome';
 import { renderDataTableHeader } from './data-table-header';
-import {
-  renderDataTableRow,
-  renderEmptyRow,
-  renderFilterBody,
-  renderSkeletonRow,
-} from './data-table-rows';
-import {
-  checkCell,
-  checkCellCol,
-  columnLabel,
-  SELECTION_COL_WIDTH,
-  SELECTION_NAV_ID,
-  SELECTION_WIDTH_PART,
-  sumLengths,
-} from './data-table-shared';
+import { fixedLayout, root, sizeLg, sizeSm } from './data-table-styles';
+import { SELECTION_NAV_ID } from './data-table-shared';
 import { dataTableFeatures } from './features';
-import { applyColumnFilters } from './filters';
 import { useCellNavigation } from './use-cell-navigation';
+import { useColumnReorder } from './use-column-reorder';
+import { useDataTableEngine } from './use-data-table-engine';
+import { useDataTableState } from './use-data-table-state';
+import { useEndSentinel } from './use-end-sentinel';
+import { useSelectAll } from './use-select-all';
+import { useVirtualWindow } from './use-virtual-window';
 
 /** Windowing configuration for the table body, reusing `VirtualList`. */
 type DataTableVirtualized =
@@ -501,242 +479,6 @@ type DataTableProps<TData extends RowData> = {
   ref?: Ref<HTMLDivElement>;
 } & Omit<ComponentPropsWithoutRef<'table'>, 'children' | 'summary'>;
 
-/** Moves one entry of an array to another index (the `@dnd-kit` helper,
- * inlined so this dnd-free module need not depend on it). */
-function arrayMove<T>(array: readonly T[], from: number, to: number): T[] {
-  const next = array.slice();
-  const [moved] = next.splice(from, 1);
-  if (moved === undefined) return next;
-  next.splice(to, 0, moved);
-  return next;
-}
-
-/** Per-column feature switches resolved from the table-level props. */
-type ColumnFlags = {
-  sortable: boolean;
-  resizable: boolean;
-  filterable: boolean;
-};
-
-/** Resolves the effective per-column feature switches: an explicit native
- * TanStack field wins, then the column `meta` override, then the table-level
- * default. Also defaults the filter function to the registered
- * `includesString` (inert while no filter value is set) and, when resizing
- * is on, feeds a declared numeric `meta.width` into the native `size` so
- * drag deltas and keyboard nudges start from the rendered width. Recurses
- * into grouped columns. */
-function resolveColumn<TData extends RowData>(
-  column: DataTableColumnDef<TData>,
-  flags: ColumnFlags
-): DataTableColumnDef<TData> {
-  const resolved: DataTableColumnDef<TData> = {
-    ...column,
-    enableSorting:
-      column.enableSorting ?? column.meta?.sortable ?? flags.sortable,
-    enableResizing: column.enableResizing ?? column.meta?.resizable ?? true,
-    enableHiding: column.enableHiding ?? column.meta?.hideable !== false,
-    enableColumnFilter:
-      column.enableColumnFilter ?? column.meta?.filterable ?? flags.filterable,
-    filterFn: column.filterFn ?? 'includesString',
-    size:
-      flags.resizable && typeof column.meta?.width === 'number'
-        ? column.meta.width
-        : column.size,
-  };
-  if ('columns' in resolved && resolved.columns) {
-    return {
-      ...resolved,
-      columns: resolved.columns.map((child) => resolveColumn(child, flags)),
-    };
-  }
-  return resolved;
-}
-
-/** Resolves a column def's effective width: `meta.width` wins, then the
- * native TanStack `size` as a px fallback. Returns a CSS length string, or
- * undefined when neither is declared. Read off the resolved column def —
- * the sizing feature's `size: 150` default is neutralized through the
- * `defaultColumn` option, so "unspecified" stays distinguishable. */
-function columnWidthCss(def: {
-  meta?: DataTableColumnMeta;
-  size?: number;
-}): string | undefined {
-  const width = def.meta?.width ?? def.size;
-  return typeof width === 'number' ? `${width}px` : width;
-}
-
-/** Default `virtualized` row height per density step: 2 × the step's block
- * cell padding + one `--haze-text-sm` (14px) line box + the 1px row
- * border — sm 2×4, md 2×8, lg 2×12. */
-const VIRTUAL_ROW_HEIGHTS = { sm: 23, md: 34, lg: 39 } as const;
-
-/** Keyboard model description for the sr-only hint (English default —
- * like the generated cell/row labels, not routed through locale packs).
- * The edit sentence is appended only while `editable`. */
-const KEYBOARD_HINT =
-  'Use the arrow keys to move between cells. Home and End go to the start or end of the row; PageUp and PageDown go to the first or last row.';
-const KEYBOARD_HINT_EDIT =
-  ' Press Enter or F2 to edit the focused cell; Escape cancels and returns to navigation.';
-const KEYBOARD_HINT_REORDER =
-  ' Focus a column reorder grip and press Alt with the left or right arrow key to move its column.';
-
-const root = css`
-  display: flex;
-  flex-direction: column;
-`;
-
-const scrollArea = css`
-  overflow-x: auto;
-`;
-
-/* Bounded by the consumer (height/max-height on the DataTable) — without a
- * bound the area never scrolls and the sticky header simply stays put. */
-const stickyScrollArea = css`
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-`;
-
-/* Virtualized body region: the header table above never scrolls vertically,
- * the VirtualList below owns the vertical scrollbar. `scrollbar-gutter`
- * reserves the scrollbar lane next to the header so its fixed-layout
- * columns line up with the rows inside the scroller (auto layout would
- * size each sibling table's columns independently and drift apart). */
-const virtualArea = css`
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-gutter: stable;
-`;
-
-/* Shared by the header table and every virtualized row table: `table-layout:
- * fixed` honors the mirrored `<colgroup>` identically in each sibling — the
- * alignment contract between them. */
-const fixedLayout = css`
-  table-layout: fixed;
-`;
-
-/* Fills the VirtualList wrapper (which carries the exact `rowHeight`), so
- * the default middle vertical alignment of table cells absorbs any slack
- * between content and the fixed row height. */
-const virtualRowTable = css`
-  height: 100%;
-`;
-
-const footer = css`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: var(--haze-space-3);
-`;
-
-/* Toolbar strip above the table's inline-end corner: custom actions (the
- * `toolbar` slot) plus, when not paginating, the column-settings trigger.
- * Wrap keeps long toolbars from overflowing narrow tables. */
-const toolbar = css`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: var(--haze-space-2);
-  margin-bottom: var(--haze-space-3);
-`;
-
-/* The menu wrapper inside the pagination row: consumes the free space so
- * the trigger pins to the start edge and Pagination keeps the end edge. */
-const footerMenu = css`
-  margin-inline-end: auto;
-`;
-
-const columnsTrigger = css`
-  display: inline-flex;
-  align-items: center;
-  gap: var(--haze-space-1);
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border: 1px solid var(--haze-color-border);
-  border-radius: var(--haze-radius-md);
-  background: var(--haze-color-bg);
-  color: var(--haze-color-text);
-  font-size: var(--haze-text-sm);
-  font-family: var(--haze-font-sans);
-
-  &:hover {
-    border-color: var(--haze-color-border-hover);
-    background: var(--haze-color-bg-subtle);
-  }
-`;
-
-/* One visibility toggle row inside the menu. The label element is generic
- * to ARIA ownership, so the checkbox input below carries the
- * `menuitemcheckbox` role the menu requires. */
-const toggleRow = css`
-  display: flex;
-  align-items: center;
-  padding: var(--haze-space-1) var(--haze-space-2);
-  border-radius: var(--haze-radius-sm);
-  cursor: pointer;
-  font-size: var(--haze-text-sm);
-
-  &:hover {
-    background: var(--haze-color-bg-subtle);
-  }
-`;
-
-/* Zero-footprint sentinel after the body — an IntersectionObserver target
- * only. 1px tall so engines that skip zero-area targets still report it. */
-const endSentinelClass = css`
-  height: 1px;
-`;
-
-/* Summary footer: mirrors the body cell metrics with a heavier top rule
- * and the header's text weight. */
-const summaryFoot = css`
-  & td {
-    padding: var(--haze-space-2) var(--haze-space-3);
-    border-top: 2px solid var(--haze-color-border);
-    color: var(--haze-color-text);
-    font-weight: var(--haze-weight-semibold);
-    white-space: nowrap;
-  }
-`;
-
-/* Sticky summary footer: cells stick to the bottom of the scroll area,
- * mirroring the sticky header's elevation and stacking. */
-const stickyFoot = css`
-  & td {
-    position: sticky;
-    bottom: 0;
-    z-index: var(--haze-z-local-2);
-    background: var(--haze-color-bg);
-    box-shadow: var(--haze-shadow-sm);
-  }
-`;
-
-/* Density steps, applied on every rendered table (header, body/row and
- * summary tables alike). The child-combinator chain outranks the Table
- * primitives' own cell padding regardless of per-component css emission
- * order, the :not()s keep the expansion panel and empty-state cells'
- * own padding, and spacing tokens (not literals) keep the global compact
- * density class composing — compact shrinks the tokens these rules read,
- * so compact and size stack instead of colliding. md is the Table
- * primitives' own padding — no class, no override. */
-const sizeSm = css`
-  & > thead > tr > th,
-  & > tbody > tr > td:not([data-slot='panel-cell']):not([data-slot='empty-cell']),
-  & > tfoot > tr > td {
-    padding: var(--haze-space-1) var(--haze-space-2);
-  }
-`;
-
-const sizeLg = css`
-  & > thead > tr > th,
-  & > tbody > tr > td:not([data-slot='panel-cell']):not([data-slot='empty-cell']),
-  & > tfoot > tr > td {
-    padding: var(--haze-space-3) var(--haze-space-4);
-  }
-`;
-
 export default function DataTable<TData extends RowData>({
   columns,
   data,
@@ -781,69 +523,26 @@ export default function DataTable<TData extends RowData>({
   ref,
   ...rest
 }: DataTableProps<TData>) {
-  // Sorting and page states are threaded through a `watch` layer so every
-  // mutation — header clicks (TanStack's onSortingChange), footer clicks
-  // (the Pagination control) and programmatic updates — reports through
-  // onSortChange / onPageChange exactly once, from outside the state
-  // updater. Controlled controls keep their Control semantics; the layer
-  // is inert while the callbacks are absent.
-  const sortingControlled = isControl(sortingControl);
-  const [sorting, setSorting] = useControl<SortingState>(
-    useThru(
-      sortingControlled ? sortingControl : undefined,
-      watch((next) => onSortChange?.(next))
-    ),
-    sortingControlled ? [] : sortingControl ?? []
-  );
-  const [rowSelection, setRowSelection] = useControl<RowSelectionState>(
-    rowSelectionControl,
-    {}
-  );
-  const pageControlled = isControl(pageControl);
-  const [page, setPage, pageCtrl] = useControl<number>(
-    useThru(
-      pageControlled ? pageControl : undefined,
-      watch((next) => onPageChange?.(next))
-    ),
-    pageControlled ? 1 : pageControl ?? 1
-  );
-  const [expanded, setExpanded] = useControl<ExpandedState>(
-    expandedControl,
-    {}
-  );
-  const [columnVisibility, setColumnVisibility] =
-    useControl<ColumnVisibilityState>(columnVisibilityControl, {});
-  // Column order follows the same watch-layer contract: internal state
-  // (TanStack's columnOrder — an empty array means the natural
-  // column-def order), with every mutation reported through
-  // onColumnOrderChange from outside the state updater.
-  const [columnOrder, setColumnOrder] = useControl<ColumnOrderState>(
-    useThru(undefined, watch((next) => onColumnOrderChange?.(next))),
-    []
-  );
-  // Header filter menus follow the sorting/page watch-layer contract:
-  // menu commits (Apply/Reset) and programmatic updates report through
-  // onFiltersChange exactly once, from outside the state updater.
-  const filtersControlled = isControl(filtersControl);
-  const [filters, setFilters] = useControl<DataTableFiltersState>(
-    useThru(
-      // isControl narrows to Control<unknown> and cannot recover T here
-      // (a Record value overlaps the Control shape, so the predicate
-      // loses the generic) — re-assert the declared prop type.
-      filtersControlled
-        ? (filtersControl as Control<DataTableFiltersState>)
-        : undefined,
-      watch((next) => onFiltersChange?.(next))
-    ),
-    filtersControlled ? {} : filtersControl ?? {}
-  );
+  const state = useDataTableState({
+    sorting: sortingControl,
+    rowSelection: rowSelectionControl,
+    page: pageControl,
+    expanded: expandedControl,
+    columnVisibility: columnVisibilityControl,
+    filters: filtersControl,
+    onSortChange,
+    onPageChange,
+    onColumnOrderChange,
+    onFiltersChange,
+  });
+  const { pageCtrl, filters, setColumnOrder } = state;
   // Which cell is being edited, if any — purely internal UI state, keyed by
   // row/column id so it survives reorders and the virtualized window.
   const [editingCell, setEditingCell] = useState<NavCell | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   // The consumer ref and the internal rootRef both land on the wrapper
-  // through mergeRefs.
-  const setRootRef = mergeRefs(rootRef, ref);
+  // through the shared merge hook.
+  const setRootRef = useMergedRefs(rootRef, ref);
   const virtualListRef = useRef<VirtualListHandle | null>(null);
 
   // Declared intent (LocaleProvider chain → document) for the drag math,
@@ -853,329 +552,68 @@ export default function DataTable<TData extends RowData>({
   const instanceId = useId();
   const strings = useStrings('dataTable');
 
-  const virtual = virtualized === true || typeof virtualized === 'object';
-  const rowHeight =
-    typeof virtualized === 'object'
-      ? virtualized.rowHeight
-      : VIRTUAL_ROW_HEIGHTS[density];
-  const overscan =
-    typeof virtualized === 'object' ? virtualized.overscan : undefined;
-
   // Density class per size step — md keeps the Table primitives' padding.
   const densityClass =
     density === 'sm' ? sizeSm : density === 'lg' ? sizeLg : undefined;
 
-  // Without `pageSize` the table renders one page holding every row, so
-  // the paginated row model never slices anything — Infinity (not
-  // `data.length`) because expanded tree children can outnumber the roots.
-  const resolvedPageSize = pageSize ?? Number.POSITIVE_INFINITY;
-
-  // Custom-panel expansion is possible only when the consumer opts in; it
-  // also switches the virtualized window to measured (dynamic) row
-  // heights, since panels are taller than the fixed row height. Tree
-  // expansion keeps the fixed window — children are ordinary rows.
-  const expandable =
-    getRowCanExpand !== undefined || renderExpandedRow !== undefined;
-
-  // Tree data: when no explicit expansion prop is given and some top-level
-  // row carries children under `subRowsKey`, TanStack's `getSubRows` is
-  // wired and the default `getRowCanExpand` (rows with sub-rows) takes
-  // over — expanders, indented children and the `expanded` state all flow
-  // from there. Explicit props keep the custom-panel flavor and leave
-  // nested data unread (zero-change default for existing consumers).
-  const treeMode =
-    getRowCanExpand === undefined &&
-    renderExpandedRow === undefined &&
-    data.some((row) => {
-      const children = (row as Record<string, unknown>)[subRowsKey];
-      return Array.isArray(children) && children.length > 0;
+  const { table, tableData, expandable, setColumnFilter } =
+    useDataTableEngine({
+      columns,
+      data,
+      sortable,
+      resizable,
+      filterable,
+      pageSize,
+      manual,
+      getRowId,
+      getRowCanExpand,
+      renderExpandedRow,
+      subRowsKey,
+      dir,
+      state,
     });
 
-  const tableColumns = useMemo(
-    () =>
-      columns.map((column) =>
-        resolveColumn(column, { sortable, resizable, filterable })
-      ),
-    [columns, sortable, resizable, filterable]
-  );
+  const selectAllRef = useSelectAll(table);
 
-  // Header filter menus run before the table engine: the filtered array
-  // replaces `data`, so the text filter row (TanStack's own column
-  // filters), sorting, pagination, the summary and the window all
-  // compose on top of it — the "menus first" pipeline order. Inert
-  // without active selections (the input array passes through as-is),
-  // and skipped in `manual` mode, where `data` renders exactly as the
-  // server sent it and the state flows out for a refetch instead.
-  const menuFilteredData = useMemo(
-    () => applyColumnFilters(data, columns, filters),
-    [data, columns, filters]
-  );
-  const tableData = manual ? data : menuFilteredData;
-
-  // Commits one column's menu selection: empty selections are dropped so
-  // `{}` stays the canonical "no filters" state.
-  const setColumnFilter = (columnId: string, values: unknown[]) => {
-    setFilters((prev) =>
-      values.length === 0
-        ? Object.fromEntries(
-            Object.entries(prev).filter(([key]) => key !== columnId)
-          )
-        : { ...prev, [columnId]: values }
-    );
-  };
-
-  const table = useTable({
-    features: dataTableFeatures,
-    columns: tableColumns,
-    data: tableData,
-    getRowId,
-    getSubRows: treeMode
-      ? (originalRow) =>
-          (originalRow as Record<string, unknown>)[subRowsKey] as
-            | readonly TData[]
-            | undefined
-      : undefined,
-    state: {
-      sorting,
-      rowSelection,
-      pagination: { pageIndex: page - 1, pageSize: resolvedPageSize },
-      expanded,
-      columnVisibility,
-      columnOrder,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onExpandedChange: setExpanded,
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
-    // Server-driven mode: TanStack skips the local sort and the local
-    // page slice — `data` renders exactly as received while the sorting
-    // and page state keep flowing (the consumer refetches off
-    // onSortChange / onPageChange). manualPagination also turns off
-    // TanStack's data-change auto page reset, as a server table expects.
-    manualSorting: manual,
-    manualPagination: manual,
-    // `renderExpandedRow` alone means "every row expands"; `getRowCanExpand`
-    // refines which ones. Neither given falls through to TanStack's default
-    // — "rows with subRows" — which is what drives tree mode.
-    getRowCanExpand:
-      getRowCanExpand ??
-      (renderExpandedRow !== undefined ? () => true : undefined),
-    enableColumnFilters: filterable,
-    enableColumnResizing: resizable,
-    columnResizeMode: 'onChange',
-    columnResizeDirection: dir,
-    // The registered column-sizing feature defaults every column def to
-    // `size: 150`; re-overriding it with `undefined` keeps "no width
-    // declared" distinguishable to `columnWidthCss` (an explicit object key
-    // with an undefined value survives the option merge). TanStack's own
-    // size math falls back to 150 through its `??` chain, so resizing
-    // behavior is unaffected.
-    defaultColumn: { size: undefined },
-    onPaginationChange: (updater) => {
-      const next =
-        typeof updater === 'function'
-          ? updater({ pageIndex: page - 1, pageSize: resolvedPageSize })
-          : updater;
-      setPage(Math.max(1, next.pageIndex + 1));
-    },
-  });
-
-  // React has no `indeterminate` prop (it strips the attribute), so the DOM
-  // property is set on the wrapped input after every commit.
-  const selectAllRef = useRef<HTMLSpanElement>(null);
-  const indeterminate =
-    table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected();
-  useEffect(() => {
-    const input = selectAllRef.current?.querySelector('input');
-    if (input) input.indeterminate = indeterminate;
-  });
-
-  // Virtualized viewport height: measured from the consumer-bounded region
-  // minus the pinned header. Floors keep every observation identical, so
-  // the ResizeObserver settles instead of looping; unbounded roots bottom
-  // out at one row instead of growing recursively.
-  const virtualAreaRef = useRef<HTMLDivElement>(null);
-  const [viewportHeight, setViewportHeight] = useState(0);
-  useEffect(() => {
-    if (!virtual) return;
-    const area = virtualAreaRef.current;
-    const thead = area?.querySelector('thead');
-    if (!area || !thead) return;
-    const measure = () => {
-      const areaHeight = Math.floor(area.getBoundingClientRect().height);
-      const headerHeight = Math.floor(thead.getBoundingClientRect().height);
-      setViewportHeight(Math.max(rowHeight, areaHeight - headerHeight));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(area);
-    observer.observe(thead);
-    return () => observer.disconnect();
-  }, [virtual, rowHeight]);
+  const virtualWindow = useVirtualWindow({ virtualized, density });
+  const { virtual } = virtualWindow;
 
   const headerGroups = table.getHeaderGroups();
   const leafHeaders = table.getLeafHeaders();
   const columnCount = leafHeaders.length + (selectable ? 1 : 0);
   const rows = table.getRowModel().rows;
-  const columnSizing = table.state.columnSizing;
 
   // ── Column reordering ────────────────────────────────────────────────
-  // Nested (grouped) headers have no single slot to move — a group spans
-  // several leaves — so reordering switches itself off with a dev warning.
-  const reorderActive = columnReorderable && headerGroups.length === 1;
-  useEffect(() => {
-    if (!columnReorderable || headerGroups.length <= 1) return;
-    console.warn(
-      'DataTable: columnReorderable does not support grouped (nested) headers — rendering without column reordering.'
-    );
-  }, [columnReorderable, headerGroups.length]);
-
-  // The drag wiring loads lazily the first time reordering is active, so
-  // DataTable's static import graph (and every consumer that never opts
-  // in) stays free of the @dnd-kit runtime — the dist-esm contract's
-  // engine-import rules. The grips themselves render dnd-free from this
-  // module: only pointer dragging waits for the kit.
-  const [reorderKit, setReorderKit] = useState<ColumnReorderKit | null>(null);
-  useEffect(() => {
-    if (!reorderActive) return;
-    let cancelled = false;
-    void import('./column-reorder').then(
-      (kit) => {
-        if (!cancelled) setReorderKit(kit);
-      },
-      // A failed chunk load only costs the pointer drag — the grips and
-      // their Alt+Arrow model never depended on it.
-      () => undefined
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [reorderActive]);
-
-  // Visible leaf ids in current order — the reordering set. The selection
-  // column is not a leaf (no grip, never moves), hidden columns are simply
-  // absent, and tree/custom expansion lives inside the first content
-  // column, which reorders like any other.
-  const leafIds = leafHeaders.map((header) => header.column.id);
-
-  const moveColumn = (from: number, to: number) => {
-    if (from === to || from < 0 || to < 0 || to >= leafIds.length) return;
-    setColumnOrder(arrayMove(leafIds, from, to));
-  };
-
-  // A keyboard move should not strand focus when the cell (and its grip)
-  // travel under the keyed reconciliation — re-land it on the same grip
-  // if the browser dropped it. Only the keyboard path marks the request;
-  // pointer drags keep dnd-kit's own focus restoration.
-  const reorderFocusRef = useRef<string | null>(null);
-  useEffect(() => {
-    const columnId = reorderFocusRef.current;
-    if (!columnId) return;
-    reorderFocusRef.current = null;
-    const grip = rootRef.current?.querySelector(
-      `[data-reorder-handle="${CSS.escape(columnId)}"]`
-    );
-    if (grip instanceof HTMLElement && document.activeElement !== grip) {
-      grip.focus();
-    }
+  const {
+    reorderActive,
+    reorderKit,
+    leafIds,
+    moveColumn,
+    reorderFocusRef,
+  } = useColumnReorder({
+    columnReorderable,
+    headerGroups,
+    leafHeaders,
+    setColumnOrder,
+    rootRef,
   });
 
-  // ── Infinite scroll (non-virtualized) ───────────────────────────────
-  // A sentinel after the body, watched through an IntersectionObserver.
-  // Rooted at the component's own vertical scroller when it has one
-  // (sticky mode), else at the viewport — which still honors consumer
-  // scroll containers, since intersection is computed through every
-  // scrollable clipper above the sentinel. The rootMargin pre-arms the
-  // trigger by the threshold, matching VirtualList's end-reached
-  // semantics; re-observing after content growth re-delivers the initial
-  // notification, which is what chains short pages into the next load.
-  const endSentinelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (virtual || onEndReached === undefined) return;
-    const sentinel = endSentinelRef.current;
-    if (!sentinel) return;
-    const root = stickyHeader
-      ? sentinel.closest<HTMLElement>('[data-slot="scroll-area"]')
-      : null;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) onEndReached();
-      },
-      { root, rootMargin: `${endReachedThreshold ?? 200}px 0px` }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [virtual, onEndReached, endReachedThreshold, stickyHeader, loading, rows.length]);
-
-  // Per-column widths: a committed resize wins, then `meta.width`, then the
-  // native `size`. In normal mode a colgroup is only emitted once some
-  // column declares a width (or resizing is on, so a resized `<col>` has a
-  // home) — without one the rendering stays exactly as before; virtualized
-  // mode always emits it, since the mirrored col sequence is how the header
-  // table and the per-row sibling tables stay aligned.
-  const leafWidths = leafHeaders.map((header) => {
-    const resized = columnSizing[header.column.id];
-    if (resized !== undefined) return `${resized}px`;
-    return columnWidthCss(header.column.columnDef);
+  const endSentinelRef = useEndSentinel({
+    virtual,
+    onEndReached,
+    endReachedThreshold,
+    stickyHeader,
+    loading,
+    rowCount: rows.length,
   });
-  const hasColumnWidths = leafWidths.some((width) => width !== undefined);
 
-  // Keyboard nudge for one resize handle: ±5px off the committed size (or
-  // the resolved current one), clamped to the column's min/max size.
-  const nudgeColumnSize = (
-    header: Header<typeof dataTableFeatures, TData>,
-    delta: number
-  ) => {
-    const def = header.column.columnDef;
-    const min = def.minSize ?? 20;
-    const max = def.maxSize ?? Number.MAX_SAFE_INTEGER;
-    const current = columnSizing[header.column.id] ?? header.column.getSize();
-    const next = Math.min(Math.max(Math.round(current + delta), min), max);
-    table.setColumnSizing((old) => ({ ...old, [header.column.id]: next }));
-  };
-
-  // Fixed columns are a normal-mode feature; virtualized rows are separate
-  // sibling tables with no shared horizontal scrollport to stick against.
-  const leafFixed = leafHeaders.map(
-    (header) => header.column.columnDef.meta?.fixed
-  );
-  const selectionFixedSpec: FixedCellSpec | undefined =
-    !virtual && selectable && leafFixed.some((side) => side === 'left')
-      ? { side: 'left', offset: '0px', edge: leafFixed[0] !== 'left' }
-      : undefined;
-  const fixedById = new Map<string, FixedCellSpec>();
-  if (!virtual) {
-    // Sticky offsets accumulate the widths of the preceding fixed columns
-    // on the same side (the selection column seeds the left run). Pin
-    // contiguous runs: a non-fixed column between pinned ones scrolls
-    // under the block they form at the edge.
-    const leftParts: string[] = selectionFixedSpec
-      ? [SELECTION_WIDTH_PART]
-      : [];
-    leafHeaders.forEach((header, index) => {
-      if (leafFixed[index] !== 'left') return;
-      fixedById.set(header.column.id, {
-        side: 'left',
-        offset: sumLengths(leftParts),
-        edge: leafFixed[index + 1] !== 'left',
-      });
-      const width = leafWidths[index];
-      if (width) leftParts.push(width);
-    });
-    const rightParts: string[] = [];
-    for (let index = leafHeaders.length - 1; index >= 0; index -= 1) {
-      const header = leafHeaders[index];
-      if (!header || leafFixed[index] !== 'right') continue;
-      fixedById.set(header.column.id, {
-        side: 'right',
-        offset: sumLengths(rightParts),
-        edge: leafFixed[index - 1] !== 'right',
-      });
-      const width = leafWidths[index];
-      if (width) rightParts.push(width);
-    }
-  }
+  const layout = resolveColumnLayout({
+    table,
+    leafHeaders,
+    selectable,
+    resizable,
+    virtual,
+  });
 
   // ── Cell keyboard navigation (roving tabindex) ────────────────────────
   // The roving model, the cell keymap and the virtualized pending-focus
@@ -1197,29 +635,6 @@ export default function DataTable<TData extends RowData>({
       setEditingCell,
     });
 
-  const colgroup =
-    virtual || hasColumnWidths || resizable ? (
-      <colgroup data-slot="colgroup">
-        {selectable && (
-          <col data-slot="col" style={{ width: SELECTION_COL_WIDTH }} />
-        )}
-        {leafHeaders.map((header, index) => (
-          <col
-            key={header.id}
-            data-slot="col"
-            style={
-              leafWidths[index] ? { width: leafWidths[index] } : undefined
-            }
-          />
-        ))}
-      </colgroup>
-    ) : undefined;
-
-  // The selection cell keeps only `nowrap` wherever a colgroup owns its
-  // width; otherwise the 1% shrink-to-fit trick sizes it under auto layout.
-  const checkCellStyle =
-    virtual || hasColumnWidths || resizable ? checkCellCol : checkCell;
-
   const handleRowClick = onRowClick
     ? (row: TData, event: MouseEvent<HTMLTableRowElement>) => {
         // Interactive content inside the cell owns the click.
@@ -1233,19 +648,21 @@ export default function DataTable<TData extends RowData>({
       }
     : undefined;
 
-  // eslint-disable-next-line react-hooks/refs -- the ref objects are forwarded into the render function for event-time access only (select-all input lookup, reorder focus restore), the same contract a JSX ref prop carries.
+  // The ref objects here are forwarded into the render function for
+  // event-time access only (select-all input lookup, reorder focus
+  // restore), the same contract a JSX ref prop carries.
   const header = renderDataTableHeader({
     table,
     headerGroups,
     selectable,
     sticky: stickyHeader,
-    checkCellStyle,
-    selectionFixedSpec,
-    fixedById,
+    checkCellStyle: layout.checkCellStyle,
+    selectionFixedSpec: layout.selectionFixedSpec,
+    fixedById: layout.fixedById,
     selectAllRef,
     selectAllLabel: strings.selectAll,
     resizable,
-    nudgeColumnSize,
+    nudgeColumnSize: layout.nudgeColumnSize,
     filters,
     setColumnFilter,
     reorderActive,
@@ -1262,9 +679,9 @@ export default function DataTable<TData extends RowData>({
     table,
     selectable,
     leafHeaders,
-    checkCellStyle,
-    selectionFixedSpec,
-    fixedById,
+    checkCellStyle: layout.checkCellStyle,
+    selectionFixedSpec: layout.selectionFixedSpec,
+    fixedById: layout.fixedById,
     rowClassName: classNames?.row,
     handleRowClick,
     isNavCellActive,
@@ -1281,216 +698,77 @@ export default function DataTable<TData extends RowData>({
     filterPlaceholder: strings.filterPlaceholder,
   };
 
-  const renderRow = (row: (typeof rows)[number]) =>
-    renderDataTableRow(row, rowsView);
+  const keyboardHintId = `${instanceId}-keyboard-nav`;
 
-  const skeletonRows = Array.from(
-    { length: pageSize ?? 5 },
-    (_, rowIndex) => renderSkeletonRow(rowsView, rowIndex)
+  // The consumer-facing `<table>`: the one element per mode the native
+  // props land on through `...rest` — the header table in virtualized
+  // mode, the whole table otherwise. The row, skeleton, empty and summary
+  // tables of virtualized mode are internal (data-table-body.tsx).
+  const nativeTable = (content: ReactNode) => (
+    <table
+      data-slot="table"
+      x-class={[tableBase, densityClass, virtual && fixedLayout]}
+      {...rest}
+    >
+      {content}
+    </table>
   );
 
-  const emptyRow = renderEmptyRow(rowsView);
-
-  // Filter row: rendered as the first body section directly below the
-  // header (see data-table-rows.tsx) — only while `filterable` is on.
-  const filterBody = filterable ? renderFilterBody(rowsView) : undefined;
-
-  // Summary footer: the callback summarizes the filtered data (every row,
-  // all pages, tree sub-rows included) — never the skeleton or empty state.
-  // Rendered as the table's tfoot in normal mode; in virtualized mode as
-  // its own sibling table below the scrolling window (outside the virtual
-  // area by construction), sharing the same colgroup for column alignment.
-  const summaryRowsArguments = table.getFilteredRowModel().flatRows;
-  const summaryRows =
-    summary !== undefined && !loading && rows.length > 0
-      ? summary(summaryRowsArguments)
-      : undefined;
-  const summaryTfoot =
-    summaryRows !== undefined && summaryRows.length > 0 ? (
-      <tfoot
-        data-slot="summary"
-        x-class={[summaryFoot, stickyFooter && stickyFoot, classNames?.summary]}
-      >
-        {summaryRows.map((summaryRow, rowIndex) => (
-          <tr
-            key={`summary-${rowIndex}`}
-            data-slot="row"
-            x-class={[classNames?.row]}
-            aria-label={summaryRow.label}
-          >
-            {selectable && <TableCell data-slot="select-cell">{null}</TableCell>}
-            {leafHeaders.map((header, cellIndex) => {
-              const cell = summaryRow.cells[cellIndex];
-              return (
-                <TableCell key={header.id} data-slot="cell">
-                  {typeof cell === 'function'
-                    ? cell(summaryRowsArguments)
-                    : cell}
-                </TableCell>
-              );
-            })}
-          </tr>
-        ))}
-      </tfoot>
-    ) : undefined;
-
-  // Column-settings menu: every hideable leaf column, hidden ones included
-  // (so they can come back). The checkbox inputs carry `menuitemcheckbox` —
-  // the role a `menu` must own — while the wrapping labels stay generic, so
-  // the structure is both axe-valid and operable (Space toggles, Tab walks).
-  const columnMenu = columnToggle ? (
-    <DropdownMenu className={pageSize !== undefined ? footerMenu : undefined}>
-      <DropdownMenuTrigger x-class={[columnsTrigger]}>
-        {strings.columns}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
-        {table
-          .getAllLeafColumns()
-          .filter((column) => column.getCanHide())
-          .map((column) => (
-            <label key={column.id} data-slot="column-toggle-item" x-class={[toggleRow]}>
-              <CheckboxCore
-                role='menuitemcheckbox'
-                aria-checked={column.getIsVisible()}
-                checked={column.getIsVisible()}
-                onChange={() => column.toggleVisibility()}
-                aria-label={`Show ${columnLabel(column)}`}
-              />
-              <span data-slot="label">{columnLabel(column)}</span>
-            </label>
-          ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  ) : undefined;
-
-  // The toolbar strip renders above the table whenever the slot or the
-  // column-toggle trigger contributes something; while paginating the
-  // trigger moves into the footer row, so the strip carries the slot alone.
-  const showToolbar =
-    toolbarSlot != null || (columnMenu !== undefined && pageSize === undefined);
-  const keyboardHintId = `${instanceId}-keyboard-nav`;
+  // eslint-disable-next-line react-hooks/refs -- the ref objects are forwarded into the render function for JSX ref props and event-time access only (viewport measuring, scroll-to-index, the end-reached observer), the same contract a JSX ref prop carries.
+  const body = renderDataTableBody({
+    nativeTable,
+    ...virtualWindow,
+    expandable,
+    virtualListRef,
+    onEndReached,
+    endReachedThreshold,
+    stickyHeader,
+    endSentinelRef,
+    loading,
+    pageSize,
+    rows,
+    colgroup: layout.colgroup,
+    header,
+    densityClass,
+    rowsView,
+    // The header filter row and the summary footer render inside the
+    // body's tables (data-table-body.tsx).
+    filterable,
+    summary,
+    stickyFooter,
+    summaryClassName: classNames?.summary,
+    rowClassName: classNames?.row,
+  });
 
   // The table's content, optionally wrapped in the drag region once the
   // reorder kit has loaded. The region renders no DOM of its own except
   // dnd-kit's screen-reader live regions, which land here — inside the
   // root div but outside the `<table>`, where a stray `<div>` would be
   // invalid markup (SortableTabList keeps them out of its tablist for
-  // the same reason).
-  const tableContent = (
-    <>
-      <VisuallyHidden id={keyboardHintId}>
-        {KEYBOARD_HINT +
-          (reorderActive ? KEYBOARD_HINT_REORDER : '') +
-          (editable ? KEYBOARD_HINT_EDIT : '')}
-      </VisuallyHidden>
-      {showToolbar && (
-        <div data-slot="toolbar" x-class={[toolbar, classNames?.toolbar]}>
-          {toolbarSlot}
-          {columnMenu !== undefined && pageSize === undefined
-            ? columnMenu
-            : null}
-        </div>
-      )}
-      {virtual ? (
-        <div ref={virtualAreaRef} data-slot="scroll-area" x-class={[virtualArea]}>
-          <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]} {...rest}>
-            {colgroup}
-            {header}
-            {filterBody}
-          </table>
-          {loading ? (
-            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
-              {colgroup}
-              <TableBody>{skeletonRows}</TableBody>
-            </table>
-          ) : rows.length > 0 ? (
-            <VirtualList
-              ref={virtualListRef}
-              items={rows}
-              height={viewportHeight}
-              itemHeight={rowHeight}
-              // Infinite scroll rides VirtualList's own end-reached
-              // channel in this mode; the threshold passes through with
-              // its 200px default matching ours.
-              onEndReached={onEndReached}
-              endReachedThreshold={endReachedThreshold}
-              // Expansion panels are taller than the fixed row height, so
-              // switch the window to measured heights once expanding is
-              // possible; plain rows measure back to `rowHeight`.
-              estimatedItemHeight={expandable ? rowHeight : undefined}
-              overscan={overscan}
-              renderItem={(row) => (
-                <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout, virtualRowTable]}>
-                  {colgroup}
-                  <TableBody>{renderRow(row)}</TableBody>
-                </table>
-              )}
-            />
-          ) : (
-            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
-              {colgroup}
-              <TableBody>{emptyRow}</TableBody>
-            </table>
-          )}
-          {summaryTfoot !== undefined && (
-            <table data-slot="table" x-class={[tableBase, densityClass, fixedLayout]}>
-              {colgroup}
-              {summaryTfoot}
-            </table>
-          )}
-        </div>
-      ) : (
-        <div data-slot="scroll-area" x-class={[stickyHeader ? stickyScrollArea : scrollArea]}>
-          <table data-slot="table" x-class={[tableBase, densityClass]} {...rest}>
-            {colgroup}
-            {header}
-            {filterBody}
-            <TableBody>
-              {loading ? (
-                skeletonRows
-              ) : (
-                <>
-                  {rows.map(renderRow)}
-                  {rows.length === 0 && emptyRow}
-                </>
-              )}
-            </TableBody>
-            {summaryTfoot}
-          </table>
-          {/* End-of-rows sentinel for the IntersectionObserver — present
-           * only while rows can actually be reached (no skeleton, no
-           * empty state), so it never signals past a dead end. */}
-          {onEndReached !== undefined && !loading && rows.length > 0 && (
-            <div
-              ref={endSentinelRef}
-              data-slot="end-sentinel"
-              aria-hidden="true"
-              x-class={[endSentinelClass]}
-            />
-          )}
-        </div>
-      )}
-      {pageSize !== undefined && (
-        <div data-slot="pagination" x-class={[footer, classNames?.footer]}>
-          {columnMenu}
-          {/* Manual mode: the server owns the row total, so the footer's
-           * page math must come from `pageCount` (fed as
-           * pageCount × pageSize items — Pagination derives pages from
-           * `total`). Locally the total follows the header filter menus
-           * (`tableData`), so pages shrink with the filtered rows. */}
-          <Pagination
-            page={pageCtrl}
-            total={
-              manual && pageCount !== undefined
-                ? Math.max(0, pageCount) * pageSize
-                : tableData.length
-            }
-            pageSize={pageSize}
-            size='sm'
-          />
-        </div>
-      )}
-    </>
+  // the same reason). The chrome around the body (keyboard hint, toolbar
+  // strip, pagination row) lives in data-table-chrome.tsx.
+  const tableContent = renderDataTableChrome(
+    {
+      hintId: keyboardHintId,
+      reorderActive,
+      editable,
+      classNames,
+      toolbar: toolbarSlot,
+      table,
+      columnToggle,
+      columnsLabel: strings.columns,
+      pagination:
+        pageSize === undefined
+          ? undefined
+          : {
+              page: pageCtrl,
+              pageSize,
+              manual,
+              pageCount,
+              dataLength: tableData.length,
+            },
+    },
+    body
   );
 
   return (

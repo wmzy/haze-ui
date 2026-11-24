@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, Ref } from 'react';
 import type { CalendarCellRender, CalendarPickerMode } from '../Calendar/Calendar';
 
 import { css } from '@linaria/core';
-import { useCallback, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import {
   formatDateOf,
@@ -17,7 +17,7 @@ import { FloatingPanel, useFloating, useOpenAdaptor } from '../../utils/floating
 import { panelSurfaceBare } from '../../utils/panel-skin';
 import { PickerInputTrigger } from '../../utils/picker-trigger';
 import { PresetRows } from '../../utils/preset-list-rows';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { useStrings } from '../LocaleProvider';
 
@@ -171,10 +171,7 @@ export default function DatepickerCore({
   const inputRef = useRef<HTMLInputElement>(null);
   // The consumer's ref rides the same trigger input the floating
   // behavior anchors on.
-  const setInputRef = useCallback(
-    (node: HTMLInputElement | null) => mergeRefs(inputRef, ref)(node),
-    [inputRef, ref]
-  );
+  const setInputRef = useMergedRefs(inputRef, ref);
   const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
 

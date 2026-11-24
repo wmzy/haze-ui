@@ -54,6 +54,18 @@ describe('Tag', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('removes on Backspace focused on the remove button (the shared TagRemoveButton arm)', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<Tag closable onClose={onClose}>Label</Tag>);
+    const remove = screen.getByRole('button', { name: 'Remove' });
+    expect(remove).toHaveAttribute('data-slot', 'remove-button');
+    expect(remove).toHaveAttribute('type', 'button');
+    remove.focus();
+    await user.keyboard('{Backspace}');
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it('has no axe violations', async () => {
     const { axe } = await import('jest-axe');
     render(

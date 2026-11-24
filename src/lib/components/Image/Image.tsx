@@ -9,8 +9,10 @@ import type {
 import type { ImagePreviewConfig } from './image-preview-config';
 
 import { css } from '@linaria/core';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useControl } from 'react-use-control';
+
+import { useFailedSrc } from '../../utils/use-failed-src';
 
 import ImagePreview from './ImagePreview';
 import { useImageGallery } from './ImageGalleryContext';
@@ -76,12 +78,10 @@ export default function Image({
   onError,
   ...rest
 }: ImageProps) {
-  // Track the src that failed, not a sticky boolean: when src changes
-  // (upload finished, user switched) the new image must render again.
-  // Only that exact src stays failed — prop-change resync precedent:
-  // Avatar/Avatar.tsx.
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const error = failedSrc !== null && failedSrc === src;
+  // Tracks the exact src whose load failed (utils/use-failed-src, shared
+  // with Avatar): a changed src renders as an image again instead of
+  // staying fallen back.
+  const [error, markFailed] = useFailedSrc(src);
   const { enabled: previewEnabled, zoom: zoomEnabled, rotate: rotateEnabled } =
     resolveImagePreviewConfig(preview);
   const [, setPreviewOpen, previewOpenCtrl] = useControl(undefined, false);
@@ -116,7 +116,7 @@ export default function Image({
   // onError (forwarded via the native props arm) still fires.
   const handleError = (event: SyntheticEvent<HTMLImageElement>) => {
     onError?.(event);
-    setFailedSrc(src);
+    markFailed();
   };
 
   // Same composition as onError: the preview logic owns the click, a

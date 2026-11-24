@@ -2,13 +2,16 @@ import { useControl } from 'react-use-control';
 
 import { NumberInput } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  PropsSection,
+} from './shared';
 
 // ─── NumberInput ───────────────────────────────────────────────
 export default function NumberInputDemo() {
@@ -16,56 +19,43 @@ export default function NumberInputDemo() {
   const [value] = useControl(valueCtrl);
 
   return (
-    <>
-      <h1>NumberInput</h1>
-      <p className={intro}>Numeric input with increment/decrement buttons.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='NumberInput'
+      description='Numeric input with increment/decrement buttons.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <NumberInput value={valueCtrl} min={0} max={100} step={1} />
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Value: {value}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={row}>
           <NumberInput size='sm' min={0} max={10} />
           <NumberInput size='md' min={0} max={10} />
           <NumberInput size='lg' min={0} max={10} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='NumberInputProps' />
-      </div>
+      <PropsSection of='NumberInputProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>&lt;input type=&quot;number&quot;&gt;</strong>
-            </li>
-            <li>
-              Stepper buttons have <strong>aria-label</strong>{' '}
-              (&quot;Decrease&quot;/&quot;Increase&quot;)
-            </li>
-            <li>Buttons are disabled at min/max boundaries</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>&lt;input type=&quot;number&quot;&gt;</strong>
+          </li>
+          <li>
+            Stepper buttons have <strong>aria-label</strong>{' '}
+            (&quot;Decrease&quot;/&quot;Increase&quot;)
+          </li>
+          <li>Buttons are disabled at min/max boundaries</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='numberinput' />
-    </>
+    </DemoPage>
   );
 }

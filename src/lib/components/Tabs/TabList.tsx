@@ -12,9 +12,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useResizeObserver } from '../../hooks/useResizeObserver';
-import { getDirection, inlineAxisKeys } from '../../utils/direction';
+import { axisMove, axisMoveTarget } from '../../utils/axis-traversal';
+import { getDirection } from '../../utils/direction';
 import { focusRingVisible } from '../../utils/focus-ring';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { Menu } from '../Menu';
 import { useStrings } from '../LocaleProvider';
@@ -148,9 +149,11 @@ const TAB_SELECTOR = '[role="tab"]:not([disabled]):not([aria-disabled="true"])';
 /**
  * The tab strip: a roving-tabindex list per the WAI-ARIA tabs pattern —
  * ←/→ move between tabs with wrapping and automatic activation
- * (selection follows focus), Home/End jump to the ends. Under
- * `dir="rtl"` the horizontal arrows mirror (← advances), read from the
- * DOM at event time so the keys follow the mirrored strip.
+ * (selection follows focus), Home/End jump to the ends. The keys
+ * resolve through utils/axis-traversal (shared with Segmented and the
+ * menu keyboard layers). Under `dir="rtl"` the horizontal arrows mirror
+ * (← advances), read from the DOM at event time so the keys follow the
+ * mirrored strip.
  *
  * Document-tab overflow: the strip itself stays `overflow-x: auto`
  * (scrolling is the baseline, and the only gesture on touch), while a
@@ -174,15 +177,12 @@ export default function TabList({
   const listRef = listRefProp ?? internalListRef;
   const [observeRef, resizeEntry] = useResizeObserver<HTMLDivElement>();
   // The strip element feeds two handles: the consumer/own ref object
-  // (measure + keyboard read it) and the observer's callback ref. The
-  // useCallback keeps the merged identity stable — a fresh callback per
+  // (measure + keyboard read it) and the observer's callback ref.
+  // useMergedRefs keeps the merged identity stable — a fresh callback per
   // render would null-detach and re-observe every render, and every
   // observe() fires a fresh entry (the re-render loop the hook's
   // stable-ref contract guards against).
-  const stripRef = useCallback(
-    (node: HTMLDivElement | null) => mergeRefs(listRef, observeRef)(node),
-    [listRef, observeRef]
-  );
+  const stripRef = useMergedRefs(listRef, observeRef);
   const [overflowing, setOverflowing] = useState(false);
 
   // Controlled handle on the ⋯ menu so a radio pick can close it.
@@ -249,44 +249,25 @@ export default function TabList({
       listRef.current?.querySelectorAll<HTMLElement>(TAB_SELECTOR) ?? []
     );
     if (tabs.length === 0) return;
+    // Direction read from the DOM at event time — the layout truth the
+    // arrow keys must follow.
+    const move = axisMove(event.key, 'horizontal', getDirection(listRef.current));
+    if (!move) return;
     // `contains` also matches focus landing on a tab's inner content —
     // otherwise the -1 fallback keeps the legacy wrap-from-the-ends
     // behavior for focus outside the strip.
     const active = document.activeElement;
-    const current = tabs.findIndex((tab) => tab.contains(active));
+    const target = axisMoveTarget(move, {
+      current: tabs.findIndex((tab) => tab.contains(active)),
+      length: tabs.length,
+    });
 
-    const activate = (index: number) => {
-      const tab = tabs[index];
-      if (!tab) return;
-      tab.focus();
-      setValue(tab.dataset.hazeTabValue ?? '');
-    };
-
-    const { next: nextKey, prev: prevKey } = inlineAxisKeys(
-      'horizontal',
-      getDirection(listRef.current)
-    );
-
-    switch (event.key) {
-      case nextKey:
-        event.preventDefault();
-        activate(current < 0 ? 0 : (current + 1) % tabs.length);
-        return;
-      case prevKey:
-        event.preventDefault();
-        activate(
-          current < 0 ? tabs.length - 1 : (current - 1 + tabs.length) % tabs.length
-        );
-        return;
-      case 'Home':
-        event.preventDefault();
-        activate(0);
-        return;
-      case 'End':
-        event.preventDefault();
-        activate(tabs.length - 1);
-        return;
-    }
+    event.preventDefault();
+    // Automatic activation: selection follows focus.
+    const tab = tabs[target];
+    if (!tab) return;
+    tab.focus();
+    setValue(tab.dataset.hazeTabValue ?? '');
   };
 
   return (

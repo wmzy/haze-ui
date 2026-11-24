@@ -36,6 +36,18 @@ describe('Chip', () => {
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
   });
 
+  it('removes on Backspace focused on the remove button (the shared TagRemoveButton arm)', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<Chip onClose={onClose}>Deletable</Chip>);
+    const remove = screen.getByRole('button', { name: 'Remove' });
+    expect(remove).toHaveAttribute('data-slot', 'remove-button');
+    expect(remove).toHaveAttribute('type', 'button');
+    remove.focus();
+    await user.keyboard('{Backspace}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('honors removeLabel for the close button name', () => {
     render(<Chip onClose={() => undefined} removeLabel="移除标签">Deletable</Chip>);
     expect(screen.getByRole('button', { name: '移除标签' })).toBeInTheDocument();

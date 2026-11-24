@@ -26,25 +26,20 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from 'typescript';
 
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import {
+  defaultRoot,
+  invokedDirectly,
+  readJson,
+  runCli,
+  wroteLine,
+} from './cli-utils.mjs';
+import { parseSource } from './ts-source.mjs';
 
 /** The dynamic component route in src/views/index.tsx. */
 const COMPONENT_ROUTE = '/components/:name';
-
-function parseSource(file) {
-  return ts.createSourceFile(
-    file,
-    readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
-}
 
 /** Every `path: '...'` literal in src/views/index.tsx, declaration order. */
 function readStaticRoutes(rootDir) {
@@ -131,9 +126,7 @@ export function generateSitemapRoutes(rootDir = defaultRoot()) {
  * stable).
  */
 export function writeSitemap(rootDir = defaultRoot()) {
-  const pkg = JSON.parse(
-    readFileSync(path.join(rootDir, 'package.json'), 'utf8')
-  );
+  const pkg = readJson(rootDir, 'package.json');
   if (typeof pkg.homepage !== 'string' || !/^https?:\/\//.test(pkg.homepage)) {
     throw new Error(
       'generate-sitemap: package.json "homepage" must be the deployed site URL'
@@ -181,28 +174,9 @@ Sitemap: ${origin}/sitemap.xml
   return { changed, outFiles, urlCount: routes.length };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-sitemap', (started) => {
     const { changed, outFiles, urlCount } = writeSitemap();
-    console.log(
-      `generate-sitemap: ${urlCount} urls, ${changed ? 'wrote' : 'unchanged'} ${outFiles
-        .map((file) => path.relative(defaultRoot(), file))
-        .join(' + ')} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-sitemap: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${urlCount} urls, ${wroteLine(started, changed, outFiles)}`;
+  });
 }

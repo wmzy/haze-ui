@@ -1,25 +1,16 @@
-import type { ReactNode } from 'react';
-import type { ControlOrValue } from 'react-use-control';
-
-import { MenuCheckboxItemImpl } from '../../utils/menu-item-parts';
+import {
+  MenuCheckboxItemImpl,
+  type MenuCheckboxItemStateProps,
+  type MenuItemChromeProps,
+} from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
-type DropdownMenuCheckboxItemProps = {
-  /** Whether the option is checked — controlled control or uncontrolled initial value. */
-  checked?: ControlOrValue<boolean>;
-  /** Fires on every toggle, whatever drove it (click, Enter, Space). */
-  onCheckedChange?: (checked: boolean) => void;
-  disabled?: boolean;
-  /** Danger skin for destructive actions: danger-colored text and interaction states. */
-  danger?: boolean;
-  /** Inline-start icon slot; bare `svg` children are sized to 1em by the slot. */
-  icon?: ReactNode;
-  /** Inline-end shortcut hint (e.g. '⌘C'), muted and pushed to the item's end. */
-  kbdLabel?: ReactNode;
-  className?: string;
-  children: ReactNode;
-};
+/** A toggleable item's props: the checkbox state plus the item chrome —
+ * both the impl's own prop groups (utils/menu-item-parts, where the
+ * prop docs live). */
+type DropdownMenuCheckboxItemProps = MenuCheckboxItemStateProps &
+  MenuItemChromeProps;
 
 /**
  * A toggleable menu option (`role="menuitemcheckbox"`): click, Enter or

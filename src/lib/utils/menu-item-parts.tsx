@@ -166,8 +166,22 @@ function MenuItemShell<T extends ElementType = 'button'>({
 // The behavior layer the three families shipped as verbatim component
 // bodies: each Impl takes the resolved skin and the family's slot
 // class, so a family wrapper reduces to reading its context and
-// delegating. Only components are exported from this module — the
-// hooks stay internal to them.
+// delegating. The components and the prop types the wrappers build
+// their public props from are exported — the hooks stay internal.
+//
+// Impl props = family seam + the public part: each *ImplProps type
+// intersects the seam (skin/familyClass) with the prop groups the
+// wrappers re-export verbatim (MenuItemChromeProps,
+// MenuCheckboxItemStateProps, the *BaseProps types) plus whatever only
+// the impl takes (the activation handlers, the radio item's resolved
+// state). A wrapper's public type is those groups intersected back
+// together, so it cannot drift from the impl. Keep those types
+// intersections of object-literal groups rather than Omit<...>: the
+// docs generator (scripts/generate-props.mjs) lists an intersection's
+// props in declaration order, but a mapped type's in an order that
+// shifts with unrelated files — an Omit-derived public type reshuffles
+// its rows in src/generated/props.json whenever the program's type
+// order moves.
 
 /** The family seam shared by every item impl: which family's
  * interaction skin the part wears plus the family's slot class from
@@ -208,7 +222,11 @@ type MenuItemImplProps<T extends ElementType = 'button'> = MenuItemImplOwnProps 
   as?: T;
 } & Omit<ComponentPropsWithRef<T>, keyof MenuItemImplOwnProps | 'as'>;
 
-export type { MenuItemImplOwnProps, MenuItemImplProps };
+export type {
+  MenuItemChromeProps,
+  MenuItemImplOwnProps,
+  MenuItemImplProps,
+};
 
 export function MenuItemImpl<T extends ElementType = 'button'>({
   skin,
@@ -243,12 +261,18 @@ export function MenuItemImpl<T extends ElementType = 'button'>({
   );
 }
 
-type MenuCheckboxItemImplProps = MenuFamilyItemProps & {
+/** The checkbox item's state props — exactly what every family's
+ * public checkbox item exposes next to the shared chrome. */
+type MenuCheckboxItemStateProps = {
   /** Whether the option is checked — controlled control or uncontrolled initial value. */
   checked?: ControlOrValue<boolean>;
   /** Fires on every toggle, whatever drove it (click, Enter, Space). */
   onCheckedChange?: (checked: boolean) => void;
-} & MenuItemChromeProps;
+};
+
+type MenuCheckboxItemImplProps = MenuFamilyItemProps &
+  MenuCheckboxItemStateProps &
+  MenuItemChromeProps;
 
 export function MenuCheckboxItemImpl({
   skin,
@@ -331,11 +355,16 @@ export function MenuRadioItemImpl({
   );
 }
 
-type MenuSubTriggerImplProps = MenuFamilyItemProps & {
+/** The sub-trigger's own props — no danger/icon/kbd slots, only the
+ * disabled state and the label slot; every family's sub-trigger exposes
+ * exactly these. */
+type MenuSubTriggerBaseProps = {
   disabled?: boolean;
   className?: string;
   children: ReactNode;
 };
+
+type MenuSubTriggerImplProps = MenuFamilyItemProps & MenuSubTriggerBaseProps;
 
 export function MenuSubTriggerImpl({
   skin,
@@ -368,15 +397,20 @@ export function MenuSubTriggerImpl({
   );
 }
 
-type MenuGroupImplProps = {
-  /** Slot class from the family's context (classNames?.group). */
-  familyClass?: string;
+/** The labeled group's own props — exactly what every family's group
+ * exposes. */
+type MenuGroupBaseProps = {
   /** Non-interactive heading naming the group (aria-labelledby). */
   label: ReactNode;
   className?: string;
   /** The group's menu items. */
   children: ReactNode;
 };
+
+type MenuGroupImplProps = {
+  /** Slot class from the family's context (classNames?.group). */
+  familyClass?: string;
+} & MenuGroupBaseProps;
 
 export function MenuGroupImpl({ familyClass, label, className, children }: MenuGroupImplProps) {
   const labelId = useId();
@@ -390,9 +424,10 @@ export function MenuGroupImpl({ familyClass, label, className, children }: MenuG
   );
 }
 
-type MenuRadioGroupImplProps = {
-  /** Slot class from the family's context (classNames?.group). */
-  familyClass?: string;
+/** The radio group's state props — exactly what every family's public
+ * radio group exposes; the wrapper adds its own `children`, because
+ * each family documents its own radio item component there. */
+type MenuRadioGroupBaseProps = {
   /** Selected value — controlled control or uncontrolled initial value ('' = none). */
   value?: ControlOrValue<string>;
   /** Fires when the selection changes, whatever drove it (click, Enter, Space). */
@@ -400,8 +435,21 @@ type MenuRadioGroupImplProps = {
   /** Optional non-interactive heading naming the radio group (aria-labelledby). */
   label?: ReactNode;
   className?: string;
+};
+
+type MenuRadioGroupImplProps = {
+  /** Slot class from the family's context (classNames?.group). */
+  familyClass?: string;
+} & MenuRadioGroupBaseProps & {
   /** The group's radio items. */
   children: ReactNode;
+};
+
+export type {
+  MenuCheckboxItemStateProps,
+  MenuGroupBaseProps,
+  MenuRadioGroupBaseProps,
+  MenuSubTriggerBaseProps,
 };
 
 export function MenuRadioGroupImpl({

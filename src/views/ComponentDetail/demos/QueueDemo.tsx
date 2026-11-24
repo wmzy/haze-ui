@@ -4,11 +4,13 @@ import { Queue, QueueItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth420,
+} from './shared';
 
 type Entry = {
   id: number;
@@ -28,7 +30,7 @@ function QueuePlayground() {
   const [nextId, setNextId] = useState(initialEntries.length + 1);
 
   return (
-    <div style={{ maxWidth: 420 }}>
+    <div style={maxWidth420}>
       <button
         type='button'
         onClick={() => {
@@ -66,50 +68,46 @@ function QueuePlayground() {
 // ─── Queue ─────────────────────────────────────────────────────
 export default function QueueDemo() {
   return (
-    <>
-      <h1>Queue</h1>
-      <p className={intro}>
-        Queue of pending agent actions or messages: each entry carries a status
-        (queued, sending, failed) and an optional remove action.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Queue'
+      description={
+        <>
+          Queue of pending agent actions or messages: each entry carries a status
+          (queued, sending, failed) and an optional remove action.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <QueuePlayground />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Queue Props</h2>
+      <DemoSection title='Queue Props'>
         <PropsTable of='QueueProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>QueueItem Props</h2>
+      <DemoSection title='QueueItem Props'>
         <PropsTable of='QueueItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Native <strong>list</strong>/<strong>listitem</strong> semantics
-              from the underlying <code>ul</code>/<code>li</code> elements
-            </li>
-            <li>
-              The sending state renders the library Spinner (its{' '}
-              <code>role=&quot;status&quot;</code> announcement is preserved)
-            </li>
-            <li>
-              The remove button is keyboard reachable; pass{' '}
-              <code>removeLabel</code> for a descriptive accessible name (no
-              builtin copy)
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Native <strong>list</strong>/<strong>listitem</strong> semantics
+            from the underlying <code>ul</code>/<code>li</code> elements
+          </li>
+          <li>
+            The sending state renders the library Spinner (its{' '}
+            <code>role=&quot;status&quot;</code> announcement is preserved)
+          </li>
+          <li>
+            The remove button is keyboard reachable; pass{' '}
+            <code>removeLabel</code> for a descriptive accessible name (no
+            builtin copy)
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='queue' />
-    </>
+    </DemoPage>
   );
 }

@@ -4,6 +4,8 @@ import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
 import { useControl } from 'react-use-control';
 
+import { ghostVariant, solidVariant } from '../../utils/button-variant-skin';
+
 import Toggle from './Toggle';
 import ToggleCore from './ToggleCore';
 
@@ -101,6 +103,21 @@ describe('ToggleCore', () => {
   it('renders the given pressed value', () => {
     render(<ToggleCore pressed onPressedChange={() => undefined} aria-label="core" />);
     expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it("wears Button's shared variant surfaces: ghost at rest, solid pressed", () => {
+    // Toggle composes utils/button-variant-skin's arms instead of local
+    // copies — the surfaces swap exclusively with the pressed state.
+    const { rerender } = render(
+      <ToggleCore pressed={false} onPressedChange={() => undefined} aria-label="core" />
+    );
+    expect(screen.getByRole('button')).toHaveClass(ghostVariant);
+    expect(screen.getByRole('button')).not.toHaveClass(solidVariant);
+    rerender(
+      <ToggleCore pressed onPressedChange={() => undefined} aria-label="core" />
+    );
+    expect(screen.getByRole('button')).toHaveClass(solidVariant);
+    expect(screen.getByRole('button')).not.toHaveClass(ghostVariant);
   });
 
   it('calls onPressedChange with the next value on click', async () => {

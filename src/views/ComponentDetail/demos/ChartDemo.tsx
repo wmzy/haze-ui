@@ -2,9 +2,9 @@ import { Chart } from '@/lib/components/Chart';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 const revenue = [
   { month: 'Jan', saas: 28, services: 12 },
@@ -42,19 +42,20 @@ const cohort = [
 // ─── Chart ─────────────────────────────────────────────────────
 export default function ChartDemo() {
   return (
-    <>
-      <h1>Chart</h1>
-      <p className={intro}>
-        Line, area, bar, pie, donut, radar, scatter, gauge and waffle charts
-        over <a href='https://recharts.org'>recharts</a> (a haze-ui
-        dependency, bundled only when you render charts — the waffle is pure
-        CSS), with every color, font and grid line resolved from haze
-        tokens. Series colors cycle through the semantic palette; pass your
-        own as any CSS color string.
-      </p>
-
-      <div className={section}>
-        <h2>Line chart</h2>
+    <DemoPage
+      title='Chart'
+      description={
+        <>
+          Line, area, bar, pie, donut, radar, scatter, gauge and waffle charts
+          over <a href='https://recharts.org'>recharts</a> (a haze-ui
+          dependency, bundled only when you render charts — the waffle is pure
+          CSS), with every color, font and grid line resolved from haze
+          tokens. Series colors cycle through the semantic palette; pass your
+          own as any CSS color string.
+        </>
+      }
+    >
+      <DemoSection title='Line chart'>
         <div className={row}>
           <Chart
             type='line'
@@ -76,10 +77,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Area chart</h2>
+      <DemoSection title='Area chart'>
         <div className={row}>
           <Chart
             type='area'
@@ -92,10 +92,9 @@ export default function ChartDemo() {
         <pre className={codeBlock}>
           {`<Chart type='area' data={revenue} xKey='month' series={[{ key: 'saas' }]} height={220} />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Bar chart</h2>
+      <DemoSection title='Bar chart'>
         <div className={row}>
           <Chart
             type='bar'
@@ -117,10 +116,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom series colors</h2>
+      <DemoSection title='Custom series colors'>
         <p className={row}>
           Any CSS color works, including <code>var(--haze-color-…)</code>{' '}
           tokens or hex values from your own palette.
@@ -136,10 +134,9 @@ export default function ChartDemo() {
             ]}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Annotations</h2>
+      <DemoSection title='Annotations'>
         <p className={row}>
           Cartesian charts accept recharts reference annotations —{' '}
           <code>referenceLines</code> (averages, targets),{' '}
@@ -183,10 +180,9 @@ export default function ChartDemo() {
   referenceAreas={[{ x1: 'Apr', x2: 'May', fill: 'var(--haze-color-primary)', fillOpacity: 0.08 }]}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Gauge</h2>
+      <DemoSection title='Gauge'>
         <p className={row}>
           <code>{"type='gauge'"}</code> reads a single <code>value</code>{' '}
           against <code>max</code> (default 100) on a semicircle arc with a
@@ -221,10 +217,9 @@ export default function ChartDemo() {
   ]}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Waffle</h2>
+      <DemoSection title='Waffle'>
         <p className={row}>
           <code>{"type='waffle'"}</code> renders series shares as a square
           CSS grid — one square per value unit, padded with muted squares up
@@ -254,10 +249,9 @@ export default function ChartDemo() {
   ]}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Pie &amp; donut</h2>
+      <DemoSection title='Pie &amp; donut'>
         <p className={row}>
           Each datum is one sector named by <code>xKey</code>;{' '}
           <code>innerRadius</code> above 0 turns the pie into a donut. Sector
@@ -292,10 +286,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom tooltip</h2>
+      <DemoSection title='Custom tooltip'>
         <p className={row}>
           <code>renderTooltip</code> replaces the recharts default with your
           own markup — hover the chart to see it. It receives the hovered
@@ -350,10 +343,9 @@ export default function ChartDemo() {
   )}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Horizontal bars</h2>
+      <DemoSection title='Horizontal bars'>
         <p className={row}>
           <code>{"layout='vertical'"}</code> on the cartesian charts swaps the
           axes — bars grow left-to-right from category labels.
@@ -378,10 +370,9 @@ export default function ChartDemo() {
   height={240}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Radar chart</h2>
+      <DemoSection title='Radar chart'>
         <p className={row}>
           Each datum is one spoke named by <code>xKey</code>; every series is
           one translucent polygon over the spokes, so overlapping series stay
@@ -408,10 +399,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Scatter chart</h2>
+      <DemoSection title='Scatter chart'>
         <p className={row}>
           Both axes are numeric: <code>xKey</code> picks the X column and each
           series <code>key</code> the Y column — one point per datum, one
@@ -438,10 +428,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Screen-reader fallback table</h2>
+      <DemoSection title='Screen-reader fallback table'>
         <p className={row}>
           A chart is an informative graphic: the plot renders as{' '}
           <code>role='img'</code> carrying an <code>aria-label</code> that
@@ -475,33 +464,28 @@ export default function ChartDemo() {
   // loading={true} or empty={<CustomEmpty />} swap the plot for a state
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Chart Props</h2>
+      <DemoSection title='Chart Props'>
         <PropsTable of='ChartProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The plot is a named <code>role='img'</code> (chart type +
-              series, overridable via <code>aria-label</code>) and ships
-              with a screen-reader fallback table mirroring the data — see
-              the section above
-            </li>
-            <li>
-              Colors default to semantic tokens that meet contrast rules on
-              both light and dark themes
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The plot is a named <code>role='img'</code> (chart type +
+            series, overridable via <code>aria-label</code>) and ships
+            with a screen-reader fallback table mirroring the data — see
+            the section above
+          </li>
+          <li>
+            Colors default to semantic tokens that meet contrast rules on
+            both light and dark themes
+          </li>
+        </ul>
+      </AccessibilitySection>
 
-      <div className={section}>
-        <h2>Composed chart</h2>
+      <DemoSection title='Composed chart'>
         <p className={row}>
           Cartesian charts mix per-series shapes: each series may carry its
           own <code>type</code> while the chart-level <code>type</code> picks
@@ -532,10 +516,9 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Stacked areas</h2>
+      <DemoSection title='Stacked areas'>
         <p className={row}>
           Series sharing a <code>stackId</code> stack onto the same baseline
           (Area and Bar shapes) — SaaS and Services add up to total revenue
@@ -566,7 +549,7 @@ export default function ChartDemo() {
   showLegend
 />`}
         </pre>
-      </div>
-    </>
+      </DemoSection>
+    </DemoPage>
   );
 }

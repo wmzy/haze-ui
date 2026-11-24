@@ -4,11 +4,12 @@ import { Breadcrumb, BreadcrumbItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // Router-shaped `as`: BreadcrumbItem accepts any component that
 // forwards props to a DOM element — here a minimal Link stand-in whose
@@ -30,32 +31,27 @@ function RouterLink({
 // ─── Breadcrumb ────────────────────────────────────────────────
 export default function BreadcrumbDemo() {
   return (
-    <>
-      <h1>Breadcrumb</h1>
-      <p className={intro}>
-        Navigation trail showing the current page location.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Breadcrumb'
+      description='Navigation trail showing the current page location.'
+    >
+      <DemoSection title='Demo'>
         <Breadcrumb>
           <BreadcrumbItem href='#'>Home</BreadcrumbItem>
           <BreadcrumbItem href='#'>Components</BreadcrumbItem>
           <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
         </Breadcrumb>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom Separator</h2>
+      <DemoSection title='Custom Separator'>
         <Breadcrumb separator='›'>
           <BreadcrumbItem href='#'>Docs</BreadcrumbItem>
           <BreadcrumbItem href='#'>UI</BreadcrumbItem>
           <BreadcrumbItem>Current</BreadcrumbItem>
         </Breadcrumb>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Router Links (as)</h2>
+      <DemoSection title='Router Links (as)'>
         <Breadcrumb>
           <BreadcrumbItem as={RouterLink} to='/'>
             Home
@@ -65,38 +61,33 @@ export default function BreadcrumbDemo() {
           </BreadcrumbItem>
           <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
         </Breadcrumb>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Breadcrumb Props</h2>
+      <DemoSection title='Breadcrumb Props'>
         <PropsTable of='BreadcrumbProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>BreadcrumbItem Props</h2>
+      <DemoSection title='BreadcrumbItem Props'>
         <PropsTable of='BreadcrumbItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses{' '}
-              <strong>&lt;nav aria-label=&quot;Breadcrumb&quot;&gt;</strong>{' '}
-              with <strong>&lt;ol&gt;</strong>
-            </li>
-            <li>
-              Last item has <strong>aria-current=&quot;page&quot;</strong>
-            </li>
-            <li>
-              Separators have <strong>aria-hidden=&quot;true&quot;</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses{' '}
+            <strong>&lt;nav aria-label=&quot;Breadcrumb&quot;&gt;</strong>{' '}
+            with <strong>&lt;ol&gt;</strong>
+          </li>
+          <li>
+            Last item has <strong>aria-current=&quot;page&quot;</strong>
+          </li>
+          <li>
+            Separators have <strong>aria-hidden=&quot;true&quot;</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='breadcrumb' />
-    </>
+    </DemoPage>
   );
 }

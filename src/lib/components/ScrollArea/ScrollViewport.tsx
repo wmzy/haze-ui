@@ -1,10 +1,10 @@
 import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { connectResizeObserver } from '../../utils/connect-resize-observer';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { useScrollAreaContext } from './ScrollAreaContext';
 
@@ -77,19 +77,11 @@ export default function ScrollViewport({
     };
   }, []);
 
-  const attachViewport = useCallback(
-    (node: HTMLDivElement | null) => {
-      innerRef.current = node;
-      setViewport(node);
-    },
-    [setViewport]
-  );
   // Stable identity: re-renders of this consumer must not churn the ref
-  // (detach/attach would ping-pong null through the root's state).
-  const mergedRef = useMemo(
-    () => mergeRefs(ref, attachViewport),
-    [ref, attachViewport]
-  );
+  // (detach/attach would ping-pong null through the root's state). One
+  // callback feeds three owners in order: the consumer ref, the local
+  // handle the measure effect reads, and the root's viewport registration.
+  const mergedRef = useMergedRefs(ref, innerRef, setViewport);
 
   const {
     tabIndex,

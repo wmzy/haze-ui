@@ -1,22 +1,23 @@
 import { Skeleton } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Skeleton ──────────────────────────────────────────────────
 export default function SkeletonDemo() {
   return (
-    <>
-      <h1>Skeleton</h1>
-      <p className={intro}>Animated placeholder for loading states.</p>
-
-      <div className={section}>
-        <h2>Variants</h2>
+    <DemoPage
+      title='Skeleton'
+      description='Animated placeholder for loading states.'
+    >
+      <DemoSection title='Variants'>
         <div
           style={{
             display: 'flex',
@@ -43,31 +44,25 @@ export default function SkeletonDemo() {
             </div>
           </div>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='SkeletonProps' />
-      </div>
+      <PropsSection of='SkeletonProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Purely decorative — use{' '}
-              <strong>aria-busy=&quot;true&quot;</strong> on the parent
-              container during loading
-            </li>
-            <li>
-              Shimmer animation is CSS-only, respects{' '}
-              <strong>prefers-reduced-motion</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Purely decorative — use{' '}
+            <strong>aria-busy=&quot;true&quot;</strong> on the parent
+            container during loading
+          </li>
+          <li>
+            Shimmer animation is CSS-only, respects{' '}
+            <strong>prefers-reduced-motion</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='skeleton' />
-    </>
+    </DemoPage>
   );
 }

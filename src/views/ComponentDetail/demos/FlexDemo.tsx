@@ -2,13 +2,15 @@ import { css } from '@linaria/core';
 
 import { Badge, Flex } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { codeBlock } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, codeBlock } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const note = css`
   max-width: 75ch;
@@ -25,29 +27,26 @@ const note = css`
 // ─── Flex ──────────────────────────────────────────────────────
 export default function FlexDemo() {
   return (
-    <>
-      <h1>Flex</h1>
-      <p className={intro}>Shorthand layout component for flexbox patterns.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Flex'
+      description='Shorthand layout component for flexbox patterns.'
+    >
+      <DemoSection title='Demo'>
         <Flex gap='var(--haze-space-3)' align='center'>
           <Badge>Item 1</Badge>
           <Badge color='success'>Item 2</Badge>
           <Badge color='info'>Item 3</Badge>
         </Flex>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Column</h2>
+      <DemoSection title='Column'>
         <Flex direction='column' gap='var(--haze-space-2)'>
           <Badge>Row A</Badge>
           <Badge color='warning'>Row B</Badge>
         </Flex>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Space / Stack equivalents</h2>
+      <DemoSection title='Space / Stack equivalents'>
         <p className={note}>
           haze-ui deliberately ships no separate <code>Space</code>,{' '}
           <code>Stack</code>, or <code>Group</code> component. Flexbox{' '}
@@ -105,29 +104,23 @@ export default function FlexDemo() {
   <Badge>Tag 3</Badge>
   {/* …more items reflow onto new rows as width allows */}
 </Flex>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='FlexProps' />
-      </div>
+      <PropsSection of='FlexProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as a plain <strong>&lt;div&gt;</strong> — purely
-              presentational
-            </li>
-            <li>
-              No semantic meaning; add <strong>role</strong> if needed
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as a plain <strong>&lt;div&gt;</strong> — purely
+            presentational
+          </li>
+          <li>
+            No semantic meaning; add <strong>role</strong> if needed
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='flex' />
-    </>
+    </DemoPage>
   );
 }

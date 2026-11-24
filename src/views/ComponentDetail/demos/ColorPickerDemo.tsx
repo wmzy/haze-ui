@@ -5,9 +5,14 @@ import { ColorPicker, ColorPickerCore } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { fieldRow } from '../styles';
 
-import { intro, section, fieldRow } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+} from './shared';
 
 const PRESETS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
@@ -16,11 +21,6 @@ const GRADIENT_PRESETS = [
   {label: 'Ocean', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'},
   {label: 'Mint', gradient: 'linear-gradient(45deg, #00c9ff 0%, #92fe9d 100%)'},
 ];
-
-const readout = {
-  fontSize: 'var(--haze-text-sm)',
-  color: 'var(--haze-color-text-secondary)',
-} as const;
 
 // ─── ColorPicker ────────────────────────────────────────────────
 export default function ColorPickerDemo() {
@@ -36,18 +36,19 @@ export default function ColorPickerDemo() {
   const [coreValue, setCoreValue] = useState('#22c55e');
 
   return (
-    <>
-      <h1>ColorPicker</h1>
-      <p className={intro}>
-        Color picking with a saturation/value panel, hue rail, presets and
-        recent colors — as a trigger + floating panel, or inline. With{' '}
-        <code>gradient</code>, values can be CSS{' '}
-        <code>linear-gradient()</code> strings with a full angle + stops
-        editor.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='ColorPicker'
+      description={
+        <>
+          Color picking with a saturation/value panel, hue rail, presets and
+          recent colors — as a trigger + floating panel, or inline. With{' '}
+          <code>gradient</code>, values can be CSS{' '}
+          <code>linear-gradient()</code> strings with a full angle + stops
+          editor.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p>
           A swatch trigger opens the panel: drag (or click) the
           saturation/value surface and the hue rail, type a color code, or
@@ -63,11 +64,10 @@ export default function ColorPickerDemo() {
             aria-label="Theme color"
           />
         </div>
-        <p style={readout}>Selected: {value}</p>
-      </div>
+        <p style={hintStyle}>Selected: {value}</p>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Formats &amp; alpha</h2>
+      <DemoSection title='Formats &amp; alpha'>
         <p>
           <code>format</code> drives both the text field and every emitted
           value (<code>#rrggbb</code>, <code>rgb()</code>,{' '}
@@ -104,11 +104,10 @@ export default function ColorPickerDemo() {
             aria-label="Accent color"
           />
         </div>
-        <p style={readout}>Selected: {alphaValue}</p>
-      </div>
+        <p style={hintStyle}>Selected: {alphaValue}</p>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Gradients</h2>
+      <DemoSection title='Gradients'>
         <p>
           With <code>gradient</code>, the panel gains a Solid/Gradient
           toggle. A gradient value is just a CSS{' '}
@@ -131,11 +130,10 @@ export default function ColorPickerDemo() {
             aria-label="Background gradient"
           />
         </div>
-        <p style={readout}>Selected: {gradientValue}</p>
-      </div>
+        <p style={hintStyle}>Selected: {gradientValue}</p>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Inline</h2>
+      <DemoSection title='Inline'>
         <p>
           <code>inline</code> swaps the trigger + floating panel for an
           always-visible panel card — for settings pages and sidebars.
@@ -143,10 +141,9 @@ export default function ColorPickerDemo() {
         <div className={fieldRow}>
           <ColorPicker inline presets={PRESETS} recent />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Core — native primitive</h2>
+      <DemoSection title='Core — native primitive'>
         <p>
           <code>ColorPickerCore</code> keeps the headless form: the native{' '}
           <code>&lt;input type=&quot;color&quot;&gt;</code> plus a hex text
@@ -156,27 +153,23 @@ export default function ColorPickerDemo() {
         <div className={fieldRow}>
           <ColorPickerCore value={coreValue} onChange={setCoreValue} presets={PRESETS.slice(0, 3)} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
+      <DemoSection title='Props'>
         <PropsTable of='ColorPickerProps' />
         <h3>ColorPickerCoreProps</h3>
         <PropsTable of='ColorPickerCoreProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Trigger is a <strong>button</strong> with <strong>aria-haspopup</strong> and <strong>aria-expanded</strong>; the panel is a labelled <strong>dialog</strong></li>
-            <li>SV surface, hue and alpha rails are <strong>sliders</strong> — arrow keys adjust (Shift ×10), <strong>aria-valuetext</strong> carries the color/hue/opacity</li>
-            <li>Opening the panel focuses the SV surface, so the keyboard reaches the rails immediately</li>
-            <li>Preset and recent swatches are labelled with their color value</li>
-            <li>Gradient mode: the Solid/Gradient toggle carries <strong>aria-pressed</strong>; the angle and stop-position fields are labelled number inputs; each stop&apos;s swatch and remover names its index and value</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Trigger is a <strong>button</strong> with <strong>aria-haspopup</strong> and <strong>aria-expanded</strong>; the panel is a labelled <strong>dialog</strong></li>
+          <li>SV surface, hue and alpha rails are <strong>sliders</strong> — arrow keys adjust (Shift ×10), <strong>aria-valuetext</strong> carries the color/hue/opacity</li>
+          <li>Opening the panel focuses the SV surface, so the keyboard reaches the rails immediately</li>
+          <li>Preset and recent swatches are labelled with their color value</li>
+          <li>Gradient mode: the Solid/Gradient toggle carries <strong>aria-pressed</strong>; the angle and stop-position fields are labelled number inputs; each stop&apos;s swatch and remover names its index and value</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

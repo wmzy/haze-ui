@@ -4,13 +4,17 @@ import { useControl } from 'react-use-control';
 import { Select, Option, OptionGroup } from '@/lib/components/Select';
 import { Button } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow, row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 const FRAMEWORKS = [
   { value: 'react', label: 'React' },
@@ -56,17 +60,6 @@ const YEAR_OPTIONS = [2021, 2022, 2023, 2024, 2025].map((year) => (
     {year}
   </Option>
 ));
-
-const noteStyle = {
-  fontSize: 'var(--haze-text-sm)',
-  color: 'var(--haze-color-text-secondary)',
-  margin: '0 0 var(--haze-space-3)',
-} as const;
-
-const valueStyle = {
-  fontSize: 'var(--haze-text-sm)',
-  color: 'var(--haze-color-text-secondary)',
-} as const;
 
 // ─── Select ────────────────────────────────────────────────────
 export default function SelectDemo() {
@@ -134,16 +127,17 @@ export default function SelectDemo() {
   };
 
   return (
-    <>
-      <h1>Select</h1>
-      <p className={intro}>
-        Dropdown selection with native &lt;select&gt; semantics, plus
-        searchable / grouped / clearable / tags / maxCount / loading /
-        maxTagCount modes on the floating listbox engine.
-      </p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Select'
+      description={
+        <>
+          Dropdown selection with native &lt;select&gt; semantics, plus
+          searchable / grouped / clearable / tags / maxCount / loading /
+          maxTagCount modes on the floating listbox engine.
+        </>
+      }
+    >
+      <DemoSection title='Sizes'>
         <div className={fieldRow}>
           <Select size='sm'>
             <Option value=''>Small select</Option>
@@ -165,19 +159,17 @@ export default function SelectDemo() {
             <Option value='b'>Option B</Option>
           </Select>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={fieldRow}>
           <Select disabled>
             <Option value=''>Disabled</Option>
           </Select>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Searchable &amp; clearable</h2>
+      <DemoSection title='Searchable &amp; clearable'>
         <p style={noteStyle}>
           <code>searchable</code> swaps the native control for the floating
           listbox with a search input at the top of the panel: typing
@@ -201,14 +193,13 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Value: {searched === '' ? '(none)' : searched}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Grouped options</h2>
+      <DemoSection title='Grouped options'>
         <p style={noteStyle}>
           <code>OptionGroup</code> labels option clusters. The native path
           renders a real <code>&lt;optgroup&gt;</code>; the floating paths
@@ -230,7 +221,7 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Native: {grouped === '' ? '(none)' : grouped} · Floating:{' '}
             {groupedMany.length > 0 ? groupedMany.join(', ') : '[]'}
           </span>
@@ -243,10 +234,9 @@ export default function SelectDemo() {
             Clear floating
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Options prop</h2>
+      <DemoSection title='Options prop'>
         <p style={noteStyle}>
           The data-driven <code>options</code> array replaces authored{' '}
           <code>&lt;Option&gt;</code> children (the Menu <code>items</code>{' '}
@@ -276,10 +266,9 @@ export default function SelectDemo() {
             placeholder='Grouped data…'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multiple selection</h2>
+      <DemoSection title='Multiple selection'>
         <p style={noteStyle}>
           <code>multiple</code> swaps the native control for a Chip trigger
           plus a listbox popover: selections render as removable chips,{' '}
@@ -304,7 +293,7 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Value: {picked.length > 0 ? picked.join(', ') : '[]'}
           </span>
           <Button
@@ -316,10 +305,9 @@ export default function SelectDemo() {
             Clear
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>maxTagCount &amp; clearable (multiple)</h2>
+      <DemoSection title='maxTagCount &amp; clearable (multiple)'>
         <p style={noteStyle}>
           <code>maxTagCount</code> caps the rendered chips — the overflow
           collapses into a <code>+N</code> badge whose tooltip lists the
@@ -342,15 +330,14 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Selected: {tagged.length} (
             {tagged.length > 0 ? tagged.join(', ') : '[]'})
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tags</h2>
+      <DemoSection title='Tags'>
         <p style={noteStyle}>
           <code>tags</code> implies multiple selection and moves the input
           into the trigger: selected values render as chips beside the
@@ -375,7 +362,7 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Value: {freeTags.length > 0 ? freeTags.join(', ') : '[]'}
           </span>
           <Button
@@ -387,10 +374,9 @@ export default function SelectDemo() {
             Clear
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>maxCount (multiple / tags)</h2>
+      <DemoSection title='maxCount (multiple / tags)'>
         <p style={noteStyle}>
           <code>maxCount</code> caps the selection in multiple and tags
           modes: once filled, the remaining options dim and carry{' '}
@@ -413,15 +399,14 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Selected: {capped.length}
             {capped.length > 0 ? ` (${capped.join(', ')})` : ''}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Loading</h2>
+      <DemoSection title='Loading'>
         <p style={noteStyle}>
           <code>loading</code> marks the floating panel busy: the options
           area shows a spinner with <code>aria-busy=&apos;true&apos;</code>, and
@@ -450,10 +435,9 @@ export default function SelectDemo() {
             {loading ? 'Finish loading' : 'Start loading'}
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Remote search</h2>
+      <DemoSection title='Remote search'>
         <p style={noteStyle}>
           <code>onSearch</code> turns the search panel into a remote query
           field: every query transition fires the callback — each
@@ -480,16 +464,15 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             {remoteLoading
               ? 'Searching…'
               : `Server returned ${remoteItems.length} options`}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Virtualized multiple</h2>
+      <DemoSection title='Virtualized multiple'>
         <p style={noteStyle}>
           <code>virtualized</code> renders the listbox options through{' '}
           <code>VirtualList</code>: only the visible window (plus a small
@@ -510,7 +493,7 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>Selected: {pickedMany.length}</span>
+          <span style={hintStyle}>Selected: {pickedMany.length}</span>
           <Button
             size='sm'
             variant='outline'
@@ -520,10 +503,9 @@ export default function SelectDemo() {
             Clear
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Number values</h2>
+      <DemoSection title='Number values'>
         <p style={noteStyle}>
           The value type is generic: number-valued <code>Option</code>s and
           a number control keep the whole chain typed —{' '}
@@ -542,74 +524,68 @@ export default function SelectDemo() {
           </Select>
         </div>
         <div className={row}>
-          <span style={valueStyle}>
+          <span style={hintStyle}>
             Single: {year} · Multiple: {years.length > 0 ? years.join(', ') : '[]'}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='SelectProps' />
-      </div>
+      <PropsSection of='SelectProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as native <strong>&lt;select&gt;</strong> with full
-              keyboard support
-            </li>
-            <li>
-              Use <strong>aria-label</strong> or a visible{' '}
-              <strong>&lt;label&gt;</strong>
-            </li>
-            <li>
-              <strong>Arrow keys</strong> navigate options,{' '}
-              <strong>Enter</strong> selects
-            </li>
-            <li>
-              Multiple mode renders a <strong>listbox</strong> popover with{' '}
-              <strong>aria-multiselectable</strong>
-            </li>
-            <li>
-              The floating triggers are APG select-only comboboxes:{' '}
-              <strong>role=&quot;combobox&quot;</strong> with aria-expanded,
-              aria-controls and aria-activedescendant for the keyboard
-              highlight
-            </li>
-            <li>
-              Searchable panels put the search input inside the popup —
-              focus moves there on open, and the input mirrors{' '}
-              <strong>aria-activedescendant</strong> so screen readers
-              announce highlight moves while typing
-            </li>
-            <li>
-              Tags mode renders the search input inside the trigger next
-              to the chips — it owns the combobox semantics, and the
-              create row is a plain listbox option
-            </li>
-            <li>
-              At a <strong>maxCount</strong> cap, locked options carry{' '}
-              <strong>aria-disabled</strong> and stay visible
-            </li>
-            <li>
-              Option groups are native <strong>optgroup</strong> elements
-              on the select path and <strong>role=&apos;group&apos;</strong> sections
-              on the floating paths
-            </li>
-            <li>
-              The clear × and chip removes are pointer-only by design
-              (nested interactive controls inside a button are invalid
-              HTML); keyboard users clear with <strong>Backspace</strong>{' '}
-              and remove chips with Backspace or the listbox
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as native <strong>&lt;select&gt;</strong> with full
+            keyboard support
+          </li>
+          <li>
+            Use <strong>aria-label</strong> or a visible{' '}
+            <strong>&lt;label&gt;</strong>
+          </li>
+          <li>
+            <strong>Arrow keys</strong> navigate options,{' '}
+            <strong>Enter</strong> selects
+          </li>
+          <li>
+            Multiple mode renders a <strong>listbox</strong> popover with{' '}
+            <strong>aria-multiselectable</strong>
+          </li>
+          <li>
+            The floating triggers are APG select-only comboboxes:{' '}
+            <strong>role=&quot;combobox&quot;</strong> with aria-expanded,
+            aria-controls and aria-activedescendant for the keyboard
+            highlight
+          </li>
+          <li>
+            Searchable panels put the search input inside the popup —
+            focus moves there on open, and the input mirrors{' '}
+            <strong>aria-activedescendant</strong> so screen readers
+            announce highlight moves while typing
+          </li>
+          <li>
+            Tags mode renders the search input inside the trigger next
+            to the chips — it owns the combobox semantics, and the
+            create row is a plain listbox option
+          </li>
+          <li>
+            At a <strong>maxCount</strong> cap, locked options carry{' '}
+            <strong>aria-disabled</strong> and stay visible
+          </li>
+          <li>
+            Option groups are native <strong>optgroup</strong> elements
+            on the select path and <strong>role=&apos;group&apos;</strong> sections
+            on the floating paths
+          </li>
+          <li>
+            The clear × and chip removes are pointer-only by design
+            (nested interactive controls inside a button are invalid
+            HTML); keyboard users clear with <strong>Backspace</strong>{' '}
+            and remove chips with Backspace or the listbox
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='select' />
-    </>
+    </DemoPage>
   );
 }

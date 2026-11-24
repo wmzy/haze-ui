@@ -34,11 +34,11 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const target = resolve(here, '../src/generated/versions.json');
-const pkg = JSON.parse(readFileSync(resolve(here, '../package.json'), 'utf8'));
+import { defaultRoot } from './cli-utils.mjs';
+
+const target = resolve(defaultRoot(), 'src/generated/versions.json');
+const pkg = JSON.parse(readFileSync(resolve(defaultRoot(), 'package.json'), 'utf8'));
 
 const REPO = 'wmzy/haze-ui';
 /** 线上站点：探测快照存在性用完整 origin；清单内 url 为同源绝对路径。 */

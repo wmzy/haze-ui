@@ -137,7 +137,7 @@ export const floatingHidden = css`
  * `forwards` keeps a finished fade-out at opacity 0 until the hidden
  * handover lands (a one-frame flash-back would otherwise show).
  */
-export const floatingAnimated = css`
+const floatingAnimated = css`
   &[data-state='open'] {
     animation: haze-floating-in var(--haze-duration-fast) var(--haze-ease);
   }
@@ -177,12 +177,6 @@ export const floatingAnimated = css`
  * cell.
  */
 const anchoredBottom = css`
-  position-area: bottom span-right;
-  margin-top: var(--haze-space-1);
-  position-try-fallbacks: flip-block;
-`;
-
-const anchoredBottomSpan = css`
   position-area: bottom span-right;
   margin-top: var(--haze-space-1);
   position-try-fallbacks: flip-block;
@@ -367,7 +361,7 @@ const gapAfter = css`
 
 const anchoredPlacements = {
   bottom: anchoredBottom,
-  'bottom-span': anchoredBottomSpan,
+  'bottom-span': anchoredBottom,
   'bottom-center': anchoredBottomCenter,
   'bottom-end': anchoredBottomEnd,
   top: anchoredTop,

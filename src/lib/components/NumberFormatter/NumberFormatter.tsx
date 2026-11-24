@@ -1,5 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react';
 
+import { cachedNumberFormat } from '../../utils/intl-cache';
+
 type NumberFormatterProps = {
   /** The numeric value to render. */
   value: number;
@@ -31,8 +33,11 @@ export default function NumberFormatter({
 }: NumberFormatterProps) {
   // Intl.NumberFormat is fully SSR-stable for a given locale+options; a
   // missing locale falls back to the runtime default so SSR output
-  // matches the client's first render locale.
-  const text = new Intl.NumberFormat(locale, formatOptions).format(value);
+  // matches the client's first render locale. Construction is the
+  // expensive part, so the instance comes from the shared per
+  // (locale, options) cache (utils/intl-cache) — an inline formatOptions
+  // literal costs a key lookup per render, not a new formatter.
+  const text = cachedNumberFormat(locale, formatOptions).format(value);
   return (
     <span data-slot='number-formatter' {...rest}>
       {prefix}

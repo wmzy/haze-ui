@@ -3,13 +3,17 @@ import { useControl } from 'react-use-control';
 
 import { Button, Combobox, ComboboxGroup, ComboboxOption } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Combobox ──────────────────────────────────────────────────
 // A thousand-option list for the virtualized example.
@@ -95,28 +99,18 @@ export default function ComboboxDemo() {
   };
 
   return (
-    <>
-      <h1>Combobox</h1>
-      <p className={intro}>
-        Searchable dropdown combining text input with a filterable list.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Combobox'
+      description='Searchable dropdown combining text input with a filterable list.'
+    >
+      <DemoSection title='Demo'>
         <div className={fieldRow}>
           <Combobox options={FRUITS} placeholder="Search fruits..." />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Children &amp; disabled options</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Children &amp; disabled options'>
+        <p style={noteStyle}>
           Options can also be authored as compound children —{' '}
           <code>&lt;ComboboxOption&gt;</code> rows inside{' '}
           <code>&lt;ComboboxGroup&gt;</code> sections — composing ahead of
@@ -140,17 +134,10 @@ export default function ComboboxDemo() {
             </ComboboxGroup>
           </Combobox>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multiple</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Multiple'>
+        <p style={noteStyle}>
           <code>multiple</code> turns the trigger into a chip box: selected
           values render as chips, <strong>Enter</strong> toggles the
           highlighted option without closing the panel, and{' '}
@@ -166,17 +153,10 @@ export default function ComboboxDemo() {
             placeholder="Pick fruits..."
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>maxTagCount &amp; maxCount (multiple)</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='maxTagCount &amp; maxCount (multiple)'>
+        <p style={noteStyle}>
           <code>maxTagCount</code> caps the rendered chips — the overflow
           collapses into a <code>+N</code> badge whose tooltip lists the
           hidden labels. <code>maxCount</code> caps the selection itself:
@@ -194,27 +174,15 @@ export default function ComboboxDemo() {
             value={cappedCtrl}
             placeholder="Pick up to four..."
           />{' '}
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Selected: {capped.length}
             {capped.length > 0 ? ` (${capped.join(', ')})` : ''}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Groups</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Groups'>
+        <p style={noteStyle}>
           Options carrying a <code>group</code> label cluster into sticky{' '}
           <code>role=&quot;group&quot;</code> sections (the{' '}
           <code>ComboboxGroup</code> shape). Groups whose every option was
@@ -224,17 +192,10 @@ export default function ComboboxDemo() {
         <div className={fieldRow}>
           <Combobox options={PRODUCE} placeholder="Search produce..." />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Creatable</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Creatable'>
+        <p style={noteStyle}>
           With <code>creatable</code>, a query that matches nothing offers a{' '}
           <code>Create &quot;…&quot;</code> row (copy from{' '}
           <code>LocaleProvider</code>). Committing it calls{' '}
@@ -244,17 +205,10 @@ export default function ComboboxDemo() {
         <div className={fieldRow}>
           <Combobox options={FRUITS} creatable placeholder="Type 'kiwi'..." />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Match highlighting, loading &amp; empty states</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Match highlighting, loading &amp; empty states'>
+        <p style={noteStyle}>
           <code>highlightMatches</code> wraps the case-insensitive query hit
           in each label with a token-styled <code>&lt;mark&gt;</code>. An
           empty result list shows the <code>combobox.noResults</code> locale
@@ -285,17 +239,10 @@ export default function ComboboxDemo() {
             {loading ? 'Stop' : 'Start'} loading
           </Button>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Remote search</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Remote search'>
+        <p style={noteStyle}>
           <code>onSearch</code> hands the query to you: every transition
           fires the callback — each keystroke, clearing the input (the
           empty query restores the full list), and the reset that follows
@@ -312,28 +259,16 @@ export default function ComboboxDemo() {
             loading={remoteLoading}
             placeholder="Async search…"
           />{' '}
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             {remoteLoading
               ? 'Searching…'
               : `Server returned ${remoteOptions.length} options`}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Virtualized</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Virtualized'>
+        <p style={noteStyle}>
           Lists longer than <code>virtualThreshold</code> (default 100)
           render through <code>VirtualList</code> automatically — only the
           visible window of options stays mounted. The explicit{' '}
@@ -348,17 +283,10 @@ export default function ComboboxDemo() {
             placeholder="Search 1000 options..."
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Number values</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Number values'>
+        <p style={noteStyle}>
           The option value type is generic: number-valued{' '}
           <code>options</code> with a number control keep{' '}
           <code>onValuesChange</code> reporting raw numbers — selection,
@@ -371,47 +299,36 @@ export default function ComboboxDemo() {
             value={yearsCtrl}
             placeholder="Pick years..."
           />{' '}
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Value: [{years.join(', ')}]
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ComboboxProps' />
-      </div>
+      <PropsSection of='ComboboxProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;combobox&quot;</strong> with{' '}
-              <strong>aria-expanded</strong> and{' '}
-              <strong>aria-autocomplete=&quot;list&quot;</strong>
-            </li>
-            <li>
-              Options use <strong>role=&quot;listbox&quot;</strong> and{' '}
-              <strong>role=&quot;option&quot;</strong>; groups add{' '}
-              <strong>role=&quot;group&quot;</strong> named by their heading
-            </li>
-            <li>
-              <strong>Arrow keys</strong> navigate options,{' '}
-              <strong>Enter</strong> selects (toggles in multiple mode),{' '}
-              <strong>Backspace</strong> removes the last chip,{' '}
-              <strong>Escape</strong> closes
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;combobox&quot;</strong> with{' '}
+            <strong>aria-expanded</strong> and{' '}
+            <strong>aria-autocomplete=&quot;list&quot;</strong>
+          </li>
+          <li>
+            Options use <strong>role=&quot;listbox&quot;</strong> and{' '}
+            <strong>role=&quot;option&quot;</strong>; groups add{' '}
+            <strong>role=&quot;group&quot;</strong> named by their heading
+          </li>
+          <li>
+            <strong>Arrow keys</strong> navigate options,{' '}
+            <strong>Enter</strong> selects (toggles in multiple mode),{' '}
+            <strong>Backspace</strong> removes the last chip,{' '}
+            <strong>Escape</strong> closes
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='combobox' />
-    </>
+    </DemoPage>
   );
 }

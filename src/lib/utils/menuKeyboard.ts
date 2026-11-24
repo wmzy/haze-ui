@@ -1,7 +1,10 @@
 import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
+import type { AxisMove, AxisOrientation } from './axis-traversal';
+import type { Direction } from './direction';
 
 import { useCallback, useEffect, useRef } from 'react';
 
+import { axisMove, axisMoveTarget, findWrapIndex } from './axis-traversal';
 import { getDirection, inlineAxisKeys } from './direction';
 
 /** How long typed characters keep accumulating before the buffer resets. */
@@ -68,53 +71,39 @@ type MoveFocusInAxisOptions = {
    * under `dir="rtl"` (← advances); vertical never mirrors. Home/End
    * are direction-invariant either way.
    */
-  orientation: 'horizontal' | 'vertical';
+  orientation: AxisOrientation;
 };
 
 /**
  * The axis-traversal core shared by the roving focus patterns
  * (useMenuKeyboard here, Toolbar, the NavigationMenu trigger strip): the
  * orientation's main-axis arrows move focus to the next/previous enabled
- * item with wrapping, Home/End jump to the first/last. Any other key is
- * left untouched (no preventDefault) so callers layer their own semantics
- * on top — menus add Escape/Tab/typeahead; toolbar and navigation-strip
- * callers stop at this loop. Returns whether the key belonged to the
- * axis (and focus was moved).
+ * item with wrapping, Home/End jump to the first/last. With focus on no
+ * item the arrows enter from the matching end — forward lands on the
+ * first item, backward on the last. Any other key is left untouched (no
+ * preventDefault) so callers layer their own semantics on top — menus
+ * add Escape/Tab/typeahead; toolbar and navigation-strip callers stop at
+ * this loop. Returns whether the key belonged to the axis (and focus was
+ * moved).
  */
 export function moveFocusInAxis(
   event: ReactKeyboardEvent,
   { container, selector, orientation }: MoveFocusInAxisOptions
 ): boolean {
-  // Main-axis keys for the orientation; horizontal mirrors under RTL
+  // Main-axis key for the orientation; horizontal mirrors under RTL
   // (direction read from the DOM at event time — the layout truth the
   // focus order must follow).
-  const { next: nextKey, prev: prevKey } = inlineAxisKeys(
-    orientation,
-    getDirection(container)
-  );
-  const { key } = event;
-  if (key !== nextKey && key !== prevKey && key !== 'Home' && key !== 'End') {
-    return false;
-  }
+  const move = axisMove(event.key, orientation, getDirection(container));
+  if (!move) return false;
   const items = getEnabledMenuItems(container, selector);
   if (items.length === 0) return false;
-  const current = items.indexOf(document.activeElement as HTMLElement);
 
   event.preventDefault();
-  switch (key) {
-    case nextKey:
-      items[(current + 1) % items.length]?.focus();
-      break;
-    case prevKey:
-      items[(current - 1 + items.length) % items.length]?.focus();
-      break;
-    case 'Home':
-      items[0]?.focus();
-      break;
-    default:
-      // End — the only axis key left after the gate above.
-      items[items.length - 1]?.focus();
-  }
+  const target = axisMoveTarget(move, {
+    current: items.indexOf(document.activeElement as HTMLElement),
+    length: items.length,
+  });
+  items[target]?.focus();
   return true;
 }
 
@@ -144,32 +133,112 @@ type UseMenuKeyboardOptions = {
    * advances) so the keys follow the mirrored layout. Home/End, Escape,
    * Tab-close and typeahead are direction-invariant either way.
    */
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: AxisOrientation;
+};
+
+/** The slice of a keyboard event the resolver reads — a React or a
+ *  native event both fit. */
+type MenuKeyEvent = Pick<
+  KeyboardEvent,
+  'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'target'
+>;
+
+/** What a menu-level keydown asks for; see {@link resolveMenuKey}. */
+export type MenuKeyAction =
+  /** Move focus along the main axis (arrow step or Home/End jump). */
+  | { kind: 'move'; move: AxisMove }
+  /** Close the menu: Escape, or Tab (which then continues past the
+   *  trigger). */
+  | { kind: 'close' }
+  /** Submenu levels only: the inline-start arrow closes this level. */
+  | { kind: 'close-to-start' }
+  /** Space on a checkable item — hand it to the native activation. */
+  | { kind: 'activate' }
+  /** A printable character for the typeahead buffer. */
+  | { kind: 'typeahead'; char: string };
+
+type ResolveMenuKeyContext = {
+  /** Layout axis of the item container. */
+  orientation: AxisOrientation;
+  /**
+   * Rendered direction of the container — `getDirection` on it, the
+   * layout truth the arrow keys must follow.
+   */
+  dir: Direction | 'auto';
+  /**
+   * Submenu levels only: the inline-start arrow (ArrowLeft in LTR,
+   * ArrowRight under `dir="rtl"`) closes this level. Root menus leave
+   * it off and the key stays inert.
+   */
+  closeToStart?: boolean;
 };
 
 /**
- * Forward search with wrap-around over `[0, length)`: tests `matches`
- * against every index starting at `start` (inclusive), wrapping past
- * the end back to the front; each index is tested exactly once.
- * Callers that pass `current + 1` (both typeahead searches do) make
- * the current item the last candidate, so repeating a character
- * cycles between items starting with it. Negative or overflowing
- * `start` values are normalized modulo `length` (Menu's virtualized
- * rows pass -1 for "focus not on a row"). Returns the first matching
- * index, or -1 when nothing matches.
+ * Pure key resolution for a menu level — the one keymap both keyboard
+ * layers share (useMenuKeyboard over the DOM items, Menu's virtualized
+ * path over its data model): the orientation's main-axis arrows move
+ * focus, Home/End jump to the ends, Escape and Tab close, Space on a
+ * checkable item goes to its native activation, and any other
+ * printable character feeds the typeahead (Space on a plain item
+ * included — no label starts with a space, so focus stays put).
+ * Returns null for keys the menu does not own: Enter, function keys
+ * and modified shortcuts.
+ *
+ * Side-effect free: the caller runs preventDefault for every action but
+ * `activate`, and performs the move or close against its own item
+ * source.
  */
-export function findWrapIndex(
-  length: number,
-  start: number,
-  matches: (index: number) => boolean
-): number {
-  if (length <= 0) return -1;
-  const from = ((start % length) + length) % length;
-  for (let i = 0; i < length; i++) {
-    const index = (from + i) % length;
-    if (matches(index)) return index;
+export function resolveMenuKey(
+  event: MenuKeyEvent,
+  { orientation, dir, closeToStart = false }: ResolveMenuKeyContext
+): MenuKeyAction | null {
+  const { key } = event;
+  // Submenu level first: a submenu is always vertical, so the
+  // inline-start arrow is otherwise inert — here it closes this level.
+  if (closeToStart && key === inlineAxisKeys('horizontal', dir).prev) {
+    return { kind: 'close-to-start' };
   }
-  return -1;
+  const move = axisMove(key, orientation, dir);
+  if (move) return { kind: 'move', move };
+  if (key === 'Escape' || key === 'Tab') return { kind: 'close' };
+  if (key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) {
+    return null;
+  }
+  // Space on a checkbox/radio item must reach the native button
+  // activation (the click that toggles it) — treating it as a
+  // typeahead character would swallow the toggle. Plain items keep the
+  // typeahead reading (textContent never starts with a space, so focus
+  // stays put, as before).
+  if (
+    key === ' ' &&
+    event.target instanceof Element &&
+    CHECKABLE_MENU_ROLES.has(event.target.getAttribute('role') ?? '')
+  ) {
+    return { kind: 'activate' };
+  }
+  return { kind: 'typeahead', char: key };
+}
+
+/**
+ * Index the typeahead buffer `typed` (already lower-cased) lands on:
+ * the first item after `current` whose text starts with the buffer —
+ * wrapping, with the current item itself the last candidate so
+ * repeating a character cycles between items starting with it.
+ * `textAt` yields an item's searchable text, or undefined for items
+ * that are not candidates (disabled items, dividers). Returns -1 when
+ * nothing matches.
+ */
+export function typeaheadTarget(
+  length: number,
+  current: number,
+  typed: string,
+  textAt: (index: number) => string | undefined
+): number {
+  return findWrapIndex(
+    length,
+    current + 1,
+    (index) => textAt(index)?.toLowerCase().startsWith(typed) ?? false
+  );
 }
 
 /**
@@ -204,9 +273,11 @@ export function useTypeahead(): (char: string) => string {
 /**
  * Keyboard behavior for a roving-tabindex item container (WAI-ARIA menu
  * button / listbox pattern): the orientation's main-axis arrows move
- * focus (wrapping, skipping disabled items), Home/End jump to the ends,
- * Escape closes (returning focus to the trigger), Tab closes, and
- * printable characters run typeahead.
+ * focus (wrapping, skipping disabled items; with focus on no item they
+ * enter from the matching end — ArrowDown lands on the first, ArrowUp
+ * on the last), Home/End jump to the ends, Escape closes (returning
+ * focus to the trigger), Tab closes, and printable characters run
+ * typeahead. Keys are resolved by {@link resolveMenuKey}.
  */
 export function useMenuKeyboard({
   menuRef,
@@ -223,86 +294,44 @@ export function useMenuKeyboard({
       if (items.length === 0) return;
       const current = items.indexOf(document.activeElement as HTMLElement);
 
-      const focus = (index: number) => items[index]?.focus();
+      const action = resolveMenuKey(event, {
+        orientation,
+        // Direction read from the DOM at event time — the layout truth
+        // the arrow keys must follow.
+        dir: getDirection(menuRef.current),
+        closeToStart: onCloseToStart !== undefined,
+      });
+      // Not ours, or Space on a checkable item: the native activation
+      // must go through untouched.
+      if (!action || action.kind === 'activate') return;
 
-      // Main-axis arrows for the orientation; horizontal mirrors under
-      // RTL (direction read from the DOM at event time — the layout
-      // truth the focus order must follow).
-      const dir = getDirection(menuRef.current);
-      const { next: forward, prev: backward } = inlineAxisKeys(orientation, dir);
-
-      // Submenu level: the inline-start arrow closes this level (and the
-      // caller returns focus to its trigger) before the switch — a
-      // submenu is always vertical, so the key is otherwise inert.
-      if (onCloseToStart) {
-        if (event.key === inlineAxisKeys('horizontal', dir).prev) {
-          event.preventDefault();
-          onCloseToStart();
+      event.preventDefault();
+      switch (action.kind) {
+        case 'move': {
+          const target = axisMoveTarget(action.move, {
+            current,
+            length: items.length,
+          });
+          items[target]?.focus();
           return;
         }
-      }
-
-      switch (event.key) {
-        case forward:
-          event.preventDefault();
-          focus((current + 1) % items.length);
-          return;
-        case backward:
-          event.preventDefault();
-          focus((current - 1 + items.length) % items.length);
-          return;
-        case 'Home':
-          event.preventDefault();
-          focus(0);
-          return;
-        case 'End':
-          event.preventDefault();
-          focus(items.length - 1);
-          return;
-        case 'Escape':
-          event.preventDefault();
+        case 'close':
+          // Tab included: closing hands focus to the trigger — without
+          // this the focused item unmounts and focus drops to <body>.
+          // A following Tab continues past the trigger.
           onClose();
           return;
-        case 'Tab':
-          // Close and hand focus to the trigger: without this the focused
-          // item unmounts and focus drops to <body>. A following Tab
-          // continues past the trigger.
-          event.preventDefault();
-          onClose();
+        case 'close-to-start':
+          onCloseToStart?.();
           return;
-        default: {
-          if (
-            event.key.length !== 1 ||
-            event.ctrlKey ||
-            event.metaKey ||
-            event.altKey
-          ) {
-            return;
-          }
-          // Space on a checkbox/radio item must reach the native button
-          // activation (the click that toggles it) — treating it as a
-          // typeahead character would swallow the toggle. Plain items
-          // keep the typeahead reading (textContent never starts with a
-          // space, so focus stays put, as before).
-          if (
-            event.key === ' ' &&
-            event.target instanceof Element &&
-            CHECKABLE_MENU_ROLES.has(event.target.getAttribute('role') ?? '')
-          ) {
-            return;
-          }
-          event.preventDefault();
-          const typed = pushTyped(event.key);
-          // Search forward from the current item, wrapping; the current
-          // item itself is the last candidate so repeating a character
-          // cycles between items starting with it.
-          const start = current + 1;
-          const match = findWrapIndex(items.length, start, (index) =>
-            // Element.textContent is spec'd non-null (concatenation of
-            // descendants; '' when empty)
-            items[index]!.textContent.toLowerCase().startsWith(typed)
+        case 'typeahead': {
+          const match = typeaheadTarget(
+            items.length,
+            current,
+            pushTyped(action.char),
+            (index) => items[index]?.textContent
           );
-          if (match >= 0) focus(match);
+          if (match >= 0) items[match]?.focus();
         }
       }
     },

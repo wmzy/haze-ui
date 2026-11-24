@@ -70,11 +70,14 @@
  * `dependencies`, so `shadcn add` installs them automatically.
  *
  * Every item also carries two metadata fields the shadcn CLI surfaces:
- * `docs` — a markdown usage string (one-line component description,
+ * `docs` — a markdown usage string (one-line component description
+ * from scripts/component-descriptions.mjs, the table llms.txt shares;
  * install command, token-activation notes) shown by `shadcn docs` —
- * and `categories` (kebab-case, mirrored from the demo sidebar groups
+ * and `categories` (kebab-case, derived from the demo sidebar groups
  * in src/views/Layout/component-groups.ts) for `shadcn search`
- * filtering.
+ * filtering. The run fails when the sidebar, the css families and the
+ * blurb table disagree — a component missing from any of them cannot
+ * pass silently.
  *
  * Static content under registry/ that the generator does not own and
  * never touches: README.md, tsconfig.json (typechecks the wrappers via
@@ -87,10 +90,13 @@
  * exits non-zero on failure.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { defaultRoot, failFor } from './cli-utils.mjs';
+import { readComponentGroups } from './component-groups.mjs';
+import { CSS_LESS, REGISTRY_BLURBS } from './component-descriptions.mjs';
+
+const rootDir = defaultRoot();
 const libDir = path.join(rootDir, 'src', 'lib');
 const distDir = path.join(rootDir, 'dist');
 const manifestPath = path.join(distDir, 'css-manifest.json');
@@ -105,10 +111,7 @@ const TOKENS_FAMILY = 'tokens';
 // Files/directories under registry/ that are not generated per-item.
 const REGISTRY_STATICS = new Set(['README.md', 'tsconfig.json', 'css.d.ts', 'haze-tokens']);
 
-function fail(message) {
-  console.error(`generate-registry: ${message}`);
-  process.exit(1);
-}
+const fail = failFor('generate-registry');
 
 // ---- inputs: css-manifest (build artifact) + the whole main barrel ----
 
@@ -336,334 +339,74 @@ export { ${importList} };
 ${typeExport}`;
 };
 
-// One-line descriptions of the wrapped components (human-written, kept in
-// sync with llms.txt's component blurbs).
-const descriptions = {
-  accordion: 'Collapsible section list with titled `AccordionItem` sections.',
-  affix: 'Fixes children to a viewport edge once scrolled past an offset.',
-  alert: 'Inline status message box.',
-  anchor:
-    'Sticky scroll-spy navigation: an `items` list highlighting the active section, click scrolls with an offset.',
-  'app-shell':
-    'Application frame with sticky header, collapsible sidebar, content and footer slots; the sidebar becomes an overlay below 768px.',
-  'activity-rail':
-    'VSCode-style vertical icon rail (`nav`): 44px items with icon/label/badge/active indicator, tooltip labels and `slot="end"` bottom pinning.',
-  'status-bar':
-    'VSCode-style status strip (`footer`): `left`/`right` groups, selectable `StatusItem`s, `priority` items survive the mobile breakpoint.',
-  'tab-bar':
-    'Mobile bottom navigation (the ActivityRail viewport peer): 56px safe-area strip, icon+label items, badge, `onSelect`/`onReselect` semantics.',
-  workbench:
-    'IDE-style application frame (`100dvh`): activityBar/sidebar/auxiliaryBar/panel/statusBar/tabBar slots with px-resizable collapsible regions and a maximizable bottom panel; below 768px sides become overlays and the tabBar takes over.',
-  'approval-card':
-    'Approval gate with approve / deny actions for agent-initiated operations.',
-  'aspect-ratio': 'Boxes children to a fixed width/height ratio.',
-  'async-section': 'Declarative loading / error / content states for async data.',
-  avatar: 'User avatar with image, size variants and fallback content when the image is missing.',
-  'avatar-group':
-    'Stacks avatars in overlapping rows with a `+N` overflow chip (`max`/`total`).',
-  'back-to-top': 'Floating scroll-to-top button appearing past a scroll threshold.',
-  badge: 'Small inline status label with variant and color options.',
-  banner: 'Dismissible top banner with info/success/warning/danger variants.',
-  'bottom-sheet': 'Mobile-style sheet sliding from the bottom screen edge.',
-  breadcrumb: 'Breadcrumb trail nav with configurable separator.',
-  button:
-    'Action button with `variant`/`size`/`square` options over a native `<button>`; `ButtonLink` renders the same styles as an anchor.',
-  calendar: 'Month-grid date surface with `min`/`max`, locale and `weekStartsOn`.',
-  card: 'Content card with `elevated`/`outlined`/`filled` variants.',
-  carousel: 'Slideshow with controllable active index and autoplay.',
-  cascader:
-    'Multi-level drill-down selector committing a path of option values; `onSearch` filters remotely, `loading` shows the pending state.',
-  chart:
-    'Line/area/bar/pie charts over recharts with colors and axes on haze tokens; series cycle the semantic palette, `renderTooltip` customizes the tooltip.',
-  'chat-container': 'Chat transcript scroll container with stick-to-bottom auto-scroll.',
-  'chat-input': 'Message composer with a controllable value and onSend callback.',
-  'chat-message':
-    'Chat bubble with role-based layout (user / assistant / system), avatar, name, timestamp and delivery status.',
-  checkbox:
-    'Checkbox input with controllable `checked` state; `CheckboxCore` is the headless form-bindable core.',
-  chip: 'Rounded status chip with optional icon and close button.',
-  'code-block':
-    'Monospace code container with a language badge; `highlight` plugs in an async syntax highlighter.',
-  collapsible:
-    'Unstyled open/close container with controllable `open` state (`CollapsibleTrigger`, `CollapsibleContent`).',
-  'color-picker': 'Color selector with controllable value and preset swatches.',
-  combobox: 'Autocomplete text input with filterable option list; `onSearch` defers filtering to the host.',
-  'count-up':
-    'Animated number ticker: rAF + ease-out interpolation toward `to`, honoring `prefers-reduced-motion` with an instant snap.',
-  countdown:
-    'Deadline countdown: `value` timestamp or Date, setTimeout-chain ticks aligned to second boundaries (no interval drift), `onFinish` fires once, adaptive `1d hh:mm:ss` / `hh:mm:ss` default format with `format`/`render` escape hatches.',
-  command:
-    'Command palette surface: `CommandInput` plus filterable `CommandItem`s in a `CommandList`.',
-  'confirm-dialog': 'Ready-made confirm dialog with confirm/cancel actions and a danger variant.',
-  container: 'Centered max-width page container with horizontal padding.',
-  'context-menu': 'Floating menu opened on right-click.',
-  'conversation-list': 'Selectable list of conversations for a chat-history sidebar.',
-  'data-table':
-    'Feature table on @tanstack/react-table with sorting, (manual) pagination, row selection and `dataTableToCsv` export.',
-  'datetime-picker':
-    'Date+time picker (Mantine DateTimePicker niche): Datepicker with the time row always on, `showSeconds` opt-in; value serializes "YYYY-MM-DD HH:mm[:ss]".',
-  'date-range-picker':
-    'Picks a start/end date range, with built-in or custom `presets` (Today, Last 7 days, …).',
-  'date-field':
-    'Segmented date input: year/month/day spinbuttons typed directly (`YYYY-MM-DD` value); `DateFieldCore` is the headless core.',
-  datepicker:
-    'Date input with popup calendar (`YYYY-MM-DD` value); `showTime` adds a time-of-day field. `DatepickerCore` is the headless core.',
-  dialog: 'Modal dialog with focus trapping.',
-  'diff-viewer': 'Renders the line diff between old and new content for agent-proposed edits.',
-  disclosure: 'Summary-header disclosure panel (details/summary semantics).',
-  divider: 'Content separator line, horizontal or vertical.',
-  drawer: 'Edge-anchored sliding panel (`placement` left/right).',
-  'dropdown-menu':
-    'Click-triggered floating menu with `DropdownMenuTrigger`/`Content`/`Item`/`Separator` parts.',
-  empty: 'Empty-state placeholder with image and description.',
-  'error-boundary':
-    'Render-error boundary: class component catching subtree throws, rendering a fallback (`fallback` node or render prop) with a reset callback; `resetKeys` shallow-change resets.',
-  ellipsis:
-    'Interactive text truncation: N-line clamp with truncation detection, optional tooltip and expand/collapse; Typography also ships a pure-CSS `ellipsis` prop.',
-  'file-input': 'Trigger element that opens a hidden native file input.',
-  flex: 'Flexbox layout primitive mapping props to flex CSS.',
-  fieldset:
-    'Semantic form grouping: native `fieldset`+`legend` (group named by the legend), `disabled` disables every control inside.',
-  form: 'react-f0rm field wrapper adding label, error and aria wiring to controlled cores.',
-  grid: 'CSS grid layout primitive with `GridItem` children.',
-  highlight:
-    'Search-result text highlighting: marks substrings of a text prop inside Mark elements; needles are escaped (no innerHTML, no injection).',
-  'hover-card':
-    'Non-modal floating preview (avatar card, link summary) anchored to its trigger.',
-  indicator:
-    'Corner badge attached to a host element (avatar, icon button): dot or count label, tone + corner position, zero-badge hides unless `showZero`.',
-  icon: 'Inline SVG icon wrapper with token-sized `sm`/`md`/`lg` boxes.',
-  image: 'Image with fallback, `aspectRatio`/`objectFit` control and click-to-preview overlay; `ImagePreviewGroup` wraps child images in a shared gallery lightbox (arrows, counter, thumbnail strip).',
-  'inline-edit': 'Click-to-edit text value in place.',
-  input: 'Text input with adornments; `InputCore` is the headless form-bindable core.',
-  kbd: 'Keyboard key-cap styling for shortcuts.',
-  'number-formatter':
-    'Presentational number formatting powered by Intl: locale + formatOptions (currency, unit, percent) with prefix/suffix.',
-  'loading-overlay':
-    'Container-level loading state: dims content and centers a spinner (or custom loader) above it, `aria-busy` mirrors the phase.',
-  list: 'Styled `ul`/`ol`/plain list with `ListItem` children.',
-  mark: 'Text-level highlight — semantic `<mark>` skinned with the status tokens (`warning`/`primary`/`success`/`danger`).',
-  'log-viewer': 'Scrollable log stream with severity-level filtering.',
-  'markdown-renderer': 'Renders markdown content (including code blocks) for assistant responses.',
-  mentions:
-    'Mentions input with trigger-character suggestions picked from an option list (`MentionsCore` is the headless core).',
-  menu: 'Lightweight toggle menu with a trigger and statically positioned panel (`MenuItem`, `MenuDivider`).',
-  'model-picker': 'Controllable dropdown for selecting the active model.',
-  'navigation-bar': 'Top nav bar with `brand` and `end` slots plus `NavLink` items.',
-  'navigation-menu':
-    'Hover mega-menu navigation bar: triggers open large content panels (link columns, card grids — any ReactNode) after an intent dwell with a pointer grace period; controllable `activeValue`, Escape closes, arrows traverse triggers.',
-  'button-group':
-    'Attached button bar: merged corners and seams, group-wide size/variant/disabled, separator sub-component.',
-  'input-group':
-    'Field cluster: prefix/suffix addons (icon, text, button) merged with Input/Select into one attached control.',
-  meter:
-    'Read-only semantic gauge: value normalized over min/max, threshold bands recolor track and bar, visible label + aria-labelledby, showValue readout, three track sizes.',
-  'copy-button':
-    'Copy-to-clipboard button (Button skin, useClipboard plumbing, copied-state feedback with SR announcement) plus Snippet: the inline mono code chip with a docked copy button.',
-  heatmap:
-    'GitHub-style activity calendar: week × weekday grid of squares, intensity-binned by value (levels prop), theme-aware color-mix scale, label props for all i18n.',
-  'time-grid':
-    "Single-select 'HH:mm' slot grid from a from/to window and minute step; radiogroup semantics with roving-tabindex arrow selection, controllable value, disabled slots.",
-  'notification-center':
-    'Persistent notification feed behind a bell trigger: unread-count badge, severity/kind rows, mark-all-read and clear-all — declarative `items`, not an imperative open() API.',
-  'number-input': 'Numeric input with `min`/`max`/`step`.',
-  'otp-input': 'One-time-password input of `length` segmented character boxes.',
-  'pagination': 'Page navigation with controllable `page` and ellipsis windows.',
-  'password-input': 'Text input with a visibility reveal toggle.',
-  'phone-input':
-    'International phone input backed by libphonenumber-js: country select joined seamlessly to the number field, E.164-ish value, `isValidPhone()` pure helper.',
-  'popconfirm': 'Anchored confirmation bubble with confirm/cancel actions and async busy support.',
-  'popover': 'Floating popover anchored to a trigger element.',
-  'prompt-input':
-    'AI prompt composer: auto-growing textarea with inline context tags, `@`-trigger suggestions and a configurable submit key.',
-  progress: 'Progress bar or circle driven by a percentage `value`.',
-  'qr-code':
-    'QR code rendered as one crisp SVG path over the `qrcode` engine dependency; theme-token module/background colors with `value`/`size`/`level`/`bordered` options.',
-  schedule:
-    'Calendar surface with day/week/month views, drag-and-keyboard rescheduling and a month grid with overflow chips.',
-  'rich-text-editor':
-    'Tiptap-powered rich text editor with a built-in formatting toolbar and controllable HTML `value`.',
-  radio:
-    'Radio option and group with controllable selection (`Radio`, `RadioGroup`, headless `RadioGroupCore`).',
-  rating: 'Star rating with half-step support.',
-  resizable:
-    'Split-pane group with draggable dividers, horizontal or vertical; px sizing per panel with `onResizeCommit` for persistence.',
-  result:
-    'Result feedback page: status illustration (`success`/`error`/`info`/`warning`/`403`/`404`/`500`), `title`, `subTitle` and an `extra` action area; `icon` replaces the default illustration.',
-  'scroll-area': 'Scrollable region with overlay scrollbar thumbs: `maxHeight` sugar or compound `ScrollViewport`/`Scrollbar`/`ScrollThumb` parts; `type` = `hover`/`always`/`scroll` visibility, keyboard-focusable viewport, RTL-mirrored thumbs.',
-  segmented: 'Segmented control selecting one option from a compact set.',
-  select:
-    'Dropdown select over `SelectCore` with `<option>` children; `onSearch` enables server-side filtering.',
-  sidebar:
-    'App sidebar shell with controllable collapsed state: `SidebarGroup`/`SidebarItem`/`SidebarFooter`/`SidebarToggle` parts.',
-  skeleton: 'Shimmering loading placeholder (`text`/`circular`/`rectangular`).',
-  slider: 'Native range slider with controllable value.',
-  sparkline:
-    'Inline-SVG mini trend chart (line/area variants, tone colors); stateless, recharts-free and RSC-safe.',
-  spinner: 'Loading spinner.',
-  spoiler:
-    'Collapsed long-content gate ("show more/less"): height-capped preview with a fade edge and a toggle button; `expanded` is controllable.',
-  stat: 'Metric display with title, value and trend indicator (`StatGroup` container).',
-  'step-timeline':
-    'Vertical timeline of agent execution steps — per-step status (incl. `running`), timing, collapsible detail panels and nested sub-steps.',
-  stepper: 'Step indicator driven by `activeStep` (`Step` children).',
-  'streaming-text':
-    'Typewriter effect that reveals streaming text character by character, with an optional cursor.',
-  'task-list': 'Agent task checklist (`TaskList` + `TaskListItem`): checkbox rows strike through and dim when done; compound children or `items` data-driven.',
-  'swipe-action': 'Swipe-to-reveal row actions on left/right edges with a commit threshold.',
-  'pull-to-refresh': 'Mobile pull-to-refresh gesture wrapper: pointer/touch state machine (idle → pulling → ready → refreshing) with damped pull, scroll-edge canRefresh gate and a promise-gated spinner head.',
-  'visually-hidden':
-    'Screen-reader-only content primitive: clipped off every visual axis while staying in the a11y tree (the icon-only-button label soup).',
-  switch: 'Toggle switch (`role="switch"`) with controllable `checked`.',
-  table: 'Styled semantic table (`striped`, `bordered`) with head/body/row/cell parts.',
-  tabs: 'Tab panel switcher with controllable active tab (`TabList`, `Tab`, `TabPanel`).',
-  tag: 'Compact status label with variant color and optional close button.',
-  'tag-group':
-    'Flex-wrap container laying out Tag children with consistent gap; `SortableTagGroup` + `onReorder` for dnd-kit drag reordering.',
-  'tag-input':
-    'Enter-to-commit token input; `SortableTagInput` enables dnd-kit drag reordering (via `onChange`).',
-  textarea: 'Multiline text input.',
-  'thinking-indicator': 'Animated bouncing-dots indicator that the agent is processing.',
-  'time-picker': 'Time-of-day input with controllable value.',
-  'time-field':
-    'Segmented time-of-day input: hour/minute/second spinbuttons with optional 12-hour AM/PM (`HH:mm[:ss]` value).',
-  timeline: 'Vertical timeline container for `TimelineItem` children.',
-  toast: 'Toast notifications via `useToast` + `ToastContainer`, with the imperative `toast()` helper.',
-  toggle: 'Two-state pressed button (`aria-pressed`) with sizes and `square` icon mode.',
-  'token-counter': 'Context-window token usage counter with budget progress.',
-  tokens:
-    'Theme classes for haze-ui: `lightTheme`/`darkTheme`/`autoTheme` (zero-JS system-following) plus `spacing` and `typography`, applied to a root element to activate the `--haze-*` design tokens.',
-  'tool-call-card': 'Card presenting an agent tool call — name, input, output and running state.',
-  trace:
-    'Line-by-line agent reasoning trace: `Trace` + `TraceItem` steps with pending/running/done/error status, custom icons, collapsible `details` and sr-only status announcements.',
-  toolbar:
-    'Button group with toolbar a11y (roving tabindex): `ToolbarButton`, `ToolbarSeparator`, `ToolbarToggle`.',
-  tooltip: 'Hover/focus hint bubble.',
-  tour: 'Guided walkthrough spotlighting `steps` behind a mask, controllable `current`.',
-  transfer: 'Two-column shuttle moving options between source and target lists.',
-  tree: 'Hierarchical tree with expand, select, check state, async `loadData` and `searchValue` filtering.',
-  'tree-select':
-    'Tree selection in a floating panel (AntD TreeSelect counterpart): selectable rows commit one key, cascading checkboxes commit `string[]`, with panel search, lazy `loadData` and chip overflow.',
-  typography: 'Text primitives: `Title`, `Text`, `Paragraph` on typography tokens.',
-  upload:
-    'File picker with accumulating `File[]` value, `accept`/`multiple`, `directory` picking and `listType` rendering.',
-  'virtual-list':
-    'Windowed list rendering only visible rows; fixed or measured dynamic heights.',
-  watermark:
-    'Tiled canvas watermark layer over children (or `fullscreen`), theme-aware color.',
-  descriptions:
-    'Definition-list description groups (`dl`/`dt`/`dd` over CSS Grid): `items` pairs, `columns`, `bordered`, `size`.',
-  'json-view':
-    'Collapsible JSON tree viewer with per-kind leaf colors, depth-based default expansion, truncation hints and an optional copy button.',
-  sources:
-    'Numbered citation list for RAG answers; excerpts reveal on hover/focus with a controllable `expanded` set, `compact` footnote form included.',
-  'file-preview':
-    'Attachment card with image thumbnail or extension badge, size formatting, upload progress and remove/retry actions.',
-  'follow-up-suggestions': 'Wrapping row of clickable AI-chat follow-up suggestion chips with loading skeleton and disabled states.',
-  'inline-completion':
-    'Ghost-text completion overlay for input/textarea: Tab accepts the suggestion, Escape dismisses it.',
-  'inline-citation':
-    'Inline superscript citation marker that opens a floating source card with title, snippet and optional outbound link.',
-  plan: 'Agent plan and progress display: `Plan` + `Plan.Item` step list whose statuses drive an auto progress bar and summary.',
-  queue:
-    'Queue of pending agent actions or messages (`Queue` + `Queue.Item`) with queued/sending/failed status and optional per-item removal.',
-  'float-button':
-    'Floating action button over the page (`FloatButtonGroup` for expandable stacks) with built-in back-to-top and help glyphs.',
-  masonry:
-    'Masonry (pinboard) layout: JS greedy column distribution balances children across `columns`.',
-  signature:
-    'Canvas signature pad committing a PNG data URL on every stroke, with undo, clear and a no-canvas fallback notice.',
-  splitter:
-    'Multi-pane split layout with implicit draggable dividers (AntD Splitter semantics): `sizes` in percent of the pane area (`ControlOrValue` array), per-pane `min`/`max` clamps, opt-in `collapsible` panes with divider collapse/expand triggers, keyboard arrows and pointer drags.',
-  'image-crop':
-    'Interactive image cropper pairing with Upload: controllable normalized CropRect value, aspect lock, circle avatar mask, pointer drag with corner handles, full keyboard operation (arrows move, Shift+arrows resize) and a getCroppedCanvas ref API.',
-};
-
 // Component categories for the shadcn `categories` field (search
-// filtering), mirrored read-only from the demo sidebar grouping in
-// src/views/Layout/component-groups.ts — 'AI & Chat' becomes `agent`;
-// the non-component items (tokens, haze-tokens, base) use `theme`.
-// Every css family must appear exactly once; the run fails on a
-// missing entry (same contract as the descriptions table).
-const CATEGORY_GROUPS = {
-  general: [
-    'avatar', 'avatar-group', 'badge', 'button', 'button-group',
-    'copy-button', 'count-up', 'countdown',
-    'divider', 'ellipsis', 'icon', 'mark', 'tag', 'tag-group',
-    'typography',
-  ],
-  layout: [
-    'activity-rail', 'aspect-ratio', 'app-shell', 'container', 'flex',
-    'grid', 'masonry', 'resizable', 'scroll-area', 'sidebar', 'splitter',
-    'status-bar', 'tab-bar', 'workbench',
-  ],
-  form: [
-    'cascader', 'checkbox', 'color-picker', 'combobox', 'date-field',
-    'datepicker',
-    'date-range-picker', 'fieldset', 'file-input',
-    'form', 'image-crop', 'inline-edit', 'input', 'input-group', 'mentions',
-    'number-input', 'otp-input',
-    'password-input', 'phone-input', 'radio', 'rating', 'rich-text-editor', 'segmented', 'select',
-    'signature', 'slider', 'switch', 'tag-input', 'textarea',
-    // time-field 现在是独立 css family：segmented-field 引擎已从 DateField
-    // 目录下沉到 utils/segmented-field（sharedLayers: date-field + time-field）
-    'time-field', 'time-grid', 'time-picker', 'toggle', 'transfer', 'tree-select',
-    'upload',
-  ],
-  overlay: [
-    'bottom-sheet', 'confirm-dialog', 'context-menu', 'dialog', 'drawer',
-    'dropdown-menu', 'hover-card', 'menu', 'notification-center', 'popconfirm', 'popover', 'tooltip',
-  ],
-  'data-display': [
-    'accordion', 'calendar', 'card', 'carousel', 'chart', 'chip',
-    'code-block', 'data-table', 'descriptions', 'heatmap', 'image',
-    'indicator', 'json-view', 'kbd', 'list', 'meter', 'progress',
-    'qr-code', 'schedule', 'sparkline', 'spoiler', 'stat', 'table',
-    'timeline', 'tree', 'virtual-list', 'watermark',
-  ],
-  navigation: [
-    'affix', 'anchor', 'back-to-top', 'breadcrumb', 'command',
-    'float-button', 'navigation-bar', 'navigation-menu', 'pagination',
-    'stepper', 'tabs', 'toolbar', 'tour',
-  ],
-  feedback: [
-    'alert', 'async-section', 'banner', 'empty', 'error-boundary',
-    'loading-overlay',
-    'result', 'skeleton', 'spinner', 'toast',
-  ],
-  agent: [
-    'approval-card', 'chat-container', 'chat-input', 'chat-message',
-    'conversation-list', 'diff-viewer', 'file-preview',
-    'follow-up-suggestions', 'inline-citation',
-    'inline-completion', 'log-viewer', 'markdown-renderer', 'model-picker',
-    'plan', 'prompt-input', 'queue', 'sources', 'step-timeline',
-    'streaming-text', 'task-list', 'thinking-indicator', 'token-counter',
-    'tool-call-card',
-    'trace',
-  ],
-  utilities: ['collapsible', 'disclosure', 'pull-to-refresh', 'swipe-action', 'visually-hidden'],
+// filtering), derived from the demo sidebar grouping in
+// src/views/Layout/component-groups.ts: a css family's category is its
+// sidebar group, mapped through GROUP_CATEGORY ('AI & Chat' becomes
+// `agent`). The non-component items (tokens, haze-tokens, base) use
+// `theme`.
+const GROUP_CATEGORY = {
+  General: 'general',
+  Layout: 'layout',
+  Forms: 'form',
+  Overlays: 'overlay',
+  'Data Display': 'data-display',
+  Navigation: 'navigation',
+  Feedback: 'feedback',
+  'AI & Chat': 'agent',
+  Utilities: 'utilities',
 };
 
-const categoryByFamily = new Map();
-for (const [category, familyList] of Object.entries(CATEGORY_GROUPS)) {
-  for (const family of familyList) {
-    if (categoryByFamily.has(family)) {
-      fail(`family "${family}" is listed in more than one CATEGORY_GROUPS entry`);
+const { groups: sidebarGroups } = readComponentGroups(rootDir);
+
+// sidebar route -> category: a component has one sidebar entry, under
+// exactly one group.
+const sidebarCategory = new Map();
+for (const { group, items } of sidebarGroups) {
+  const category = GROUP_CATEGORY[group];
+  if (category === undefined) {
+    fail(`sidebar group "${group}" has no entry in GROUP_CATEGORY — add one (new group in src/views/Layout/component-groups.ts)`);
+  }
+  for (const { route } of items) {
+    if (sidebarCategory.has(route)) {
+      fail(`sidebar entry "${route}" is listed in more than one group of src/views/Layout/component-groups.ts`);
     }
-    categoryByFamily.set(family, category);
+    sidebarCategory.set(route, category);
   }
 }
-for (const family of categoryByFamily.keys()) {
+
+// The sidebar and the build must agree: every sidebar entry is either a
+// css family or a declared css-less component, and every css family has
+// its sidebar entry.
+for (const route of sidebarCategory.keys()) {
+  if (!families.has(route) && !CSS_LESS.has(route)) {
+    fail(`sidebar entry "${route}" is neither a css family nor listed in CSS_LESS (scripts/component-descriptions.mjs) — list it there when it ships no css, or rerun pnpm build when it does`);
+  }
+}
+for (const family of CSS_LESS) {
+  if (families.has(family)) {
+    fail(`"${family}" is listed in CSS_LESS (scripts/component-descriptions.mjs) but is a css family — write its registry blurb and remove it from the list`);
+  }
+}
+for (const family of families.keys()) {
+  if (family !== TOKENS_FAMILY && !sidebarCategory.has(family)) {
+    fail(`css family "${family}" has no sidebar entry in src/views/Layout/component-groups.ts — add the component to a group there`);
+  }
+}
+
+// Every registry blurb must belong to a registry item — a description
+// for a family the build does not emit is dead text.
+for (const family of REGISTRY_BLURBS.keys()) {
   if (!families.has(family)) {
-    fail(`CATEGORY_GROUPS lists "${family}" but no such css family exists — remove or fix the entry`);
+    fail(`a registry description is written for "${family}" but no such css family exists — remove the entry from COMPONENT_DESCRIPTIONS in scripts/component-descriptions.mjs`);
   }
 }
 
 const categoryOf = (family) => {
   if (family === TOKENS_FAMILY) return 'theme';
-  const category = categoryByFamily.get(family);
+  const category = sidebarCategory.get(family);
   if (category === undefined) {
-    fail(`no category written for "${family}" — add it to CATEGORY_GROUPS (mirror src/views/Layout/component-groups.ts)`);
+    fail(`no category written for "${family}" — it has no sidebar entry in src/views/Layout/component-groups.ts`);
   }
   return category;
 };
@@ -699,9 +442,9 @@ const themeSection = (family) => [
   fence('jsx', THEME_SNIPPET),
 ];
 
-const componentDocs = (family, exports) =>
+const componentDocs = (family, description, exports) =>
   [
-    descriptions[family],
+    description,
     '',
     `Exports: ${exports.map((name) => '`' + name + '`').join(', ')}.`,
     '',
@@ -755,8 +498,8 @@ const blockDocs = (block) =>
 // `content` is channel-specific and stripped when serializing.
 const items = [];
 for (const [family, entry] of [...families].sort(([a], [b]) => a.localeCompare(b))) {
-  const description = descriptions[family];
-  if (!description) fail(`no description written for "${family}" — add one to the descriptions table`);
+  const description = REGISTRY_BLURBS.get(family);
+  if (description === undefined) fail(`no description written for "${family}" — add one to COMPONENT_DESCRIPTIONS in scripts/component-descriptions.mjs`);
   const isTokens = family === TOKENS_FAMILY;
   const type = isTokens ? 'registry:lib' : 'registry:ui';
   items.push({
@@ -767,7 +510,7 @@ for (const [family, entry] of [...families].sort(([a], [b]) => a.localeCompare(b
       : entry.exports.join(' / '),
     description,
     author: AUTHOR,
-    docs: componentDocs(family, entry.exports),
+    docs: componentDocs(family, description, entry.exports),
     categories: [categoryOf(family)],
     dependencies: ['haze-ui'],
     files: [

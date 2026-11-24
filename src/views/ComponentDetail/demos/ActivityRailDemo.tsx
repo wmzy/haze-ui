@@ -5,9 +5,9 @@ import { ActivityRail, ActivityRailItem } from '@/lib/components/ActivityRail';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── ActivityRail ──────────────────────────────────────────────
 export default function ActivityRailDemo() {
@@ -16,18 +16,19 @@ export default function ActivityRailDemo() {
   const [view, setView] = useControl(undefined, 'files');
 
   return (
-    <>
-      <h1>ActivityRail</h1>
-      <p className={intro}>
-        The narrow icon rail VSCode pins to the window&apos;s leading edge:
-        a 48px track of 44px icon buttons carrying the global view
-        switches. Items sink to the bottom through{' '}
-        <code>slot=&quot;end&quot;</code>; labels stay out of sight — each
-        item is named accessibly and surfaces it as a hover tooltip.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='ActivityRail'
+      description={
+        <>
+          The narrow icon rail VSCode pins to the window&apos;s leading edge:
+          a 48px track of 44px icon buttons carrying the global view
+          switches. Items sink to the bottom through{' '}
+          <code>slot=&quot;end&quot;</code>; labels stay out of sight — each
+          item is named accessibly and surfaces it as a hover tooltip.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p className={row}>
           Current view: <strong>{view}</strong> — click or focus + Enter to
           switch.
@@ -105,44 +106,39 @@ export default function ActivityRailDemo() {
 // <ActivityRailItem active={viewCtrl === ...} /> — see Workbench for the
 // full assembly.`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ActivityRail Props</h2>
+      <DemoSection title='ActivityRail Props'>
         <PropsTable of='ActivityRailProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ActivityRailItem Props</h2>
+      <DemoSection title='ActivityRailItem Props'>
         <PropsTable of='ActivityRailItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The rail renders a <strong>&lt;nav&gt;</strong> landmark; give
-              it an <code>aria-label</code> when more than one{' '}
-              <code>nav</code> exists on the page.
-            </li>
-            <li>
-              Items are real buttons: keyboard-operable (Enter / Space) with
-              the visible label as their accessible name — the icon slot is{' '}
-              <code>aria-hidden</code> decoration.
-            </li>
-            <li>
-              The current item carries{' '}
-              <strong>aria-current=&quot;true&quot;</strong>; the label also
-              feeds a hover tooltip.
-            </li>
-            <li>
-              44px square targets (WCAG 2.5.8); the badge overlay is
-              decorative — repeat counts in the label when they matter.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The rail renders a <strong>&lt;nav&gt;</strong> landmark; give
+            it an <code>aria-label</code> when more than one{' '}
+            <code>nav</code> exists on the page.
+          </li>
+          <li>
+            Items are real buttons: keyboard-operable (Enter / Space) with
+            the visible label as their accessible name — the icon slot is{' '}
+            <code>aria-hidden</code> decoration.
+          </li>
+          <li>
+            The current item carries{' '}
+            <strong>aria-current=&quot;true&quot;</strong>; the label also
+            feeds a hover tooltip.
+          </li>
+          <li>
+            44px square targets (WCAG 2.5.8); the badge overlay is
+            decorative — repeat counts in the label when they matter.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

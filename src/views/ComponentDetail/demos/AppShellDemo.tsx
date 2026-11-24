@@ -6,9 +6,9 @@ import { Sidebar, SidebarGroup, SidebarItem } from '@/lib/components/Sidebar';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 const navItems = ['Dashboard', 'Orders', 'Customers', 'Settings'];
 
@@ -33,17 +33,18 @@ export default function AppShellDemo() {
   const [collapsed, setCollapsed, collapsedCtrl] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>AppShell</h1>
-      <p className={intro}>
-        The application frame: sticky header, collapsible sidebar, scrolling
-        content and footer, laid out with CSS Grid and animated with motion
-        tokens. Below 768px the sidebar becomes an overlay panel — pure CSS,
-        no JavaScript breakpoint.
-      </p>
-
-      <div className={section}>
-        <h2>Complete shell</h2>
+    <DemoPage
+      title='AppShell'
+      description={
+        <>
+          The application frame: sticky header, collapsible sidebar, scrolling
+          content and footer, laid out with CSS Grid and animated with motion
+          tokens. Below 768px the sidebar becomes an overlay panel — pure CSS,
+          no JavaScript breakpoint.
+        </>
+      }
+    >
+      <DemoSection title='Complete shell'>
         <p className={row}>
           Collapse the sidebar with the button (or pass{' '}
           <code>sidebarCollapsed</code> as a Control — the usual{' '}
@@ -104,10 +105,9 @@ export default function AppShellDemo() {
   {content}
 </AppShell>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Slots are optional</h2>
+      <DemoSection title='Slots are optional'>
         <p className={row}>
           Without a sidebar the shell collapses to header / content / footer
           rows; omit any slot and its landmark (header / aside / footer) is not
@@ -116,30 +116,26 @@ export default function AppShellDemo() {
         <pre className={codeBlock}>
           {`<AppShell header={<HeaderBar />}>{content}</AppShell>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>AppShell Props</h2>
+      <DemoSection title='AppShell Props'>
         <PropsTable of='AppShellProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Slots render into landmarks: header → <strong>&lt;header&gt;</strong>
-              , sidebar → <strong>&lt;aside&gt;</strong>, content →{' '}
-              <strong>&lt;main&gt;</strong>, footer →{' '}
-              <strong>&lt;footer&gt;</strong>
-            </li>
-            <li>
-              <code>sidebarCollapsed</code> accepts the full{' '}
-              <code>ControlOrValue&lt;boolean&gt;</code> protocol
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Slots render into landmarks: header → <strong>&lt;header&gt;</strong>
+            , sidebar → <strong>&lt;aside&gt;</strong>, content →{' '}
+            <strong>&lt;main&gt;</strong>, footer →{' '}
+            <strong>&lt;footer&gt;</strong>
+          </li>
+          <li>
+            <code>sidebarCollapsed</code> accepts the full{' '}
+            <code>ControlOrValue&lt;boolean&gt;</code> protocol
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

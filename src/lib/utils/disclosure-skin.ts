@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { focusRingForcedColors } from './focus-ring-delta';
+
 /**
  * Shared details/summary disclosure skins — the summary header (layout,
  * typography, hover wash, focus ring, marker suppression and the
@@ -33,9 +35,13 @@ export const disclosureSummary = css`
     background: var(--haze-color-bg-subtle);
   }
 
+  /* The inset ring plus its forced-colors fallback (the shared
+     declarations string — under forced colors the UA drops the
+     box-shadow ring). */
   &:focus-visible {
     outline: none;
     box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingForcedColors}
   }
 
   &::marker,

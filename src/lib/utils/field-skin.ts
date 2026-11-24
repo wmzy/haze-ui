@@ -1,5 +1,7 @@
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations, focusRingForcedColors } from './focus-ring-delta';
+
 /**
  * Shared field skin — the surface chrome every haze field family paints
  * (Input, Textarea, TagInput, PromptInput, OTPInput, FileInput, and
@@ -30,11 +32,22 @@ export const fieldChrome = css`
  * focus pseudo is `:focus-within`. Leaf `<input>`/`<textarea>` fields
  * use the `:focus` arm inside `nativeFieldChrome` instead — the pseudo a
  * field focuses under is part of its public feel and is not unified.
+ *
+ * Forced colors: the focused inner control is chromeless —
+ * `fieldBareInner` below, a local `outline: none` input (Combobox's
+ * multi-mode search, InlineCompletion's host), FileInput's sr-only
+ * native input — so the UA outline cannot stand in for the dropped
+ * ring; the wrapper wears the Highlight outline instead, exactly as it
+ * wears the ring. The arm interpolates only the fallback string
+ * (utils/focus-ring-delta): its ring is the wrapper's own and stays
+ * literal here.
  */
 export const focusWithinRing = css`
   &:focus-within {
     border-color: var(--haze-color-primary);
     box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+
+${focusRingForcedColors}
   }
 `;
 
@@ -163,6 +176,12 @@ export const fieldSizes = {
  * :disabled/::placeholder arms only some sites carry stay local to
  * their components as companion classes (composed additively — no
  * property overlaps).
+ *
+ * The focus arm interpolates utils/focus-ring-delta's declarations —
+ * the box-shadow pair AND its forced-colors Highlight fallback, which
+ * the hand-copied arm had dropped (no focus indicator under forced
+ * colors) — with the border repaint next to it. The sm sibling below
+ * and `fieldFocusRing` wear the same string.
  */
 export const pickerFieldInput = css`
   border: 1px solid var(--haze-color-border);
@@ -177,9 +196,8 @@ export const pickerFieldInput = css`
     box-shadow var(--haze-duration-fast);
 
   &:focus {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -202,9 +220,8 @@ export const pickerFieldInputSm = css`
     box-shadow var(--haze-duration-fast);
 
   &:focus {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;
 
@@ -218,21 +235,24 @@ export const pickerFieldInputSm = css`
  *
  * Self-exception, kept deliberate: the module's own
  * `nativeFieldChrome` and the `pickerFieldInput` pair above do NOT
- * compose this leaf — they carry the identical arm inline. A css
- * template cannot inline another class's declarations (interpolating
- * a class yields only a selector reference, never its rules), so
- * reuse would mean shipping the arm as a second class every consumer
- * must remember to add — and a class whose resolved look depends on
- * another class's presence is an injection-order hazard (dev
- * import-order injection and the dist split-css grouping order
- * disagree; utils/quiet-button-skin documents the trap). Each
- * ring-bearing class therefore stays self-contained: one class, the
- * complete focus visual.
+ * compose this leaf — they carry the arm inline. A css template cannot
+ * inline another class's declarations (interpolating a class yields
+ * only a selector reference, never its rules), so reuse would mean
+ * shipping the arm as a second class every consumer must remember to
+ * add — and a class whose resolved look depends on another class's
+ * presence is an injection-order hazard (dev import-order injection
+ * and the dist split-css grouping order disagree; utils/quiet-button-
+ * skin documents the trap). Each ring-bearing class therefore stays
+ * self-contained: one class, the complete focus visual — what they DO
+ * share is the declarations string (utils/focus-ring-delta: the pair
+ * and its forced-colors Highlight fallback), interpolated into each.
+ * The leaf's consumers reset `outline` on their own base at lower
+ * specificity (Command, InlineEdit, OTP cells), so the fallback wins
+ * under forced colors in any emission order.
  */
 export const fieldFocusRing = css`
   &:focus {
-    outline: none;
+${focusRingDeclarations}
     border-color: var(--haze-color-primary);
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
   }
 `;

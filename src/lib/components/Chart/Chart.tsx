@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
+import type { ComponentPropsWithoutRef, Key, ReactNode, Ref } from 'react';
 
 import type {
   ReferenceAreaProps,
@@ -234,6 +234,59 @@ function formatCell(value: unknown): string {
   return '';
 }
 
+/** One fallback-table column: `label` heads it; a `rowHeader` column
+ * renders each of its cells as the row's `<th scope='row'>` instead of a
+ * `<td>`. */
+type FallbackColumn = {
+  label: string;
+  rowHeader?: boolean;
+};
+
+/** One fallback-table row: one display string per column, in order. */
+type FallbackRow = { key: Key; cells: readonly string[] };
+
+type DataTableFallbackProps = {
+  caption: string;
+  columns: readonly FallbackColumn[];
+  rows: readonly FallbackRow[];
+};
+
+/** The screen-reader table mirroring the plotted data: a caption naming
+ * the chart, one `<th scope='col'>` per column and one row per datum.
+ * Every chart kind renders the same DOM through it — only the columns
+ * and rows differ. */
+function DataTableFallback({ caption, columns, rows }: DataTableFallbackProps) {
+  return (
+    <table x-class={[fallbackTableStyle]}>
+      <caption>{caption}</caption>
+      <thead>
+        <tr>
+          {columns.map((column, index) => (
+            <th key={index} scope='col'>
+              {column.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.key}>
+            {columns.map((column, index) =>
+              column.rowHeader ? (
+                <th key={index} scope='row'>
+                  {row.cells[index]}
+                </th>
+              ) : (
+                <td key={index}>{row.cells[index]}</td>
+              )
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 /** Token-driven chart component: line, area, bar, pie, radar or
  * scatter series rendered with haze semantic colors over recharts,
  * axis/grid/tooltip/legend chrome toggles, recharts reference annotations
@@ -398,65 +451,44 @@ export default function Chart<T>({
                `span > table` is invalid HTML nesting. */
             <div data-slot='fallback-table' x-class={[srOnly]}>
               {type === 'gauge' ? (
-                <table x-class={[fallbackTableStyle]}>
-                  <caption>{accessibleLabel}</caption>
-                  <thead>
-                    <tr>
-                      <th scope='col'>value</th>
-                      <th scope='col'>max</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{gaugeReadoutValue}</td>
-                      <td>{String(max)}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                /* A single reading with no natural row name: both of its
+                 * columns are plain cells. */
+                <DataTableFallback
+                  caption={accessibleLabel}
+                  columns={[{ label: 'value' }, { label: 'max' }]}
+                  rows={[
+                    { key: 'reading', cells: [gaugeReadoutValue, String(max)] },
+                  ]}
+                />
               ) : type === 'waffle' ? (
-                <table x-class={[fallbackTableStyle]}>
-                  <caption>{accessibleLabel}</caption>
-                  <thead>
-                    <tr>
-                      <th scope='col'>series</th>
-                      <th scope='col'>value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {waffleSeries.map((entry) => (
-                      <tr key={entry.name}>
-                        <th scope='row'>{entry.name}</th>
-                        <td>{formatCell(entry.value)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <DataTableFallback
+                  caption={accessibleLabel}
+                  columns={[
+                    { label: 'series', rowHeader: true },
+                    { label: 'value' },
+                  ]}
+                  rows={waffleSeries.map((entry) => ({
+                    key: entry.name,
+                    cells: [entry.name, formatCell(entry.value)],
+                  }))}
+                />
               ) : (
-                <table x-class={[fallbackTableStyle]}>
-                  <caption>{accessibleLabel}</caption>
-                  <thead>
-                    <tr>
-                      <th scope='col'>{xKey}</th>
-                      {resolvedSeries.map((entry) => (
-                        <th key={entry.key} scope='col'>
-                          {entry.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((datum, index) => (
-                      <tr key={index}>
-                        <th scope='row'>{formatCell(datum[xKey as keyof T])}</th>
-                        {resolvedSeries.map((entry) => (
-                          <td key={entry.key}>
-                            {formatCell(datum[entry.key as keyof T])}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <DataTableFallback
+                  caption={accessibleLabel}
+                  columns={[
+                    { label: xKey ?? '', rowHeader: true },
+                    ...resolvedSeries.map((entry) => ({ label: entry.label })),
+                  ]}
+                  rows={rows.map((datum, index) => ({
+                    key: index,
+                    cells: [
+                      formatCell(datum[xKey as keyof T]),
+                      ...resolvedSeries.map((entry) =>
+                        formatCell(datum[entry.key as keyof T])
+                      ),
+                    ],
+                  }))}
+                />
               )}
             </div>
           )}

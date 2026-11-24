@@ -3,27 +3,29 @@
 // barrel (Wave 5 wiring).
 import { Descriptions } from '@/lib/components/Descriptions';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth640,
+  PropsSection,
+} from './shared';
 
 // ─── Descriptions ─────────────────────────────────────────────
 export default function DescriptionsDemo() {
   return (
-    <>
-      <h1>Descriptions</h1>
-      <p className={intro}>
-        Data-driven key/value list on a CSS Grid — semantic <code>dl/dt/dd</code>{' '}
-        markup with column spanning, a bordered variant and two densities.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
-        <div style={{ maxWidth: 640 }}>
+    <DemoPage
+      title='Descriptions'
+      description={
+        <>
+          Data-driven key/value list on a CSS Grid — semantic <code>dl/dt/dd</code>{' '}
+          markup with column spanning, a bordered variant and two densities.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
+        <div style={maxWidth640}>
           <Descriptions
             title="Package info"
             items={[
@@ -36,15 +38,14 @@ export default function DescriptionsDemo() {
             ]}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Bordered with spans</h2>
+      <DemoSection title='Bordered with spans'>
         <p>
           <code>span</code> is measured in description columns: the audit note
           below stretches across all three columns.
         </p>
-        <div style={{ maxWidth: 640 }}>
+        <div style={maxWidth640}>
           <Descriptions
             bordered
             items={[
@@ -67,11 +68,10 @@ export default function DescriptionsDemo() {
             ]}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Compact size</h2>
-        <div style={{ maxWidth: 640 }}>
+      <DemoSection title='Compact size'>
+        <div style={maxWidth640}>
           <Descriptions
             bordered
             size="sm"
@@ -84,32 +84,26 @@ export default function DescriptionsDemo() {
             ]}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of="DescriptionsProps" />
-      </div>
+      <PropsSection of='DescriptionsProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Rendered as a definition list (<code>dl</code> with{' '}
-              <code>dt</code>/<code>dd</code> pairs) — the semantic match for
-              name→value groups, announced as a description list instead of a
-              data table
-            </li>
-            <li>
-              No interactive elements — the component is purely presentational
-            </li>
-            <li>Long values wrap (<code>overflow-wrap: anywhere</code>)</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Rendered as a definition list (<code>dl</code> with{' '}
+            <code>dt</code>/<code>dd</code> pairs) — the semantic match for
+            name→value groups, announced as a description list instead of a
+            data table
+          </li>
+          <li>
+            No interactive elements — the component is purely presentational
+          </li>
+          <li>Long values wrap (<code>overflow-wrap: anywhere</code>)</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component="descriptions" />
-    </>
+    </DemoPage>
   );
 }

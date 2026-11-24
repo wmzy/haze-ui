@@ -1,5 +1,6 @@
 import { css } from '@linaria/core';
 
+import { cachedNumberFormat } from '../../utils/intl-cache';
 import { meterFill, meterTrack } from '../../utils/meter-skin';
 import { statusSolidColors } from '../../utils/status-solid-skin';
 import { useStrings } from '../LocaleProvider';
@@ -44,12 +45,16 @@ export default function TokenCounter({ used, max, label, className }: TokenCount
      literal arms, so no local color classes. */
   const fillClass = pct > 90 ? statusSolidColors.danger : pct > 70 ? statusSolidColors.warning : statusSolidColors.primary;
   const strings = useStrings('tokenCounter');
+  /* Same grouped output as Number#toLocaleString() without arguments
+     (runtime default locale), but through the shared formatter cache
+     instead of an implicit Intl.NumberFormat per call. */
+  const formatter = cachedNumberFormat();
 
   return (
     <div data-slot='token-counter' x-class={[wrapper, className]}>
       <div x-class={[info]}>
         <span data-slot='label'>{label || strings.label}</span>
-        <span data-slot='value' x-class={[count]}>{used.toLocaleString()} / {max.toLocaleString()}</span>
+        <span data-slot='value' x-class={[count]}>{formatter.format(used)} / {formatter.format(max)}</span>
       </div>
       <div data-slot='track' x-class={[meterTrack, trackTone]}>
         <div data-slot='fill' x-class={[meterFill, fillClass]} style={{ width: `${pct}%` }} />

@@ -3,9 +3,7 @@ import { useControl } from 'react-use-control';
 
 import { FloatButton, FloatButtonGroup } from '@/lib/components/FloatButton';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── FloatButton ───────────────────────────────────────────────
 const pad = css`
@@ -35,26 +33,26 @@ export default function FloatButtonDemo() {
   const [groupOpen, setGroupOpen, groupControl] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>FloatButton</h1>
-      <p className={intro}>
-        A floating action button pinned to the bottom corner of the screen — the universal
-        {' “primary action”'} affordance. Renders a button, or a real anchor with{' '}
-        <code>href</code>. For scroll-to-top specifically, keep BackToTop.
-      </p>
-
-      <div className={section}>
-        <h2>Standalone</h2>
+    <DemoPage
+      title='FloatButton'
+      description={
+        <>
+          A floating action button pinned to the bottom corner of the screen — the universal
+          {' “primary action”'} affordance. Renders a button, or a real anchor with{' '}
+          <code>href</code>. For scroll-to-top specifically, keep BackToTop.
+        </>
+      }
+    >
+      <DemoSection title='Standalone'>
         <div className={pad}>
           <span>Three FABs are anchored bottom-end of the viewport →</span>
         </div>
         <FloatButton aria-label="Create" />
         <FloatButton description="Ask AI" variant="outline" shape="square" />
         <FloatButton href="#floatbutton" description="Read docs" variant="ghost" />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Group with expandable menu</h2>
+      <DemoSection title='Group with expandable menu'>
         <div className={stack}>
           <p className={code}>open = {String(groupOpen)}</p>
           <div className={pad}>The trigger expands a stack of FloatButtons; plus rotates into an ×.</div>
@@ -68,27 +66,24 @@ export default function FloatButtonDemo() {
           <FloatButton aria-label="Copy" description="Copy" variant="outline" />
           <FloatButton aria-label="Share" description="Share" variant="outline" />
         </FloatButtonGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Icon-only buttons need a name — pass <strong>aria-label</strong> (spreads
-              through like any native attribute) or a <strong>description</strong>.
-            </li>
-            <li>
-              The group trigger reports state via <strong>aria-expanded</strong> and{' '}
-              <strong>aria-controls</strong>; collapsed items leave the tab order once the
-              collapse settles.
-            </li>
-            <li>
-              Activating a menu item dismisses the menu; <strong>Escape</strong> closes it.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Icon-only buttons need a name — pass <strong>aria-label</strong> (spreads
+            through like any native attribute) or a <strong>description</strong>.
+          </li>
+          <li>
+            The group trigger reports state via <strong>aria-expanded</strong> and{' '}
+            <strong>aria-controls</strong>; collapsed items leave the tab order once the
+            collapse settles.
+          </li>
+          <li>
+            Activating a menu item dismisses the menu; <strong>Escape</strong> closes it.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

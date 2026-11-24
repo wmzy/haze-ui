@@ -7,7 +7,7 @@ import { css } from '@linaria/core';
 import { useControl } from 'react-use-control';
 
 import { useFloating, useOpenWithChange } from '../../utils/floating';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { ContextMenuProvider } from './ContextMenuContext';
 
@@ -73,8 +73,10 @@ export default function ContextMenu({
   });
 
   // The consumer ref and the internal floating trigger ref both land on
-  // the wrapper through mergeRefs.
-  const setWrapperRef = mergeRefs(wrapperRef, ref);
+  // the wrapper through useMergedRefs (one identity while both members
+  // hold — an inline mergeRefs per render would detach/re-attach the
+  // wrapper's refs on every render pass).
+  const setWrapperRef = useMergedRefs(wrapperRef, ref);
 
   return (
     <ContextMenuProvider

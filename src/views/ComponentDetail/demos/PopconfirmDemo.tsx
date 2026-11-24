@@ -4,13 +4,16 @@ import { useControl } from 'react-use-control';
 
 import { Button, Popconfirm } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 function QuestionGlyph() {
   return (
@@ -75,15 +78,16 @@ function ControlledDemo() {
 // ─── Popconfirm ────────────────────────────────────────────────
 export default function PopconfirmDemo() {
   return (
-    <>
-      <h1>Popconfirm</h1>
-      <p className={intro}>
-        Anchored confirmation bubble — a small question panel floating
-        beside its trigger, with confirm/cancel actions.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Popconfirm'
+      description={
+        <>
+          Anchored confirmation bubble — a small question panel floating
+          beside its trigger, with confirm/cancel actions.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Popconfirm
             title='Delete this item?'
@@ -92,10 +96,9 @@ export default function PopconfirmDemo() {
             <Button variant='outline'>Delete</Button>
           </Popconfirm>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Danger, icon and custom labels</h2>
+      <DemoSection title='Danger, icon and custom labels'>
         <div className={row}>
           <Popconfirm
             title='Remove team member?'
@@ -108,17 +111,10 @@ export default function PopconfirmDemo() {
             <Button variant='outline'>Remove member</Button>
           </Popconfirm>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Async confirmation</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Async confirmation'>
+        <p style={noteStyle}>
           A handler returning a promise puts the pressed button into its
           busy phase; the panel closes when the promise resolves and
           stays open for a retry when it rejects.
@@ -126,53 +122,40 @@ export default function PopconfirmDemo() {
         <div className={row}>
           <AsyncDemo />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Controlled'>
+        <p style={noteStyle}>
           <code>open</code> accepts a control — external state drives the
           panel while the trigger still writes through it.
         </p>
         <div className={row}>
           <ControlledDemo />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='PopconfirmProps' />
-      </div>
+      <PropsSection of='PopconfirmProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Trigger carries <strong>aria-haspopup</strong>,{' '}
-              <strong>aria-expanded</strong> and{' '}
-              <strong>aria-controls</strong>
-            </li>
-            <li>
-              Panel is a non-modal <strong>dialog</strong> named by the
-              title, with the description wired through{' '}
-              <strong>aria-describedby</strong>
-            </li>
-            <li>
-              Enter confirms and Escape cancels; focus moves into the
-              panel on open and returns to the trigger on close
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Trigger carries <strong>aria-haspopup</strong>,{' '}
+            <strong>aria-expanded</strong> and{' '}
+            <strong>aria-controls</strong>
+          </li>
+          <li>
+            Panel is a non-modal <strong>dialog</strong> named by the
+            title, with the description wired through{' '}
+            <strong>aria-describedby</strong>
+          </li>
+          <li>
+            Enter confirms and Escape cancels; focus moves into the
+            panel on open and returns to the trigger on close
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='popconfirm' />
-    </>
+    </DemoPage>
   );
 }

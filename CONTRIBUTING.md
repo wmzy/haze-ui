@@ -153,16 +153,17 @@ The full authoring template (stateless + stateful examples) lives in
 
 ### Registering a new component
 
-A new component must be registered in six places, four of which are hard
+A new component must be registered in five places, three of which are hard
 build/test gates — CI will name the missing one:
 
 1. the main barrel: `src/lib/index.ts`
-2. `DESCRIPTIONS` in `scripts/generate-llms.mjs` (`pnpm build:demo` gate)
-3. descriptions table + `CATEGORY_GROUPS` CSS family grouping in
-   `scripts/generate-registry.mjs` (`pnpm build` gate)
-4. sidebar entry: `src/views/Layout/component-groups.ts`
-5. demos map + demo file: `src/views/ComponentDetail/index.tsx`
-6. one-line blurb in all five docs-site packs — `src/views/i18n/{en,zh,fr,de,ja}.ts`
+2. the one-line blurb in `COMPONENT_DESCRIPTIONS`
+   (`scripts/component-descriptions.mjs`) — the single table behind both
+   `llms.txt` and the registry; the registry's CSS-family grouping derives
+   from the sidebar entry below (`pnpm build` and `pnpm build:demo` gates)
+3. sidebar entry: `src/views/Layout/component-groups.ts`
+4. demos map + demo file: `src/views/ComponentDetail/index.tsx`
+5. one-line blurb in all five docs-site packs — `src/views/i18n/{en,zh,fr,de,ja}.ts`
    (the i18n coverage test fails without them)
 
 Styled components also join the box-sizing contract

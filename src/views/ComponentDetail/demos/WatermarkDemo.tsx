@@ -3,10 +3,13 @@ import { useControl } from 'react-use-control';
 
 import { Button, Watermark } from '@/lib';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
-import { intro, section } from '../styles';
 
 // ─── Watermark ──────────────────────────────────────────────────
 const surface = css`
@@ -36,16 +39,17 @@ export default function WatermarkDemo() {
   const [fullscreenOn, setFullscreenOn] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>Watermark</h1>
-      <p className={intro}>
-        Tiled canvas watermark rendered as a repeating background layer —
-        pointer-transparent, hidden from assistive tech, and theme-aware (the
-        default color reads the text-muted token at draw time).
-      </p>
-
-      <div className={section}>
-        <h2>Over content</h2>
+    <DemoPage
+      title='Watermark'
+      description={
+        <>
+          Tiled canvas watermark rendered as a repeating background layer —
+          pointer-transparent, hidden from assistive tech, and theme-aware (the
+          default color reads the text-muted token at draw time).
+        </>
+      }
+    >
+      <DemoSection title='Over content'>
         <Watermark content="haze-ui">
           <div className={surface}>
             <p className={surfaceText}>
@@ -56,10 +60,9 @@ export default function WatermarkDemo() {
             <Button variant="outline">Still clickable</Button>
           </div>
         </Watermark>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multi-line, rotation, gap</h2>
+      <DemoSection title='Multi-line, rotation, gap'>
         <Watermark
           content={['Haze UI', 'do not distribute']}
           font={{ size: 16, weight: 600 }}
@@ -74,10 +77,9 @@ export default function WatermarkDemo() {
             </p>
           </div>
         </Watermark>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Fullscreen</h2>
+      <DemoSection title='Fullscreen'>
         <div className={row}>
           <Button
             onClick={() => setFullscreenOn((prev) => !prev)}
@@ -90,32 +92,26 @@ export default function WatermarkDemo() {
           </span>
         </div>
         {fullscreenOn && <Watermark content="haze-ui · internal" fullscreen zIndex={50} />}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='WatermarkProps' />
-      </div>
+      <PropsSection of='WatermarkProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The overlay is <strong>aria-hidden</strong> and never intercepts
-              pointer events
-            </li>
-            <li>
-              Text stays real content — only the decoration is duplicated into
-              canvas
-            </li>
-            <li>
-              Degrades to no watermark when the canvas 2d context is
-              unavailable
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The overlay is <strong>aria-hidden</strong> and never intercepts
+            pointer events
+          </li>
+          <li>
+            Text stays real content — only the decoration is duplicated into
+            canvas
+          </li>
+          <li>
+            Degrades to no watermark when the canvas 2d context is
+            unavailable
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

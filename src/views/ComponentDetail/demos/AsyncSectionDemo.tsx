@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { AsyncSection, Button, Flex } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 type Phase = 'loading' | 'error' | 'content';
 
@@ -27,15 +27,16 @@ export default function AsyncSectionDemo() {
   const retry = () => setPhase('loading');
 
   return (
-    <>
-      <h1>AsyncSection</h1>
-      <p className={intro}>
-        Loading / error / content in one place — the retry path shows the
-        placeholder while the old error is still set.
-      </p>
-
-      <div className={section}>
-        <h2>Retryable fetch</h2>
+    <DemoPage
+      title='AsyncSection'
+      description={
+        <>
+          Loading / error / content in one place — the retry path shows the
+          placeholder while the old error is still set.
+        </>
+      }
+    >
+      <DemoSection title='Retryable fetch'>
         <Flex gap='var(--haze-space-2)' direction='column'>
           <AsyncSection
             loading={phase === 'loading'}
@@ -61,42 +62,35 @@ export default function AsyncSectionDemo() {
             </Button>
           </Flex>
         </Flex>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom copy</h2>
+      <DemoSection title='Custom copy'>
         <AsyncSection loading loadingText='Fetching report…'>
           <p>Never shown in this example</p>
         </AsyncSection>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='AsyncSectionProps' />
-      </div>
+      <PropsSection of='AsyncSectionProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The loading placeholder is announced politely — it renders as a
-              status region, not an alert
-            </li>
-            <li>
-              The Retry control is a real <code>&lt;button&gt;</code> in the
-              tab order; the error box carries <strong>role=alert</strong>{' '}
-              semantics through its alert-styled container
-            </li>
-            <li>
-              Provide <code>errorText</code> when the thrown value has no
-              useful <code>message</code>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The loading placeholder is announced politely — it renders as a
+            status region, not an alert
+          </li>
+          <li>
+            The Retry control is a real <code>&lt;button&gt;</code> in the
+            tab order; the error box carries <strong>role=alert</strong>{' '}
+            semantics through its alert-styled container
+          </li>
+          <li>
+            Provide <code>errorText</code> when the thrown value has no
+            useful <code>message</code>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='async-section' />
-    </>
+    </DemoPage>
   );
 }

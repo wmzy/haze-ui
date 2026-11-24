@@ -34,6 +34,7 @@ import { useControl } from 'react-use-control';
 import { getDirection, inlineAxisKeys } from './direction';
 import { useFloating, useOpenWithChange, type FloatingBehavior } from './floating';
 import { getEnabledMenuItems, useMenuKeyboard, useRovingTabindex } from './menuKeyboard';
+import { useFocusWhenShown } from './use-focus-when-shown';
 import { useHoverIntent } from './use-hover-intent';
 
 /** Pointer rest time before a submenu opens on hover (intent, not rest). */
@@ -156,12 +157,11 @@ export function useSubmenu({
     getEnabledMenuItems(contentRef.current)[0]?.focus();
   }, []);
 
-  useEffect(() => {
-    if (!open || !floating.shown) return;
-    if (!focusRequestRef.current) return;
+  useFocusWhenShown(open && floating.shown, () => {
+    if (!focusRequestRef.current) return null;
     focusRequestRef.current = false;
-    focusFirstItem();
-  }, [open, floating.shown, focusFirstItem]);
+    return getEnabledMenuItems(contentRef.current)[0];
+  });
 
   // Keyboard-driven close (Escape / inline-start arrow / Tab): restore
   // focus to the trigger only when it actually was inside this level —

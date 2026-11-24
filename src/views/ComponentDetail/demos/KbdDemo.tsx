@@ -1,32 +1,30 @@
 import { Kbd } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Kbd ───────────────────────────────────────────────────────
 export default function KbdDemo() {
   return (
-    <>
-      <h1>Kbd</h1>
-      <p className={intro}>
-        Inline keyboard key indicator for shortcuts and key combinations.
-      </p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Kbd'
+      description='Inline keyboard key indicator for shortcuts and key combinations.'
+    >
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Kbd size='sm'>Esc</Kbd>
           <Kbd size='md'>Esc</Kbd>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Key combinations</h2>
+      <DemoSection title='Key combinations'>
         <div className={row}>
           <span>
             <Kbd size='sm'>⌘</Kbd> + <Kbd size='sm'>K</Kbd>
@@ -38,29 +36,23 @@ export default function KbdDemo() {
             Press <Kbd>⌘</Kbd> <Kbd>Option</Kbd> <Kbd>Esc</Kbd>
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='KbdProps' />
-      </div>
+      <PropsSection of='KbdProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as a native <strong>&lt;kbd&gt;</strong> element
-            </li>
-            <li>
-              Surrounding text should spell out the action, e.g. “Press{' '}
-              <Kbd>⌘</Kbd> <Kbd>K</Kbd> to open the command palette”
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as a native <strong>&lt;kbd&gt;</strong> element
+          </li>
+          <li>
+            Surrounding text should spell out the action, e.g. “Press{' '}
+            <Kbd>⌘</Kbd> <Kbd>K</Kbd> to open the command palette”
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='kbd' />
-    </>
+    </DemoPage>
   );
 }

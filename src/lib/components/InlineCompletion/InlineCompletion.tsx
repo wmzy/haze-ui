@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 import { css } from '@linaria/core';
 
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 import { srOnly } from '../../utils/sr-only';
 import { fieldChrome, focusWithinRing } from '../../utils/field-skin';
 
@@ -194,8 +194,9 @@ export default function InlineCompletion({
     onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
   };
 
+  const setHostRef = useMergedRefs(hostRef, ref);
   const sharedHandlers = {
-    ref: mergeRefs(hostRef, ref),
+    ref: setHostRef,
     value,
     onChange: handleChange,
     onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

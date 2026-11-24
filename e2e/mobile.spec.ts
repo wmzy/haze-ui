@@ -1,5 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { waitForOpenAnimationToSettle } from './animation';
+
 /**
  * Mobile overlay contracts on a phone viewport (chromium-mobile project:
  * Pixel 7 emulation — 412×839, touch, isMobile). The behaviors a desktop
@@ -25,17 +27,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * stays at the 88px floor rather than height/4, keeping the drag
  * distances below deterministic.
  */
-
-/** Waits until no enter animation is running (sheets/dialogs animate in
- * via data-state; dragging/closing from a half-run enter would race the
- * transform reads). Same shape as dialog.spec.ts. */
-async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
-  await expect
-    .poll(() =>
-      panel.evaluate((el) => el.getAnimations({ subtree: true }).length === 0)
-    )
-    .toBe(true);
-}
 
 /**
  * Drags the sheet down by `distance` px from inside its body, stepping
@@ -69,7 +60,10 @@ test.describe('BottomSheet drag dismiss', () => {
   }) => {
     const sheet = page.locator('#mobile-sheet');
     await expect(sheet).toBeVisible();
-    await waitForOpenAnimationToSettle(sheet);
+    // data-state lands on the sheet's overlay parent (Presence tags the
+    // scrim fade), not on the panel — settle the overlay, whose subtree
+    // carries the panel's own slide.
+    await waitForOpenAnimationToSettle(sheet.locator('..'));
 
     await dragSheetDown(page, sheet, 200);
     // Mid-drag: the sheet tracks the pointer (dragging = true, no
@@ -89,7 +83,7 @@ test.describe('BottomSheet drag dismiss', () => {
   test('short drag springs back and keeps the sheet open', async ({ page }) => {
     const sheet = page.locator('#mobile-sheet');
     await expect(sheet).toBeVisible();
-    await waitForOpenAnimationToSettle(sheet);
+    await waitForOpenAnimationToSettle(sheet.locator('..'));
     const restingTop = (await sheet.boundingBox())!.y;
 
     await dragSheetDown(page, sheet, 40);

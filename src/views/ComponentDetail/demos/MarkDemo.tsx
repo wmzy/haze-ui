@@ -1,22 +1,23 @@
 import { Mark } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
+import { DemoPage, DemoSection, PropsSection } from './shared';
 
 // ─── Mark ─────────────────────────────────────────────────────
 export default function MarkDemo() {
   return (
-    <>
-      <h1>Mark</h1>
-      <p className={intro}>
-        Text-level highlight — the semantic <code>&lt;mark&gt;</code>{' '}
-        element skinned with the status tokens (warning, primary, success,
-        danger).
-      </p>
-
-      <div className={section}>
-        <h2>Tones</h2>
+    <DemoPage
+      title='Mark'
+      description={
+        <>
+          Text-level highlight — the semantic <code>&lt;mark&gt;</code>{' '}
+          element skinned with the status tokens (warning, primary, success,
+          danger).
+        </>
+      }
+    >
+      <DemoSection title='Tones'>
         <div className={row}>
           <Mark>warning</Mark>
           <Mark color='default'>default</Mark>
@@ -25,21 +26,17 @@ export default function MarkDemo() {
           <Mark color='danger'>danger</Mark>
           <Mark color='info'>info</Mark>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>In context</h2>
+      <DemoSection title='In context'>
         <p>
           你在全文搜索 “render”：共找到 <Mark>render</Mark> 三处与{' '}
           <Mark color='primary'>Render</Mark> 两处（大小写见 Highlight
           组件）。
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='MarkProps' />
-      </div>
-    </>
+      <PropsSection of='MarkProps' />
+    </DemoPage>
   );
 }

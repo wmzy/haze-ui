@@ -8,13 +8,16 @@ import { css } from '@linaria/core';
 
 import { Button, ChatMessage, ChatContainer, VirtualList } from '@/lib';
 
-import PropsTable from '../PropsTable';
-
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection, dataTableNote, feedToolbar, feedMeta } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  dataTableNote,
+  DemoPage,
+  DemoSection,
+  feedMeta,
+  feedToolbar,
+  PropsSection,
+} from './shared';
 
 // ─── ChatContainer × VirtualList — 10k-message feed (recipe) ──
 type FeedMessage = {
@@ -347,15 +350,11 @@ function ChatFollowDemo() {
 // ─── ChatContainer ────────────────────────────────────────────
 export default function ChatContainerDemo() {
   return (
-    <>
-      <h1>ChatContainer</h1>
-      <p className={intro}>
-        Auto-scrolling message container that follows new messages as they
-        arrive.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='ChatContainer'
+      description='Auto-scrolling message container that follows new messages as they arrive.'
+    >
+      <DemoSection title='Demo'>
         <div
           style={{
             maxHeight: 200,
@@ -374,10 +373,9 @@ export default function ChatContainerDemo() {
             </ChatMessage>
           </ChatContainer>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Stick-to-bottom follow</h2>
+      <DemoSection title='Stick-to-bottom follow'>
         <ChatFollowDemo />
         <p className={dataTableNote}>
           <strong>Follow, pause, return.</strong> While the reader is parked
@@ -390,10 +388,11 @@ export default function ChatContainerDemo() {
           the pill and re-arms the follow. Replies cycle a fixed script, so
           the transcript only depends on how many times you append.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>10,000 messages — ChatContainer × VirtualList (recipe)</h2>
+      <DemoSection
+        title='10,000 messages — ChatContainer × VirtualList (recipe)'
+      >
         <ChatVirtualFeedDemo />
         <p className={dataTableNote}>
           <strong>Data.</strong> <code>makeFeedMessage(index)</code> is pure:
@@ -422,47 +421,41 @@ export default function ChatContainerDemo() {
           fire on every scroll-driven row swap, and the frame never scrolls
           anyway.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ChatContainerProps' />
-      </div>
+      <PropsSection of='ChatContainerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>overflow-y: auto</strong> for scrollable content
-            </li>
-            <li>
-              Auto-scroll uses a <strong>MutationObserver</strong> plus a
-              passive scroll listener: follow only fires while parked at the
-              bottom, so a screen-reader or keyboard user reading history is
-              never yanked around
-            </li>
-            <li>
-              The jump pill is a real <strong>&lt;button&gt;</strong> with a
-              text label (<code>chat.newMessages</code> string /{' '}
-              <code>unreadLabel</code> prop) — keyboard-reachable and
-              announced, and it only exists while there is something to jump
-              to
-            </li>
-            <li>
-              The virtualized feed is a <strong>role=&quot;log&quot;</strong>{' '}
-              (polite live region) — appends are announced without stealing
-              focus. VirtualList does not expose its scrollport, so the
-              recipe marks it with a class and sets{' '}
-              <strong>tabIndex=&quot;0&quot;</strong> on it for arrow-key
-              scrolling; ellipsis is purely visual, the full text stays in
-              the DOM for assistive tech
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>overflow-y: auto</strong> for scrollable content
+          </li>
+          <li>
+            Auto-scroll uses a <strong>MutationObserver</strong> plus a
+            passive scroll listener: follow only fires while parked at the
+            bottom, so a screen-reader or keyboard user reading history is
+            never yanked around
+          </li>
+          <li>
+            The jump pill is a real <strong>&lt;button&gt;</strong> with a
+            text label (<code>chat.newMessages</code> string /{' '}
+            <code>unreadLabel</code> prop) — keyboard-reachable and
+            announced, and it only exists while there is something to jump
+            to
+          </li>
+          <li>
+            The virtualized feed is a <strong>role=&quot;log&quot;</strong>{' '}
+            (polite live region) — appends are announced without stealing
+            focus. VirtualList does not expose its scrollport, so the
+            recipe marks it with a class and sets{' '}
+            <strong>tabIndex=&quot;0&quot;</strong> on it for arrow-key
+            scrolling; ellipsis is purely visual, the full text stays in
+            the DOM for assistive tech
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='chatcontainer' />
-    </>
+    </DemoPage>
   );
 }

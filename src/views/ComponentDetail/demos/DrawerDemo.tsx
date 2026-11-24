@@ -2,13 +2,15 @@ import { useControl } from 'react-use-control';
 
 import { Button, Drawer } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Drawer ────────────────────────────────────────────────────
 export default function DrawerDemo() {
@@ -16,12 +18,11 @@ export default function DrawerDemo() {
   const [, setOpen] = useControl(openCtrl);
 
   return (
-    <>
-      <h1>Drawer</h1>
-      <p className={intro}>Slide-out panel anchored to a screen edge.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Drawer'
+      description='Slide-out panel anchored to a screen edge.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button onClick={() => setOpen(true)}>Open Drawer</Button>
         </div>
@@ -36,31 +37,25 @@ export default function DrawerDemo() {
             </Button>
           </div>
         </Drawer>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='DrawerProps' />
-      </div>
+      <PropsSection of='DrawerProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses native <strong>&lt;dialog&gt;</strong> with{' '}
-              <strong>showModal()</strong>
-            </li>
-            <li>
-              <strong>ESC</strong> closes the drawer
-            </li>
-            <li>Focus is trapped within the drawer while open</li>
-            <li>Backdrop click closes the drawer</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses native <strong>&lt;dialog&gt;</strong> with{' '}
+            <strong>showModal()</strong>
+          </li>
+          <li>
+            <strong>ESC</strong> closes the drawer
+          </li>
+          <li>Focus is trapped within the drawer while open</li>
+          <li>Backdrop click closes the drawer</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='drawer' />
-    </>
+    </DemoPage>
   );
 }

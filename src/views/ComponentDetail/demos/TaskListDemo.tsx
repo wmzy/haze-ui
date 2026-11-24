@@ -4,11 +4,13 @@ import { Button, Spinner, TaskList, TaskListItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth420,
+} from './shared';
 
 function TaskListPlayground() {
   const [doneSummary, setDoneSummary] = useState(false);
@@ -16,7 +18,7 @@ function TaskListPlayground() {
   const [donePolish, setDonePolish] = useState(false);
 
   return (
-    <div style={{ maxWidth: 420 }}>
+    <div style={maxWidth420}>
       <p aria-live='polite'>
         {`Done: ${[doneSummary, doneUnits, donePolish].filter(Boolean).length}/3`}
       </p>
@@ -73,7 +75,7 @@ function TaskListItemsPlayground() {
   });
 
   return (
-    <div style={{ maxWidth: 420 }}>
+    <div style={maxWidth420}>
       <TaskList
         items={initialRows.map((row) => ({
           key: row.key,
@@ -91,59 +93,54 @@ function TaskListItemsPlayground() {
 // ─── TaskList ──────────────────────────────────────────────────
 export default function TaskListDemo() {
   return (
-    <>
-      <h1>TaskList</h1>
-      <p className={intro}>
-        Interactive agent task checklist: checkbox rows whose titles strike
-        through and dim once done, with optional description, custom running
-        indicator and trailing actions.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='TaskList'
+      description={
+        <>
+          Interactive agent task checklist: checkbox rows whose titles strike
+          through and dim once done, with optional description, custom running
+          indicator and trailing actions.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <TaskListPlayground />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Data-driven items</h2>
+      <DemoSection title='Data-driven items'>
         <TaskListItemsPlayground />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TaskList Props</h2>
+      <DemoSection title='TaskList Props'>
         <PropsTable of='TaskListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TaskListItem Props</h2>
+      <DemoSection title='TaskListItem Props'>
         <PropsTable of='TaskListItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Native <strong>list</strong>/<strong>listitem</strong> semantics
-              from the underlying <code>ul</code>/<code>li</code> elements
-            </li>
-            <li>
-              The default row is a <code>label</code>: the visible title names
-              the checkbox (axe-clean) and clicking anywhere on the row toggles
-            </li>
-            <li>
-              <code>actions</code> render outside the toggle label, so
-              activating them never flips the task
-            </li>
-            <li>
-              A custom <code>indicator</code> (e.g. <code>Spinner</code>) keeps
-              its own accessible name — pass <code>aria-label</code> on it
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Native <strong>list</strong>/<strong>listitem</strong> semantics
+            from the underlying <code>ul</code>/<code>li</code> elements
+          </li>
+          <li>
+            The default row is a <code>label</code>: the visible title names
+            the checkbox (axe-clean) and clicking anywhere on the row toggles
+          </li>
+          <li>
+            <code>actions</code> render outside the toggle label, so
+            activating them never flips the task
+          </li>
+          <li>
+            A custom <code>indicator</code> (e.g. <code>Spinner</code>) keeps
+            its own accessible name — pass <code>aria-label</code> on it
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='task-list' />
-    </>
+    </DemoPage>
   );
 }

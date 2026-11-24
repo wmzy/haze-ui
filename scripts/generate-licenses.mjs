@@ -25,9 +25,10 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('..', import.meta.url));
+import { defaultRoot } from './cli-utils.mjs';
+
+const root = defaultRoot();
 const outPath = join(root, 'dist', 'THIRD-PARTY-NOTICES.md');
 
 /** Resolve the package.json of `name` from `anchor` (a parent package.json). */

@@ -234,8 +234,9 @@ const sharedLayers = {
   // backgrounds by design) as local map values. back-to-top rides
   // along: it consumes the FloatButton variant classes through
   // float-button-styles, whose own group inlining does not carry the
-  // utils layer.
-  'utils/button-variant-skin': ['back-to-top', 'button', 'float-button'],
+  // utils layer. Toggle wears the same pair as its rest/pressed
+  // surfaces (its forced-colors arm stays a local delta).
+  'utils/button-variant-skin': ['back-to-top', 'button', 'float-button', 'toggle'],
   // Shared disclosure summary/content skins (utils/disclosure-skin.ts):
   // the details/summary header + content typography shared by
   // Accordion's items and Disclosure ride with both families' css.
@@ -244,10 +245,12 @@ const sharedLayers = {
   // geometry, the muted text skins, the status-marker ring arms and
   // glyph map, and the expandable-disclosure layer shared by Timeline,
   // StepTimeline, Trace, Plan, JsonView, Sources and ToolCallCard ride
-  // with every consuming family's css.
+  // with every consuming family's css; Queue composes the status-dot
+  // marker and the muted title/description text skins.
   'utils/timeline-skin': [
     'json-view',
     'plan',
+    'queue',
     'sources',
     'step-timeline',
     'task-list',
@@ -316,9 +319,13 @@ const sharedLayers = {
   // font-size:inherit glyph arm and Banner its 2.5rem trigger box over
   // the shared box via specificity-armed overrides (cascade order
   // differs between dev injection and this split). Meter imports the
-  // type only — no css, so it is not a consumer here.
+  // type only — no css, so it is not a consumer here. The callout
+  // surfaces (AsyncSection's and ErrorBoundary's error boxes, Alert,
+  // Banner) wear calloutColors.* — these very subtle classes — through
+  // utils/callout-skin's re-export, so each callout family is listed.
   'utils/status-skin': [
     'alert',
+    'async-section',
     'banner',
     'badge',
     'chip',
@@ -328,6 +335,8 @@ const sharedLayers = {
     'notification-center',
     'tag',
     'toast',
+    // ErrorBoundary's fallback composes the danger tint (calloutColors).
+    'error-boundary',
   ],
   // Shared callout skin (utils/callout-skin.ts): the surface box
   // model, padding and body typography plus the flexing content
@@ -337,7 +346,9 @@ const sharedLayers = {
   // local (genuine geometry differences, not spelling drift). The
   // status tint classes and dismiss chrome ride via utils/status-skin;
   // no rsc-safe entry: nothing RSC-listed imports this module.
-  'utils/callout-skin': ['alert', 'banner', 'async-section', 'toast'],
+  // ErrorBoundary's fallback composes the danger callout trio
+  // (surface + tint + border) the way AsyncSection does.
+  'utils/callout-skin': ['alert', 'async-section', 'banner', 'error-boundary', 'toast'],
   // Solid/stroke status axes (progress bar fill, circle stroke,
   // indicator tone dots) — separate modules from status-skin because
   // same-keyed css maps in one file collide under Linaria's member-key

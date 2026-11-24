@@ -8,9 +8,9 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── Toolbar ───────────────────────────────────────────────────
 export default function ToolbarDemo() {
@@ -19,16 +19,17 @@ export default function ToolbarDemo() {
   const [align, setAlign] = useState('left');
 
   return (
-    <>
-      <h1>Toolbar</h1>
-      <p className={intro}>
-        A row (or column) of related controls with roving tabindex: one Tab
-        stop in total, arrow keys move between items, Home/End jump to the
-        ends.
-      </p>
-
-      <div className={section}>
-        <h2>Text formatting</h2>
+    <DemoPage
+      title='Toolbar'
+      description={
+        <>
+          A row (or column) of related controls with roving tabindex: one Tab
+          stop in total, arrow keys move between items, Home/End jump to the
+          ends.
+        </>
+      }
+    >
+      <DemoSection title='Text formatting'>
         <div className={row}>
           <Toolbar aria-label="Text formatting">
             <ToolbarButton
@@ -64,10 +65,9 @@ export default function ToolbarDemo() {
           Tab into the toolbar, travel with ←/→ (Home/End for the ends);
           pressed items keep their tint while toggled.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Vertical</h2>
+      <DemoSection title='Vertical'>
         <div className={row}>
           <Toolbar orientation="vertical" aria-label="Zoom controls">
             <ToolbarButton square>+</ToolbarButton>
@@ -81,10 +81,9 @@ export default function ToolbarDemo() {
         <p className={row}>
           Vertical toolbars take ↑/↓ for travel; separators rotate to match.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { Toolbar, ToolbarButton, ToolbarSeparator } from 'haze-ui';
 
 <Toolbar aria-label="Text formatting">
@@ -92,43 +91,37 @@ export default function ToolbarDemo() {
   <ToolbarSeparator />
   <ToolbarButton disabled>Link</ToolbarButton>
 </Toolbar>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Toolbar Props</h2>
+      <DemoSection title='Toolbar Props'>
         <PropsTable of="ToolbarProps" />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ToolbarButton Props</h2>
+      <DemoSection title='ToolbarButton Props'>
         <PropsTable of="ToolbarButtonProps" />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ToolbarSeparator Props</h2>
+      <DemoSection title='ToolbarSeparator Props'>
         <PropsTable of="ToolbarSeparatorProps" />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Container exposes <strong>role=&quot;toolbar&quot;</strong> with{' '}
-              <strong>aria-orientation</strong> — give it an accessible name
-              (aria-label) describing its purpose
-            </li>
-            <li>
-              <strong>Roving tabindex</strong>: one tab stop total; arrows,
-              Home and End move focus (wrapping), Tab leaves the toolbar
-            </li>
-            <li>
-              ToolbarButton is a native <strong>&lt;button&gt;</strong>;
-              toggles report state with <strong>aria-pressed</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Container exposes <strong>role=&quot;toolbar&quot;</strong> with{' '}
+            <strong>aria-orientation</strong> — give it an accessible name
+            (aria-label) describing its purpose
+          </li>
+          <li>
+            <strong>Roving tabindex</strong>: one tab stop total; arrows,
+            Home and End move focus (wrapping), Tab leaves the toolbar
+          </li>
+          <li>
+            ToolbarButton is a native <strong>&lt;button&gt;</strong>;
+            toggles report state with <strong>aria-pressed</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

@@ -1,22 +1,23 @@
 import { Chip } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { noop } from './shared';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  noop,
+  PropsSection,
+} from './shared';
 
 // ─── Chip ───────────────────────────────────────────────────────
 export default function ChipDemo() {
   return (
-    <>
-      <h1>Chip</h1>
-      <p className={intro}>Compact element for tags, labels, and filters.</p>
-
-      <div className={section}>
-        <h2>Solid Variants</h2>
+    <DemoPage
+      title='Chip'
+      description='Compact element for tags, labels, and filters.'
+    >
+      <DemoSection title='Solid Variants'>
         <div className={row}>
           <Chip>Default</Chip>
           <Chip color='primary'>Primary</Chip>
@@ -25,10 +26,9 @@ export default function ChipDemo() {
           <Chip color='danger'>Danger</Chip>
           <Chip color='info'>Info</Chip>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Outline Variants</h2>
+      <DemoSection title='Outline Variants'>
         <div className={row}>
           <Chip variant='outline'>Default</Chip>
           <Chip variant='outline' color='primary'>Primary</Chip>
@@ -36,30 +36,23 @@ export default function ChipDemo() {
           <Chip variant='outline' color='danger'>Danger</Chip>
           <Chip variant='outline' color='info'>Info</Chip>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>With Close</h2>
+      <DemoSection title='With Close'>
         <div className={row}>
           <Chip onClose={noop}>Removable</Chip>
           <Chip color='primary' onClose={noop}>Primary</Chip>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ChipProps' />
-      </div>
+      <PropsSection of='ChipProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Renders as a <strong>&lt;span&gt;</strong></li>
-            <li>Close button has <strong>aria-label=&quot;Remove&quot;</strong></li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Renders as a <strong>&lt;span&gt;</strong></li>
+          <li>Close button has <strong>aria-label=&quot;Remove&quot;</strong></li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

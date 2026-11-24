@@ -5,10 +5,15 @@ import { useControl } from 'react-use-control';
 import { LocaleProvider, Pagination, ChatInput, Empty, defaultStrings  } from '@/lib';
 
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
 
-import { intro, section, fieldRow, codeBlock } from '../styles';
+import { fieldRow, codeBlock } from '../styles';
+
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── LocaleProvider ────────────────────────────────────────────
 export default function LocaleProviderDemo() {
@@ -16,17 +21,18 @@ export default function LocaleProviderDemo() {
   const [page, , pageCtrl] = useControl(undefined, 3);
 
   return (
-    <>
-      <h1>LocaleProvider</h1>
-      <p className={intro}>
-        Layered string overrides for every user-visible literal in the
-        library. Each component reads its section through
-        <code> useStrings</code>; explicit props still win, and nested
-        providers override their parents key by key.
-      </p>
-
-      <div className={section}>
-        <h2>Overriding component copy</h2>
+    <DemoPage
+      title='LocaleProvider'
+      description={
+        <>
+          Layered string overrides for every user-visible literal in the
+          library. Each component reads its section through
+          <code> useStrings</code>; explicit props still win, and nested
+          providers override their parents key by key.
+        </>
+      }
+    >
+      <DemoSection title='Overriding component copy'>
         <div className={fieldRow}>
           <button onClick={() => setZh((v) => !v)}>
             {zh ? 'Switch to defaults' : 'Switch to 中文'}
@@ -48,10 +54,9 @@ export default function LocaleProviderDemo() {
           </div>
           <ChatInput onSend={() => undefined} />
         </LocaleProvider>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Built-in locales</h2>
+      <DemoSection title='Built-in locales'>
         <p>
           Set <code>locale</code> to switch every component to a bundled
           language pack — <code>&quot;zh-CN&quot;</code> (and any other
@@ -80,10 +85,9 @@ export default function LocaleProviderDemo() {
 >
   <App />
 </LocaleProvider>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Usage</h2>
+      <DemoSection title='Usage'>
         <pre className={codeBlock}>{`import { LocaleProvider } from 'haze-ui';
 
 <LocaleProvider
@@ -94,33 +98,26 @@ export default function LocaleProviderDemo() {
 >
   <App />
 </LocaleProvider>`}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Dictionary shape</h2>
+      <DemoSection title='Dictionary shape'>
         <pre className={codeBlock}>{Object.keys(defaultStrings).join(', ')}</pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='LocaleProviderProps' />
-      </div>
+      <PropsSection of='LocaleProviderProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Overrides replace aria labels and visible copy alike — keep
-              localized labels descriptive for screen reader users
-            </li>
-            <li>
-              Placeholders like <code>{'{count}'}</code> are expanded with
-              runtime values, so translations stay plain strings
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Overrides replace aria labels and visible copy alike — keep
+            localized labels descriptive for screen reader users
+          </li>
+          <li>
+            Placeholders like <code>{'{count}'}</code> are expanded with
+            runtime values, so translations stay plain strings
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

@@ -5,7 +5,7 @@ import type { ColorFormat } from './color-math';
 import type { ColorPickerPreset } from './gradient';
 
 import { css } from '@linaria/core';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { useStrings } from '../LocaleProvider';
@@ -15,7 +15,8 @@ import { focusRingVisible } from '../../utils/focus-ring';
 import { FloatingPanel, useFloating } from '../../utils/floating';
 import { NativeHiddenFields } from '../../utils/native-form';
 import { panelSurface } from '../../utils/panel-skin';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
+import { useFocusWhenShown } from '../../utils/use-focus-when-shown';
 
 import ColorPickerPanel from './ColorPickerPanel';
 import { cssColor, formatColor, parseColor, rgbHexKey } from './color-math';
@@ -200,10 +201,9 @@ export default function ColorPicker({
   // Stable identity (Datepicker precedent): the floating behavior anchors
   // on this trigger (outside-close boundary); the consumer's ref rides
   // the same node.
-  const setTriggerRef = useCallback(
-    (node: HTMLButtonElement | null) =>
-      mergeRefs(triggerRef, ref as Ref<HTMLButtonElement> | undefined)(node),
-    [ref]
+  const setTriggerRef = useMergedRefs(
+    triggerRef,
+    ref as Ref<HTMLButtonElement> | undefined
   );
   const id = useId();
   const floating = useFloating({
@@ -218,12 +218,9 @@ export default function ColorPicker({
   // (the first slider), so arrows adjust color immediately. Gated on
   // `shown` — focusing before the popover is visible is silently
   // dropped (see FloatingBehavior.shown).
-  useEffect(() => {
-    if (!floating.shown) return;
-    panelRef.current
-      ?.querySelector<HTMLElement>("[role='slider']")
-      ?.focus();
-  }, [floating.shown]);
+  useFocusWhenShown(floating.shown, () =>
+    panelRef.current?.querySelector<HTMLElement>("[role='slider']")
+  );
 
   if (inline) {
     return (

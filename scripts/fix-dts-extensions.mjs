@@ -13,18 +13,14 @@
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const typesDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'dist',
-  'types'
-);
+import { defaultRoot, failFor } from './cli-utils.mjs';
+
+const fail = failFor('fix-dts-extensions');
+const typesDir = join(defaultRoot(), 'dist', 'types');
 
 if (!existsSync(typesDir)) {
-  console.error(`fix-dts-extensions: ${typesDir} 不存在——先跑完整 build`);
-  process.exit(1);
+  fail(`${typesDir} 不存在——先跑完整 build`);
 }
 
 const files = [];

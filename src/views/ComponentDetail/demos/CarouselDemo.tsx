@@ -6,13 +6,16 @@ import { useRef } from 'react';
 
 import { Button, Carousel, CarouselSlide } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { intro } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth480,
+  PropsSection,
+} from './shared';
 
 const slideBody = (background: string): CSSProperties => ({
   height: 200,
@@ -44,7 +47,7 @@ function DemoSlides() {
 function ImperativeControlsDemo() {
   const carouselRef = useRef<CarouselHandle>(null);
   return (
-    <div style={{ maxWidth: 480 }}>
+    <div style={maxWidth480}>
       <Carousel ref={carouselRef}>
         <DemoSlides />
       </Carousel>
@@ -85,55 +88,53 @@ function ImperativeControlsDemo() {
 // ─── Carousel ──────────────────────────────────────────────────
 export default function CarouselDemo() {
   return (
-    <>
-      <h1>Carousel</h1>
-      <p className={intro}>
-        Slide-based content viewer with navigation and indicators. Drag the
-        track with the mouse to page (release past a quarter of the track
-        width flips, below snaps back).
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 480 }}>
+    <DemoPage
+      title='Carousel'
+      description={
+        <>
+          Slide-based content viewer with navigation and indicators. Drag the
+          track with the mouse to page (release past a quarter of the track
+          width flips, below snaps back).
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth480}>
           <Carousel>
             <DemoSlides />
           </Carousel>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Effect: fade</h2>
+      <DemoSection title='Effect: fade'>
         <p className={intro}>
           Slides cross-fade in place instead of scrolling. The track stacks
           every slide in one grid cell, so its height follows the tallest
           slide; inactive slides are <code>inert</code> (hidden from
           assistive tech and not focusable).
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Carousel effect="fade">
             <DemoSlides />
           </Carousel>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Auto-play with pause on hover</h2>
+      <DemoSection title='Auto-play with pause on hover'>
         <p className={intro}>
           <code>pauseOnHover</code> freezes the countdown while the pointer
           hovers — or while focus stays inside, per WCAG 2.2.1 — and resumes
           with the remaining time budget instead of restarting the interval.
           Dragging pauses too.
         </p>
-        <div style={{ maxWidth: 480 }}>
+        <div style={maxWidth480}>
           <Carousel autoPlay interval={3000} pauseOnHover>
             <DemoSlides />
           </Carousel>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Imperative handle</h2>
+      <DemoSection title='Imperative handle'>
         <p className={intro}>
           A <code>CarouselHandle</code> ref (React 19 ref-as-prop) drives the
           carousel from outside: <code>next()</code> / <code>prev()</code> step
@@ -143,39 +144,33 @@ export default function CarouselDemo() {
           consumers observe the updates like any user navigation.
         </p>
         <ImperativeControlsDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='CarouselProps' />
-      </div>
+      <PropsSection of='CarouselProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;region&quot;</strong> with{' '}
-              <strong>aria-roledescription=&quot;carousel&quot;</strong>
-            </li>
-            <li>
-              Slides have <strong>role=&quot;group&quot;</strong> with{' '}
-              <strong>aria-roledescription=&quot;slide&quot;</strong>
-            </li>
-            <li>
-              Navigation buttons have <strong>aria-label</strong>
-            </li>
-            <li>
-              Arrow keys step slides (mirrored under{' '}
-              <strong>dir=&quot;rtl&quot;</strong>); Home/End jump to the
-              ends. Touch keeps the native scroll-snap track — mouse-only
-              drag paging never hijacks it.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;region&quot;</strong> with{' '}
+            <strong>aria-roledescription=&quot;carousel&quot;</strong>
+          </li>
+          <li>
+            Slides have <strong>role=&quot;group&quot;</strong> with{' '}
+            <strong>aria-roledescription=&quot;slide&quot;</strong>
+          </li>
+          <li>
+            Navigation buttons have <strong>aria-label</strong>
+          </li>
+          <li>
+            Arrow keys step slides (mirrored under{' '}
+            <strong>dir=&quot;rtl&quot;</strong>); Home/End jump to the
+            ends. Touch keeps the native scroll-snap track — mouse-only
+            drag paging never hijacks it.
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='carousel' />
-    </>
+    </DemoPage>
   );
 }

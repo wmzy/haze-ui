@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 
 import InputCore from '../Input/InputCore';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
 
 import { applyEdit, formatMask, unmask } from './mask';
 
@@ -93,9 +93,11 @@ export default function MaskedInputCore({
     if (formatted !== value) onChange(formatted);
   });
 
+  const setInputRef = useMergedRefs(inputRef, ref);
+
   return (
     <InputCore
-      ref={(node: HTMLInputElement | null) => mergeRefs(inputRef, ref)(node)}
+      ref={setInputRef}
       data-slot='input'
       value={value}
       onChange={handleChange}

@@ -27,9 +27,9 @@ import { Workbench } from '@/lib/components/Workbench';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 const fileTree: TreeNodeData[] = [
   {
@@ -205,24 +205,25 @@ export default function WorkbenchDemo() {
     useControl<'side' | 'top' | 'bottom'>(undefined, 'side');
 
   return (
-    <>
-      <h1>Workbench</h1>
-      <p className={intro}>
-        The VSCode-type work surface: a fixed activity rail, docked and
-        resizable sidebar / auxiliary columns, an editor column with a
-        bottom panel, a full-width status bar. Below 768px the layout
-        changes shape rather than just shrinking: the rail becomes a
-        full-width horizontal bar above the editor, and the sidebar
-        turns into a separate full-screen layer that starts hidden and
-        opens from the TabBar's Sidebar item — no side-by-side columns
-        on small screens. The rail can also dock inside the sidebar
-        column (top or bottom, Cursor-style) on wide screens. Every
-        width and collapsed flag is a <code>ControlOrValue</code> prop,
-        so drags can be persisted and toggles driven from outside.
-      </p>
-
-      <div className={section}>
-        <h2>Complete workbench</h2>
+    <DemoPage
+      title='Workbench'
+      description={
+        <>
+          The VSCode-type work surface: a fixed activity rail, docked and
+          resizable sidebar / auxiliary columns, an editor column with a
+          bottom panel, a full-width status bar. Below 768px the layout
+          changes shape rather than just shrinking: the rail becomes a
+          full-width horizontal bar above the editor, and the sidebar
+          turns into a separate full-screen layer that starts hidden and
+          opens from the TabBar's Sidebar item — no side-by-side columns
+          on small screens. The rail can also dock inside the sidebar
+          column (top or bottom, Cursor-style) on wide screens. Every
+          width and collapsed flag is a <code>ControlOrValue</code> prop,
+          so drags can be persisted and toggles driven from outside.
+        </>
+      }
+    >
+      <DemoSection title='Complete workbench'>
         <p className={row}>
           <Button
             size='sm'
@@ -399,35 +400,31 @@ export default function WorkbenchDemo() {
   <Tabs value={activeCtrl}>…closable document tabs…</Tabs>
 </Workbench>`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Workbench Props</h2>
+      <DemoSection title='Workbench Props'>
         <PropsTable of='WorkbenchProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Resize handles are <strong>role=&quot;separator&quot;</strong>{' '}
-              widgets, fully keyboard-operable (arrow keys step, Home/End
-              park at the clamps — WCAG 2.5.7).
-            </li>
-            <li>
-              The mobile overlays close on scrim click and Escape; the
-              editor column keeps its scroll and focus behavior.
-            </li>
-            <li>
-              Compose the slots from their accessible parts — ActivityRail /
-              TabBar own their <code>nav</code> landmarks, StatusBar owns
-              the <code>footer</code>, and the editor Tabs carry the tabs
-              pattern with deletable tabs.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Resize handles are <strong>role=&quot;separator&quot;</strong>{' '}
+            widgets, fully keyboard-operable (arrow keys step, Home/End
+            park at the clamps — WCAG 2.5.7).
+          </li>
+          <li>
+            The mobile overlays close on scrim click and Escape; the
+            editor column keeps its scroll and focus behavior.
+          </li>
+          <li>
+            Compose the slots from their accessible parts — ActivityRail /
+            TabBar own their <code>nav</code> landmarks, StatusBar owns
+            the <code>footer</code>, and the editor Tabs carry the tabs
+            pattern with deletable tabs.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

@@ -24,6 +24,28 @@ function panelButtonLabels(panel: HTMLElement): (string | null)[] {
   return [...panel.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
 }
 
+/** Rail order inside the panel (the role="slider" elements). */
+const RAILS = {sv: 0, hue: 1, alpha: 2} as const;
+
+/** Opens a picker whose value a control holds — the onChange spy never
+ * moves it, so every key press starts from `value` — and returns one
+ * of its rails. */
+async function openRail(
+  user: ReturnType<typeof userEvent.setup>,
+  value: string,
+  rail: keyof typeof RAILS,
+  onChange: (value: string) => void,
+  allowAlpha = false
+) {
+  function Harness() {
+    const [, , control] = useControl(undefined, value);
+    return <ColorPicker value={control} allowAlpha={allowAlpha} onChange={onChange} />;
+  }
+  render(<Harness />);
+  await openPanel(user);
+  return screen.getAllByRole('slider')[RAILS[rail]]!;
+}
+
 describe('ColorPicker', () => {
   it('renders a swatch trigger with popup semantics', () => {
     render(<ColorPicker value="#ff0000" />);
@@ -161,6 +183,67 @@ describe('ColorPicker', () => {
     const hue = screen.getAllByRole('slider')[1]!;
     fireEvent.keyDown(hue, {key: 'ArrowRight'});
     expect(onChange).toHaveBeenCalledWith('#ff0400');
+  });
+
+  // Arrow keys step the focused rail by 1% (saturation/value, alpha)
+  // or 1° (hue), tenfold with Shift. On the SV surface horizontal
+  // arrows move saturation and vertical arrows value; on the one-axis
+  // hue and alpha rails Up/Right advance and Down/Left recede. Hue
+  // wraps around the circle, the others clamp. Every row starts from
+  // `value`: #804040 is hue 0 / saturation 0.5 / value ≈ 0.502, and
+  // #804045 sits at hue ≈ 355.3.
+  const ARROW_STEPS: [
+    label: string,
+    rail: keyof typeof RAILS,
+    value: string,
+    key: string,
+    shiftKey: boolean,
+    expected: string,
+  ][] = [
+    ['saturation +1%', 'sv', '#804040', 'ArrowRight', false, '#803f3f'],
+    ['saturation −1%', 'sv', '#804040', 'ArrowLeft', false, '#804141'],
+    ['value +1%', 'sv', '#804040', 'ArrowUp', false, '#834141'],
+    ['value −1%', 'sv', '#804040', 'ArrowDown', false, '#7d3f3f'],
+    ['saturation +10% with Shift', 'sv', '#804040', 'ArrowRight', true, '#803333'],
+    ['saturation clamped at 100%', 'sv', '#ff0000', 'ArrowRight', false, '#ff0000'],
+    ['value clamped at 100%', 'sv', '#ff0000', 'ArrowUp', false, '#ff0000'],
+    ['saturation clamped at 0%', 'sv', '#808080', 'ArrowLeft', false, '#808080'],
+    ['value clamped at 0%', 'sv', '#000000', 'ArrowDown', false, '#000000'],
+    ['hue +1°', 'hue', '#ff0000', 'ArrowRight', false, '#ff0400'],
+    ['hue +1° via ArrowUp', 'hue', '#ff0000', 'ArrowUp', false, '#ff0400'],
+    ['hue −1° wraps below 0 to 359°', 'hue', '#ff0000', 'ArrowLeft', false, '#ff0004'],
+    ['hue −1° via ArrowDown', 'hue', '#ff0000', 'ArrowDown', false, '#ff0004'],
+    ['hue +10° with Shift wraps past 360°', 'hue', '#804045', 'ArrowRight', true, '#804640'],
+    ['hue −10° with Shift', 'hue', '#804045', 'ArrowLeft', true, '#804050'],
+    ['alpha +1%', 'alpha', '#80404080', 'ArrowRight', false, '#80404083'],
+    ['alpha +1% via ArrowUp', 'alpha', '#80404080', 'ArrowUp', false, '#80404083'],
+    ['alpha −1%', 'alpha', '#80404080', 'ArrowLeft', false, '#8040407d'],
+    ['alpha −1% via ArrowDown', 'alpha', '#80404080', 'ArrowDown', false, '#8040407d'],
+    ['alpha clamped opaque (no alpha byte)', 'alpha', '#804040ff', 'ArrowRight', false, '#804040'],
+    ['alpha clamped transparent', 'alpha', '#80404000', 'ArrowLeft', false, '#80404000'],
+  ];
+  it.each(ARROW_STEPS)('arrow key: %s', async (_label, rail, value, key, shiftKey, expected) => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const slider = await openRail(user, value, rail, onChange, rail === 'alpha');
+    fireEvent.keyDown(slider, {key, shiftKey});
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(expected);
+  });
+
+  it('prevents exactly the arrow keys on the rails', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorPicker value="#ff0000" allowAlpha onChange={onChange} />);
+    await openPanel(user);
+    for (const rail of screen.getAllByRole('slider')) {
+      // Other keys keep their default (a cancelled dispatch returns false).
+      expect(fireEvent.keyDown(rail, {key: 'PageDown'})).toBe(true);
+      for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+        expect(fireEvent.keyDown(rail, {key})).toBe(false);
+      }
+    }
+    expect(onChange).toHaveBeenCalledTimes(12);
   });
 
   it('serializes alpha when allowAlpha is set', async () => {

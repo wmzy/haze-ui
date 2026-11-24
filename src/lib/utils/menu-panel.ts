@@ -6,11 +6,12 @@ import type {
 } from 'react';
 import type { FloatingBehavior } from './floating';
 
-import { useCallback, useRef } from 'react';
+import { useRef } from 'react';
 
 import { useFloating } from './floating';
 import { useFocusScope } from './focus-scope';
 import { useMenuKeyboard, useRovingTabindex } from './menuKeyboard';
+import { useMergedRefs } from './refs';
 
 type UseMenuPanelOptions = {
   /** The controlled-or-not `open` state the panel mirrors. */
@@ -117,13 +118,7 @@ export function useMenuPanelWiring({
     returnFocus: true,
   });
 
-  const setPanelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      panelRef.current = node;
-      setScope(node);
-    },
-    [panelRef, setScope]
-  );
+  const setPanelRef = useMergedRefs(panelRef, setScope);
 
   return { handleKeyDown, setPanelRef };
 }

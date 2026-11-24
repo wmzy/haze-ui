@@ -1,64 +1,56 @@
 import { Switch } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Switch ────────────────────────────────────────────────────
 export default function SwitchDemo() {
   return (
-    <>
-      <h1>Switch</h1>
-      <p className={intro}>
-        Toggle between on/off states with a sliding control.
-      </p>
-
-      <div className={section}>
-        <h2>Sizes</h2>
+    <DemoPage
+      title='Switch'
+      description='Toggle between on/off states with a sliding control.'
+    >
+      <DemoSection title='Sizes'>
         <div className={row}>
           <Switch size='sm' />
           <Switch size='md' />
           <Switch size='lg' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={row}>
           <Switch disabled />
           <Switch checked disabled />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='SwitchProps' />
-      </div>
+      <PropsSection of='SwitchProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;switch&quot;</strong> with{' '}
-              <strong>aria-checked</strong>
-            </li>
-            <li>
-              <strong>Space</strong> toggles the state
-            </li>
-            <li>
-              Provide <strong>aria-label</strong> when no visible label is
-              present
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;switch&quot;</strong> with{' '}
+            <strong>aria-checked</strong>
+          </li>
+          <li>
+            <strong>Space</strong> toggles the state
+          </li>
+          <li>
+            Provide <strong>aria-label</strong> when no visible label is
+            present
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='switch' />
-    </>
+    </DemoPage>
   );
 }

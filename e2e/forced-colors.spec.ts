@@ -72,6 +72,52 @@ async function panelOf(trigger: Locator): Promise<Locator> {
   return trigger.page().locator(`[id="${id}"]`);
 }
 
+/**
+ * Move keyboard focus onto the element matching `selector` by issuing
+ * Tab presses — keyboard modality is what :focus-visible keys on, so
+ * the ring/outline follows. Under full-suite parallel load the fixture
+ * may not be interactive yet when a lone Tab lands (focus stays on
+ * body, and an outline sample then polls a terminal "none" — the flake
+ * this poll shape replaced): the focus acquisition itself is the polled
+ * contract. Each tick blurs whatever holds focus and re-issues Tab
+ * until the target holds it.
+ */
+async function focusByTab(page: Page, selector: string): Promise<void> {
+  const holdsTarget = () =>
+    page.evaluate(
+      (target) =>
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement.matches(target),
+      selector
+    );
+  await expect
+    .poll(
+      async () => {
+        await page.evaluate((target) => {
+          const active = document.activeElement;
+          if (
+            active instanceof HTMLElement &&
+            !active.matches(target)
+          ) {
+            active.blur();
+          }
+        }, selector);
+        if (!(await holdsTarget())) {
+          await page.keyboard.press('Tab');
+        }
+        return holdsTarget();
+      },
+      { timeout: 10_000 }
+    ).toBe(true);
+}
+
+/** The 2px Highlight outline the forced-colors focus repairs paint. */
+async function expectFocusOutline(locator: Locator): Promise<void> {
+  const outline = await styleOf(locator, ['outline-style', 'outline-width']);
+  expect(outline['outline-style']).toBe('solid');
+  expect(outline['outline-width']).toBe('2px');
+}
+
 test.describe('forced-colors repairs', () => {
   test('ghost button keeps a visible boundary', async ({ page }) => {
     await gotoAt(page, 'active');
@@ -315,37 +361,8 @@ test.describe('forced-colors repairs', () => {
 
   test('keyboard focus renders a real outline', async ({ page }) => {
     await gotoAt(page, 'active');
-    // Under full-suite parallel load the fixture may not be interactive
-    // yet when a lone Tab lands (focus stays on body, and the outline
-    // sample then polls a terminal "none" for 5s — the flake this poll
-    // shape replaced). Instead the focus acquisition itself is the
-    // polled contract: each tick blurs whatever holds focus and re-issues
-    // the keyboard Tab until it lands on the ghost button — keyboard
-    // modality is what :focus-visible keys on, so the outline follows.
+    await focusByTab(page, '#fc-ghost-button');
     const ghost = page.locator('#fc-ghost-button');
-    await expect
-      .poll(
-        async () => {
-          await page.evaluate(() => {
-            const active = document.activeElement;
-            if (
-              active instanceof HTMLElement &&
-              active.id !== 'fc-ghost-button'
-            ) {
-              active.blur();
-            }
-          });
-          const focused = await page.evaluate(
-            () => document.activeElement?.id ?? ''
-          );
-          if (focused !== 'fc-ghost-button') {
-            await page.keyboard.press('Tab');
-          }
-          return page.evaluate(() => document.activeElement?.id ?? '');
-        },
-        { timeout: 10_000 }
-      )
-      .toBe('fc-ghost-button');
     const outline = await styleOf(ghost, [
       'outline-style',
       'outline-width',
@@ -362,12 +379,33 @@ test.describe('forced-colors repairs', () => {
     await expect
       .poll(async () => (await styleOf(input, ['outline-style']))['outline-style'])
       .toBe('solid');
-    const inputOutline = await styleOf(input, [
-      'outline-style',
-      'outline-width',
-    ]);
-    expect(inputOutline['outline-style']).toBe('solid');
-    expect(inputOutline['outline-width']).toBe('2px');
+    await expectFocusOutline(input);
+  });
+
+  test('shared-skin buttons keep a focus outline', async ({ page }) => {
+    await gotoAt(page, 'active');
+    // The ring lives in the skin (utils/quiet-button-skin, the dismiss
+    // chrome Tag's shared remove button wears), not in the component:
+    // each consumer family gets the forced-colors fallback only through
+    // the shared declarations string. Both fixtures sit right after the
+    // text input in Tab order, so real Tab presses land on them.
+    await focusByTab(page, '#fc-ghost-button');
+    await page.locator('#fc-text-input').focus();
+    for (const selector of [
+      '#fc-async-section [data-slot="retry-button"]',
+      '#fc-tag [data-slot="remove-button"]',
+    ]) {
+      await page.keyboard.press('Tab');
+      await expect
+        .poll(() =>
+          page.evaluate(
+            (target) => document.activeElement?.matches(target) ?? false,
+            selector
+          )
+        )
+        .toBe(true);
+      await expectFocusOutline(page.locator(selector));
+    }
   });
 });
 

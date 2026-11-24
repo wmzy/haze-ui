@@ -1,7 +1,8 @@
-import type { CSSProperties, ReactNode, JSX } from 'react';
+import type { ReactNode, JSX } from 'react';
 
 import { css } from '@linaria/core';
 
+import { lineClampStyle } from '../../utils/line-clamp';
 import { truncate } from '../../utils/truncate';
 
 // Title
@@ -93,12 +94,13 @@ const textMark = css`
 /*
  * Pure-CSS truncation — no hooks, so Typography stays in the RSC-safe
  * set (scripts/rsc-safe.mjs; the shared utils/truncate it composes is
- * pure CSS and safe-listed the same way). Single line is the shared
- * `truncate` class (utils/truncate); the multi-line
- * `-webkit-line-clamp` box model carries an arbitrary runtime line
- * count, so it ships as an inline style instead of a Linaria class
- * per value. Supported by all three modern engines
- * (Blink / Gecko / WebKit).
+ * pure CSS and the shared utils/line-clamp a type-only import — both
+ * safe-listed the same way). Single line is the shared `truncate`
+ * class (utils/truncate); the multi-line `-webkit-line-clamp` box
+ * model carries an arbitrary runtime line count, so it ships as an
+ * inline style (utils/line-clamp's `lineClampStyle`, shared with
+ * Ellipsis) instead of a Linaria class per value. Supported by all
+ * three modern engines (Blink / Gecko / WebKit).
  */
 
 /** `ellipsis` prop shape shared by Text and Paragraph. */
@@ -108,16 +110,6 @@ type TextEllipsis = boolean | { lines?: number };
 function ellipsisLines(ellipsis: TextEllipsis | undefined): number {
   const lines = typeof ellipsis === 'object' ? ellipsis.lines : undefined;
   return Math.max(1, lines ?? 1);
-}
-
-/** Inline style for the N-line clamp (N ≥ 2). */
-function lineClampStyle(lines: number): CSSProperties {
-  return {
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: lines,
-    overflow: 'hidden',
-  };
 }
 
 /** String children get a native `title` fallback so clamped text

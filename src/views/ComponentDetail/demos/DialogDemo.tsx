@@ -3,13 +3,16 @@ import { useControl } from 'react-use-control';
 
 import { Button, Dialog } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { row } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, row } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // classNames 槽位演示：root 落在 <dialog> 面板上、header 落在 title 渲染的
 // <h2> 上（键名见 DialogClassNames）。
@@ -34,14 +37,11 @@ export default function DialogDemo() {
   const [, setKeptOpen] = useControl(keptCtrl);
 
   return (
-    <>
-      <h1>Dialog</h1>
-      <p className={intro}>
-        Modal dialog using the native &lt;dialog&gt; element.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Dialog'
+      description={'Modal dialog using the native <dialog> element.'}
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Button onClick={() => setOpen(true)}>Open Dialog</Button>
         </div>
@@ -57,17 +57,10 @@ export default function DialogDemo() {
           </p>
           <Button onClick={() => setOpen(false)}>Close</Button>
         </Dialog>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>classNames slots</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='classNames slots'>
+        <p style={noteStyle}>
           The <code>classNames</code> record targets structural parts
           (AntD v6 shape): <code>root</code> lands on the{' '}
           <code>&lt;dialog&gt;</code> panel, <code>header</code> on the{' '}
@@ -95,17 +88,10 @@ export default function DialogDemo() {
             The panel border and title color come from the slot classes.
           </p>
         </Dialog>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>keepMounted</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='keepMounted'>
+        <p style={noteStyle}>
           With <code>keepMounted</code> the closed panel carries{' '}
           <code>hidden</code> + <code>inert</code> (excluded from the
           accessibility tree and tab order) instead of relying on the UA
@@ -147,32 +133,26 @@ export default function DialogDemo() {
             </Button>
           </div>
         </Dialog>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='DialogProps' />
-      </div>
+      <PropsSection of='DialogProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses native <strong>&lt;dialog&gt;</strong> with{' '}
-              <strong>showModal()</strong> — automatic{' '}
-              <strong>role=&quot;dialog&quot;</strong>
-            </li>
-            <li>
-              <strong>ESC</strong> closes the dialog
-            </li>
-            <li>Focus is trapped within the dialog while open</li>
-            <li>Backdrop click closes the dialog</li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses native <strong>&lt;dialog&gt;</strong> with{' '}
+            <strong>showModal()</strong> — automatic{' '}
+            <strong>role=&quot;dialog&quot;</strong>
+          </li>
+          <li>
+            <strong>ESC</strong> closes the dialog
+          </li>
+          <li>Focus is trapped within the dialog while open</li>
+          <li>Backdrop click closes the dialog</li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='dialog' />
-    </>
+    </DemoPage>
   );
 }

@@ -1,4 +1,6 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { waitForOpenAnimationToSettle } from './animation';
 
 /**
  * Dialog smoke in a real browser: native <dialog> showModal puts it in the
@@ -10,21 +12,6 @@ import { expect, test, type Locator } from '@playwright/test';
  * before closing, and close paths rely on auto-waiting matchers — the
  * deferred el.close() lands only after the ~120ms fade-out settles.
  */
-
-/** Waits until no enter animation is running and opacity is back to 1. */
-async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
-  await expect
-    .poll(() =>
-      panel.evaluate((el) => {
-        if (el.dataset.state === 'closed') return false;
-        return (
-          el.getAnimations({ subtree: true }).length === 0 &&
-          getComputedStyle(el).opacity === '1'
-        );
-      })
-    )
-    .toBe(true);
-}
 
 test.describe('Dialog', () => {
   test.beforeEach(async ({ page }) => {

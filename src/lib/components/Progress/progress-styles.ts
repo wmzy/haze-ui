@@ -2,6 +2,7 @@ import {css} from '@linaria/core';
 
 import { statusSolidColors } from '../../utils/status-solid-skin';
 import { statusStrokeColors } from '../../utils/status-stroke-skin';
+import { trackSizeLg, trackSizeMd, trackSizeSm } from '../../utils/track-size-skin';
 
 /**
  * Shared Progress skin — the bar and circle chrome (base, per-size and
@@ -32,10 +33,14 @@ export const barBase = css`
   }
 `;
 
+/* The 4/8/12px ladder is the shared track size skin
+ * (utils/track-size-skin.ts) — the steps Meter's trackSizes wears
+ * identically; interpolated here so progress.css keeps emitting its
+ * own rules. */
 export const barSizes = {
-  sm: css`height: 4px;`,
-  md: css`height: 8px;`,
-  lg: css`height: 12px;`,
+  sm: css`${trackSizeSm}`,
+  md: css`${trackSizeMd}`,
+  lg: css`${trackSizeLg}`,
 } as const;
 
 export const barFill = css`

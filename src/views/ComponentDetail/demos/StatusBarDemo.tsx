@@ -4,9 +4,9 @@ import { StatusBar, StatusItem } from '@/lib/components/StatusBar';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row, codeBlock } from '../styles';
 
-import { intro, section, row, codeBlock } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── StatusBar ─────────────────────────────────────────────────
 export default function StatusBarDemo() {
@@ -15,19 +15,20 @@ export default function StatusBarDemo() {
   const [pickerOpen, setPickerOpen] = useControl(undefined, false);
 
   return (
-    <>
-      <h1>StatusBar</h1>
-      <p className={intro}>
-        The compact VSCode-style strip pinned under the work surface:
-        leading items cluster at the start edge, trailing items glue to
-        the end. Items are plain spans until an{' '}
-        <code>onSelect</code> upgrades them to real buttons; lesser items
-        fold away below the mobile breakpoint while{' '}
-        <code>priority</code> items survive.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='StatusBar'
+      description={
+        <>
+          The compact VSCode-style strip pinned under the work surface:
+          leading items cluster at the start edge, trailing items glue to
+          the end. Items are plain spans until an{' '}
+          <code>onSelect</code> upgrades them to real buttons; lesser items
+          fold away below the mobile breakpoint while{' '}
+          <code>priority</code> items survive.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p className={row}>
           Branch picker is {pickerOpen ? 'open' : 'closed'} — activate the{' '}
           <code>main*</code> item to toggle it.
@@ -83,40 +84,35 @@ export default function StatusBarDemo() {
   right={<StatusItem priority>TypeScript React</StatusItem>}
 />`}
         </pre>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>StatusBar Props</h2>
+      <DemoSection title='StatusBar Props'>
         <PropsTable of='StatusBarProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>StatusItem Props</h2>
+      <DemoSection title='StatusItem Props'>
         <PropsTable of='StatusItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              The bar renders a <strong>&lt;footer&gt;</strong> landmark;
-              inside a page that already owns a{' '}
-              <code>footer</code>, scope it with an{' '}
-              <code>aria-label</code>.
-            </li>
-            <li>
-              Items with <code>onSelect</code> become real buttons
-              (keyboard-operable); plain items stay non-interactive spans.
-            </li>
-            <li>
-              Icon-glyph shorthand like <code>⚠ 0</code> is demo flavor —
-              prefer words or <code>aria-label</code> when the content is
-              meaningful.
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            The bar renders a <strong>&lt;footer&gt;</strong> landmark;
+            inside a page that already owns a{' '}
+            <code>footer</code>, scope it with an{' '}
+            <code>aria-label</code>.
+          </li>
+          <li>
+            Items with <code>onSelect</code> become real buttons
+            (keyboard-operable); plain items stay non-interactive spans.
+          </li>
+          <li>
+            Icon-glyph shorthand like <code>⚠ 0</code> is demo flavor —
+            prefer words or <code>aria-label</code> when the content is
+            meaningful.
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

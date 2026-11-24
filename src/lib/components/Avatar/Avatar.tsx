@@ -1,7 +1,8 @@
 import type { ReactNode, Ref } from 'react';
 
 import { css } from '@linaria/core';
-import { useState } from 'react';
+
+import { useFailedSrc } from '../../utils/use-failed-src';
 
 import { avatarBase, avatarSizes } from './avatar-styles';
 
@@ -41,12 +42,10 @@ export default function Avatar({
   className,
   ref,
 }: AvatarProps) {
-  // Track the src that failed, not a sticky boolean: when src changes
-  // (upload finished, user switched) the new image must render again.
-  // Only that exact src stays failed — prop-change resync precedent:
-  // DataTable/column-filter.tsx.
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const error = failedSrc !== null && failedSrc === src;
+  // Tracks the exact src whose load failed (utils/use-failed-src, shared
+  // with Image): a changed src renders as an image again instead of
+  // staying fallen back.
+  const [error, markFailed] = useFailedSrc(src);
 
   return (
     <span
@@ -60,7 +59,7 @@ export default function Avatar({
           x-class={[imgStyle]}
           src={src}
           alt={alt ?? ''}
-          onError={() => setFailedSrc(src)}
+          onError={markFailed}
         />
       ) : (
         (fallback ?? <span data-slot="img">{alt?.charAt(0).toUpperCase() ?? '?'}</span>)

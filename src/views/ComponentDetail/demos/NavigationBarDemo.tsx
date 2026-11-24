@@ -2,19 +2,16 @@ import { Button, NavigationBar, NavLink } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 // ─── NavigationBar ──────────────────────────────────────────────
 export default function NavigationBarDemo() {
   return (
-    <>
-      <h1>NavigationBar</h1>
-      <p className={intro}>Top navigation bar with brand, links, and end slot.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='NavigationBar'
+      description='Top navigation bar with brand, links, and end slot.'
+    >
+      <DemoSection title='Demo'>
         <NavigationBar
           brand={<span>MyApp</span>}
           end={<Button size='sm' variant='outline'>Login</Button>}
@@ -23,28 +20,23 @@ export default function NavigationBarDemo() {
           <NavLink>Docs</NavLink>
           <NavLink>About</NavLink>
         </NavigationBar>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>NavigationBar Props</h2>
+      <DemoSection title='NavigationBar Props'>
         <PropsTable of='NavigationBarProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>NavLink Props</h2>
+      <DemoSection title='NavLink Props'>
         <PropsTable of='NavLinkProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Renders as <strong>&lt;nav&gt;</strong></li>
-            <li>Active link has <strong>aria-current=&quot;page&quot;</strong></li>
-            <li>Links are standard <strong>&lt;a&gt;</strong> elements</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Renders as <strong>&lt;nav&gt;</strong></li>
+          <li>Active link has <strong>aria-current=&quot;page&quot;</strong></li>
+          <li>Links are standard <strong>&lt;a&gt;</strong> elements</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

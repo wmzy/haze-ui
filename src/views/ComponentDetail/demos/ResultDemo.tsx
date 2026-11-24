@@ -3,24 +3,23 @@
 import { Result } from '@/lib/components/Result';
 import { Button } from '@/lib';
 
-import PropsTable from '../PropsTable';
-import A11yNote from '../A11yNote';
 
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 // ─── Result ─────────────────────────────────────────────────────
 export default function ResultDemo() {
   return (
-    <>
-      <h1>Result</h1>
-      <p className={intro}>
-        Feedback page for success, failure and not-found outcomes.
-      </p>
-
-      <div className={section}>
-        <h2>Success / Error / Info / Warning</h2>
+    <DemoPage
+      title='Result'
+      description='Feedback page for success, failure and not-found outcomes.'
+    >
+      <DemoSection title='Success / Error / Info / Warning'>
         <Result
           status='success'
           title='Purchase completed'
@@ -42,50 +41,42 @@ export default function ResultDemo() {
         />
         <Result status='info' title='Maintenance window' subTitle='The dashboard will be read-only until 03:00 UTC.' />
         <Result status='warning' title='Storage almost full' subTitle='4.7 GB of 5 GB used. Old uploads will be purged in 7 days.' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>404 Page</h2>
+      <DemoSection title='404 Page'>
         <Result
           status='404'
           title='404'
           subTitle='Sorry, the page you visited does not exist.'
           extra={<Button size='sm'>Back to home</Button>}
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom Icon</h2>
+      <DemoSection title='Custom Icon'>
         <Result
           icon={<span style={{ fontSize: 48 }}>🎉</span>}
           title='Deployment created'
           subTitle='haze-ui v1.14.0 is rolling out to production.'
         />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='ResultProps' />
-      </div>
+      <PropsSection of='ResultProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Default illustrations are decorative SVGs (<strong>aria-hidden</strong>) — title and subTitle carry the message
-            </li>
-            <li>
-              Provide an <strong>icon</strong> to swap in a meaningful image with its own accessible name
-            </li>
-            <li>
-              The <strong>extra</strong> area is a flex row — use real buttons or links for actions
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Default illustrations are decorative SVGs (<strong>aria-hidden</strong>) — title and subTitle carry the message
+          </li>
+          <li>
+            Provide an <strong>icon</strong> to swap in a meaningful image with its own accessible name
+          </li>
+          <li>
+            The <strong>extra</strong> area is a flex row — use real buttons or links for actions
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='result' />
-    </>
+    </DemoPage>
   );
 }

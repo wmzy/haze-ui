@@ -1285,6 +1285,42 @@ describe('Calendar cellRender', () => {
     expect(day(16).textContent).toBe('16');
   });
 
+  it('keeps the focused day across PageUp/Down month hops when cellRender adds non-numeric content', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Calendar value='2026-01-15' cellRender={() => <span>•</span>} />
+    );
+    const day = (date: string) =>
+      container.querySelector<HTMLButtonElement>(`[data-haze-day="${date}"]`);
+    // Every cell reads "15•"-style: the day comes from the cell's date,
+    // never from its rendered text.
+    day('2026-01-15')!.focus();
+    await user.keyboard('{PageDown}');
+    expect(day('2026-02-15')).toHaveFocus();
+    await user.keyboard('{PageUp}');
+    expect(day('2026-01-15')).toHaveFocus();
+  });
+
+  it('keeps the focused day across PageUp/Down month hops when cellRender adds numeric content', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Calendar value='2026-01-15' cellRender={() => <span>99</span>} />
+    );
+    const day = (date: string) =>
+      container.querySelector<HTMLButtonElement>(`[data-haze-day="${date}"]`);
+    // "1599" must not read as day 1599 (clamped to the 28th).
+    day('2026-01-15')!.focus();
+    await user.keyboard('{PageDown}');
+    expect(day('2026-02-15')).toHaveFocus();
+    await user.keyboard('{PageUp}');
+    expect(day('2026-01-15')).toHaveFocus();
+    // The month clamp rides the real day: the 31st ("3199") lands on
+    // February's last day.
+    day('2026-01-31')!.focus();
+    await user.keyboard('{PageDown}');
+    expect(day('2026-02-28')).toHaveFocus();
+  });
+
   it('receives each day civil date and the active picker mode', () => {
     const seen: { key: string; mode: string }[] = [];
     render(

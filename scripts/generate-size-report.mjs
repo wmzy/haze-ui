@@ -25,12 +25,10 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const defaultRoot = () =>
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { defaultRoot, invokedDirectly, runCli, wroteLine } from './cli-utils.mjs';
 
 /** Raw and gzipped byte size of a CSS file on disk. */
 const measureCss = (file) => {
@@ -113,31 +111,14 @@ export function writeSizeReport(rootDir = defaultRoot()) {
   };
 }
 
-const invokedDirectly = () => {
-  if (!process.argv[1]) return false;
-  try {
-    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
-  } catch {
-    return false;
-  }
-};
-
-if (invokedDirectly()) {
-  try {
-    const started = Date.now();
+if (invokedDirectly(import.meta.url)) {
+  runCli('generate-size-report', (started) => {
     const { changed, outFile, familyCount, distAvailable } = writeSizeReport();
     if (!distAvailable) {
       console.warn(
         'generate-size-report: dist/ CSS not found — wrote an empty report; run pnpm build to regenerate'
       );
     }
-    console.log(
-      `generate-size-report: ${familyCount} families, ${changed ? 'wrote' : 'unchanged'} ${path.relative(defaultRoot(), outFile)} in ${Date.now() - started}ms`
-    );
-  } catch (error) {
-    console.error(
-      `generate-size-report: ${error instanceof Error ? error.stack : String(error)}`
-    );
-    process.exit(1);
-  }
+    return `${familyCount} families, ${wroteLine(started, changed, outFile)}`;
+  });
 }

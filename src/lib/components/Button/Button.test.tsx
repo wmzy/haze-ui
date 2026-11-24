@@ -321,6 +321,56 @@ describe('ButtonLink', () => {
       expect(link).toHaveAttribute('aria-disabled', 'true');
     });
   });
+
+  describe('deprecation notice', () => {
+    // The notice is deduped in a module-scoped Set that cannot be reset, and
+    // the tests above already spent it for this module graph. A spent Set is
+    // silent even without the production guard, so each case re-imports
+    // ButtonLink over a fresh module graph to stay meaningful.
+    const importFresh = async () => {
+      vi.resetModules();
+      const { default: FreshButtonLink } = await import('./ButtonLink');
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      return { FreshButtonLink, warn };
+    };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllEnvs();
+    });
+
+    it('warns once per page load across renders, naming the replacement', async () => {
+      const { FreshButtonLink, warn } = await importFresh();
+      const { rerender } = render(
+        <FreshButtonLink href='/x'>First</FreshButtonLink>
+      );
+      rerender(
+        <FreshButtonLink href='/x' variant='outline'>
+          Second
+        </FreshButtonLink>
+      );
+
+      expect(screen.getByRole('link', { name: 'Second' })).toBeInTheDocument();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(
+        "[haze-ui] ButtonLink is deprecated — use <Button as='a'> instead; the alias is removed in the next major."
+      );
+    });
+
+    it('stays silent in a production build', async () => {
+      vi.stubEnv('NODE_ENV', 'production');
+      const { FreshButtonLink, warn } = await importFresh();
+      const { rerender } = render(
+        <FreshButtonLink href='/x'>First</FreshButtonLink>
+      );
+      rerender(<FreshButtonLink href='/x'>Second</FreshButtonLink>);
+
+      expect(screen.getByRole('link', { name: 'Second' })).toBeInTheDocument();
+      expect(warn).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe('buttonVariants / buttonSizes exports', () => {

@@ -4,11 +4,12 @@ import { ConversationList, ConversationItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
 // ─── ConversationList ─────────────────────────────────────────
 export default function ConversationListDemo() {
@@ -22,14 +23,11 @@ export default function ConversationListDemo() {
   ];
 
   return (
-    <>
-      <h1>ConversationList</h1>
-      <p className={intro}>
-        Sidebar list of conversations with active state and subtitle support.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='ConversationList'
+      description='Sidebar list of conversations with active state and subtitle support.'
+    >
+      <DemoSection title='Demo'>
         <div
           style={{
             maxWidth: 280,
@@ -50,34 +48,29 @@ export default function ConversationListDemo() {
             ))}
           </ConversationList>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ConversationList Props</h2>
+      <DemoSection title='ConversationList Props'>
         <PropsTable of='ConversationListProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>ConversationItem Props</h2>
+      <DemoSection title='ConversationItem Props'>
         <PropsTable of='ConversationItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Active item has <strong>aria-current=&quot;true&quot;</strong>
-            </li>
-            <li>
-              Items render as <strong>&lt;button&gt;</strong> for keyboard
-              accessibility
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Active item has <strong>aria-current=&quot;true&quot;</strong>
+          </li>
+          <li>
+            Items render as <strong>&lt;button&gt;</strong> for keyboard
+            accessibility
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='conversationlist' />
-    </>
+    </DemoPage>
   );
 }

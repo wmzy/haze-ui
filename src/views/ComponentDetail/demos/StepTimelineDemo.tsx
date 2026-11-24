@@ -4,11 +4,16 @@ import { Button, StepTimeline, StepTimelineItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { intro, codeBlock } from '../styles';
 
-import { intro, section, codeBlock } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth360,
+  maxWidth480,
+} from './shared';
 
 function TraceIo({ label, body }: { label: string; body: string }) {
   return (
@@ -32,7 +37,7 @@ function AgentTraceExample() {
 
   return (
     <>
-      <div style={{ maxWidth: 480 }}>
+      <div style={maxWidth480}>
         <StepTimeline>
           <StepTimelineItem
             label='Plan'
@@ -91,17 +96,18 @@ function AgentTraceExample() {
 // ─── StepTimeline ─────────────────────────────────────────────
 export default function StepTimelineDemo() {
   return (
-    <>
-      <h1>StepTimeline</h1>
-      <p className={intro}>
-        Vertical timeline showing steps with status markers (pending, active,
-        running, done, error), optional timing, expandable rows and nested
-        sub-steps — the shape agentic traces need.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 360 }}>
+    <DemoPage
+      title='StepTimeline'
+      description={
+        <>
+          Vertical timeline showing steps with status markers (pending, active,
+          running, done, error), optional timing, expandable rows and nested
+          sub-steps — the shape agentic traces need.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth360}>
           <StepTimeline>
             <StepTimelineItem label='Connected' description='API linked' status='done' />
             <StepTimelineItem label='Processing' description='Analyzing data...' status='active' />
@@ -109,21 +115,19 @@ export default function StepTimelineDemo() {
             <StepTimelineItem label='Deploy' status='pending' />
           </StepTimeline>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Error State</h2>
-        <div style={{ maxWidth: 360 }}>
+      <DemoSection title='Error State'>
+        <div style={maxWidth360}>
           <StepTimeline>
             <StepTimelineItem label='Upload' description='File sent' status='done' />
             <StepTimelineItem label='Validate' description='Schema mismatch' status='error' />
             <StepTimelineItem label='Complete' status='pending' />
           </StepTimeline>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Agent Trace</h2>
+      <DemoSection title='Agent Trace'>
         <p className={intro}>
           A tool call mid-flight: <code>running</code> pulses its marker,{' '}
           <code>time</code> shows the elapsed duration, and{' '}
@@ -144,42 +148,37 @@ export default function StepTimelineDemo() {
           plain value or a <code>ControlOrValue</code> control) and listen
           with <code>onOpenChange</code>.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>StepTimeline Props</h2>
+      <DemoSection title='StepTimeline Props'>
         <PropsTable of='StepTimelineProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>StepTimelineItem Props</h2>
+      <DemoSection title='StepTimelineItem Props'>
         <PropsTable of='StepTimelineItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Status is conveyed through color and icon (checkmark,
-              exclamation); the running pulse collapses under{' '}
-              <strong>prefers-reduced-motion</strong>
-            </li>
-            <li>
-              Collapsible headers are native buttons with{' '}
-              <strong>aria-expanded</strong>/<strong>aria-controls</strong>{' '}
-              — Enter and Space activate them
-            </li>
-            <li>
-              Connecting lines use CSS <strong>::before</strong>{' '}
-              pseudo-elements; every item exposes{' '}
-              <strong>data-status</strong> for consumer styling
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Status is conveyed through color and icon (checkmark,
+            exclamation); the running pulse collapses under{' '}
+            <strong>prefers-reduced-motion</strong>
+          </li>
+          <li>
+            Collapsible headers are native buttons with{' '}
+            <strong>aria-expanded</strong>/<strong>aria-controls</strong>{' '}
+            — Enter and Space activate them
+          </li>
+          <li>
+            Connecting lines use CSS <strong>::before</strong>{' '}
+            pseudo-elements; every item exposes{' '}
+            <strong>data-status</strong> for consumer styling
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='steptimeline' />
-    </>
+    </DemoPage>
   );
 }

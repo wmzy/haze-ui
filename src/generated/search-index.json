@@ -6988,7 +6988,7 @@
   {
     "type": "prop",
     "label": "placeholder",
-    "sublabel": "Datepicker — Input placeholder",
+    "sublabel": "Datepicker — Input placeholder (default from the datepicker locale pack: Select date)",
     "route": "/components/datepicker"
   },
   {
@@ -7498,7 +7498,7 @@
   {
     "type": "prop",
     "label": "options",
-    "sublabel": "ModelPicker — Array of { value, label, description?, contextLength? }",
+    "sublabel": "ModelPicker — Array of { value, label, contextLength? }",
     "route": "/components/model-picker"
   },
   {
@@ -7678,7 +7678,7 @@
   {
     "type": "prop",
     "label": "onChange",
-    "sublabel": "PasswordInput — Called when value changes",
+    "sublabel": "PasswordInput — Native change event handler — fires with the DOM event, same contract as Input",
     "route": "/components/password-input"
   },
   {

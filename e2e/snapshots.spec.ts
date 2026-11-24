@@ -1,4 +1,6 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+import { waitForOpenAnimationToSettle } from './animation';
 
 /**
  * Stable-state pixel baselines across the component library, one frame
@@ -51,21 +53,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * selection + pinned columns (scrolled before capture), the Workbench
  * desktop shell, and the Datepicker's open calendar panel.
  */
-
-/** Waits until no enter animation is running and opacity is back to 1. */
-async function waitForOpenAnimationToSettle(panel: Locator): Promise<void> {
-  await expect
-    .poll(() =>
-      panel.evaluate((el) => {
-        if (el.dataset.state === 'closed') return false;
-        return (
-          el.getAnimations({ subtree: true }).length === 0 &&
-          getComputedStyle(el).opacity === '1'
-        );
-      })
-    )
-    .toBe(true);
-}
 
 const STATIC_SECTIONS = [
   'button',
@@ -297,7 +284,9 @@ async function makeRtl(page: Page) {
     const apply = () => {
       document.documentElement.dir = 'rtl';
     };
-    if (document.documentElement) {
+    // documentElement is typed non-null but does not exist yet here; the
+    // query keeps that runtime check visible to the type checker.
+    if (document.querySelector('html')) {
       apply();
     } else {
       document.addEventListener('readystatechange', apply, { once: true });
@@ -424,7 +413,9 @@ test.describe('visual baselines — overlay components', () => {
       .poll(() =>
         overlay
           .locator('img')
-          .evaluate((el) => el.complete && el.naturalWidth > 0)
+          .evaluate(
+            (img: HTMLImageElement) => img.complete && img.naturalWidth > 0
+          )
       )
       .toBe(true);
     await waitForOpenAnimationToSettle(overlay);

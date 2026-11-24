@@ -1,6 +1,7 @@
 import { css } from '@linaria/core';
 
 import { ghostVariant, solidVariant } from '../../utils/button-variant-skin';
+import { gridCollapse, gridCollapseChild } from '../../utils/grid-collapse-skin';
 
 /**
  * Shared FloatButton skin — the button face both `FloatButton` and the
@@ -151,22 +152,18 @@ export const groupAnchor = css`
 `;
 
 /**
- * Expand/collapse list of grouped buttons. The outer grid animates its
- * single row track 1fr↔0fr (no content-height knowledge needed); the
- * structural inner wrapper clips while shrinking. `visibility` keeps
- * collapsed items out of the tab order, delayed on close so the collapse
- * animation finishes first and immediate on open.
+ * Expand/collapse list of grouped buttons. The grid row collapse and its
+ * `visibility` gating are the shared collapse skin
+ * (utils/grid-collapse-skin.ts, worn by Collapsible too) on this
+ * family's `--haze-ease` curve; local here: the flex column the items
+ * sit in, their transform/opacity transitions and the closed-state
+ * transform they shrink away with.
  */
 export const menuList = css`
-  display: grid;
-  grid-template-rows: 1fr;
-  transition:
-    grid-template-rows var(--haze-duration-normal) var(--haze-ease),
-    visibility 0s linear 0s;
+  ${gridCollapse('var(--haze-ease)')}
 
   & > * {
-    overflow: hidden;
-    min-height: 0;
+    ${gridCollapseChild}
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -179,17 +176,9 @@ export const menuList = css`
     }
   }
 
-  &[data-state='closed'] {
-    grid-template-rows: 0fr;
-    visibility: hidden;
-    transition:
-      grid-template-rows var(--haze-duration-normal) var(--haze-ease),
-      visibility 0s linear var(--haze-duration-normal);
-
-    & > * > * {
-      opacity: 0;
-      transform: translateY(30%) scale(0.4);
-    }
+  &[data-state='closed'] > * > * {
+    opacity: 0;
+    transform: translateY(30%) scale(0.4);
   }
 `;
 

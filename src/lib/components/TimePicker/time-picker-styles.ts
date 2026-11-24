@@ -8,6 +8,7 @@ import { css } from '@linaria/core';
 
 import { classnames } from '../../utils/classnames';
 import { focusRingVisible } from '../../utils/focus-ring';
+import { focusRingForcedColors } from '../../utils/focus-ring-delta';
 import { panelSurfaceBare, popoverPanelHidden } from '../../utils/panel-skin';
 
 export const wrapper = css`
@@ -89,7 +90,11 @@ export const columnWrap = css`
 /**
  * The scrolling option list. Padding of three rows lets the first and
  * last options center in the band like every other row. Positioned
- * above the wrap's ::before band.
+ * above the wrap's ::before band. A tab stop (tabIndex 0) whose
+ * keyboard ring is an inset box-shadow inside the scrollport; under
+ * forced colors the UA drops it and the base outline reset leaves no
+ * UA outline either, so the arm interpolates the fallback string
+ * (utils/focus-ring-delta) — a Highlight outline — after its own ring.
  */
 export const columnList = css`
   position: relative;
@@ -103,6 +108,8 @@ export const columnList = css`
 
   &:focus-visible {
     box-shadow: inset 0 0 0 3px var(--haze-color-focus-ring);
+
+${focusRingForcedColors}
   }
 `;
 

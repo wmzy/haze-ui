@@ -8,7 +8,7 @@ import type { ControlOrValue } from 'react-use-control';
 import type { FloatingPlacement } from '../../utils/floating';
 
 import { css } from '@linaria/core';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useControl } from 'react-use-control';
 
 import { classnames } from '../../utils/classnames';
@@ -21,7 +21,8 @@ import {
 } from '../../utils/floating';
 import { useFocusScope } from '../../utils/focus-scope';
 import { floatingPairHost, panelSurface } from '../../utils/panel-skin';
-import { mergeRefs } from '../../utils/refs';
+import { useMergedRefs } from '../../utils/refs';
+import { useFocusWhenShown } from '../../utils/use-focus-when-shown';
 import Button from '../Button/Button';
 import { useStrings } from '../LocaleProvider';
 
@@ -195,6 +196,7 @@ export default function Popconfirm({
   // disabled — the panel itself is focused below, gated on the panel
   // actually being shown.
   const setScope = useFocusScope({ enabled: open, autoFocus: false });
+  const setPanelRef = useMergedRefs(panelRef, setScope);
 
   // Imperative surface: `open()` honors `disabled` (trigger parity);
   // `close()` and `focusTrigger()` stay unconditional.
@@ -232,10 +234,7 @@ export default function Popconfirm({
   // `floating.shown` gate). The panel container is the target: Enter
   // confirms and Escape cancels at the panel level, while Tab reaches
   // the action buttons, which keep their native key activation.
-  useEffect(() => {
-    if (!open || !floating.shown) return;
-    panelRef.current?.focus();
-  }, [open, floating.shown, panelRef]);
+  useFocusWhenShown(open && floating.shown, () => panelRef.current);
 
   const handlePanelKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
@@ -278,7 +277,7 @@ export default function Popconfirm({
        * wiring, keyboard model) always wins — the same precedence as
        * FormItem's `as`. */}
       <FloatingPanel
-        ref={mergeRefs(panelRef, setScope)}
+        ref={setPanelRef}
         behavior={floating}
         placement={placement}
         visualClass={panelSurface}

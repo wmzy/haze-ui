@@ -19,10 +19,9 @@
       `src/views/i18n/{en,zh,ja,de,fr}.ts`
 - [ ] CSS-affecting changes have the size-limit ratchets recalibrated
       (`pnpm size`, measured numbers noted in this PR)
-- [ ] New components are registered in all six places — barrel
-      (`src/lib/index.ts`), `scripts/generate-llms.mjs`,
-      `scripts/generate-registry.mjs`, `component-groups.ts`, the demos
-      map, and the i18n one-line blurbs
+- [ ] New components are registered in all five places — barrel
+      (`src/lib/index.ts`), `scripts/component-descriptions.mjs`,
+      `component-groups.ts`, the demos map, and the i18n one-line blurbs
 - [ ] No new runtime dependencies (if one is genuinely required, justify it
       below — README dependency policy and `vite.config.mts` externals
       included)

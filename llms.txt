@@ -9,7 +9,7 @@
 
 163 components in 9 groups (see below), styled with Linaria (zero-runtime CSS-in-JS)
 against `--haze-*` design tokens. ESM-only, `preserveModules` dist, tree-shakeable.
-`'use client'` is pre-injected on interactive modules; 101 static, hook-free modules
+`'use client'` is pre-injected on interactive modules; 116 static, hook-free modules
 (tokens + presentational components) ship without it and render as React Server
 Components. RTL is systemic: logical CSS properties, mirrored horizontal-key
 semantics and mirrored floating placements under `dir="rtl"`. Peer range
@@ -281,7 +281,7 @@ scope, pure collision math, menu/submenu keyboard machinery, RTL direction
 resolution, ref composition, View-Transition-wrapped state flips and the
 document-level interaction hooks — for component authors assembling their
 own panels. Same source, same version as the styled library; stable public
-API with the same semver commitment. The full export surface (60 entries):
+API with the same semver commitment. The full export surface (61 entries):
 
 ### Floating behavior
 
@@ -378,13 +378,14 @@ API with the same semver commitment. The full export surface (60 entries):
 
 ### Persistent state hooks
 
+- `useLatest` — A ref always pointing at the value from the latest render — the mirror long-lived closures (timers, async chains, listeners) read to see the current props instead of the ones captured at setup time.
 - `usePrevious` — The value from the previous render; `undefined` on the first. Compared by identity per render — no deep equality.
 - `useLocalStorage` — localStorage-persisted controllable state: initial-value resolution is persisted value > uncontrolled prop > `initial`, uncontrolled writes persist as JSON, cross-tab updates arrive via `storage` events, and a controlled `control` stays the single source of truth (no write-back). Unavailable storage (private mode) degrades silently to in-memory state.
 - `useSessionStorage` — sessionStorage-persisted controllable state — exactly the semantics of `useLocalStorage`, scoped to the tab session.
 
 ## Hooks
 
-`haze-ui/hooks` is the standalone hooks entry — 26 value exports
+`haze-ui/hooks` is the standalone hooks entry — 27 value exports
 (plus 16 options/result type clauses) with no component code:
 clipboard, dark mode, debounce, fullscreen, hotkeys, viewport and element
 observation, idle, network, orientation, reduced motion, storage-persisted
@@ -394,11 +395,11 @@ Control-friendly) and the tab title. The overlay-relevant subset is also
 re-exported from `haze-ui/headless`; a curated selection ships on the main
 barrel.
 
-`useAnchorSpy`, `useAutosizeTextarea`, `useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useStreamingAnnouncements`, `useTitle`
+`useAnchorSpy`, `useAutosizeTextarea`, `useBusyPressable`, `useClipboard`, `useClickOutside`, `useDarkMode`, `useDebouncedCallback`, `useDebouncedValue`, `useFullscreen`, `useHotkeys`, `hotkey`, `useInView`, `useLatest`, `useLocalStorage`, `useMediaQuery`, `useElementSize`, `useIdle`, `useMutationObserver`, `useNetwork`, `useOrientation`, `useResizeObserver`, `usePrefersReducedMotion`, `usePrevious`, `useSessionStorage`, `useStorageState`, `useStreamingAnnouncements`, `useTitle`
 
 ## Icons
 
-`haze-ui/icons` re-exports 100 curated [lucide-react](https://lucide.dev)
+`haze-ui/icons` re-exports 101 curated [lucide-react](https://lucide.dev)
 glyphs — the common UI vocabulary (navigation chevrons, form feedback, media,
 communication, files, commerce) as individual named exports in alphabetical
 order. `lucide-react` is a regular dependency with `sideEffects: false` and
@@ -506,9 +507,10 @@ interruption tiers, async option loading and lazy trees).
 
 The Components section above is generated from the demo sidebar contract
 (`src/views/Layout/component-groups.ts`) plus the blurb table in
-`scripts/generate-llms.mjs`; the Headless / Hooks / Icons sections are
-generated from the subpath barrels (`src/lib/headless/index.ts`,
-`src/lib/hooks/index.ts`, `src/lib/icons/index.ts`) — every export is
-enumerated with the JSDoc blurb written next to it in source. Regenerate with
-`node scripts/generate-llms.mjs` when any of those change. The preamble and
-the remaining closing sections are maintained by hand.
+`scripts/component-descriptions.mjs` (shared with the shadcn registry); the
+Headless / Hooks / Icons sections are generated from the subpath barrels
+(`src/lib/headless/index.ts`, `src/lib/hooks/index.ts`,
+`src/lib/icons/index.ts`) — every export is enumerated with the JSDoc blurb
+written next to it in source. Regenerate with `node scripts/generate-llms.mjs`
+when any of those change. The preamble and the remaining closing sections are
+maintained by hand.

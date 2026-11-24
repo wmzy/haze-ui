@@ -2,6 +2,8 @@ import type { AgenticStatus } from './agentic-status';
 
 import { css } from '@linaria/core';
 
+import { focusRingDeclarations } from './focus-ring-delta';
+
 /**
  * Shared timeline skeleton — the flex-column list, the connector row
  * layout, the dot geometry, the muted text skins, the status-marker
@@ -210,9 +212,11 @@ export const headerButton = css`
     background: var(--haze-color-bg-subtle);
   }
 
+  /* The keyboard ring interpolates utils/focus-ring-delta's
+     declarations — the box-shadow pair AND its forced-colors Highlight
+     fallback. */
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--haze-color-focus-ring);
+${focusRingDeclarations}
   }
 `;
 

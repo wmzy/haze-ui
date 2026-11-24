@@ -4,9 +4,7 @@ import { Sparkline, Stat, StatGroup } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
+import { AccessibilitySection, DemoPage, DemoSection } from './shared';
 
 const row = css`
   display: flex;
@@ -28,33 +26,32 @@ const flat = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7];
 // ─── Sparkline ─────────────────────────────────────────────────
 export default function SparklineDemo() {
   return (
-    <>
-      <h1>Sparkline</h1>
-      <p className={intro}>
-        Inline SVG mini trend chart — stateless, recharts-free and RSC-safe.
-        Geometry is normalized into a square viewBox, so width/height size the
-        box without recomputing points.
-      </p>
-
-      <div className={section}>
-        <h2>Basic</h2>
+    <DemoPage
+      title='Sparkline'
+      description={
+        <>
+          Inline SVG mini trend chart — stateless, recharts-free and RSC-safe.
+          Geometry is normalized into a square viewBox, so width/height size the
+          box without recomputing points.
+        </>
+      }
+    >
+      <DemoSection title='Basic'>
         <div className={row}>
           <Sparkline data={up} />
           <Sparkline data={down} />
           <Sparkline data={jittery} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Area variant</h2>
+      <DemoSection title='Area variant'>
         <div className={row}>
           <Sparkline data={up} variant='area' />
           <Sparkline data={down} variant='area' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Colors</h2>
+      <DemoSection title='Colors'>
         <div className={row}>
           <Sparkline data={up} color='default' />
           <Sparkline data={up} color='primary' variant='area' />
@@ -63,19 +60,17 @@ export default function SparklineDemo() {
           <Sparkline data={jittery} color='warning' />
           <Sparkline data={jittery} color='info' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sizes</h2>
+      <DemoSection title='Sizes'>
         <div className={cells}>
           <Sparkline data={up} width={240} height={48} />
           <Sparkline data={up} width={160} height={20} variant='area' />
           <Sparkline data={flat} width={120} height={16} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>In metric cards</h2>
+      <DemoSection title='In metric cards'>
         <StatGroup>
           <Stat
             title='Weekly signups'
@@ -88,23 +83,19 @@ export default function SparklineDemo() {
             prefix={<Sparkline data={down} width={96} height={28} color='danger' variant='area' />}
           />
         </StatGroup>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Sparkline Props</h2>
+      <DemoSection title='Sparkline Props'>
         <PropsTable of='SparklineProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>Decorative by default: the chart renders <code>aria-hidden</code> and no role — pair it with a labeled container (e.g. Stat&#39;s <code>title</code>)</li>
-            <li>Passing <code>aria-label</code> switches it to <code>role=&quot;img&quot;</code> with that name (see the signups card above)</li>
-            <li>Zero hooks and zero runtime dependencies — safe to render from React Server Components</li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>Decorative by default: the chart renders <code>aria-hidden</code> and no role — pair it with a labeled container (e.g. Stat&#39;s <code>title</code>)</li>
+          <li>Passing <code>aria-label</code> switches it to <code>role=&quot;img&quot;</code> with that name (see the signups card above)</li>
+          <li>Zero hooks and zero runtime dependencies — safe to render from React Server Components</li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

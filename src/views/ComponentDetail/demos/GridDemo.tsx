@@ -1,55 +1,63 @@
+import type { CSSProperties } from 'react';
+
 import { Grid, GridItem, ResizableGroup, ResizableHandle, ResizablePanel } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+} from './shared';
 
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+/** The numbered placeholder tile in the grid demos. */
+const cellStyle: CSSProperties = {
+  background: 'var(--haze-color-bg-subtle)',
+  padding: 'var(--haze-space-4)',
+  borderRadius: 'var(--haze-radius-md)',
+  textAlign: 'center',
+};
 
 // ─── Grid ──────────────────────────────────────────────────────
 export default function GridDemo() {
   return (
-    <>
-      <h1>Grid</h1>
-      <p className={intro}>CSS Grid layout with configurable columns and gap.</p>
-
-      <div className={section}>
-        <h2>Basic</h2>
+    <DemoPage
+      title='Grid'
+      description='CSS Grid layout with configurable columns and gap.'
+    >
+      <DemoSection title='Basic'>
         <Grid columns={3} gap={3}>
           <GridItem span={1}>
-            <div style={{ background: 'var(--haze-color-bg-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>1</div>
+            <div style={cellStyle}>1</div>
           </GridItem>
           <GridItem span={1}>
-            <div style={{ background: 'var(--haze-color-bg-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>2</div>
+            <div style={cellStyle}>2</div>
           </GridItem>
           <GridItem span={1}>
-            <div style={{ background: 'var(--haze-color-bg-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>3</div>
+            <div style={cellStyle}>3</div>
           </GridItem>
         </Grid>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Spanning Columns</h2>
+      <DemoSection title='Spanning Columns'>
         <Grid columns={4} gap={3}>
           <GridItem span={2}>
             <div style={{ background: 'var(--haze-color-primary-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>span 2</div>
           </GridItem>
           <GridItem span={1}>
-            <div style={{ background: 'var(--haze-color-bg-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>1</div>
+            <div style={cellStyle}>1</div>
           </GridItem>
           <GridItem span={1}>
-            <div style={{ background: 'var(--haze-color-bg-subtle)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>1</div>
+            <div style={cellStyle}>1</div>
           </GridItem>
           <GridItem span={1} start={1}>
             <div style={{ background: 'var(--haze-color-bg-muted)', padding: 'var(--haze-space-4)', borderRadius: 'var(--haze-radius-md)', textAlign: 'center' }}>start 1</div>
           </GridItem>
         </Grid>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Container-query Responsive</h2>
+      <DemoSection title='Container-query Responsive'>
         <p>
           With <code>responsive</code>, the grid becomes a container-query context and
           GridItem <code>sm</code>/<code>md</code>/<code>lg</code> spans react to the grid's
@@ -83,33 +91,28 @@ export default function GridDemo() {
             </ResizablePanel>
           </ResizableGroup>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Grid Props</h2>
+      <DemoSection title='Grid Props'>
         <PropsTable of='GridProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>GridItem Props</h2>
+      <DemoSection title='GridItem Props'>
         <PropsTable of='GridItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Purely presentational — uses plain <strong>&lt;div&gt;</strong> elements
-            </li>
-            <li>
-              No semantic meaning; add <strong>role</strong> if the grid conveys structure
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Purely presentational — uses plain <strong>&lt;div&gt;</strong> elements
+          </li>
+          <li>
+            No semantic meaning; add <strong>role</strong> if the grid conveys structure
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='grid' />
-    </>
+    </DemoPage>
   );
 }

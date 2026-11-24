@@ -18,11 +18,16 @@ import {
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { row } from '../styles';
 
-import { intro, section, row } from '../styles';
-
-import { noop, CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  noop,
+  noteStyle,
+} from './shared';
 
 /** A small bare svg for the icon slot demos (sized to 1em by the slot). */
 function DemoIcon() {
@@ -102,12 +107,11 @@ const dataItems: MenuDataItem[] = [
 // ─── Menu ──────────────────────────────────────────────────────
 export default function MenuDemo() {
   return (
-    <>
-      <h1>Menu</h1>
-      <p className={intro}>Dropdown menu with keyboard navigation.</p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Menu'
+      description='Dropdown menu with keyboard navigation.'
+    >
+      <DemoSection title='Demo'>
         <div className={row}>
           <Menu trigger={<Button variant='outline'>Open Menu</Button>}>
             <MenuItem onSelect={noop}>Edit</MenuItem>
@@ -117,17 +121,10 @@ export default function MenuDemo() {
             <MenuItem disabled>Delete</MenuItem>
           </Menu>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Selection items: checkboxes, radios and groups</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Selection items: checkboxes, radios and groups'>
+        <p style={noteStyle}>
           <code>MenuCheckboxItem</code> toggles a boolean option;{' '}
           <code>MenuRadioGroup</code> + <code>MenuRadioItem</code> form a
           single-select cluster; <code>MenuGroup</code> labels a section
@@ -137,17 +134,10 @@ export default function MenuDemo() {
           typeahead).
         </p>
         <SelectionMenu />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Danger items, icons and shortcut hints</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Danger items, icons and shortcut hints'>
+        <p style={noteStyle}>
           Any item accepts <code>danger</code> for destructive actions, an{' '}
           <code>icon</code> rendered in an inline-start slot, and a{' '}
           <code>kbdLabel</code> shortcut hint pushed to the inline end.
@@ -165,17 +155,10 @@ export default function MenuDemo() {
             </MenuGroup>
           </Menu>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Data-driven items</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Data-driven items'>
+        <p style={noteStyle}>
           Pass <code>items</code> instead of composed children:{' '}
           <code>item</code>, <code>checkbox</code>, <code>radio</code>,{' '}
           <code>group</code> (with an optional <code>value</code> to make it
@@ -186,17 +169,10 @@ export default function MenuDemo() {
         <div className={row}>
           <Menu trigger={<Button variant='outline'>Data-driven Menu</Button>} items={dataItems} />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Nested submenus</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Nested submenus'>
+        <p style={noteStyle}>
           Compose submenus from <code>MenuSub</code> wrapping a{' '}
           <code>MenuSubTrigger</code> + <code>MenuSubContent</code> pair —
           and nest them arbitrarily. Hover opens after a short intent
@@ -227,71 +203,61 @@ export default function MenuDemo() {
             <MenuItem onSelect={noop}>Archive</MenuItem>
           </Menu>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Menu Props</h2>
+      <DemoSection title='Menu Props'>
         <PropsTable of='MenuProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuItem Props</h2>
+      <DemoSection title='MenuItem Props'>
         <PropsTable of='MenuItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuCheckboxItem Props</h2>
+      <DemoSection title='MenuCheckboxItem Props'>
         <PropsTable of='MenuCheckboxItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuRadioGroup Props</h2>
+      <DemoSection title='MenuRadioGroup Props'>
         <PropsTable of='MenuRadioGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuRadioItem Props</h2>
+      <DemoSection title='MenuRadioItem Props'>
         <PropsTable of='MenuRadioItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuGroup Props</h2>
+      <DemoSection title='MenuGroup Props'>
         <PropsTable of='MenuGroupProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>MenuSub Props</h2>
+      <DemoSection title='MenuSub Props'>
         <PropsTable of='MenuSubProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Uses <strong>role=&quot;menu&quot;</strong> and{' '}
-              <strong>role=&quot;menuitem&quot;</strong>
-            </li>
-            <li>
-              Checkbox and radio options use{' '}
-              <strong>menuitemcheckbox</strong> /{' '}
-              <strong>menuitemradio</strong> with{' '}
-              <strong>aria-checked</strong>; groups are{' '}
-              <strong>role=&quot;group&quot;</strong> named by their label
-            </li>
-            <li>Click outside closes the menu</li>
-            <li>
-              Disabled items have <strong>disabled</strong> attribute
-            </li>
-            <li>
-              Submenu triggers expose <strong>aria-haspopup</strong> /{' '}
-              <strong>aria-expanded</strong>; focus is contained per level
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Uses <strong>role=&quot;menu&quot;</strong> and{' '}
+            <strong>role=&quot;menuitem&quot;</strong>
+          </li>
+          <li>
+            Checkbox and radio options use{' '}
+            <strong>menuitemcheckbox</strong> /{' '}
+            <strong>menuitemradio</strong> with{' '}
+            <strong>aria-checked</strong>; groups are{' '}
+            <strong>role=&quot;group&quot;</strong> named by their label
+          </li>
+          <li>Click outside closes the menu</li>
+          <li>
+            Disabled items have <strong>disabled</strong> attribute
+          </li>
+          <li>
+            Submenu triggers expose <strong>aria-haspopup</strong> /{' '}
+            <strong>aria-expanded</strong>; focus is contained per level
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='menu' />
-    </>
+    </DemoPage>
   );
 }

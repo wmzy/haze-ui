@@ -2,13 +2,16 @@ import { useControl } from 'react-use-control';
 
 import { InlineCompletion } from '@/lib/components/InlineCompletion';
 
-import PropsTable from '../PropsTable';
+import { intro } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth420,
+  PropsSection,
+} from './shared';
 
 // ─── InlineCompletion ─────────────────────────────────────────
 const CANNED = [
@@ -34,7 +37,7 @@ function SingleLineDemo() {
         value={control}
         suggestion={suggestFor(value)}
         aria-label='Single line completion'
-        style={{ maxWidth: 420 }}
+        style={maxWidth420}
       />
       <p className={intro}>Accepted value: {value || '—'}</p>
       <button type='button' onClick={() => setValue('')}>
@@ -53,61 +56,55 @@ function MultilineDemo() {
       value={control}
       suggestion={suggestFor(value)}
       aria-label='Multiline completion'
-      style={{ maxWidth: 420 }}
+      style={maxWidth420}
     />
   );
 }
 
 export default function InlineCompletionDemo() {
   return (
-    <>
-      <h1>InlineCompletion</h1>
-      <p className={intro}>
-        Ghost-text completion over a plain input or textarea: the remaining
-        suggestion overlays the field, Tab accepts it into the value, Escape
-        dismisses it.
-      </p>
-
-      <div className={section}>
-        <h2>Single line</h2>
+    <DemoPage
+      title='InlineCompletion'
+      description={
+        <>
+          Ghost-text completion over a plain input or textarea: the remaining
+          suggestion overlays the field, Tab accepts it into the value, Escape
+          dismisses it.
+        </>
+      }
+    >
+      <DemoSection title='Single line'>
         <p className={intro}>
           Type one of the canned prefixes (try{' '}
           <code>{'The quick bro'}</code>), then press Tab.
         </p>
         <SingleLineDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Multiline host</h2>
+      <DemoSection title='Multiline host'>
         <MultilineDemo />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='InlineCompletionProps' />
-      </div>
+      <PropsSection of='InlineCompletionProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Ghost text is <code>aria-hidden</code>; the behavior is announced
-              through an <code>aria-describedby</code> hint while a suggestion
-              is active
-            </li>
-            <li>
-              A consumer-provided <code>aria-describedby</code> is merged, not
-              replaced
-            </li>
-            <li>
-              Tab without an active suggestion keeps native focus behavior
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Ghost text is <code>aria-hidden</code>; the behavior is announced
+            through an <code>aria-describedby</code> hint while a suggestion
+            is active
+          </li>
+          <li>
+            A consumer-provided <code>aria-describedby</code> is merged, not
+            replaced
+          </li>
+          <li>
+            Tab without an active suggestion keeps native focus behavior
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='inlinecompletion' />
-    </>
+    </DemoPage>
   );
 }

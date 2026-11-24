@@ -7,6 +7,8 @@ import { useControl } from 'react-use-control';
 
 import { Presence } from '../../utils/presence';
 
+import { contentInner, contentOuter } from './collapsible-styles';
+
 /**
  * Semantic slot classes (AntD v6 `classNames` shape): keys map to the
  * compound structure, consumer classes appended at the end of each
@@ -105,33 +107,6 @@ type CollapsibleContentProps = {
   children: ReactNode;
   className?: string;
 };
-
-/* Height animates on the outer grid: 1fr↔0fr interpolates without knowing
- * the content height. The inner wrapper clips and can shrink below its
- * content (min-height: 0). Presence keeps the subtree mounted (injecting
- * data-state) while the collapse transition runs, then unmounts it. */
-const contentOuter = css`
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows var(--haze-duration-normal)
-    var(--haze-ease-in-out);
-
-  &[data-state='closed'] {
-    grid-template-rows: 0fr;
-    visibility: hidden;
-    /* visibility flips hidden exactly when the row finishes collapsing
-     * (zero duration, normal-length delay), so collapsed content leaves the
-     * tab order and accessibility tree through CSS alone. */
-    transition:
-      grid-template-rows var(--haze-duration-normal) var(--haze-ease-in-out),
-      visibility 0s var(--haze-duration-normal);
-  }
-`;
-
-const contentInner = css`
-  overflow: hidden;
-  min-height: 0;
-`;
 
 export function CollapsibleContent({ children, className }: CollapsibleContentProps) {
   const { open, classNames } = useCollapsibleContext();

@@ -23,11 +23,30 @@ const source = readFileSync(
 );
 
 // The motion class legitimately holds literal durations (it DEFINES the
-// tokens); preset assertions scope to everything from motionPresets on.
-const presetsSource = source.slice(source.indexOf('motionPresets'));
+// tokens); preset assertions scope to everything from the preset table on.
+const presetsSource = source.slice(source.indexOf('const PRESET_OUT_STATE'));
 
-const KEYFRAMES =
-  presetsSource.match(/@keyframes ([\w-]+)/g)?.map((s) => s.slice(11)) ?? [];
+// The one template every preset is generated from.
+const skeleton = presetsSource.slice(
+  presetsSource.indexOf('function presetCss'),
+  presetsSource.indexOf('/** One class per preset')
+);
+
+// Rows of the preset table, in declaration order.
+const tableRows = [
+  ...presetsSource
+    .slice(0, presetsSource.indexOf('} as const;'))
+    .matchAll(/^ {2}(\w+): \[/gm),
+].map((match) => match[1]);
+
+// Each `key: css`${presetCss('key')}`` line of motionPresets as [key, argument].
+const generated = [
+  ...presetsSource.matchAll(/^ {2}(\w+): css`\$\{presetCss\('(\w+)'\)\}`,?$/gm),
+].map((match) => [match[1], match[2]]);
+
+// Mirrors kebabCase in motion.ts: the module's exports are tokens only.
+const kebabCase = (name: string): string =>
+  name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
 describe('motion class', () => {
   it('is a non-empty class-name string', () => {
@@ -71,40 +90,67 @@ describe('motionPresets', () => {
 });
 
 describe('motion.ts source (preset wiring)', () => {
-  it('drives every preset off both data-state selectors', () => {
-    // Six templates, each with an enter rule, an exit rule and the two
-    // selectors repeated inside its reduced-motion collapse.
-    expect(presetsSource.match(/\[data-state='open'\]/g)).toHaveLength(12);
-    expect(presetsSource.match(/\[data-state='closed'\]/g)).toHaveLength(12);
+  it('generates every preset from the one skeleton, under its own name', () => {
+    // A table row without a css line is a preset that silently never
+    // ships; a css line fed another preset's row swaps their keyframes.
+    expect(tableRows).toEqual(Object.keys(motionPresets));
+    expect(generated).toEqual(
+      Object.keys(motionPresets).map((key) => [key, key])
+    );
+    // Enter starts and exit ends on the same out state.
+    expect(skeleton.match(/\$\{out\}/g)).toHaveLength(2);
+  });
+
+  it('drives the skeleton off both data-state selectors', () => {
+    // An enter rule and an exit rule, plus the two selectors repeated
+    // inside the reduced-motion collapse.
+    expect(skeleton.match(/\[data-state='open'\]/g)).toHaveLength(2);
+    expect(skeleton.match(/\[data-state='closed'\]/g)).toHaveLength(2);
   });
 
   it('names every keyframe under the haze-motion- prefix, uniquely', () => {
-    expect(KEYFRAMES).toHaveLength(12); // 6 presets x (enter + exit)
-    expect(new Set(KEYFRAMES).size).toBe(12);
-    for (const name of KEYFRAMES) {
-      expect(name.startsWith('haze-motion-')).toBe(true);
-    }
+    // One enter/exit pair per preset, keyed by the preset's kebab-cased
+    // name: slideUp -> haze-motion-slide-up-in / haze-motion-slide-up-out.
+    expect(
+      skeleton.match(/@keyframes haze-motion-\$\{slug\}-(?:in|out) \{/g)
+    ).toHaveLength(2);
+    expect(source).toContain(
+      'name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)'
+    );
+    const slugs = Object.keys(motionPresets).map(kebabCase);
+    expect(new Set(slugs).size).toBe(slugs.length);
   });
 
   it('holds every exit with animation-fill-mode: forwards', () => {
-    expect(presetsSource.match(/var\(--haze-ease(?:-in-out)?\) forwards/g)).toHaveLength(6);
+    // Exit rules are the only place a fill mode is needed: the element
+    // keeps its exited look until Presence unmounts it.
+    expect(
+      skeleton.match(/var\(--haze-ease(?:-in-out)?\) forwards/g)
+    ).toHaveLength(1);
+    expect(presetsSource.match(/\bforwards\b/g)).toHaveLength(1);
   });
 
   it('uses motion tokens for every duration and easing (no literals)', () => {
-    // Any timing/easing literal inside the preset templates is a drift
+    // Any timing/easing literal in the table or the skeleton is a drift
     // away from the token scale; only the scale factor and keyframe
-    // geometry may be literal.
+    // geometry may be literal. Enter reads normal, exit reads fast.
     expect(presetsSource).not.toMatch(/\b\d+(?:\.\d+)?m?s\b/);
     expect(presetsSource).not.toMatch(/cubic-bezier\(/);
-    expect(presetsSource.match(/var\(--haze-duration-(?:fast|normal|slow)\)/g)).toHaveLength(12);
-    expect(presetsSource.match(/var\(--haze-ease(?:-in-out)?\)/g)?.length).toBeGreaterThanOrEqual(12);
+    expect(skeleton.match(/var\(--haze-duration-(?:fast|normal|slow)\)/g)).toHaveLength(2);
+    expect(skeleton).toContain(
+      'animation: haze-motion-${slug}-in var(--haze-duration-normal)'
+    );
+    expect(skeleton).toContain(
+      'animation: haze-motion-${slug}-out var(--haze-duration-fast)'
+    );
+    expect(skeleton.match(/var\(--haze-ease(?:-in-out)?\)/g)).toHaveLength(2);
   });
 
-  it('embeds a self-sufficient reduced-motion collapse per preset', () => {
+  it('embeds a self-sufficient reduced-motion collapse in the skeleton', () => {
     expect(
-      presetsSource.match(/@media \(prefers-reduced-motion: reduce\)/g)
-    ).toHaveLength(6);
-    expect(presetsSource.match(/animation: none/g)).toHaveLength(6);
+      skeleton.match(/@media \(prefers-reduced-motion: reduce\)/g)
+    ).toHaveLength(1);
+    expect(skeleton.match(/animation: none/g)).toHaveLength(1);
   });
 
   it('keeps the module free of hooks and DOM access (RSC-safe)', () => {

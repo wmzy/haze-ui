@@ -1,9 +1,36 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import {
+  statusDot,
+  statusDotError,
+  statusDotPending,
+  timelineDescription,
+  timelineLabel,
+} from '../../utils/timeline-skin';
+
 import Queue, { QueueItem } from './Queue';
 
 describe('Queue', () => {
+  it('rides the shared timeline skins: statusDot marker arms and text', () => {
+    // The marker composes utils/timeline-skin's statusDot geometry plus the
+    // status arm (queued = pending ring, failed = error disc); title and
+    // description are the shared label/description skins.
+    const { container } = render(
+      <Queue>
+        <QueueItem title='A' description='waiting' />
+        <QueueItem title='B' status='failed' />
+      </Queue>,
+    );
+    const [queued, failed] = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-slot="queue-indicator"]'),
+    );
+    expect(queued).toHaveClass(statusDot, statusDotPending);
+    expect(failed).toHaveClass(statusDot, statusDotError);
+    expect(screen.getByText('A')).toHaveClass(timelineLabel);
+    expect(screen.getByText('waiting')).toHaveClass(timelineDescription);
+  });
+
   it('renders items with title and description', () => {
     render(
       <Queue>

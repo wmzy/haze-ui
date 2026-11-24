@@ -10,13 +10,16 @@ import {
   useForm,
 } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  PropsSection,
+} from './shared';
 
 // ─── TimeField ─────────────────────────────────────────────────
 export default function TimeFieldDemo() {
@@ -26,15 +29,16 @@ export default function TimeFieldDemo() {
   const [seconds] = useControl(secondsCtrl);
 
   return (
-    <>
-      <h1>TimeField</h1>
-      <p className={intro}>
-        Segmented time-of-day input — hour/minute spinbuttons typed
-        directly, seconds and a 12-hour AM/PM presentation opt-in.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='TimeField'
+      description={
+        <>
+          Segmented time-of-day input — hour/minute spinbuttons typed
+          directly, seconds and a 12-hour AM/PM presentation opt-in.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
         <p>
           Type digits (segments auto-advance once their digits are
           gathered), or <kbd>↑</kbd>/<kbd>↓</kbd> to step with wraparound,{' '}
@@ -45,19 +49,13 @@ export default function TimeFieldDemo() {
           <TimeField value={valueCtrl} aria-label='Start time' />
         </div>
         {value && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {value}
           </p>
         )}
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Granularity and 12-hour</h2>
+      <DemoSection title='Granularity and 12-hour'>
         <p>
           <code>format</code> picks the segments and the value&apos;s shape
           (<code>&apos;HH:mm&apos;</code> default,{' '}
@@ -70,22 +68,16 @@ export default function TimeFieldDemo() {
           <TimeField format='HH:mm:ss' value={secondsCtrl} aria-label='Precise time' />
         </div>
         {seconds && (
-          <p
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <p style={hintStyle}>
             Selected: {seconds}
           </p>
         )}
         <div className={fieldRow}>
           <TimeField use12Hours aria-label='Twelve-hour time' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>In a form</h2>
+      <DemoSection title='In a form'>
         <p>
           <code>TimeFieldCore</code> takes a plain{' '}
           <code>value</code>/<code>onChange</code>, so FormItem&apos;s{' '}
@@ -93,48 +85,41 @@ export default function TimeFieldDemo() {
           as InputCore.
         </p>
         <TimeFieldForm />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={fieldRow}>
           <TimeField value='09:30' disabled aria-label='Locked time' />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='TimeFieldProps' />
-      </div>
+      <PropsSection of='TimeFieldProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Each segment is a <strong>role=&quot;spinbutton&quot;</strong>{' '}
-              with <strong>aria-valuemin/max/now</strong> and a segment{' '}
-              <strong>aria-label</strong> (Hour/Minute/Second/Day period)
-            </li>
-            <li>
-              The AM/PM segment exposes the option as{' '}
-              <strong>aria-valuetext</strong> and toggles with{' '}
-              <kbd>↑</kbd>/<kbd>↓</kbd> or <kbd>a</kbd>/<kbd>p</kbd>
-            </li>
-            <li>
-              Roving tabindex: one tab stop, <kbd>←</kbd>/<kbd>→</kbd> and{' '}
-              <kbd>Tab</kbd> walk the segments
-            </li>
-            <li>
-              <code>disabled</code> sets <strong>aria-disabled</strong> and
-              removes the segments from the tab order
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Each segment is a <strong>role=&quot;spinbutton&quot;</strong>{' '}
+            with <strong>aria-valuemin/max/now</strong> and a segment{' '}
+            <strong>aria-label</strong> (Hour/Minute/Second/Day period)
+          </li>
+          <li>
+            The AM/PM segment exposes the option as{' '}
+            <strong>aria-valuetext</strong> and toggles with{' '}
+            <kbd>↑</kbd>/<kbd>↓</kbd> or <kbd>a</kbd>/<kbd>p</kbd>
+          </li>
+          <li>
+            Roving tabindex: one tab stop, <kbd>←</kbd>/<kbd>→</kbd> and{' '}
+            <kbd>Tab</kbd> walk the segments
+          </li>
+          <li>
+            <code>disabled</code> sets <strong>aria-disabled</strong> and
+            removes the segments from the tab order
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='time-field' />
-    </>
+    </DemoPage>
   );
 }
 
@@ -160,12 +145,7 @@ function TimeFieldForm() {
           Submit
         </Button>
         {submitted !== null && (
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Submitted: {submitted || '(empty)'}
           </span>
         )}

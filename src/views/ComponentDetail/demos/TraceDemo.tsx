@@ -4,18 +4,23 @@ import { Button, Trace, TraceDetails, TraceItem } from '@/lib';
 
 import PropsTable from '../PropsTable';
 
-import A11yNote from '../A11yNote';
+import { intro, codeBlock } from '../styles';
 
-import { intro, section, codeBlock } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  maxWidth360,
+  maxWidth480,
+} from './shared';
 
 function ReasoningExample() {
   const [phase, setPhase] = useState<'running' | 'done' | 'error'>('running');
 
   return (
     <>
-      <div style={{ maxWidth: 480 }}>
+      <div style={maxWidth480}>
         <Trace>
           <TraceItem title='Analyze request' status='done' />
           <TraceItem
@@ -50,30 +55,30 @@ function ReasoningExample() {
 // ─── Trace ─────────────────────────────────────────────────────
 export default function TraceDemo() {
   return (
-    <>
-      <h1>Trace</h1>
-      <p className={intro}>
-        Line-by-line reasoning trace for agent steps: each TraceItem is one
-        step with a status marker (pending, running, done, error), an
-        optional custom icon and an optional disclosure that reveals{' '}
-        <code>details</code> below the line — the shape agentic reasoning
-        and tool-call traces need.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
-        <div style={{ maxWidth: 360 }}>
+    <DemoPage
+      title='Trace'
+      description={
+        <>
+          Line-by-line reasoning trace for agent steps: each TraceItem is one
+          step with a status marker (pending, running, done, error), an
+          optional custom icon and an optional disclosure that reveals{' '}
+          <code>details</code> below the line — the shape agentic reasoning
+          and tool-call traces need.
+        </>
+      }
+    >
+      <DemoSection title='Demo'>
+        <div style={maxWidth360}>
           <Trace>
             <TraceItem title='Analyze request' status='done' />
             <TraceItem title='Search documentation' status='running' />
             <TraceItem title='Draft answer' status='pending' />
           </Trace>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Four States</h2>
-        <div style={{ maxWidth: 360 }}>
+      <DemoSection title='Four States'>
+        <div style={maxWidth360}>
           <Trace>
             <TraceItem title='Queued' status='pending' />
             <TraceItem title='Searching docs…' status='running' />
@@ -87,10 +92,9 @@ export default function TraceDemo() {
           collapses under <strong>prefers-reduced-motion</strong>; done and
           error carry a checkmark / exclamation glyph inside the marker.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Reasoning Steps</h2>
+      <DemoSection title='Reasoning Steps'>
         <p className={intro}>
           A step mid-flight: flipping its <code>status</code> announces the
           transition to screen readers through a per-item sr-only live
@@ -119,11 +123,10 @@ export default function TraceDemo() {
           revealed area (input/output JSON, logs); any other ReactNode
           renders as-is inside the panel.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Custom Icons</h2>
-        <div style={{ maxWidth: 360 }}>
+      <DemoSection title='Custom Icons'>
+        <div style={maxWidth360}>
           <Trace>
             <TraceItem title='Thinking' status='running' icon={BrainIcon} />
             <TraceItem title='read_file' status='done' icon={WrenchIcon} />
@@ -135,56 +138,50 @@ export default function TraceDemo() {
           status glyph inside the marker — the marker ring keeps its status
           color, so custom icons never hide the state.
         </p>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Trace Props</h2>
+      <DemoSection title='Trace Props'>
         <PropsTable of='TraceProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TraceItem Props</h2>
+      <DemoSection title='TraceItem Props'>
         <PropsTable of='TraceItemProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>TraceDetails Props</h2>
+      <DemoSection title='TraceDetails Props'>
         <PropsTable of='TraceDetailsProps' />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Status markers are decorative (<strong>aria-hidden</strong>);
-              every line exposes <strong>data-status</strong> for consumer
-              styling, and status transitions are announced through a
-              per-item sr-only <strong>role=&quot;status&quot;</strong> live
-              region — exactly once per change, never on mount or on
-              re-renders that hold the status
-            </li>
-            <li>
-              Word step titles with their state for visible status copy
-              (&quot;Searching docs…&quot; → &quot;Searched docs&quot;) —
-              the marker alone does not read as text
-            </li>
-            <li>
-              Detail toggles are native buttons with{' '}
-              <strong>aria-expanded</strong>/<strong>aria-controls</strong>{' '}
-              — Enter and Space activate them; the collapsed panel leaves
-              the tab order through the <code>hidden</code> attribute
-            </li>
-            <li>
-              The running pulse collapses under{' '}
-              <strong>prefers-reduced-motion</strong> into a static halo
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Status markers are decorative (<strong>aria-hidden</strong>);
+            every line exposes <strong>data-status</strong> for consumer
+            styling, and status transitions are announced through a
+            per-item sr-only <strong>role=&quot;status&quot;</strong> live
+            region — exactly once per change, never on mount or on
+            re-renders that hold the status
+          </li>
+          <li>
+            Word step titles with their state for visible status copy
+            (&quot;Searching docs…&quot; → &quot;Searched docs&quot;) —
+            the marker alone does not read as text
+          </li>
+          <li>
+            Detail toggles are native buttons with{' '}
+            <strong>aria-expanded</strong>/<strong>aria-controls</strong>{' '}
+            — Enter and Space activate them; the collapsed panel leaves
+            the tab order through the <code>hidden</code> attribute
+          </li>
+          <li>
+            The running pulse collapses under{' '}
+            <strong>prefers-reduced-motion</strong> into a static halo
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='trace' />
-    </>
+    </DemoPage>
   );
 }
 

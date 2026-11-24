@@ -3,11 +3,14 @@ import { useControl } from 'react-use-control';
 
 import { PromptInput } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
+import {
+  AccessibilitySection,
+  DemoPage,
+  DemoSection,
+  PropsSection,
+} from './shared';
 
 const PEOPLE = ['Alice Zhang', 'Bob Li', 'Carol Wang', 'Dave Chen'];
 const COMMANDS = ['summarize', 'translate', 'analyze'];
@@ -72,27 +75,26 @@ function SubmitLogExample() {
 // ─── PromptInput ────────────────────────────────────────────────
 export default function PromptInputDemo() {
   return (
-    <>
-      <h1>PromptInput</h1>
-      <p className={intro}>
-        AI prompt composer: auto-growing free text with inline removable
-        tags, trigger-character suggestion listboxes (async-friendly, stale
-        responses dropped), and submit-on-key — all four states
-        controllable through <code>useControl</code>.
-      </p>
-
-      <div className={section}>
-        <h2>Basic composer</h2>
+    <DemoPage
+      title='PromptInput'
+      description={
+        <>
+          AI prompt composer: auto-growing free text with inline removable
+          tags, trigger-character suggestion listboxes (async-friendly, stale
+          responses dropped), and submit-on-key — all four states
+          controllable through <code>useControl</code>.
+        </>
+      }
+    >
+      <DemoSection title='Basic composer'>
         <SubmitLogExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Controlled text and tags</h2>
+      <DemoSection title='Controlled text and tags'>
         <ControlledPromptExample />
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Mentions with async suggestions</h2>
+      <DemoSection title='Mentions with async suggestions'>
         <p>
           Type <code>@</code> to mention a teammate or <code>/</code> for a
           command — suggestions arrive after 250 ms; only the latest
@@ -107,10 +109,9 @@ export default function PromptInputDemo() {
             maxRows={4}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Submit with mod-enter</h2>
+      <DemoSection title='Submit with mod-enter'>
         <p>
           With <code>submitKey=&quot;mod-enter&quot;</code>, plain Enter
           inserts newlines and only Ctrl/Cmd+Enter submits — for drafts
@@ -123,10 +124,9 @@ export default function PromptInputDemo() {
             maxRows={4}
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={fieldRow}>
           <PromptInput
             disabled
@@ -134,43 +134,37 @@ export default function PromptInputDemo() {
             placeholder='Disabled composer…'
           />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='PromptInputProps' />
-      </div>
+      <PropsSection of='PromptInputProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              With <code>getSuggestions</code>, the widget exposes{' '}
-              <strong>role=&quot;combobox&quot;</strong> with{' '}
-              <strong>aria-expanded</strong> /{' '}
-              <strong>aria-controls</strong>; the textarea carries{' '}
-              <strong>aria-autocomplete=&quot;list&quot;</strong> and{' '}
-              <strong>aria-activedescendant</strong> for the keyboard
-              highlight
-            </li>
-            <li>
-              Suggestions are a <strong>listbox</strong> of{' '}
-              <strong>options</strong>: ArrowDown/ArrowUp navigate, Enter
-              or Tab commits, Escape closes without touching the text
-            </li>
-            <li>
-              Tags form a list; each remove button is labelled{' '}
-              <em>Remove &lt;tag&gt;</em> (localized via the{' '}
-              <code>promptInput</code> strings section)
-            </li>
-            <li>
-              Backspace on empty text removes the last tag; focus never
-              leaves the textarea
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
-    </>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            With <code>getSuggestions</code>, the widget exposes{' '}
+            <strong>role=&quot;combobox&quot;</strong> with{' '}
+            <strong>aria-expanded</strong> /{' '}
+            <strong>aria-controls</strong>; the textarea carries{' '}
+            <strong>aria-autocomplete=&quot;list&quot;</strong> and{' '}
+            <strong>aria-activedescendant</strong> for the keyboard
+            highlight
+          </li>
+          <li>
+            Suggestions are a <strong>listbox</strong> of{' '}
+            <strong>options</strong>: ArrowDown/ArrowUp navigate, Enter
+            or Tab commits, Escape closes without touching the text
+          </li>
+          <li>
+            Tags form a list; each remove button is labelled{' '}
+            <em>Remove &lt;tag&gt;</em> (localized via the{' '}
+            <code>promptInput</code> strings section)
+          </li>
+          <li>
+            Backspace on empty text removes the last tag; focus never
+            leaves the textarea
+          </li>
+        </ul>
+      </AccessibilitySection>
+    </DemoPage>
   );
 }

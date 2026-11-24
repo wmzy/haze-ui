@@ -1,16 +1,8 @@
-import type { ReactNode } from 'react';
-
-import { MenuGroupImpl } from '../../utils/menu-item-parts';
+import { MenuGroupImpl, type MenuGroupBaseProps } from '../../utils/menu-item-parts';
 
 import { useDropdownMenuContext } from './DropdownMenuContext';
 
-type DropdownMenuGroupProps = {
-  /** Non-interactive heading naming the group (aria-labelledby). */
-  label: ReactNode;
-  className?: string;
-  /** The group's menu items. */
-  children: ReactNode;
-};
+type DropdownMenuGroupProps = MenuGroupBaseProps;
 
 /**
  * A labeled, non-interactive section of menu items (`role="group"`

@@ -14,7 +14,8 @@
  *    RichText segments (GettingStarted) so the en rendering stays
  *    byte-identical to the hand-written JSX it replaced.
  *  - `components` is keyed by display name (component-groups.ts) — the
- *    one-line blurbs mirror scripts/generate-llms.mjs DESCRIPTIONS
+ *    one-line blurbs mirror `COMPONENT_DESCRIPTIONS` in
+ *    scripts/component-descriptions.mjs
  *    (backticks stripped for HTML rendering).
  */
 
@@ -30,7 +31,7 @@ export type RichSeg =
 export type RichText = readonly RichSeg[];
 
 /* Component one-liners (en source): keyed by display name, mirroring the
- * DESCRIPTIONS table in scripts/generate-llms.mjs (markdown backticks
+ * `COMPONENT_DESCRIPTIONS` table in scripts/component-descriptions.mjs (markdown backticks
  * stripped for HTML rendering). An open record — the dictionary parity
  * test pins key coverage against component-groups.ts. */
 const COMPONENT_BLURBS = {
@@ -457,7 +458,7 @@ export const en = {
     Utilities: 'Utilities',
   },
   /* One-line component blurbs, keyed by display name. Mirrors the
-   * DESCRIPTIONS table in scripts/generate-llms.mjs (markdown backticks
+   * `COMPONENT_DESCRIPTIONS` table in scripts/component-descriptions.mjs (markdown backticks
    * stripped). Deliberately an open record: new components keep earning
    * entries without touching the dictionary type — the parity test pins
    * coverage against component-groups.ts instead. */

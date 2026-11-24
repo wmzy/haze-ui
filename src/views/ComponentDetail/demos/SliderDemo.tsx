@@ -2,13 +2,17 @@ import { useControl } from 'react-use-control';
 
 import { Slider } from '@/lib';
 
-import PropsTable from '../PropsTable';
+import { fieldRow } from '../styles';
 
-import A11yNote from '../A11yNote';
-
-import { intro, section, fieldRow } from '../styles';
-
-import { CssVarsSection } from './shared';
+import {
+  AccessibilitySection,
+  CssVarsSection,
+  DemoPage,
+  DemoSection,
+  hintStyle,
+  noteStyle,
+  PropsSection,
+} from './shared';
 
 // ─── Slider ────────────────────────────────────────────────────
 export default function SliderDemo() {
@@ -37,36 +41,21 @@ export default function SliderDemo() {
   } as const;
 
   return (
-    <>
-      <h1>Slider</h1>
-      <p className={intro}>
-        Range input for selecting a numeric value within a range.
-      </p>
-
-      <div className={section}>
-        <h2>Demo</h2>
+    <DemoPage
+      title='Slider'
+      description='Range input for selecting a numeric value within a range.'
+    >
+      <DemoSection title='Demo'>
         <div className={fieldRow}>
           <Slider value={valueCtrl} min={0} max={100} step={1} />
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Value: {value}
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Range — two thumbs</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Range — two thumbs'>
+        <p style={noteStyle}>
           <code>range</code> renders two thumbs tracking a{' '}
           <code>[low, high]</code> tuple: <code>value</code> /{' '}
           <code>onValuesChange</code> carry the pair (the native{' '}
@@ -86,26 +75,14 @@ export default function SliderDemo() {
               console.log('onValuesChange:', value)
             }
           />
-          <span
-            style={{
-              fontSize: 'var(--haze-text-sm)',
-              color: 'var(--haze-color-text-secondary)',
-            }}
-          >
+          <span style={hintStyle}>
             Value: [{span[0]}, {span[1]}]
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Tooltip — value bubble on the active thumb</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Tooltip — value bubble on the active thumb'>
+        <p style={noteStyle}>
           <code>tooltip</code> shows a value bubble over the thumb being
           dragged or focused (in range mode each thumb carries its own).
           <code> tooltipFormatter</code> customizes the content. The bubble
@@ -138,17 +115,10 @@ export default function SliderDemo() {
             Value: [{tipSpan[0]}, {tipSpan[1]}]
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Marks — tick labels, snap with step=null</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Marks — tick labels, snap with step=null'>
+        <p style={noteStyle}>
           <code>marks</code> renders tick labels under the track; clicking
           one moves the nearest thumb onto it. With{' '}
           <code>step={'{'}null{'}'}</code> the marks become the only
@@ -179,17 +149,10 @@ export default function SliderDemo() {
             Value: [{markSpan[0]}, {markSpan[1]}]
           </span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Vertical — bottom-to-top</h2>
-        <p
-          style={{
-            fontSize: 'var(--haze-text-sm)',
-            color: 'var(--haze-color-text-secondary)',
-            margin: '0 0 var(--haze-space-3)',
-          }}
-        >
+      <DemoSection title='Vertical — bottom-to-top'>
+        <p style={noteStyle}>
           <code>vertical</code> lays the track out bottom-to-top via the
           modern <code>writing-mode</code> slider recipe (Chromium 119+,
           Firefox 120+, Safari 17.4+; older engines fall back to
@@ -209,44 +172,37 @@ export default function SliderDemo() {
           />
           <span style={readout}>Value: {verticalValue}</span>
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Disabled</h2>
+      <DemoSection title='Disabled'>
         <div className={fieldRow}>
           <Slider disabled />
         </div>
-      </div>
+      </DemoSection>
 
-      <div className={section}>
-        <h2>Props</h2>
-        <PropsTable of='SliderProps' />
-      </div>
+      <PropsSection of='SliderProps' />
 
-      <div className={section}>
-        <h2>Accessibility</h2>
-        <A11yNote>
-          <ul>
-            <li>
-              Renders as native{' '}
-              <strong>&lt;input type=&quot;range&quot;&gt;</strong>
-            </li>
-            <li>
-              <strong>Arrow keys</strong> adjust the value by step
-            </li>
-            <li>
-              Use <strong>aria-label</strong> or a visible{' '}
-              <strong>&lt;label&gt;</strong>
-            </li>
-            <li>
-              Range mode labels each thumb via the{' '}
-              <strong>aria-label tuple</strong>
-            </li>
-          </ul>
-        </A11yNote>
-      </div>
+      <AccessibilitySection>
+        <ul>
+          <li>
+            Renders as native{' '}
+            <strong>&lt;input type=&quot;range&quot;&gt;</strong>
+          </li>
+          <li>
+            <strong>Arrow keys</strong> adjust the value by step
+          </li>
+          <li>
+            Use <strong>aria-label</strong> or a visible{' '}
+            <strong>&lt;label&gt;</strong>
+          </li>
+          <li>
+            Range mode labels each thumb via the{' '}
+            <strong>aria-label tuple</strong>
+          </li>
+        </ul>
+      </AccessibilitySection>
 
       <CssVarsSection component='slider' />
-    </>
+    </DemoPage>
   );
 }
